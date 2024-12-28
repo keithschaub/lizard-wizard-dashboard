@@ -1,0 +1,70 @@
+{
+  "players": {
+    "player1": {
+      "name": "Keith",
+      "score": 10,
+      "gold": 5,
+      "dungeonItems": 2,
+      "achievements": 1,
+      "wizards": {},
+      "towers": {},
+      "familiars": {},
+      "spells": {}
+    },
+    "player2": {
+      "name": "John",
+      "score": 12,
+      "gold": 3,
+      "dungeonItems": 3,
+      "achievements": 2,
+      "wizards": {},
+      "towers": {},
+      "familiars": {},
+      "spells": {}
+    },
+    "player3": {
+      "name": "Jake",
+      "score": 10,
+      "gold": 5,
+      "dungeonItems": 2,
+      "achievements": 1,
+      "wizards": {},
+      "towers": {},
+      "familiars": {},
+      "spells": {}
+    },
+    "player4": {
+      "name": "LongName",
+      "score": 12,
+      "gold": 3,
+      "dungeonItems": 3,
+      "achievements": 2,
+      "wizards": {},
+      "towers": {},
+      "familiars": {},
+      "spells": {}
+    },
+    "player5": {
+      "name": "VeryLongName",
+      "score": 10,
+      "gold": 5,
+      "dungeonItems": 2,
+      "achievements": 1,
+      "wizards": {},
+      "towers": {},
+      "familiars": {},
+      "spells": {}
+    },
+    "player6": {
+      "name": "TheLongestNameEver",
+      "score": 12,
+      "gold": 3,
+      "dungeonItems": 3,
+      "achievements": 2,
+      "wizards": {},
+      "towers": {},
+      "familiars": {},
+      "spells": {}
+    }
+  }
+}
