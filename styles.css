@@ -254,7 +254,7 @@ button.delete:hover {
 }
 
 /* Responsive Adjustments */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .grid-container {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -263,15 +263,32 @@ button.delete:hover {
   }
 }
 
+@media (max-width: 768px) {
+  .grid-container {
+/*    grid-template-columns: repeat(1, 1fr); */
+      grid-template-columns: 1fr;
+  }
+  .player-tile {
+    width: 100%;
+  }
+}
+
 @media (max-width: 480px) {
   .grid-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Single column for iPhone  */
   }
+  
+  .player-tile {
+    width: 90%; /* Ensure it doesn't touch the screen edges */
+  }
+
   .card-options div {
-    width: 60px;
+    width: 70px;
   }
+
   .card-options img {
     width: 40px;
     height: 40px;
   }
 }
+

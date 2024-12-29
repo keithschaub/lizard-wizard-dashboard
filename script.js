@@ -308,43 +308,53 @@ document.addEventListener('DOMContentLoaded', () => {
         return grouped;
     }
 
-    /**
-     * Render a single card. 
-     * - For Spells, we show school on one line, the name on the next line, 
-     *   plus a tooltip for customText if present.
-     * - For non-spells, just show the school name.
-     */
-    function renderCardItem(card, category) {
-        const iconPath = schoolIcons[card.school] || 'assets/defaultIcon.webp';
+/**
+ * Render a single card.
+ * - For NON-spell cards, we just show the school name + icon.
+ * - For Spell cards, we show two lines: (1) school, (2) name, plus a clickable
+ *   that opens an alert with the custom text (useful on iPhone where no hover).
+ */
+function renderCardItem(card, category) {
+    const iconPath = schoolIcons[card.school] || 'assets/defaultIcon.webp';
+    const isSpell = (category === 'spells');
 
-        // If it's a spell, we do a 2-line layout: 
-        // 1) school
-        // 2) card.name
-        // We'll also place the card.customText into a 'title' attribute for easy hover tooltip.
-        const isSpell = (category === 'spells');
-        const tooltip = (isSpell && card.customText)
-            ? `title="${card.customText.replace(/"/g, '&quot;')}"`
-            : '';
-
-        let htmlContent = `
-            <div class="card-item" data-id="${card.id}" data-category="${category}" ${tooltip}>
-                <img src="${iconPath}" alt="${card.school}" class="card-icon">
-                <div class="card-details">
-                    <div class="card-school">${card.school}</div>
-        `;
-
-        if (isSpell && card.name) {
-            htmlContent += `
-                    <div class="spell-name">${card.name}</div>
-            `;
-        }
-
-        htmlContent += `
-                </div>
-            </div>
-        `;
-        return htmlContent;
+    // If it's a Spell and has custom text, we build an onclick to alert the text.
+    let onClickAttr = '';
+    if (isSpell && card.customText) {
+        // Escape quotes so we don't break the string
+        const escapedText = card.customText
+            .replace(/'/g, "\\'")
+            .replace(/"/g, '\\"');
+        onClickAttr = `onclick="alert('${escapedText}')"`; 
     }
+
+    let htmlContent = `
+        <div
+            class="card-item"
+            data-id="${card.id}"
+            data-category="${category}"
+            ${onClickAttr}
+        >
+            <img src="${iconPath}" alt="${card.school}" class="card-icon">
+            <div class="card-details">
+                <div class="card-school">${card.school}</div>
+    `;
+
+    // For spells, we add a second line with the card's name
+    if (isSpell && card.name) {
+        htmlContent += `
+                <div class="spell-name">${card.name}</div>
+        `;
+    }
+
+    htmlContent += `
+            </div>
+        </div>
+    `;
+
+    return htmlContent;
+}
+
 
     function renderCategoryCell(cards, category) {
         if (!cards || cards.length === 0) return '';

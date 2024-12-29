@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0",
+/>
   <title>Lizard Wizard Dashboard</title>
 
-  <!-- Link to your main CSS -->
+  <!-- Main CSS -->
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Firebase + your custom scripts -->
+  <!-- Firebase + script references -->
   <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
   <script src="firebase-init.js" defer></script>
@@ -18,18 +19,14 @@
 <body>
   <h1>Lizard Wizard Dashboard</h1>
 
-  <!-- Main container for the player tiles -->
   <div id="dashboard" class="grid-container"></div>
 
-  <!-- Optional: Delete Mode Indicator -->
+  <!-- Delete Mode Indicator (optional) -->
   <div id="delete-mode-indicator" class="hidden">
     <p>Delete Mode Active: Click a card to delete it.</p>
   </div>
 
-  <!-- ─────────────────────────────
-       1. Card Selection Popup
-       (Wizard / Tower / Familiar / Spell)
-  ────────────────────────────── -->
+  <!-- Category Selection Popup -->
   <div id="card-selection" class="card-selection-modal">
     <h3>Select Card Type</h3>
     <div class="card-options">
@@ -53,14 +50,10 @@
     <button onclick="closeCardSelection()">Close</button>
   </div>
 
-  <!-- ─────────────────────────────
-       2. School Selection Popup
-       (for Wizard, Tower, Familiar)
-  ────────────────────────────── -->
+  <!-- School Selection (Wizard/Tower/Familiar) -->
   <div id="school-selection" class="card-selection-modal">
     <h3>Select School of Magic</h3>
     <div class="card-options">
-      <!-- 7 schools -->
       <div onclick="selectSchool('Druidry')">
         <img src="assets/greenDruidry.webp" alt="Druidry Icon">
         <span>Druidry</span>
@@ -93,18 +86,13 @@
     <button onclick="closeSchoolSelection()">Close</button>
   </div>
 
-  <!-- ─────────────────────────────
-       3. Spell Selection Popup
-       (lists all spells from spell_cards.json)
-  ────────────────────────────── -->
+  <!-- Spell Selection Popup (list from spell_cards.json) -->
   <div id="spell-selection" class="card-selection-modal">
     <h3>Select Spell</h3>
-    <!-- We'll populate this dynamically in script.js (openSpellListPopup) -->
     <div id="spell-list" class="spell-list">
-      <!-- JavaScript: ALL_SPELLS.forEach(...) => .spell-option elements -->
+      <!-- script.js populates this using ALL_SPELLS -->
     </div>
     <button onclick="closeSpellListPopup()">Close</button>
   </div>
-
 </body>
 </html>
