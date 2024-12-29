@@ -1,0 +1,369 @@
+[
+    {
+        "id": 1,
+        "school": "Thaumaturgy",
+        "name": "Mana Fountain",
+        "customText": "+5 Mana when any player builds a Tower"
+    },
+    {
+        "id": 2,
+        "school": "Thaumaturgy",
+        "name": "Pulsing Towers",
+        "customText": "Tower Cards = +1 VP"
+    },
+    {
+        "id": 3,
+        "school": "Thaumaturgy",
+        "name": "Inexpensive",
+        "customText": "Build Towers for 1 fewer Gold"
+    },
+    {
+        "id": 4,
+        "school": "Thaumaturgy",
+        "name": "Perfect Reagent",
+        "customText": "Build Towers for 1 fewer Reagent"
+    },
+    {
+        "id": 5,
+        "school": "Thaumaturgy",
+        "name": "Trap",
+        "customText": "Add a Trap Card to the Dungeon"
+    },
+    {
+        "id": 6,
+        "school": "Thaumaturgy",
+        "name": "Spell Shield-T",
+        "customText": "Protected from one negative Spell effect, then placed out of play"
+    },
+    {
+        "id": 7,
+        "school": "Thaumaturgy",
+        "name": "Miracle",
+        "customText": "Reverse the Reagents on the Gather and Increase Value sides of your Gather Reagent Card that you playif you choose to"
+    },
+    {
+        "id": 8,
+        "school": "Alchemy",
+        "name": "Invisibility Potion",
+        "customText": "Steal 1 Gold per Eye of Newt used in casting the Spell (from one player)"
+    },
+    {
+        "id": 9,
+        "school": "Alchemy",
+        "name": "Scribe",
+        "customText": "Take and cast one of the top 5 Spell Cards for free"
+    },
+    {
+        "id": 10,
+        "school": "Alchemy",
+        "name": "Evolve",
+        "customText": "One of your Familiars becomes a Wizard of the same school"
+    },
+    {
+        "id": 11,
+        "school": "Alchemy",
+        "name": "Transmute",
+        "customText": "Transmute any number of Reagents to Gold at a 2:1 ratio"
+    },
+    {
+        "id": 12,
+        "school": "Alchemy",
+        "name": "Spell Shield-A",
+        "customText": "Protected fro one negative Spell effect,then placed out of play"
+    },
+    {
+        "id": 13,
+        "school": "Alchemy",
+        "name": "Transform",
+        "customText": "Transform any Reagent to another Reagent at 2:1 ratio before converting to Mana"
+    },
+    {
+        "id": 14,
+        "school": "Alchemy",
+        "name": "Crystal Ball",
+        "customText": "Max Hand Size = 5"
+    },
+    {
+        "id": 15,
+        "school": "Alchemy",
+        "name": "Powerful Helper",
+        "customText": "When using a Familiar to score, gain +1 Gold/ Wizard and Familiar from its school of magic"
+    },
+    {
+        "id": 16,
+        "school": "Alchemy",
+        "name": "Master Alchemist",
+        "customText": "+1 VP/ 2 Gold"
+    },
+    {
+        "id": 17,
+        "school": "Druidry",
+        "name": "Energize",
+        "customText": "Increase the mana value of a Reagent by 3 before converting"
+    },
+    {
+        "id": 18,
+        "school": "Druidry",
+        "name": "Potent Servant",
+        "customText": "Familiar Cards = +1 VP"
+    },
+    {
+        "id": 19,
+        "school": "Druidry",
+        "name": "Flame Bolt-D",
+        "customText": "Destroy any card owned by another player and place it out of play"
+    },
+    {
+        "id": 20,
+        "school": "Druidry",
+        "name": "Earthquake",
+        "customText": "Destroy (out of play) another player's Tower"
+    },
+    {
+        "id": 21,
+        "school": "Druidry",
+        "name": "Root Cellar",
+        "customText": "Store +10 Reagents"
+    },
+    {
+        "id": 22,
+        "school": "Druidry",
+        "name": "Maximum Gather",
+        "customText": "Gather all Reagents shown on the top half of the Gather Reagents Card"
+    },
+    {
+        "id": 23,
+        "school": "Druidry",
+        "name": "Mana Garden",
+        "customText": "+5 Mana whenever you Gather Reagents"
+    },
+    {
+        "id": 24,
+        "school": "Druidry",
+        "name": "Obscure",
+        "customText": "The targeted player may not enter the Dungeon the next time they try"
+    },
+    {
+        "id": 25,
+        "school": "Druidry",
+        "name": "Bloom",
+        "customText": "+1 any Reagent when Gathering"
+    },
+    {
+        "id": 26,
+        "school": "Druidry",
+        "name": "Adept Conversion",
+        "customText": "May convert 2 types of Reagents"
+    },
+    {
+        "id": 27,
+        "school": "Sorcery",
+        "name": "Divination",
+        "customText": "Enter the Dungeon as an action without a Familiar"
+    },
+    {
+        "id": 28,
+        "school": "Sorcery",
+        "name": "Hoard Mana",
+        "customText": "+1 VP/ 7 Mana at the end of the game"
+    },
+    {
+        "id": 29,
+        "school": "Sorcery",
+        "name": "Scry Tower",
+        "customText": "Look at the top 5 cards in the Tower Deck, and get one for free"
+    },
+    {
+        "id": 30,
+        "school": "Sorcery",
+        "name": "Energy Pulse",
+        "customText": "Destroy all Spell Shield spell cards currently owned by all players"
+    },
+    {
+        "id": 31,
+        "school": "Sorcery",
+        "name": "Scry Dungeon",
+        "customText": "Look at the top 10 cards in the Dungeon deck, and keep all Treasure Cards"
+    },
+    {
+        "id": 32,
+        "school": "Sorcery",
+        "name": "Scry Wizard",
+        "customText": "Look at the top 5 cards in the Wizard Deck, and get one for free"
+    },
+
+    {
+        "id": 33,
+        "school": "Sorcery",
+        "name": "Disintegrate-S",
+        "customText": "Disintegrate any card owned by another player and place it out of play"
+    },
+    {
+        "id": 34,
+        "school": "Sorcery",
+        "name": "Scry Familiar",
+        "customText": "Look at the top 5 cards in the Familiar Deck, and get one for free"
+    },
+    {
+        "id": 35,
+        "school": "Sorcery",
+        "name": "Flame Bolt-S",
+        "customText": "Destory any card owned by another player and place it out of play"
+    },
+    {
+        "id": 36,
+        "school": "Necromancy",
+        "name": "Rise",
+        "customText": "Re-activate one of your used Familiar Cards"
+    },
+    {
+        "id": 37,
+        "school": "Necromancy",
+        "name": "Disintegrate-N",
+        "customText": "Disintegrate any card owned by another player and place it out of play"
+    },
+    {
+        "id": 38,
+        "school": "Necromancy",
+        "name": "Undying",
+        "customText": "+3 VP/ Necromancer Wizard and Familiar Cards owned"
+    },
+    {
+        "id": 39,
+        "school": "Necromancy",
+        "name": "Block Giant",
+        "customText": "Giants do not hit, and instead give you 1 Gold"
+    },
+    {
+        "id": 40,
+        "school": "Necromancy",
+        "name": "Control Undead",
+        "customText": "Ignore hits from and take any Undead card encountered when Dungeon Delving; +3 VP for each"
+    },
+    {
+        "id": 41,
+        "school": "Necromancy",
+        "name": "Demonic Possession",
+        "customText": "Take a Familiar from another player and use it immediately"
+    },
+    {
+        "id": 42,
+        "school": "Necromancy",
+        "name": "Block Denizens",
+        "customText": "Denizens do not hit, and instead give you 1 Gold"
+    },
+    {
+        "id": 43,
+        "school": "Necromancy",
+        "name": "Block Goblin",
+        "customText": "Goblins do not hit, and instead give you 1 Gold"
+    },
+    {
+        "id": 44,
+        "school": "Necromancy",
+        "name": "Block Undead",
+        "customText": "Undead do not hit, and instead give you 1 Gold"
+    },
+    {
+        "id": 45,
+        "school": "Conjuring",
+        "name": "Treasure",
+        "customText": "Gain 2 Gold each time you enter the Dungeon"
+    },
+    {
+        "id": 46,
+        "school": "Conjuring",
+        "name": "Summon Helper",
+        "customText": "Summon Familiar for 5 fewer Mana Cost"
+    },
+    {
+        "id": 47,
+        "school": "Conjuring",
+        "name": "Spell Shield-C",
+        "customText": "Protected from one negative Spell effect,then placed out of play"
+    },
+    {
+        "id": 48,
+        "school": "Conjuring",
+        "name": "Mana Drain",
+        "customText": "Steal 15 Mana from another player"
+    },
+    {
+        "id": 49,
+        "school": "Conjuring",
+        "name": "Creation",
+        "customText": "Take any available Card for free"
+    },
+    {
+        "id": 50,
+        "school": "Conjuring",
+        "name": "Mana Leak",
+        "customText": "+5 Mana when any player recruits a Wizard"
+    },
+    {
+        "id": 51,
+        "school": "Conjuring",
+        "name": "Energy Circle",
+        "customText": "+5 Mana when any player summons a Familiar"
+    },
+    {
+        "id": 52,
+        "school": "Enchantment",
+        "name": "Spirit Shield",
+        "customText": "Ignore one additional hit per Dungeon Expedition"
+    },
+    {
+        "id": 53,
+        "school": "Enchantment",
+        "name": "Order of the Wand",
+        "customText": "Wizard Cards = +2 VP"
+    },
+    {
+        "id": 54,
+        "school": "Enchantment",
+        "name": "Charm",
+        "customText": "Take a Wizard Card from another player"
+    },
+    {
+        "id": 55,
+        "school": "Enchantment",
+        "name": "Wand Tax",
+        "customText": "Gain 2 Gold/ Card of any School of Magic of your choice"
+    },
+    {
+        "id": 56,
+        "school": "Enchantment",
+        "name": "Swapo",
+        "customText": "Trade one of your Wizard or Tower Cards for the same type owned by another player"
+    },
+    {
+        "id": 57,
+        "school": "Enchantment",
+        "name": "Time Shift",
+        "customText": "Remove (out of play) the top 5 cards of any deck"
+    },
+    {
+        "id": 58,
+        "school": "Enchantment",
+        "name": "Secret Society",
+        "customText": "May hide your Wizard Cards; Any negative Spell aimed at your Wizards affects a random Wizard of yours"
+    },
+    {
+        "id": 59,
+        "school": "Enchantment",
+        "name": "Haste",
+        "customText": "Take a bonus action"
+    },
+    {
+        "id": 60,
+        "school": "Enchantment",
+        "name": "Spell Shield-E",
+        "customText": "Protected from one negative Spell effect, then placed out of play"
+    },
+    {
+        "id": 61,
+        "school": "Wild",
+        "name": "Arch-Mage",
+        "customText": "+3 VP/ unique Wizard card"
+    }
+]

@@ -1,108 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lizard Wizard Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
-    <script src="firebase-init.js" defer></script>
-    <script src="script.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lizard Wizard Dashboard</title>
+
+  <!-- Link to your main CSS -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Firebase + your custom scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+  <script src="firebase-init.js" defer></script>
+  <script src="script.js" defer></script>
 </head>
+
 <body>
-    <h1>Lizard Wizard Dashboard</h1>
-    <div id="dashboard" class="grid-container"></div>
+  <h1>Lizard Wizard Dashboard</h1>
 
-    <!-- Card Selection Popup -->
-    <div id="card-selection-popup" class="card-selection-container hidden">
-        <h3>Select Card Type</h3>
-        <div class="card-selection-grid">
-            <div class="card-selection-icon" data-type="wizard">
-                <img src="./assets/wizardIcon.png" alt="Wizard Icon">
-                <p>Wizard</p>
-            </div>
-            <div class="card-selection-icon" data-type="tower">
-                <img src="./assets/towerIcon.png" alt="Tower Icon">
-                <p>Tower</p>
-            </div>
-            <div class="card-selection-icon" data-type="familiar">
-                <img src="./assets/familiarIcon.png" alt="Familiar Icon">
-                <p>Familiar</p>
-            </div>
-            <div class="card-selection-icon" data-type="spell">
-                <img src="./assets/spellIcon.png" alt="Spell Icon">
-                <p>Spell</p>
-            </div>
-        </div>
-        <button id="close-popup" class="close-button">Close</button>
+  <!-- Main container for the player tiles -->
+  <div id="dashboard" class="grid-container"></div>
+
+  <!-- Optional: Delete Mode Indicator -->
+  <div id="delete-mode-indicator" class="hidden">
+    <p>Delete Mode Active: Click a card to delete it.</p>
+  </div>
+
+  <!-- ─────────────────────────────
+       1. Card Selection Popup
+       (Wizard / Tower / Familiar / Spell)
+  ────────────────────────────── -->
+  <div id="card-selection" class="card-selection-modal">
+    <h3>Select Card Type</h3>
+    <div class="card-options">
+      <div onclick="selectCard('Wizard')">
+        <img src="assets/wizardIcon.png" alt="Wizard Icon">
+        <span>Wizard</span>
+      </div>
+      <div onclick="selectCard('Tower')">
+        <img src="assets/towerIcon.png" alt="Tower Icon">
+        <span>Tower</span>
+      </div>
+      <div onclick="selectCard('Familiar')">
+        <img src="assets/familiarIcon.png" alt="Familiar Icon">
+        <span>Familiar</span>
+      </div>
+      <div onclick="selectCard('Spell')">
+        <img src="assets/spellIcon.png" alt="Spell Icon">
+        <span>Spell</span>
+      </div>
     </div>
+    <button onclick="closeCardSelection()">Close</button>
+  </div>
 
-    <!-- Delete Mode Indicator (optional) -->
-    <div id="delete-mode-indicator" class="hidden">
-        <p>Delete Mode Active: Click a card to delete it.</p>
-    </div>
-
-    <!-- Cattegory Selection Modal -->
-	<div id="card-selection" class="card-selection-modal">
-    		<h3>Select Card Type</h3>
-    		<div class="card-options">
-        		<div onclick="selectCard('Wizard')">
-            			<img src="assets/wizardIcon.png" alt="Wizard Icon">
-            			<span>Wizard</span>
-        		</div>
-        		<div onclick="selectCard('Tower')">
-            			<img src="assets/towerIcon.png" alt="Tower Icon">
-            			<span>Tower</span>
-        		</div>
-        		<div onclick="selectCard('Familiar')">
-            			<img src="assets/familiarIcon.png" alt="Familiar Icon">
-            			<span>Familiar</span>
-        		</div>
-        		<div onclick="selectCard('Spell')">
-            			<img src="assets/spellIcon.png" alt="Spell Icon">
-            			<span>Spell</span>
-        		</div>
-    		</div>
-    		<button onclick="closeCardSelection()">Close</button>
-	</div>
-
-<!-- School of Magic Selection Modal -->
-<div id="school-selection" class="card-selection-modal">
+  <!-- ─────────────────────────────
+       2. School Selection Popup
+       (for Wizard, Tower, Familiar)
+  ────────────────────────────── -->
+  <div id="school-selection" class="card-selection-modal">
     <h3>Select School of Magic</h3>
     <div class="card-options">
-        <div onclick="selectSchool('Druidry')">
-            <img src="assets/greenDruidry.webp" alt="Druidry Icon">
-            <span>Druidry</span>
-        </div>
-        <div onclick="selectSchool('Sorcery')">
-            <img src="assets/blueSorcery.webp" alt="Sorcery Icon">
-            <span>Sorcery</span>
-        </div>
-        <div onclick="selectSchool('Thaumaturgy')">
-            <img src="assets/goldThaumaturgy.webp" alt="Thaumaturgy Icon">
-            <span>Thaumaturgy</span>
-        </div>
-        <div onclick="selectSchool('Alchemy')">
-            <img src="assets/purpleAlchemy.webp" alt="Alchemy Icon">
-            <span>Alchemy</span>
-        </div>
-        <div onclick="selectSchool('Enchantment')">
-            <img src="assets/whiteEnchantment.webp" alt="Enchantment Icon">
-            <span>Enchantment</span>
-        </div>
-        <div onclick="selectSchool('Necromancy')">
-            <img src="assets/blackNecromancy.webp" alt="Necromancy Icon">
-            <span>Necromancy</span>
-        </div>
-        <div onclick="selectSchool('Conjuring')">
-            <img src="assets/redConjuring.webp" alt="Conjuring Icon">
-            <span>Conjuring</span>
-        </div>
+      <!-- 7 schools -->
+      <div onclick="selectSchool('Druidry')">
+        <img src="assets/greenDruidry.webp" alt="Druidry Icon">
+        <span>Druidry</span>
+      </div>
+      <div onclick="selectSchool('Sorcery')">
+        <img src="assets/blueSorcery.webp" alt="Sorcery Icon">
+        <span>Sorcery</span>
+      </div>
+      <div onclick="selectSchool('Thaumaturgy')">
+        <img src="assets/goldThaumaturgy.webp" alt="Thaumaturgy Icon">
+        <span>Thaumaturgy</span>
+      </div>
+      <div onclick="selectSchool('Alchemy')">
+        <img src="assets/purpleAlchemy.webp" alt="Alchemy Icon">
+        <span>Alchemy</span>
+      </div>
+      <div onclick="selectSchool('Enchantment')">
+        <img src="assets/whiteEnchantment.webp" alt="Enchantment Icon">
+        <span>Enchantment</span>
+      </div>
+      <div onclick="selectSchool('Necromancy')">
+        <img src="assets/blackNecromancy.webp" alt="Necromancy Icon">
+        <span>Necromancy</span>
+      </div>
+      <div onclick="selectSchool('Conjuring')">
+        <img src="assets/redConjuring.webp" alt="Conjuring Icon">
+        <span>Conjuring</span>
+      </div>
     </div>
     <button onclick="closeSchoolSelection()">Close</button>
-</div>
+  </div>
 
+  <!-- ─────────────────────────────
+       3. Spell Selection Popup
+       (lists all spells from spell_cards.json)
+  ────────────────────────────── -->
+  <div id="spell-selection" class="card-selection-modal">
+    <h3>Select Spell</h3>
+    <!-- We'll populate this dynamically in script.js (openSpellListPopup) -->
+    <div id="spell-list" class="spell-list">
+      <!-- JavaScript: ALL_SPELLS.forEach(...) => .spell-option elements -->
+    </div>
+    <button onclick="closeSpellListPopup()">Close</button>
+  </div>
 
 </body>
 </html>

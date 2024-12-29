@@ -1,0 +1,31 @@
+Thaumaturgy;
+	Mana Fountain, +5 Mana when any player build a Tower
+	Pulsing Towers, Tower Cards = +1 VP
+
+Alchemy;
+	Master Alchemist, +1 VP / 2 Gold
+	Powerful Helper, When using a Familiar to score, gain +1 Gold/ Wizard and Familiar from its school of magic
+
+Druidry;
+	Energize, Increase the mana value of a Reagent by 3 before converting
+	Potent Servant, Familiar Cards = +1 VP
+
+Sorcery;
+	Divination, Enter the Dungeon as an action without a Familiar
+	Hoard Mana, +1 VP/ 7 Mana at the end of the game
+
+Enchantment;
+	Order of the Wand, Wizard Cards = +2 VP
+	Spirit Shield, Ignore one additional hit per Dungeon Expedition
+
+Necromancy;
+	Block Denizens, Denizens do not hit, and instead give you 1 Gold
+	Goblinoids do not hit, and instead give you 1 Gold
+
+Conjuring;
+	Treasure, Gain 2 Gold each time you enter the Dungeon
+	Summon Helper, Summon Familiar for 5 fewer Mana Cost
+
+Wild;
+	Arch-Mage, +3 VP/ unique Wizard card
+
