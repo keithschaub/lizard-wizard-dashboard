@@ -368,5 +368,66 @@ button.delete:hover {
   background-color: #218838;
 }
 
+/* If your .alchemy-bg sets background-color: #something, 
+   you can also set color: #someContrastColor.
+   Or if you literally want text = same purple as the background,
+   that means text and background are the same color (which might be invisible!).
+   Usually, we do a contrasting text color so it’s readable.
+   But let's assume you want them to match for effect.
+*/
+.spell-school-heading {
+  display: flex;          /* So icon + text align horizontally */
+  align-items: center;    
+  text-decoration: none;  /* remove underline if any default styling */
+  padding: 5px;
+}
+
+/* Example: If "alchemy-bg" is background: #e5ccff, 
+   let's set the text color to the same #7f00ff or something. 
+   Adjust based on your design. 
+*/
+.alchemy-bg {
+  background-color: #e5ccff; /* light purple */
+  color: #7f00ff;           /* deeper purple text */
+}
+
+.conjuring-bg {
+  background-color: #ffe5e5; /* light pinkish-red */
+  color: #ff3e3e;           /* more intense red text */
+}
+
+.druidry-bg {
+  background-color: #e5ffe5; /* light green */
+  color: #00a000;           /* more intense green text */
+}
+
+.enchantment-bg {
+  background-color: #ffffff; /* white */
+  color: #5f5f5f;           /* medium gray text (so it's visible) */
+}
+
+.necromancy-bg {
+  background-color: #f2f2f2; /* near-white gray */
+  color: #4d4d4d;           /* darker gray text */
+}
+
+.sorcery-bg {
+  background-color: #e5f0ff; /* light blue */
+  color: #005fff;           /* deeper blue text */
+}
+
+.thaumaturgy-bg {
+  background-color: #fff5e5; /* light creamy-orange */
+  color: #ff9500;           /* stronger orange text */
+}
+
+/* The icon size and spacing */
+.spell-school-icon {
+  width: 20px;       /* adjust as you like */
+  height: auto;      /* optional if you want a fixed height */
+  margin-right: 5px; /* spacing between icon and text */
+}
+
+
 
 

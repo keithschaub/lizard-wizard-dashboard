@@ -424,19 +424,36 @@ function selectCard(category) {
 }
 window.selectCard = selectCard;
 
+
+
 /**
  * openSpellListPopup:
  * Shows a grouped list of spells for the user to pick from.
  */
 function openSpellListPopup() {
   const spellListDiv = document.getElementById('spell-list');
+
   const grouped = groupSpellsBySchool(ALL_SPELLS);
   const sortedSchools = Object.keys(grouped).sort();
 
   let html = '';
+
   sortedSchools.forEach(school => {
-    html += `<div class="spell-school-heading">${school}</div>`;
+    // 1. This will set the same “bg” color for the heading as used on spells:
     const colorClass = schoolColorClass[school] || '';
+
+    // 2. Grab the icon path for this school
+    const iconPath = schoolIcons[school] || 'assets/defaultIcon.webp';
+
+    // 3. Build the heading with an <img> icon + school name
+    html += `
+      <div class="spell-school-heading ${colorClass}">
+        <img src="${iconPath}" alt="${school} icon" class="spell-school-icon" />
+        <span class="spell-school-text">${school}</span>
+      </div>
+    `;
+
+    // Now list the spells (same colorClass)
     grouped[school].forEach(spell => {
       html += `
         <div class="spell-option ${colorClass}" onclick="chooseSpell(${spell.id})">
@@ -449,6 +466,8 @@ function openSpellListPopup() {
   spellListDiv.innerHTML = html;
   document.getElementById('spell-selection').style.display = 'block';
 }
+
+
 
 /** 
  * closeSpellListPopup: hide the Spell List popup and reset
