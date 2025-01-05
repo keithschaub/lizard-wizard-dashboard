@@ -1,468 +1,660 @@
-// Wait for the DOM to fully load
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded.');
+/*******************************************
+ * 1. Global Variables
+ *******************************************/
+// We assume "db" is already defined from firebase-init.js
 
-    // -----------------------------
-    // 1. Firebase Initialization
-    // -----------------------------
-    const db = firebase.database();
+let allPlayers = [];       // Holds current players from DB
+let ALL_SPELLS = [];       // Loaded from spell_cards.json
+let deleteMode = false;    // Toggles delete mode for cards
+let currentPlayer = null;  // Which player is adding a card
+let selectedCategory = null; // "Wizard", "Tower", "Familiar", or "Spell"
 
-    // -----------------------------
-    // 2. Global Variables
-    // -----------------------------
-    let deleteMode = false;
-    let currentPlayer = null;    // Which player is adding cards
-    let selectedCategory = null; // "Wizard", "Tower", "Familiar", or "Spell"
-    
-    // We'll store all possible Spell cards (loaded from spell_cards.json) here
-    let ALL_SPELLS = [];
+// School of magic icons
+const schoolIcons = {
+  Druidry: 'assets/greenDruidry.webp',
+  Sorcery: 'assets/blueSorcery.webp',
+  Thaumaturgy: 'assets/goldThaumaturgy.webp',
+  Alchemy: 'assets/purpleAlchemy.webp',
+  Enchantment: 'assets/whiteEnchantment.webp',
+  Necromancy: 'assets/blackNecromancy.webp',
+  Conjuring: 'assets/redConjuring.webp'
+};
 
-    // School of magic icons
-    const schoolIcons = {
-        Druidry: 'assets/greenDruidry.webp',
-        Sorcery: 'assets/blueSorcery.webp',
-        Thaumaturgy: 'assets/goldThaumaturgy.webp',
-        Alchemy: 'assets/purpleAlchemy.webp',
-        Enchantment: 'assets/whiteEnchantment.webp',
-        Necromancy: 'assets/blackNecromancy.webp',
-        Conjuring: 'assets/redConjuring.webp'
-    };
-
-    // -----------------------------
-    // 3. Load the Spell Cards (from spell_cards.json)
-    // -----------------------------
-    // This assumes spell_cards.json is in the same folder as your index.html
-    fetch('spell_cards.json')
-        .then(response => response.json())
-        .then(data => {
-            ALL_SPELLS = data; 
-            console.log('Loaded spell cards:', ALL_SPELLS);
-        })
-        .catch(err => console.error('Error loading spell_cards.json:', err));
-
-    // -----------------------------
-    // 4. Name Editing (contenteditable)
-    // -----------------------------
-    document.addEventListener('blur', (e) => {
-        if (e.target.classList.contains('player-name')) {
-            const newName = e.target.innerText.trim();
-            const playerId = e.target.dataset.playerid;
-
-            if (newName.length > 0) {
-                db.ref(`players/${playerId}/name`).set(newName)
-                    .then(() => console.log(`Player ${playerId} renamed to "${newName}"`))
-                    .catch(err => console.error(err));
-            }
-        }
-    }, true);
-
-    // -----------------------------
-    // 5. Add Card Flow
-    // -----------------------------
-    function openAddPopup(playerId) {
-        currentPlayer = playerId;
-        document.getElementById('card-selection').style.display = 'block';
-    }
-    window.openAddPopup = openAddPopup;
-
-    function closeCardSelection() {
-        document.getElementById('card-selection').style.display = 'none';
-        currentPlayer = null;
-        selectedCategory = null;
-    }
-    window.closeCardSelection = closeCardSelection;
-
-    function closeSchoolSelection() {
-        document.getElementById('school-selection').style.display = 'none';
-        selectedCategory = null;
-    }
-    window.closeSchoolSelection = closeSchoolSelection;
-
-    /**
-     * Called when the user clicks “Wizard / Tower / Familiar / Spell”
-     */
-    function selectCard(category) {
-        if (!currentPlayer) return;
-        selectedCategory = category;
-
-        // Hide the “Category” popup
-        document.getElementById('card-selection').style.display = 'none';
-
-        if (category === 'Spell') {
-            // For Spell, we open the Spell List popup instead of the “school selection”
-            openSpellListPopup();
-        } else {
-            // For Wizard, Tower, Familiar, we still do the old “school selection” approach
-            document.getElementById('school-selection').style.display = 'block';
-        }
-    }
-    window.selectCard = selectCard;
-
-    /**
-     * openSpellListPopup:
-     * Renders a list of ALL_SPELLS by name. 
-     * User clicks one to select it => we store that entire object in the DB.
-     */
-    function openSpellListPopup() {
-    	const spellListDiv = document.getElementById('spell-list');
-    	// Build HTML for each spell in ALL_SPELLS
-    	let html = '';
-    	ALL_SPELLS.forEach(spell => {
-        	html += `
-            		<div class="spell-option" onclick="chooseSpell(${spell.id})">
-                		<strong>${spell.name}</strong>
-            		</div>
-        	`;
-    	});
-    	spellListDiv.innerHTML = html;
-    	document.getElementById('spell-selection').style.display = 'block';
-     }
+// Optional color classes for spells
+const schoolColorClass = {
+  Alchemy:     'alchemy-bg',
+  Conjuring:   'conjuring-bg',
+  Druidry:     'druidry-bg',
+  Enchantment: 'enchantment-bg',
+  Necromancy:  'necromancy-bg',
+  Sorcery:     'sorcery-bg',
+  Thaumaturgy: 'thaumaturgy-bg'
+};
 
 
-    function closeSpellListPopup() {
-        document.getElementById('spell-selection').style.display = 'none';
-        currentPlayer = null;
-        selectedCategory = null;
-    }
-    window.closeSpellListPopup = closeSpellListPopup;
+/*******************************************
+ * 2. Initialization on DOM Load
+ *******************************************/
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('[script.js] DOM fully loaded. Using db from firebase-init.js.');
 
-    /**
-     * chooseSpell(spellId):
-     * Find that spell in ALL_SPELLS, push it into player's spells array, 
-     * including name, school, customText. 
-     */
-    window.chooseSpell = function(spellId) {
-        const chosen = ALL_SPELLS.find(s => s.id === spellId);
-        if (!chosen || !currentPlayer) return;
+  // Load spells from JSON
+  try {
+    const response = await fetch('spell_cards.json');
+    ALL_SPELLS = await response.json();
+    console.log('[Initialization] Loaded spell cards:', ALL_SPELLS);
+  } catch (err) {
+    console.error('[Initialization] Error loading spell_cards.json:', err);
+  }
 
-        // Save to Firebase
-        db.ref(`players/${currentPlayer}/spells`).once('value')
-          .then(snap => {
-              const currentSpells = snap.val() || [];
-              // We'll store the entire chosen object
-              // If you want a new 'id' for the card in the DB, you can do Date.now() or such.
-              // For clarity, we’ll keep the same 'id' that was in spell_cards.json.
-              currentSpells.push({ 
-                  id: chosen.id,
-                  school: chosen.school,
-                  name: chosen.name,
-                  customText: chosen.customText
-              });
-              return db.ref(`players/${currentPlayer}/spells`).set(currentSpells);
-          })
-          .then(() => {
-              console.log(`Spell "${chosen.name}" added to ${currentPlayer}.`);
-              closeSpellListPopup();
-          })
-          .catch(err => console.error(err));
-    };
+  // Fetch all players and render the dashboard
+  await fetchAllPlayers();
+  renderDashboard();
 
-    // For non-spell categories (Wizard/Tower/Familiar), we do the old approach:
-    function selectSchool(school) {
-        if (!currentPlayer || !selectedCategory) return;
-        const categoryKey = selectedCategory.toLowerCase() + 's';
+  // Set up global event listeners
+  setupGlobalEventListeners();
+});
 
-        db.ref(`players/${currentPlayer}/${categoryKey}`).once('value')
-          .then(snap => {
-              const cards = snap.val() || [];
-              cards.push({ id: Date.now(), school });
-              return db.ref(`players/${currentPlayer}/${categoryKey}`).set(cards);
-          })
-          .then(() => {
-              console.log(`Added ${selectedCategory} of school ${school} to ${currentPlayer}`);
-              closeSchoolSelection();
-          })
-          .catch(err => console.error(err));
-    }
-    window.selectSchool = selectSchool;
 
-    // -----------------------------
-    // 6. Delete Mode
-    // -----------------------------
-    function deleteLastItem(playerId) {
-        deleteMode = !deleteMode;
-        console.log(deleteMode ? 'Delete mode ON' : 'Delete mode OFF');
-
-        // Highlight all card-items for this player
-        document.querySelectorAll(`#${playerId} .card-item`).forEach(card => {
-            if (deleteMode) {
-                card.classList.add('deletable-card');
-                card.onclick = () => {
-                    const cardId = card.dataset.id;
-                    const cat = card.dataset.category; // wizards/towers/familiars/spells
-                    confirmDeleteCard(playerId, cat, cardId);
-                };
-            } else {
-                card.classList.remove('deletable-card');
-                card.onclick = null;
-            }
-        });
-    }
-    window.deleteLastItem = deleteLastItem;
-
-    function confirmDeleteCard(playerId, category, cardId) {
-        db.ref(`players/${playerId}/${category}`).once('value')
-          .then(snap => {
-              const cards = snap.val() || [];
-              const updated = cards.filter(c => String(c.id) !== String(cardId));
-              return db.ref(`players/${playerId}/${category}`).set(updated);
-          })
-          .then(() => {
-              console.log(`Deleted card ${cardId} from ${category}`);
-              deleteMode = false;
-          })
-          .catch(err => console.error(err));
-    }
-    window.confirmDeleteCard = confirmDeleteCard;
-
-    // -----------------------------
-    // 7. Compute Score
-    // -----------------------------
-    // Same scoring logic as before
-    function computeScore(player) {
-        if (!player) return 0;
-
-        const wizards   = Array.isArray(player.wizards)   ? player.wizards   : [];
-        const towers    = Array.isArray(player.towers)    ? player.towers    : [];
-        const familiars = Array.isArray(player.familiars) ? player.familiars : [];
-        const spells    = Array.isArray(player.spells)    ? player.spells    : [];
-
-        const wizardCount = {};
-        const towerCount  = {};
-        const spellCount  = {};
-
-        function inc(obj, s) {
-            obj[s] = (obj[s] || 0) + 1;
-        }
-
-        wizards.forEach(w => inc(wizardCount, w.school));
-        towers.forEach(t => inc(towerCount, t.school));
-        spells.forEach(s => inc(spellCount, s.school));
-
-        const allSchools = new Set([
-            ...Object.keys(wizardCount),
-            ...Object.keys(towerCount),
-            ...Object.keys(spellCount),
-        ]);
-
-        let totalPoints = 0;
-        let leftoverW = 0;
-        let leftoverT = 0;
-
-        allSchools.forEach(sch => {
-            const wCount = wizardCount[sch] || 0;
-            const tCount = towerCount[sch]  || 0;
-            const sCount = spellCount[sch]  || 0;
-
-            // same-school pairs
-            const samePairs = Math.min(wCount, tCount);
-            totalPoints += samePairs * 10;
-
-            // leftover after same-school pairing
-            leftoverW += (wCount - samePairs);
-            leftoverT += (tCount - samePairs);
-
-            // spells bonus
-            if (samePairs > 0 && sCount > 0) {
-                totalPoints += sCount * 5;
-            }
-        });
-
-        // mismatch pairs
-        const mismatch = Math.min(leftoverW, leftoverT);
-        totalPoints += mismatch * 5;
-
-        leftoverW -= mismatch;
-        leftoverT -= mismatch;
-
-        // leftover single wizard/tower => 1 point
-        totalPoints += leftoverW + leftoverT;
-
-        // familiars not scored in your rules => 0
-        return totalPoints;
-    }
-
-    // -----------------------------
-    // 8. Group & Render (Pivot Table)
-    // -----------------------------
-    function gatherAndGroupBySchool(player) {
-        const categories = ['wizards', 'towers', 'familiars', 'spells'];
-        const grouped = {};
-
-        categories.forEach(cat => {
-            if (Array.isArray(player[cat])) {
-                player[cat].forEach(card => {
-                    const sch = card.school || 'Unknown';
-                    if (!grouped[sch]) {
-                        grouped[sch] = {
-                            wizards: [],
-                            towers: [],
-                            familiars: [],
-                            spells: []
-                        };
-                    }
-                    grouped[sch][cat].push(card);
-                });
-            }
-        });
-        return grouped;
-    }
-
-/**
- * Render a single card.
- * - For NON-spell cards, we just show the school name + icon.
- * - For Spell cards, we show two lines: (1) school, (2) name, plus a clickable
- *   that opens an alert with the custom text (useful on iPhone where no hover).
- */
-function renderCardItem(card, category) {
-    const iconPath = schoolIcons[card.school] || 'assets/defaultIcon.webp';
-    const isSpell = (category === 'spells');
-
-    // If it's a Spell and has custom text, we build an onclick to alert the text.
-    let onClickAttr = '';
-    if (isSpell && card.customText) {
-        // Escape quotes so we don't break the string
-        const escapedText = card.customText
-            .replace(/'/g, "\\'")
-            .replace(/"/g, '\\"');
-        onClickAttr = `onclick="alert('${escapedText}')"`; 
-    }
-
-    let htmlContent = `
-        <div
-            class="card-item"
-            data-id="${card.id}"
-            data-category="${category}"
-            ${onClickAttr}
-        >
-            <img src="${iconPath}" alt="${card.school}" class="card-icon">
-            <div class="card-details">
-                <div class="card-school">${card.school}</div>
-    `;
-
-    // For spells, we add a second line with the card's name
-    if (isSpell && card.name) {
-        htmlContent += `
-                <div class="spell-name">${card.name}</div>
-        `;
-    }
-
-    htmlContent += `
-            </div>
-        </div>
-    `;
-
-    return htmlContent;
+/*******************************************
+ * 3. Fetch & Store Players
+ *******************************************/
+function fetchAllPlayers() {
+  return db.ref('players/').once('value')
+    .then(snapshot => {
+      const newList = [];
+      snapshot.forEach(childSnap => {
+        const data = childSnap.val() || {};
+        // Attach the DB key (e.g. "player1") as "id"
+        data.id = childSnap.key;
+        newList.push(data);
+      });
+      allPlayers = newList;
+      console.log('[fetchAllPlayers] allPlayers:', allPlayers);
+      return allPlayers;
+    })
+    .catch(err => {
+      console.error('[fetchAllPlayers] Error:', err);
+      throw err;
+    });
 }
 
 
-    function renderCategoryCell(cards, category) {
-        if (!cards || cards.length === 0) return '';
-        return cards.map(c => renderCardItem(c, category)).join('');
+/*******************************************
+ * 4. Compute & Update Scores
+ *******************************************/
+function computeScore(player, allPlayersArray) {
+  if (!player) {
+    console.warn('[computeScore] Invalid player data:', player);
+    return 0;
+  }
+
+  // Safely handle arrays
+  const wizards   = Array.isArray(player.wizards)   ? player.wizards   : [];
+  const towers    = Array.isArray(player.towers)    ? player.towers    : [];
+  const familiars = Array.isArray(player.familiars) ? player.familiars : [];
+  const spells    = Array.isArray(player.spells)    ? player.spells    : [];
+
+  // Count objects
+  const wizardCount = {};
+  const towerCount  = {};
+  const spellCount  = {};
+
+  function inc(obj, school) {
+    obj[school] = (obj[school] || 0) + 1;
+  }
+
+  // Tally up each type
+  wizards.forEach(w => inc(wizardCount, w.school));
+  towers.forEach(t => inc(towerCount, t.school));
+  spells.forEach(s => inc(spellCount, s.school));
+
+  // Combine schools from wizards/towers/spells
+  const allSchools = new Set([
+    ...Object.keys(wizardCount),
+    ...Object.keys(towerCount),
+    ...Object.keys(spellCount),
+  ]);
+
+  let totalPoints = 0;
+  let leftoverW = 0;
+  let leftoverT = 0;
+
+  allSchools.forEach(sch => {
+    const wCount = wizardCount[sch] || 0;
+    const tCount = towerCount[sch] || 0;
+    const sCount = spellCount[sch] || 0;
+
+    // +10 per Wizard/Tower matching pair
+    const samePairs = Math.min(wCount, tCount);
+    totalPoints += samePairs * 10;
+
+    leftoverW += (wCount - samePairs);
+    leftoverT += (tCount - samePairs);
+
+    // If at least one Wizard/Tower pair, each Spell = +5
+    if (samePairs > 0 && sCount > 0) {
+      totalPoints += sCount * 5;
     }
+  });
 
-    // -----------------------------
-    // 9. Render a Single Player Tile
-    // -----------------------------
-    function renderPlayerRow(playerId) {
-        db.ref(`players/${playerId}`).once('value').then(snapshot => {
-            const player = snapshot.val();
-            if (!player) return;
+  // Mismatched Wizard/Tower => +5 if they can pair across schools
+  const mismatch = Math.min(leftoverW, leftoverT);
+  totalPoints += mismatch * 5;
+  leftoverW -= mismatch;
+  leftoverT -= mismatch;
 
-            const tile = document.getElementById(playerId);
-            if (!tile) return;
+  // Any leftover wizards/towers => +1 each
+  totalPoints += leftoverW + leftoverT;
 
-            // compute new score
-            const newScore = computeScore(player);
-            if (player.score !== newScore) {
-                db.ref(`players/${playerId}/score`).set(newScore);
-            }
+  // Gold => +1 each
+  const goldPoints = parseInt(player.gold) || 0;
+  totalPoints += goldPoints;
 
-            const playerName = player.name || playerId;
-            tile.innerHTML = `
-                <h3>
-                  <span 
-                    class="player-name"
-                    contenteditable="true"
-                    data-playerid="${playerId}"
-                  >
-                    ${playerName}
-                  </span>
-                  (Score: <span class="player-score">${newScore}</span>)
-                </h3>
-                <div class="cards-container"></div>
-                <div class="button-container">
-                  <button onclick="openAddPopup('${playerId}')">Add</button>
-                  <button onclick="deleteLastItem('${playerId}')">Delete</button>
-                </div>
-            `;
+  // Achievements => +10 each
+  const achvPoints = (parseInt(player.achievements) || 0) * 10;
+  totalPoints += achvPoints;
 
-            // Gather cards by school => pivot table
-            const grouped = gatherAndGroupBySchool(player);
-            const allSchools = Object.keys(grouped).sort();
+  // Items => top gets +10, second gets +5
+  const itemCounts = allPlayersArray.map(p => parseInt(p.dungeonItems) || 0);
+  const sortedItems = [...itemCounts].sort((a, b) => b - a);
+  const maxItems = sortedItems[0] || 0;
+  const secondMax = sortedItems.find(cnt => cnt < maxItems) || 0;
 
-            const container = tile.querySelector('.cards-container');
-            if (allSchools.length === 0) {
-                container.innerHTML = `<div class="no-cards">No cards</div>`;
-                return;
-            }
+  const playerItems = parseInt(player.dungeonItems) || 0;
+  if (playerItems === maxItems && maxItems > 0) {
+    totalPoints += 10; // top
+  } else if (playerItems === secondMax && secondMax > 0) {
+    totalPoints += 5; // second
+  }
 
-            let tableHTML = `
-                <table class="cards-table">
-                    <thead>
-                        <tr>
-                            <th>Wizards</th>
-                            <th>Towers</th>
-                            <th>Familiars</th>
-                            <th>Spells</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+  return totalPoints;
+}
 
-            allSchools.forEach(sch => {
-                const catObj = grouped[sch];
-                tableHTML += `
-                    <tr>
-                        <td>${renderCategoryCell(catObj.wizards, 'wizards')}</td>
-                        <td>${renderCategoryCell(catObj.towers, 'towers')}</td>
-                        <td>${renderCategoryCell(catObj.familiars, 'familiars')}</td>
-                        <td>${renderCategoryCell(catObj.spells, 'spells')}</td>
-                    </tr>
-                `;
-            });
+function updateScores() {
+  const updates = {};
+  allPlayers.forEach(player => {
+    const newScore = computeScore(player, allPlayers);
+    updates[`players/${player.id}/score`] = newScore;
+  });
 
-            tableHTML += `
-                    </tbody>
-                </table>
-            `;
+  return db.ref().update(updates)
+    .then(() => console.log('[updateScores] All scores updated.'))
+    .catch(err => console.error('[updateScores] Error:', err));
+}
 
-            container.innerHTML = tableHTML;
-        });
+
+/*******************************************
+ * 5. Rendering the Dashboard
+ *******************************************/
+function renderDashboard() {
+  console.log('[renderDashboard] Start');
+  const dash = document.getElementById('dashboard');
+  dash.innerHTML = ''; // Clear out old content
+
+  allPlayers.forEach(player => {
+    // 'player.id' is "player1", etc. 'player.name' is "Keith" or whatever
+    const tile = document.createElement('div');
+    tile.id = player.id;
+    tile.className = 'player-tile';
+
+    tile.innerHTML = `
+      <h3>
+        <span class="player-name"
+              contenteditable="true"
+              data-playerid="${player.id}">
+          ${player.name || player.id}
+        </span>
+        (Score: <span class="player-score">${player.score || 0}</span>)
+
+        <span class="gold-value"
+              contenteditable="true"
+              data-playerid="${player.id}"
+              data-field="gold"
+              onclick="highlightText(this)">
+          ${player.gold || 0}
+        </span> Gold /
+
+        <span class="items-value"
+              contenteditable="true"
+              data-playerid="${player.id}"
+              data-field="dungeonItems"
+              onclick="highlightText(this)">
+          ${player.dungeonItems || 0}
+        </span> Items /
+
+        <span class="achv-value"
+              contenteditable="true"
+              data-playerid="${player.id}"
+              data-field="achievements"
+              onclick="highlightText(this)">
+          ${player.achievements || 0}
+        </span> Achv
+      </h3>
+
+      <div class="cards-container"></div>
+
+      <div class="button-container">
+        <button onclick="openAddPopup('${player.id}')">Add</button>
+        <button onclick="deleteLastItem('${player.id}')">Delete</button>
+      </div>
+    `;
+
+    dash.appendChild(tile);
+
+    // Render the pivot table for wizards/towers/familiars/spells
+    const container = tile.querySelector('.cards-container');
+    renderPlayerCards(container, player);
+  });
+
+  console.log('[renderDashboard] Done');
+}
+
+function renderPlayerCards(container, player) {
+  const grouped = gatherAndGroupBySchool(player);
+  const allSchools = Object.keys(grouped).sort();
+
+  if (allSchools.length === 0) {
+    container.innerHTML = '<div class="no-cards">No cards</div>';
+    return;
+  }
+
+  let tableHTML = `
+    <table class="cards-table">
+      <thead>
+        <tr>
+          <th>Wizards</th>
+          <th>Towers</th>
+          <th>Familiars</th>
+          <th>Spells</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  allSchools.forEach(sch => {
+    const catObj = grouped[sch];
+    tableHTML += `
+      <tr>
+        <td>${renderCategoryCell(catObj.wizards, 'wizards')}</td>
+        <td>${renderCategoryCell(catObj.towers, 'towers')}</td>
+        <td>${renderCategoryCell(catObj.familiars, 'familiars')}</td>
+        <td>${renderCategoryCell(catObj.spells, 'spells')}</td>
+      </tr>
+    `;
+  });
+
+  tableHTML += `</tbody></table>`;
+  container.innerHTML = tableHTML;
+}
+
+function gatherAndGroupBySchool(player) {
+  const categories = ['wizards', 'towers', 'familiars', 'spells'];
+  const grouped = {};
+
+  categories.forEach(cat => {
+    if (Array.isArray(player[cat])) {
+      player[cat].forEach(card => {
+        const sch = card.school || 'Unknown';
+        if (!grouped[sch]) {
+          grouped[sch] = { wizards: [], towers: [], familiars: [], spells: [] };
+        }
+        grouped[sch][cat].push(card);
+      });
     }
+  });
 
-    // -----------------------------
-    // 10. Render the Entire Dashboard
-    // -----------------------------
-    function renderDashboard() {
-        // Listen for changes on 'players'
-        db.ref('players').on('value', snapshot => {
-            const dash = document.getElementById('dashboard');
-            dash.innerHTML = '';
+  return grouped;
+}
 
-            snapshot.forEach(playerSnapshot => {
-                const playerId = playerSnapshot.key;
-                const playerTile = document.createElement('div');
-                playerTile.id = playerId;
-                playerTile.className = 'player-tile';
-                dash.appendChild(playerTile);
+function renderCategoryCell(cards, category) {
+  if (!cards || cards.length === 0) return '';
+  return cards.map(c => renderCardItem(c, category)).join('');
+}
 
-                // Render each player's row
-                renderPlayerRow(playerId);
-            });
-        });
+function renderCardItem(card, category) {
+  const iconPath = schoolIcons[card.school] || 'assets/defaultIcon.webp';
+  const isSpell = (category === 'spells');
+
+  let onClickAttr = '';
+  if (isSpell && card.customText) {
+    const escapedText = card.customText
+      .replace(/'/g, "\\'")
+      .replace(/"/g, '\\"');
+    onClickAttr = `onclick="alert('${escapedText}')"`; 
+  }
+
+  return `
+    <div class="card-item"
+         data-id="${card.id}"
+         data-category="${category}"
+         ${onClickAttr}>
+      <img src="${iconPath}" alt="${card.school}" class="card-icon">
+      <div class="card-details">
+        <div class="card-school">${card.school}</div>
+        ${
+          isSpell && card.name
+            ? `<div class="spell-name">${card.name}</div>`
+            : ''
+        }
+      </div>
+    </div>
+  `;
+}
+
+
+/*******************************************
+ * 6. Global Event Listeners
+ *******************************************/
+function setupGlobalEventListeners() {
+  // Listen for blur events on gold, items, achievements
+  document.addEventListener('blur', handleEditableBlur, true);
+}
+
+function handleEditableBlur(e) {
+  const target = e.target;
+  console.log('[handleEditableBlue] blur fired!', e.target);
+
+  if (!['gold-value', 'items-value', 'achv-value'].some(cls => target.classList.contains(cls))) {
+    return;
+  }
+
+  const playerId = target.dataset.playerid;
+  const field    = target.dataset.field; // "gold", "dungeonItems", "achievements"
+  const newValue = parseInt(target.innerText.trim(), 10) || 0;
+
+  if (!playerId || !field) return;
+
+  db.ref(`players/${playerId}/${field}`).set(newValue)
+    .then(() => {
+      // Optionally you can chain everything...
+      return fetchAllPlayers();
+    })
+    .then(() => updateScores())
+    .then(() => {
+      // Re-render if you want to see an immediate update *before* the page reload
+      renderDashboard();
+
+      // Then force a full page reload
+      window.location.reload();
+    })
+    .catch(err => console.error('[handleEditableBlur] Error:', err));
+}
+
+
+
+/*******************************************
+ * 7. Add / Delete Card Flow
+ *******************************************/
+function openAddPopup(playerId) {
+  currentPlayer = playerId;
+  document.getElementById('card-selection').style.display = 'block';
+}
+window.openAddPopup = openAddPopup;
+
+function closeCardSelection() {
+  document.getElementById('card-selection').style.display = 'none';
+  currentPlayer = null;
+  selectedCategory = null;
+}
+window.closeCardSelection = closeCardSelection;
+
+function closeSchoolSelection() {
+  document.getElementById('school-selection').style.display = 'none';
+  selectedCategory = null;
+}
+window.closeSchoolSelection = closeSchoolSelection;
+
+/**
+ * selectCard:
+ * Called when user clicks "Wizard" / "Tower" / "Familiar" / "Spell" in the "Add" popup.
+ */
+function selectCard(category) {
+  if (!currentPlayer) return;
+  selectedCategory = category;
+
+  // Hide the Category popup
+  document.getElementById('card-selection').style.display = 'none';
+
+  if (category === 'Spell') {
+    openSpellListPopup();
+  } else {
+    document.getElementById('school-selection').style.display = 'block';
+  }
+}
+window.selectCard = selectCard;
+
+/**
+ * openSpellListPopup:
+ * Shows a grouped list of spells for the user to pick from.
+ */
+function openSpellListPopup() {
+  const spellListDiv = document.getElementById('spell-list');
+  const grouped = groupSpellsBySchool(ALL_SPELLS);
+  const sortedSchools = Object.keys(grouped).sort();
+
+  let html = '';
+  sortedSchools.forEach(school => {
+    html += `<div class="spell-school-heading">${school}</div>`;
+    const colorClass = schoolColorClass[school] || '';
+    grouped[school].forEach(spell => {
+      html += `
+        <div class="spell-option ${colorClass}" onclick="chooseSpell(${spell.id})">
+          <strong>${spell.name}</strong>
+        </div>
+      `;
+    });
+  });
+
+  spellListDiv.innerHTML = html;
+  document.getElementById('spell-selection').style.display = 'block';
+}
+
+/** 
+ * closeSpellListPopup: hide the Spell List popup and reset
+ */
+function closeSpellListPopup() {
+  document.getElementById('spell-selection').style.display = 'none';
+  currentPlayer = null;
+  selectedCategory = null;
+}
+window.closeSpellListPopup = closeSpellListPopup;
+
+/**
+ * groupSpellsBySchool: 
+ * Utility to group all spells by their "school" for the popup.
+ */
+function groupSpellsBySchool(spellArray) {
+  const groups = {};
+  spellArray.forEach(spell => {
+    const sch = spell.school || 'Unknown';
+    if (!groups[sch]) groups[sch] = [];
+    groups[sch].push(spell);
+  });
+  // Sort each group by spell name
+  Object.keys(groups).forEach(school => {
+    groups[school].sort((a, b) => a.name.localeCompare(b.name));
+  });
+  return groups;
+}
+
+/**
+ * chooseSpell:
+ * Called when the user selects a spell from the Spell popup.
+ * We push that spell to the player's "spells" array in Firebase,
+ * then do a full refresh (fetchAllPlayers -> updateScores -> renderDashboard)
+ */
+window.chooseSpell = function(spellId) {
+  const chosen = ALL_SPELLS.find(s => s.id === spellId);
+  if (!chosen || !currentPlayer) return;
+
+  // 1. Read existing spells
+  db.ref(`players/${currentPlayer}/spells`).once('value')
+    .then(snap => {
+      const spells = snap.val() || [];
+      spells.push({
+        id: chosen.id,
+        school: chosen.school,
+        name: chosen.name,
+        customText: chosen.customText
+      });
+      // 2. Write updated array
+      return db.ref(`players/${currentPlayer}/spells`).set(spells);
+    })
+    // 3. Refresh: fetch new data, update scores, re-render
+    .then(() => fetchAllPlayers())
+    .then(() => updateScores())
+    .then(() => {
+      renderDashboard();
+      window.location.reload(); // Force a full page reload
+      closeSpellListPopup(); // Close the popup after everything
+    })
+    .catch(err => console.error('[chooseSpell] Error:', err));
+};
+
+/**
+ * selectSchool:
+ * Called when user chooses a school for a Wizard/Tower/Familiar card.
+ */
+function selectSchool(school) {
+  if (!currentPlayer || !selectedCategory) return;
+  const categoryKey = selectedCategory.toLowerCase() + 's'; 
+  // e.g. "wizards", "towers", or "familiars"
+
+  // 1. Read existing array
+  db.ref(`players/${currentPlayer}/${categoryKey}`).once('value')
+    .then(snap => {
+      const arr = snap.val() || [];
+      // Add a simple object with an ID and the school
+      arr.push({ id: Date.now(), school });
+      // 2. Write updated array
+      return db.ref(`players/${currentPlayer}/${categoryKey}`).set(arr);
+    })
+    // 3. Refresh
+    .then(() => fetchAllPlayers())
+    .then(() => updateScores())
+    .then(() => {
+      renderDashboard();
+      window.location.reload(); // Force a full page reload
+      closeSchoolSelection(); 
+    })
+    .catch(err => console.error('[selectSchool] Error:', err));
+}
+window.selectSchool = selectSchool;
+
+/*******************************************
+ * 8. Delete Mode
+ *******************************************/
+/**
+ * deleteLastItem:
+ * Toggles "delete mode" and highlights the player's cards 
+ * so the user can click which card to remove.
+ */
+function deleteLastItem(playerId) {
+  deleteMode = !deleteMode;
+  console.log(deleteMode ? 'Delete mode ON' : 'Delete mode OFF');
+
+  // Toggle highlight on that player's card items
+  document.querySelectorAll(`#${playerId} .card-item`).forEach(card => {
+    if (deleteMode) {
+      card.classList.add('deletable-card');
+      // On click, attempt to delete that specific card
+      card.onclick = () => {
+        const cardId = card.dataset.id;        // e.g. "168312311"
+        const cat    = card.dataset.category;  // e.g. "wizards"
+        confirmDeleteCard(playerId, cat, cardId);
+      };
+    } else {
+      card.classList.remove('deletable-card');
+      card.onclick = null;
     }
+  });
+}
+window.deleteLastItem = deleteLastItem;
 
-    // Initialize
-    renderDashboard();
-});
+/**
+ * confirmDeleteCard:
+ * Actually removes the chosen card from the array in Firebase,
+ * then does a full refresh so the UI updates.
+ */
+function confirmDeleteCard(playerId, category, cardId) {
+  // 1. Read the player's [category] array (wizards/towers/familiars/spells)
+  db.ref(`players/${playerId}/${category}`).once('value')
+    .then(snap => {
+      const cards = snap.val() || [];
+      // Filter out the card with matching ID
+      const filtered = cards.filter(c => String(c.id) !== String(cardId));
+      // 2. Write updated array
+      return db.ref(`players/${playerId}/${category}`).set(filtered);
+    })
+    // 3. Refresh
+    .then(() => fetchAllPlayers())
+    .then(() => updateScores())
+    .then(() => {
+      renderDashboard();
+      window.location.reload(); // Force a full page reload
+      deleteMode = false;
+    })
+    .catch(err => console.error('[confirmDeleteCard] Error:', err));
+}
+window.confirmDeleteCard = confirmDeleteCard;
+
+
+
+/*******************************************
+ * 8. Delete Mode
+ *******************************************/
+function deleteLastItem(playerId) {
+  deleteMode = !deleteMode;
+  console.log(deleteMode ? 'Delete mode ON' : 'Delete mode OFF');
+
+  // Toggle highlight on that player's card items
+  document.querySelectorAll(`#${playerId} .card-item`).forEach(card => {
+    if (deleteMode) {
+      card.classList.add('deletable-card');
+      card.onclick = () => {
+        const cardId = card.dataset.id;
+        const cat = card.dataset.category; 
+        confirmDeleteCard(playerId, cat, cardId);
+      };
+    } else {
+      card.classList.remove('deletable-card');
+      card.onclick = null;
+    }
+  });
+}
+window.deleteLastItem = deleteLastItem;
+
+function confirmDeleteCard(playerId, category, cardId) {
+  db.ref(`players/${playerId}/${category}`).once('value')
+    .then(snap => {
+      const cards = snap.val() || [];
+      const filtered = cards.filter(c => String(c.id) !== String(cardId));
+      return db.ref(`players/${playerId}/${category}`).set(filtered);
+    })
+    .then(() => fetchAllPlayers())
+    .then(() => updateScores())
+    .then(() => {
+      renderDashboard();
+      window.location.reload(); // Force a full page reload
+      deleteMode = false;
+    })
+    .catch(err => console.error('[confirmDeleteCard] Error:', err));
+}
+window.confirmDeleteCard = confirmDeleteCard;
+
+
+/*******************************************
+ * 9. Utility: highlightText
+ *******************************************/
+function highlightText(element) {
+  if (document.createRange && window.getSelection) {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
+window.highlightText = highlightText;
+
