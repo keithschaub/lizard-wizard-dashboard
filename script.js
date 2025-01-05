@@ -353,32 +353,46 @@ function setupGlobalEventListeners() {
 
 function handleEditableBlur(e) {
   const target = e.target;
-  console.log('[handleEditableBlue] blur fired!', e.target);
 
-  if (!['gold-value', 'items-value', 'achv-value'].some(cls => target.classList.contains(cls))) {
-    return;
+  // CASE 1: Gold / Items / Achv fields
+  if (['gold-value', 'items-value', 'achv-value'].some(cls => target.classList.contains(cls))) {
+    const playerId = target.dataset.playerid;
+    const field = target.dataset.field; // "gold", "dungeonItems", or "achievements"
+    const newValue = parseInt(target.innerText.trim(), 10) || 0;
+
+    if (!playerId || !field) return;
+
+    db.ref(`players/${playerId}/${field}`).set(newValue)
+      .then(() => fetchAllPlayers())
+      .then(() => updateScores())
+      .then(() => {
+        renderDashboard();
+        // If you still want a forced page reload:
+        window.location.reload();
+      })
+      .catch(err => console.error('[handleEditableBlur] Error:', err));
   }
+  // CASE 2: Player Name
+  else if (target.classList.contains('player-name')) {
+    const playerId = target.dataset.playerid;
+    if (!playerId) return;
 
-  const playerId = target.dataset.playerid;
-  const field    = target.dataset.field; // "gold", "dungeonItems", "achievements"
-  const newValue = parseInt(target.innerText.trim(), 10) || 0;
+    const newName = target.innerText.trim(); // name is a string
+    if (!newName) {
+      // optional: prevent empty name if you like
+      return;
+    }
 
-  if (!playerId || !field) return;
-
-  db.ref(`players/${playerId}/${field}`).set(newValue)
-    .then(() => {
-      // Optionally you can chain everything...
-      return fetchAllPlayers();
-    })
-    .then(() => updateScores())
-    .then(() => {
-      // Re-render if you want to see an immediate update *before* the page reload
-      renderDashboard();
-
-      // Then force a full page reload
-      window.location.reload();
-    })
-    .catch(err => console.error('[handleEditableBlur] Error:', err));
+    db.ref(`players/${playerId}/name`).set(newName)
+      .then(() => fetchAllPlayers())
+      .then(() => updateScores())
+      .then(() => {
+        renderDashboard();
+        // If you still want a forced page reload:
+        window.location.reload();
+      })
+      .catch(err => console.error('[handleEditableBlur] Name update error:', err));
+  }
 }
 
 
@@ -676,4 +690,11 @@ function highlightText(element) {
   }
 }
 window.highlightText = highlightText;
+
+
+document.addEventListener('focusin', e => {
+  if (e.target.classList.contains('player-name')) {
+    highlightText(e.target);
+  }
+}, true);
 
