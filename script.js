@@ -1,3 +1,5 @@
+
+
 /*******************************************
  * 1. Global Variables
  *******************************************/
@@ -40,11 +42,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Load spells from JSON
   try {
-    const response = await fetch('spell_cards.json');
+    const response = await fetch('spell_cards_updated.json');
     ALL_SPELLS = await response.json();
-    console.log('[Initialization] Loaded spell cards:', ALL_SPELLS);
+    console.log('[Initialization] Loaded updated spell cards:', ALL_SPELLS);
   } catch (err) {
-    console.error('[Initialization] Error loading spell_cards.json:', err);
+    console.error('[Initialization] Error loading new spell_cards_updated.json:', err);
   }
 
   // Fetch all players and render the dashboard
@@ -308,38 +310,44 @@ function gatherAndGroupBySchool(player) {
 }
 
 function renderCategoryCell(cards, category) {
+  console.log('[renderCategoryCell] Cards:', cards, 'Category:', category);
   if (!cards || cards.length === 0) return '';
   return cards.map(c => renderCardItem(c, category)).join('');
 }
 
 function renderCardItem(card, category) {
-  const iconPath = schoolIcons[card.school] || 'assets/defaultIcon.webp';
-  const isSpell = (category === 'spells');
+    const iconPath = schoolIcons[card.school] || 'assets/defaultIcon.webp';
+    const isSpell = (category === 'spells');
 
-  let onClickAttr = '';
-  if (isSpell && card.customText) {
-    const escapedText = card.customText
-      .replace(/'/g, "\\'")
-      .replace(/"/g, '\\"');
-    onClickAttr = `onclick="alert('${escapedText}')"`; 
-  }
+    let onClickAttr = '';
 
-  return `
-    <div class="card-item"
-         data-id="${card.id}"
-         data-category="${category}"
-         ${onClickAttr}>
-      <img src="${iconPath}" alt="${card.school}" class="card-icon">
-      <div class="card-details">
-        <div class="card-school">${card.school}</div>
-        ${
-          isSpell && card.name
-            ? `<div class="spell-name">${card.name}</div>`
-            : ''
-        }
-      </div>
-    </div>
-  `;
+    console.log(`[renderCardItem] Card Object:`, card);
+    if (!card.imagePath) {
+        console.warn(`[renderCardItem] Missing imagePath   ${card.imagePath} for card: ${card.name}`);
+    }
+
+    if (isSpell && card.imagePath) {
+        onClickAttr = `onclick="openSpellCardModal('${card.imagePath}')"`; 
+    }
+
+    console.log(`[renderCardItem] Name: ${card.name}, School: ${card.school}, Image Path: ${card.imagePath}, OnClick: ${onClickAttr}`);
+
+    return `
+        <div class="card-item"
+             data-id="${card.id}"
+             data-category="${category}"
+             ${onClickAttr}>
+          <img src="${iconPath}" alt="${card.school}" class="card-icon">
+          <div class="card-details">
+            <div class="card-school">${card.school}</div>
+            ${
+                isSpell && card.name
+                    ? `<div class="spell-name">${card.name}</div>`
+                    : ''
+            }
+          </div>
+        </div>
+    `;
 }
 
 
@@ -517,19 +525,22 @@ function groupSpellsBySchool(spellArray) {
  * We push that spell to the player's "spells" array in Firebase,
  * then do a full refresh (fetchAllPlayers -> updateScores -> renderDashboard)
  */
-window.chooseSpell = function(spellId) {
-  const chosen = ALL_SPELLS.find(s => s.id === spellId);
+window.chooseSpell = function (spellId) {
+  const chosen = ALL_SPELLS.find((s) => s.id === spellId);
   if (!chosen || !currentPlayer) return;
 
   // 1. Read existing spells
-  db.ref(`players/${currentPlayer}/spells`).once('value')
-    .then(snap => {
+  db.ref(`players/${currentPlayer}/spells`)
+    .once('value')
+    .then((snap) => {
       const spells = snap.val() || [];
+      // Push the full spell object, including imagePath
       spells.push({
         id: chosen.id,
         school: chosen.school,
         name: chosen.name,
-        customText: chosen.customText
+        customText: chosen.customText,
+        imagePath: chosen.imagePath, // Include imagePath here
       });
       // 2. Write updated array
       return db.ref(`players/${currentPlayer}/spells`).set(spells);
@@ -539,10 +550,9 @@ window.chooseSpell = function(spellId) {
     .then(() => updateScores())
     .then(() => {
       renderDashboard();
-      window.location.reload(); // Force a full page reload
       closeSpellListPopup(); // Close the popup after everything
     })
-    .catch(err => console.error('[chooseSpell] Error:', err));
+    .catch((err) => console.error('[chooseSpell] Error:', err));
 };
 
 /**
@@ -698,3 +708,34 @@ document.addEventListener('focusin', e => {
   }
 }, true);
 
+
+
+
+
+function openSpellCardModal(imagePath) {
+    console.log(`[openSpellCardModal] Triggered with imagePath: ${imagePath}`);
+    const modal = document.getElementById('spell-card-modal');
+    const modalImage = modal.querySelector('.modal-image');
+
+    if (!modal || !modalImage) {
+        console.error('[openSpellCardModal] Modal or modal image element not found!');
+        return;
+    }
+
+    modalImage.src = imagePath;
+    modal.style.display = 'flex';
+}
+
+
+// Close modal functionality
+document.querySelector('.close-modal').addEventListener('click', () => {
+    const modal = document.getElementById('spell-card-modal');
+    modal.style.display = 'none'; // Hide the modal
+});
+
+// Optional: Close modal when clicking outside the image
+document.getElementById('spell-card-modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+        e.currentTarget.style.display = 'none';
+    }
+});
