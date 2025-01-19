@@ -318,6 +318,7 @@ function renderCategoryCell(cards, category) {
 function renderCardItem(card, category) {
     const iconPath = schoolIcons[card.school] || 'assets/defaultIcon.webp';
     const isSpell = (category === 'spells');
+    const schoolDisplay = card.school.length > 4 ? card.school.substring(0,4) : card.school;
 
     let onClickAttr = '';
 
@@ -339,7 +340,7 @@ function renderCardItem(card, category) {
              ${onClickAttr}>
           <img src="${iconPath}" alt="${card.school}" class="card-icon">
           <div class="card-details">
-            <div class="card-school">${card.school}</div>
+            <div class="card-school">${schoolDisplay}</div>
             ${
                 isSpell && card.name
                     ? `<div class="spell-name">${card.name}</div>`

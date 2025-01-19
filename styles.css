@@ -185,9 +185,6 @@ button.delete:hover {
   background-color: #f9f9f9;
 }
 
-.cards-table th {
-  font-weight: bold;
-}
 
 /* If you want a subtle background on alternating rows: 
 .cards-table tr:nth-child(even) {
@@ -315,21 +312,43 @@ button.delete:hover {
 
 @media (max-width: 768px) {
   .grid-container {
-/*    grid-template-columns: repeat(1, 1fr); */
-      grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Single column for smaller screens */
   }
   .player-tile {
     width: 100%;
+    padding: 10px; /* Add some padding for readability */
+  }
+
+  .cards-table {
+    width: 100%; /* Ensure table spans full width */
+    table-layout: auto; /* Allow flexible column sizing */
+  }
+
+  .cards-table th, .cards-table td {
+    font-size: 14px; /* Adjust text size for better fit */
+    padding: 8px; /* Reduce padding for smaller devices */
   }
 }
 
 @media (max-width: 480px) {
   .grid-container {
-    grid-template-columns: 1fr; /* Single column for iPhone  */
+    grid-template-columns: 1fr; /* Single column layout for very small screens */
   }
-  
+
   .player-tile {
-    width: 90%; /* Ensure it doesn't touch the screen edges */
+    width: 90%; /* Avoid touching screen edges */
+    margin: 0 auto; /* Center the tiles */
+    padding: 10px; /* Add padding for spacing */
+  }
+
+  .cards-table {
+    width: 100%; /* Ensure table fits the screen */
+    table-layout: auto;
+  }
+
+  .cards-table th, .cards-table td {
+    font-size: 12px; /* Further reduce text size for very small screens */
+    padding: 5px; /* Reduce padding for compact design */
   }
 
   .card-options div {
