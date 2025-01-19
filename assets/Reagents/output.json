@@ -1,0 +1,796 @@
+{
+    "cards": [
+        {
+            "card_name": "Scan2025-01-12_224840_Card_1.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "foxglove",
+                "horn"
+            ],
+            "increase_value": [
+                "sulfur",
+                "foxglove",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_224840_Card_2.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "nightshade",
+                "foxglove",
+                "mandrake"
+            ],
+            "increase_value": [
+                "sulfur",
+                "eye of newt",
+                "mandrake",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_224840_Card_3.jpg",
+            "gather_reagents": [
+                "horn",
+                "sulfur",
+                "nightshade",
+                "eye of newt"
+            ],
+            "increase_value": [
+                "nightshade",
+                "foxglove",
+                "foxglove",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_224840_Card_4.jpg",
+            "gather_reagents": [
+                "eye of newt",
+                "eye of newt",
+                "mandrake",
+                "toadstool"
+            ],
+            "increase_value": [
+                "sulfur",
+                "eye of newt",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_224840_Card_5.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "toadstool",
+                "mandrake"
+            ],
+            "increase_value": [
+                "foxglove",
+                "horn",
+                "eye of newt"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_224840_Card_6.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "foxglove",
+                "eye of newt"
+            ],
+            "increase_value": [
+                "sulfur",
+                "eye of newt",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233307_Card_1.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "foxglove",
+                "eye of newt"
+            ],
+            "increase_value": [
+                "sulfur",
+                "eye of newt",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233307_Card_2.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "nightshade",
+                "mandrake",
+                "toadstool"
+            ],
+            "increase_value": [
+                "horn",
+                "horn",
+                "toadstool",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233307_Card_3.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "sulfur",
+                "eye of newt",
+                "horn"
+            ],
+            "increase_value": [
+                "nightshade",
+                "nightshade",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233307_Card_4.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "foxglove",
+                "nightshade"
+            ],
+            "increase_value": [
+                "nightshade",
+                "horn",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233307_Card_5.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "foxglove",
+                "toadstool"
+            ],
+            "increase_value": [
+                "horn",
+                "eye of newt",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233307_Card_6.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "foxglove",
+                "foxglove",
+                "foxglove",
+                "toadstool"
+            ],
+            "increase_value": [
+                "sulfur",
+                "nightshade",
+                "eye of newt",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233548_Card_1.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "eye of newt",
+                "eye of newt",
+                "eye of newt",
+                "horn"
+            ],
+            "increase_value": [
+                "nightshade",
+                "foxglove",
+                "horn",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233548_Card_2.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "eye of newt",
+                "toadstool",
+                "mandrake"
+            ],
+            "increase_value": [
+                "nightshade",
+                "eye of newt",
+                "horn",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233548_Card_3.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "eye of newt",
+                "mandrake"
+            ],
+            "increase_value": [
+                "sulfur",
+                "foxglove",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233548_Card_4.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "sulfur",
+                "eye of newt",
+                "eye of newt"
+            ],
+            "increase_value": [
+                "sulfur",
+                "horn",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233548_Card_5.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "toadstool",
+                "mandrake"
+            ],
+            "increase_value": [
+                "nightshade",
+                "eye of newt",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233548_Card_6.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "eye of newt",
+                "toadstool"
+            ],
+            "increase_value": [
+                "nightshade",
+                "sulfur",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233828_Card_1.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "sulfur",
+                "foxglove",
+                "eye of newt"
+            ],
+            "increase_value": [
+                "nightshade",
+                "eye of newt",
+                "eye of newt",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233828_Card_2.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "eye of newt",
+                "mandrake"
+            ],
+            "increase_value": [
+                "foxglove",
+                "foxglove",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233828_Card_3.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "horn",
+                "toadstool"
+            ],
+            "increase_value": [
+                "nightshade",
+                "mandrake",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233828_Card_4.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "toadstool",
+                "toadstool",
+                "mandrake"
+            ],
+            "increase_value": [
+                "foxglove",
+                "eye of newt",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233828_Card_5.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "horn",
+                "horn",
+                "horn",
+                "mandrake"
+            ],
+            "increase_value": [
+                "foxglove",
+                "horn",
+                "eye of newt",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_233828_Card_6.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "horn",
+                "toadstool"
+            ],
+            "increase_value": [
+                "foxglove",
+                "toadstool",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234110_Card_1.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "foxglove",
+                "horn",
+                "mandrake"
+            ],
+            "increase_value": [
+                "horn",
+                "nightshade",
+                "eye of newt",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234110_Card_2.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "foxglove",
+                "horn"
+            ],
+            "increase_value": [
+                "sulfur",
+                "mandrake",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234110_Card_3.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "horn",
+                "mandrake",
+                "mandrake"
+            ],
+            "increase_value": [
+                "nightshade",
+                "sulfur",
+                "toadstool",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234110_Card_4.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "sulfur",
+                "sulfur",
+                "eye of newt",
+                "foxglove"
+            ],
+            "increase_value": [
+                "nightshade",
+                "sulfur",
+                "horn",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234110_Card_5.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "eye of newt",
+                "horn",
+                "horn"
+            ],
+            "increase_value": [
+                "sulfur",
+                "foxglove",
+                "eye of newt",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234110_Card_6.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "sulfur",
+                "eye of newt",
+                "horn"
+            ],
+            "increase_value": [
+                "nightshade",
+                "eye of newt",
+                "eye of newt"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234334_Card_1.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "horn",
+                "toadstool",
+                "toadstool"
+            ],
+            "increase_value": [
+                "nightshade",
+                "horn",
+                "mandrake",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234334_Card_2.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "horn",
+                "toadstool",
+                "mandrake"
+            ],
+            "increase_value": [
+                "horn",
+                "horn",
+                "toadstool",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234334_Card_3.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "foxglove",
+                "horn",
+                "mandrake"
+            ],
+            "increase_value": [
+                "nightshade",
+                "nightshade",
+                "foxglove"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234334_Card_4.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "eye of newt",
+                "mandrake"
+            ],
+            "increase_value": [
+                "sulfur",
+                "sulfur",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234334_Card_5.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "foxglove",
+                "mandrake",
+                "mandrake",
+                "mandrake"
+            ],
+            "increase_value": [
+                "sulfur",
+                "foxglove",
+                "eye of newt",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234334_Card_6.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "sulfur",
+                "mandrake"
+            ],
+            "increase_value": [
+                "foxglove",
+                "toadstool",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234547_Card_1.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "horn",
+                "mandrake"
+            ],
+            "increase_value": [
+                "sulfur",
+                "horn",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234547_Card_2.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "horn",
+                "toadstool"
+            ],
+            "increase_value": [
+                "sulfur",
+                "sulfur",
+                "foxglove"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234547_Card_3.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "foxglove",
+                "horn",
+                "mandrake"
+            ],
+            "increase_value": [
+                "sulfur",
+                "sulfur",
+                "foxglove"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234547_Card_4.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "sulfur",
+                "eye of newt",
+                "toadstool"
+            ],
+            "increase_value": [
+                "sulfur",
+                "foxglove",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234547_Card_5.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "nightshade",
+                "nightshade",
+                "sulfur",
+                "toadstool"
+            ],
+            "increase_value": [
+                "nightshade",
+                "sulfur",
+                "foxglove",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234547_Card_6.jpg",
+            "gather_reagents": [
+                "eye of newt",
+                "toadstool",
+                "mandrake",
+                "toadstool",
+                "toadstool"
+            ],
+            "increase_value": [
+                "eye of newt",
+                "horn",
+                "mandrake",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234818_Card_1.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "sulfur",
+                "mandrake",
+                "toadstool"
+            ],
+            "increase_value": [
+                "foxglove",
+                "eye of newt",
+                "toadstool",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234818_Card_2.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "eye of newt",
+                "horn",
+                "toadstool"
+            ],
+            "increase_value": [
+                "sulfur",
+                "nightshade",
+                "toadstool",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234818_Card_3.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "mandrake",
+                "mandrake",
+                "toadstool"
+            ],
+            "increase_value": [
+                "eye of newt",
+                "eye of newt",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234818_Card_4.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "horn",
+                "eye of newt",
+                "mandrake"
+            ],
+            "increase_value": [
+                "foxglove",
+                "foxglove",
+                "eye of newt"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234818_Card_5.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "horn",
+                "toadstool"
+            ],
+            "increase_value": [
+                "nightshade",
+                "sulfur",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_234818_Card_6.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "foxglove",
+                "horn",
+                "horn"
+            ],
+            "increase_value": [
+                "nightshade",
+                "nightshade",
+                "eye of newt"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_235008_Card_1.jpg",
+            "gather_reagents": [
+                "horn",
+                "eye of newt",
+                "mandrake"
+            ],
+            "increase_value": [
+                "foxglove",
+                "eye of newt",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_235008_Card_2.jpg",
+            "gather_reagents": [
+                "nightshade",
+                "nightshade",
+                "eye of newt",
+                "toadstool"
+            ],
+            "increase_value": [
+                "sulfur",
+                "toadstool",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_235008_Card_3.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "eye of newt",
+                "mandrake"
+            ],
+            "increase_value": [
+                "nightshade",
+                "foxglove",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_235008_Card_4.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "foxglove",
+                "horn",
+                "toadstool"
+            ],
+            "increase_value": [
+                "nightshade",
+                "nightshade",
+                "eye of newt",
+                "horn"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_235008_Card_5.jpg",
+            "gather_reagents": [
+                "horn",
+                "eye of newt",
+                "toadstool"
+            ],
+            "increase_value": [
+                "nightshade",
+                "foxglove",
+                "eye of newt"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_235008_Card_6.jpg",
+            "gather_reagents": [
+                "sulfur",
+                "sulfur",
+                "nightshade",
+                "toadstool"
+            ],
+            "increase_value": [
+                "sulfur",
+                "horn",
+                "toadstool",
+                "mandrake"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_235123_Card_1.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "eye of newt",
+                "toadstool",
+                "mandrake"
+            ],
+            "increase_value": [
+                "nightshade",
+                "foxglove",
+                "toadstool"
+            ]
+        },
+        {
+            "card_name": "Scan2025-01-12_235123_Card_2.jpg",
+            "gather_reagents": [
+                "foxglove",
+                "sulfur",
+                "foxglove",
+                "eye of newt"
+            ],
+            "increase_value": [
+                "foxglove",
+                "eye of newt",
+                "mandrake",
+                "toadstool"
+            ]
+        }
+    ]
+}
