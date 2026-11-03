@@ -1,0 +1,96 @@
+{
+ "source": "Keith PC: LizardWizard_Cards/Spell_Cards/By_School/necromancy/*.jpeg (misfiled phone photos, not spells)",
+ "count": 6,
+ "cards": [
+  {
+   "id": "Wizard_Serpentium_Machinus",
+   "deck": "Wizard (inferred: portrait card with a reagent symbol in the top left, matching the rulebook description of Wizard Cards)",
+   "name": "Serpentium Machinus",
+   "school": "Thaumaturgy",
+   "school_side_label": "THAUMATURGY",
+   "gather_bonus_reagent_top_left": "Sulphur",
+   "other_text": "none besides the name",
+   "source_file": "Spell_Cards/By_School/necromancy/1.jpeg",
+   "asset_image": "assets/Wizard_Serpentium_Machinus.jpg",
+   "transcription_status": "full"
+  },
+  {
+   "id": "Wizard_Reptilius_Venenum",
+   "deck": "Wizard (inferred, same layout as above)",
+   "name": "Reptilius Venenum",
+   "school": "Alchemy",
+   "school_side_label": "ALCHEMY",
+   "gather_bonus_reagent_top_left": "Eye of Newt",
+   "other_text": "none besides the name",
+   "source_file": "Spell_Cards/By_School/necromancy/6.jpeg",
+   "asset_image": "assets/Wizard_Reptilius_Venenum.jpg",
+   "transcription_status": "full"
+  },
+  {
+   "id": "Familiar_Bufonem",
+   "deck": "Familiar",
+   "name": "Bufonem",
+   "school": "Alchemy",
+   "mana_cost": 5,
+   "abilities": [
+    {
+     "trigger": "New Research",
+     "effect": "Collect 3 Eye of Newt & Cast Spells",
+     "icon": "Eye of Newt"
+    },
+    {
+     "trigger": "Enter the Dungeon",
+     "effect": "1 Gold / Alchemy Card",
+     "icon": "gold coin"
+    }
+   ],
+   "source_file": "Spell_Cards/By_School/necromancy/2.jpeg",
+   "asset_image": "assets/Familiar_Bufonem.jpg",
+   "transcription_status": "full"
+  },
+  {
+   "id": "Familiar_Corvum",
+   "deck": "Familiar",
+   "name": "Corvum",
+   "school": "Necromancy",
+   "mana_cost": 5,
+   "abilities": [
+    {
+     "trigger": "New Research",
+     "effect": "Collect 3 Nightshade & Cast Spells",
+     "icon": "Nightshade"
+    },
+    {
+     "trigger": "Enter the Dungeon",
+     "effect": "1 Gold / Necromancy Card",
+     "icon": "gold coin"
+    }
+   ],
+   "source_file": "Spell_Cards/By_School/necromancy/3.jpeg",
+   "asset_image": "assets/Familiar_Corvum.jpg",
+   "transcription_status": "full"
+  },
+  {
+   "id": "Tower_Obsidian_Fortress",
+   "deck": "Tower",
+   "name": "Obsidian Fortress",
+   "school": "Necromancy",
+   "school_side_label": "NECROMANCY",
+   "cost": "3x Nightshade or 3 Gold",
+   "source_file": "Spell_Cards/By_School/necromancy/4.jpeg",
+   "asset_image": "assets/Tower_Obsidian_Fortress.jpg",
+   "transcription_status": "full"
+  },
+  {
+   "id": "Tower_Vermillion_Citadel",
+   "deck": "Tower",
+   "name": "Vermillion Citadel",
+   "school": "Conjuring",
+   "school_side_label": "CONJURING",
+   "cost": "3x Horn or 3 Gold",
+   "source_file": "Spell_Cards/By_School/necromancy/5.jpeg",
+   "asset_image": "assets/Tower_Vermillion_Citadel.jpg",
+   "transcription_status": "full"
+  }
+ ]
+}

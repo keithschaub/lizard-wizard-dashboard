@@ -1,0 +1,380 @@
+                                                                                                               CONTENTS
+                                                                                                               Game Board
+                                                                                                                •   The top of the game board is
+                                                                                                                    The Reagent Tracks that show
+                                                                                                                    the current value of each of the
+                                                                                                                    seven reagents, and 4 spaces
+                                                                                                                    for the Achievement tiles.
+                                                                                                                •   The bottom of the game board
+                                                                                                                    contains spaces for each
+                                                                                                                    available action/ card deck.
+
+
+
+
+    Astoria is a land pulsing with magic and intrigue!
+    A handful of Arch-Mages are vying for the loyalty
+    of wizards across the land so that they can wield
+    ultimate power. While competing to recruit wizards                                                         7 sets of Reagent Tokens (30 of each type)                      Start Player Token
+
+    from seven unique schools of magic, you will also                                                                      Mandrake
+                                                                                                                                                       Nightshade
+    have to create mystical towers, research powerful
+                                                                                                                           Sulphur
+    spells, summon helpful familiars, and search dark                                                                                                  Foxglove
+
+    dungeons for gold and items of power.                                                                                  Toadstool
+                                                                                                                                                       Eye of Newt
+                                                                                                                           Horn
+
+    GAMEPLAY
+    Lizard Wizard is an action selection game. On your turn, you will perform one of six actions:              35 Gold Coins (Denominations: 20 x 1’s, 10 x 5’s, 5 x 10’s)
+     1. Gather Magical Ingredients (Reagents)
+     2. Convert these Reagents into Mana, the energy necessary to cast spells
+     3. Compete with the other Arch-Mages to recruit Wizards from seven schools of magic
+     4. Create magical towers that will amplify the power of your wizards
+     5. Summon Familiars to help you with many tasks, including exploring the dungeons of Astoria
+     6. Research and cast powerful spells.
+                                                                                                               80 Blue Mana Coins (Denominations: 30 x 1’s, 15 x 5’s, 20 x 10’s 10 x 20’s, 5 x 100’s)
+    At the end of the game, you will receive points for having the best wizard and tower combinations, gold,
+    and scoring spells.
+    In Lizard Wizard, Only one Arch-Mage will rise above the rest and control the land. Will it be you?
+
+
+2                                                                                                                                                                                                       3
+                                                                                                   20 Achievement Tiles
+    Tarot-Sized Cards
+
+
+
+
+                                                28 Tower Cards
+
+
+                                                                                                   THE SEVEN SCHOOLS OF MAGIC
+          28 Wizard Cards                                                      35 Familiar Cards   There are seven schools of magic in Astoria. Each one has unique powers, spells, and reagents that work
+                                                                                                   especially well for them.
+
+
+                                                                                                                  CONJURING: Focuses on summoning and creation
+
+                                                65 Spell Cards
+                                                                                                                  SORCERY: Focuses on divination, pyrotechnics, and the understanding of magic itself
+
+
+    Poker-Sized Cards
+                                                                                                                  ALCHEMY: Focuses on changing the physical properties of matter (especially gold), and potions
+
+
+
+                                                                                                                  ENCHANTMENT: Focuses on charms, dazzles, sleep spells, and other forms of mind control
+
+
+
+                                                                                                                  DRUIDRY: Focuses on the magics of nature
+                                              56 Reagent Gathering Cards
+
+                                                                                                                  THAUMATURGY: Focuses on the wonders of machines, traps, engines, and mechanical devices
+
+
+
+                                                                                                                  NECROMANCY: Focuses on the dark magics of death, animating and controlling the undead
+
+
+
+
+    20 Monster Cards        21 Gold Treasure Cards   10 Item Treasure Cards   2 Trap! Cards
+
+                                                 53 Dungeon Cards
+
+
+4                                                                                                                                                                                                                 5
+    SETUP
+    Place the board in the middle of the table.
+     A Reagent Gathering Deck
+    Shuffle the Reagent Gathering cards and deal 3 cards to each player.                                                                                                 J
+    Place the remaining cards near the board as a draw deck.
+
+
+     B Starting Prices
+    Place one of each Reagent Token on the lowest Mana Value in their                B
+    corresponding Reagent Track.                                                                                                                                                                          C
+
+
+     C Reagent Tokens
+    Each player selects 2 unique Reagent Tokens.                                                 F                                 E
+    Place the remaining Reagent Tokens near the board to
+    act as the Supply.
+
+
+     D Give each player 20 Mana
+    Place the remaining Mana Coins near the board to act as the Bank.
+
+
+     E Create the Wizard Deck by removing certain Wizards based                          G
+    on the number of players:                                                                                                                                                                                          K
+       1 or 2 Players: Remove 2 Wizards from each school of magic.
+       3 Players: Remove 1 Wizard from each school of magic.                                                                                                                                         A
+       4 and 5 Players: All Wizards are in play
+    Shuffle the remaining Wizard Cards to make the Wizard Deck and place
+    it face down on the board. Turn 2 cards face up and place them in the                                                                                                                             D
+    spots next to the deck. These cards are available for selection when the                 I                                     H
+    Recruit Wizard action is taken.
+
+
+      F Create the Tower Deck by placing the cards in order based on
+                                                                                                                                                                                              L
+    their cost in Reagents (shown at the bottom of the card): the seven
+    cards with a cost of 1 reagent face down on top (in random order), then
+    the seven cards with a cost of 2 reagents underneath them, and so on.                                  G Create the Familiar Deck by placing the cards in order based on their cost in Mana (upper left):
+    Once the deck is in order, place it face down on the board, select the top                           the seven cards with a cost of 5 face down on top (in a random order), then the seven cards with a cost of 10
+    card, and place it in the spot next to the Tower Deck face up.                                       underneath them, and so on. Once the deck is in order, place it on the board, select the top 2 cards, and place
+                                                                                                     D
+       1 or 2 Players: Remove all seven Tower Cards with a cost of                                       them in the spots next to the Familiar Deck face up.
+       1 reagent and all seven with a cost of 4 Reagents.                        A                          1 or 2 Players: Remove all seven Familiar Cards with a cost of 5 Mana and all seven with a cost of 25 Mana.
+       3 Players: Remove all seven Tower Cards with a cost of 4 reagents.                                   3 Players: Remove all seven Familiar Cards with a cost of 25 Mana.
+       4 and 5 Players: Use all Tower Cards                                                                 4 and 5 Players: Use all Familiar Cards.
+
+6                                                                                                                                                                                                                          7
+    SETUP (continued)                                                                                                     1   Gather Reagents
+                                                                                                                         Just as there are seven schools of magic, there are seven magical reagents, or ingredients,
+     H Create the Spell Deck
+                                                                                                                         that fuel the magic of Astoria. Knowing where these natural wonders can be found is the
+    Shuffle the Spell Cards, place the deck face down on the board. Draw four Spell Cards from the deck and place
+    them face up in their spots next to the Spell Deck. These four cards are available for purchase.
+                                                                                                                         essential starting point for every young wizard. Sometimes they use familiars to perform this
+                                                                                                                         errand, but it is still very common to find even the most powerful arch-mages lurking in the
+                                                                                                                         Enchanted Wood, searching for the most pure reagents.
+      I Create the Dungeon Deck.
+                                                                                                                         Play one of your Reagent Gathering cards from your hand. Take three (3) of the commodity tokens shown in
+    Remove the Trap! Cards and set them aside for possible use later. Shuffle the remaining Dungeon Cards, includ-
+                                                                                                                         the ‘Gather Reagents’ area of the card from the supply and place them in front of you. This means that on some
+    ing all Monster, Gold Treasure, and Item Treasure Cards, and place the deck face down in the spot on the board.
+                                                                                                                         cards, you may not get all of the Reagent tokens shown; you will have to choose the three that you want. This
+                                                                                                                         maximum may be increased with some spells.
+      J Place Achievement Tiles                                                                                          After gathering, for each reagent shown in the ‘Increase Value’ area of the card, increase its Mana value by 1 on
+    Shuffle and draw four random Achievement Tiles. Place them face up in the spots near the top right of the            the Reagent Tracks at the top of the game board.
+    board. Place the remaining tiles back in the game box as they will not be used.                                      After taking your reagent tokens and increasing the value, place the played card in the discard pile face up next
+                                                                                                                         to the Reagent Gathering draw deck, and draw a new Reagent Gathering card from the deck to refill your hand
+     K Start Player                                                                                                      to your maximum.
+    Select a start player randomly and place the Start Player Token in front of them.                                    Players have a maximum hand of 3 Reagent Gathering cards. This maximum may be increased with
+                                                                                                                         some spells.
+
+     L Gold Coins
+    Place the gold coins near the board.
+                                                                                                                                                                    Example
+    Solo Play                                                                                                                 Julie plays a card that has Sulphur, Toadstool, Eye of Newt, Nightshade, and Mandrake
+    When playing solo, the AI Player starts with 30 Mana and one random Wizard Card. The AI has no limit on how               reagents in the ‘Gather Reagents’ area, and Foxglove and Mandrake in the ‘Increase Value’
+    many reagents it may gather or store. It gathers all reagents shown on the card. When converting Reagents,                area. She doesn’t own any spells yet, so she has to choose 3 of the 5 commodities on the
+    the AI converts the one that generates the most Mana. Utilize one of the two sides of the AI Flow-Chart to                card to produce. First, she chooses the Sulphur, Toadstool and Nightshade, and gathers
+    determine the AI player’s action, flipping it over and using the other side the next turn. Start at the top of the        those reagents from the supply A . Then she raises the value of Foxglove and Mandrake
+    chart and flow downward until you arrive at a ‘Perform Action’ result. The AI performs that action.                       by 1 Mana each B .
+
+
+    GAME ROUNDS
+                                                                                                                                                A
+    The Start Player will take the first turn each round and may perform ONE Action (see below), followed likewise
+    by each player around the table clockwise to complete the round.
+
+    Actions                                                                                                                                     B                                                    B
+    On a player’s turn, they may perform one of the following six Actions:
+     1) GATHER REAGENTS                                                                                                                        A
+     2) CONVERT REAGENTS TO MANA
+     3) RECRUIT WIZARD/ Wizard’s Duel
+     4) RESEARCH SPELL
+     5) CREATE A TOWER
+     6) SUMMON FAMILIAR
+8                                                                                                                                                                                                                                            9
+     WIZARD CARD GATHERING BONUS: Wizard Cards are valuable for scoring at the end of the game, and they                    After conversion, the value of the converted reagent is reduced by the number of units converted.
+     also confer a very valuable bonus gathering ability to their owners. Each Wizard Card has a reagent symbol in
+     the upper left corner. When you gather reagents, you also gather an extra reagent of the correct type for each                                                        Example
+     reagent symbol on your Wizard Cards.
+
+                                                    Example                                                                       Mandrake is valued at 6 Mana
+                                                                                                                                  and 4 units are converted.
+           Jack is gathering the 3 reagents shown on his Gather Reagents Card (1 Mandrake, 1
+                                                                                                                                  The new value of Mandrake on
+           Sulphur, and 1 Foxglove), he also has two Wizard Cards (Enchanter and Necromancer), so
+                                                                                                                                  the track is 2 Mana.
+           he also gathers an additional Mandrake and Nightshade for a total of 5 reagents.
+
+
+     CASTING A SPELL: After gathering your reagents, you may cast ONE spell if you have the necessary reagents.
+     (See ‘Casting Spells’ below)
+
+
+     STORAGE LIMIT: Each player may only have up to 10 Reagent Tokens at any one time. If a player’s Gather
+     Reagents action brings their Reagent total to more than 10 in front of them, they must immediately discard  
+                                                                                                                               Note: You may always use the Convert Reagent action to convert any number of different reagents for 1 Mana
+     their choice of Reagent Tokens back into the supply to get back down to 10.
+                                                                                                                               each rather than the current value of those reagents. This does not reduce the value on the reagent tracks.
+     This limit is raised by ‘1’ for each Tower Card that the player owns. The Root Cellar spell also increases the limit
+     by 10.
+                                                                                                                             3   Recruit Wizard
+                                                    Example                                                                 The Arch-Mages of Astoria are vying for ultimate power, which can only be achieved by
+           Dan owns three Tower Cards, which allows him to store up to 13 Reagent Tokens.                                   drawing several lesser wizards into their circle of influence. They do this through demonstra-
+           If Dan also owns and has cast the Root Cellar spell, then he could have up to 23
+                                                                                                                            tions of their magical ability. Their attempts to recruit a wizard are often challenged by one or
+           Reagent Tokens.
+                                                                                                                            more rivals, and a Wizard’s Duel occurs. These contests of magical power can drain even the
+                                                                                                                            most powerful mage.
+      2 Convert Reagents to Mana                                                                                            Select one of the Wizard Cards from the two on offer. This wizard will be battled over by all of the arch-mages
+                                                                                                                            in a magical duel.
+     Long ago, the wizards of Astoria learned how to convert reagents into mana, the magical
+                                                                                                                            The duel operates like an auction, where each player, starting with the recruiting player, bids in turn (clockwise
+     energy that powers all things. The process is no longer dangerous, but it still takes great focus
+                                                                                                                            around the table) or passes. Once a player has passed, they may not bid again. The player with the winning bid
+     and knowledge.                                                                                                         gets the Wizard Card and pays their bid in Mana. The Wizard Card is placed in front of them to show that they
+     You may trade in any quantity of a single type of Reagent that you own, ‘Converting’ it to Mana. Place the             own it.
+     Reagent Tokens being converted into the supply, and take the current value shown on that Reagent Track for             The empty spot in the offer is then filled with a new card from the deck. There must always be two cards on
+     each token of that Reagent converted. Then move the value for that Reagent down by the number of                       offer (unless the deck is exhausted).
+     Tokens converted.
+                                                                                                                            If the player that started the duel does not win, then they may perform any other action, including another
+                                                    Example
+           Example: Dan converts 4 Mandrake Reagent Tokens. The Value shown on the Mandrake
+                                                                                                                            Recruitment. If the player who started the auction wins the auction, then their turn ends.
+
+           track is 6 Mana. Dan receives 4 x 6 Mana = 24 Mana from the supply, and places the 4
+                                                                                                                                  NOTE: No player may bid more than the Mana that they have.
+           Mandrake Tokens into the supply.
+
+                                                                                                                            Solo/Two player bidding: When playing in a two player game, the player that starts the Duel may only bid
+                                                                                                                            once. The other player may either bid more, or pass.
+
+
+10                                                                                                                                                                                                                                               11
+      4 Research Spell                                                                                                     •      Gathering Reagents and Casting Spells: When using the Familiar Card for this purpose, you will collect
+                                                                                                                                  the Reagents shown on the card, and then may cast any spells that you own and have the reagents for.
+     Arch-Mages have the ability to learn spells from any of the seven schools of magic. Once they                                (See ‘Casting Spells’ below)
+     have researched a new spell, it still must be cast with reagents before it takes effect.
+     Select one of the four Spells on Offer and pay the Mana cost shown in the upper left corner of the Card. That                Note: Reagents used to cast spells are spent before counting the reagent tokens to check if you have
+     Spell Card is then placed face down in front of you (a little to the left of your face-up spells) to show that you
+                                                                                                                                  more than your storage limit.
+     own it, but that it has not yet been cast.
+     A new Spell Card is then taken from the top of the deck of spell cards and placed face up in the offer so that
+     there are always 4 Spells available for research (unless the deck is exhausted).                                      •      New Research: When using the Familiar Card to conduct ‘New Research’, you will first clear the spell
+     CASTING THE NEW SPELL: After researching the new spell, you may cast THAT spell if you have the necessary                    offer, removing all four face-up spell cards on the board (the offer), place them on the bottom of the
+     reagents. (See ‘Casting Spells’ below)                                                                                       spell deck. You will then draw four new spell cards from the top of the deck and place them face-up in
+                                                                                                                                  the offer. You then take one of the four new spell cards for free, placing it face-down in front of you, and
+                                                                                                                                  replacing it in the offer with a new card from the spell deck.
+      5 Create a Tower
+                                                                                                                           •      Entering the Dungeon: When using the Familiar Card to enter the dungeon, you will draw a card from
+     Magical Towers amplify the power of wizards of each school of magic. Towers may be created                                   the top of the dungeon deck. If this card is a Monster Card, then you take one ‘Hit’. If it is a Treasure
+     through powerful magic, or built by workers who must be paid.                                                                Card (Gold or Item), you do not take a ‘Hit’. After drawing a card, you may elect to draw another card or
+                                                                                                                                  end your dungeon delving expedition. If, at any point, you take a second ‘Hit’, you are defeated, and will
+     Purchase the available Tower Card by paying either the specified Reagents displayed on the bottom left of the                get nothing. Shuffle all of the Monster and Treasure cards that you drew on this expedition back into the
+     Tower Card, or the number of Gold Coins displayed on the bottom right of the card. The Reagent tokens used                   Dungeon Deck.
+     for payment are placed back in the supply near the board. The purchased card is placed in front of the player
+     who purchased it and a new card from the deck is turned up and placed in the offer so that there is always one               However, if you end your expedition before taking a second ‘Hit’, you will get to keep all of the Treasure
+     Tower Card available for purchase (unless the deck is exhausted).                                                            Cards, placing them in front of you. Immediately take Gold Coins equal to the value on the Gold Coins
+                                                                                                                                  Cards gained on this expedition. Item Treasure Cards may be worth victory points at the end of the game.
+     Reminder: Towers also increase the owning player’s reagent storage capacity by one reagent token per                         Any Monster Cards drawn on this expedition are still re-shuffled back into the Dungeon Deck.
+     Tower Card.
+                                                                                                                                  Once all treasure has been collected from the dungeon, entering the dungeon is no longer possible.
+
+      6 Summon a Familiar                                                                                                      Note: Used Familiar Cards are still yours.
+
+     Familiars are magical spirits that are summoned and inhabit the bodies of mortal creatures.
+     They are essential servants who perform many vital services for wizards: They can be used
+                                                                                                                          CASTING SPELLS
+     for simple errands, such as gathering reagents or gold. They are the only ones who can locate
+                                                                                                                          There are three ways to cast a spell:
+     the ever-shifting entrance to the famous Dungeons of Astoria. They can help locate new
+     spells in the arcane library. They are also valuable assistants in the complex rituals required                       1) When you gather reagents, you may cast any ONE spell.
+     to cast multiple spells.                                                                                              2) When you research a new spell, you can cast THAT spell.
+     Purchase one of the two available Familiar Cards by paying the Mana Cost shown in the upper left corner of the        3) When you summon a Familiar and select the Gather Reagents and Cast Spells option, you can cast as
+     Familiar Card. Familiar Cards must be used immediately upon purchase for one of four actions:                            many spells as you want.
+      •    Scoring: When using the Familiar Card to score, you will receive 1 Gold per card that that you own that        In all three cases, you must have the necessary reagents shown at the bottom of the spell card in order to
+           shares the same school of magic as the familiar. Cards that may be counted toward this total include:          cast a spell. To cast, you pay the reagents shown, placing them back into the supply, and the spell is then
+           Wizard, Tower, Spell, and Familiar Cards (including the new Familiar Fard, and all Spells whether they         immediately activated.
+           have been cast or not).
+
+
+
+
+12                                                                                                                                                                                                                                               13
+     To keep track of the status of your spells, it is recommended that you place your spell cards in one of two places   SCORING
+     in front of you:                                                                                                     Each player will get VP (Victory Points) as follows:
+                                                                                                                           •    Every Wizard Card + Tower Card pair owned by a player is worth 5 VP if the schools of magic on both cards
+      1) Spells that you have researched, but                                                                                   do not match.
+         are not active: face down to your left
+                                                                                                                           •    Every Wizard Card + Tower Card pair owned by a player is worth 10 VP if the schools of magic on both
+      2) Spells that you have cast and are                                                                                      cards match.
+          currently active: face up directly
+                                                                                                                           •    Every Spell Card that is from the same school of magic as a matching Wizard/ Tower pair, is worth 5 VP.
+         in front of you
+                                                                                                                                Only Spell Cards that have been cast count for this.
+                                                                                                                           •    Any Wizard or Tower Card that is not able to be paired is worth 1 VP.
+
+     There are two types of Spell Durations, which are shown below the Spell description:                                                                                Example
+                                                                                                                                Christine owns 3 Wizards and 6 Towers. She can use her Wizard and Tower cards to make
+                                                                                                                                3 pairs; One pair doesn’t match (5 VP); Two of those pairs are made from a Wizard and a
+                 Ongoing Effect: Once cast, this spell remains in effect for the rest of the game.                              Tower of the same school of magic (20 VP). The remaining 3 unmatched Towers are worth
+                                                                                                                                1 VP each (3 VP). One of Christine’s matching Wizard and Tower pairs are Druidry. Since
+                 One-Time Use: These spells are so powerful that a wizard cannot cast it a second time and survive.
+                                                                                                                                she also has 3 Druid Spell Cards, Christine gains 5 VP for each of them (15 VP). Christine
+                 Once these are cast, the spell card is placed face down in a pile (to your right) of used Spell and
+                                                                                                                                gets 43 Victory Points for her Wizard, Tower, and Spell Cards (5 + 20 + 3 + 15).
+                 Familiar Cards. They still belong to you.
+                                                                                                                           •    Gold Coins score VP equal to the value of the coins.
+     ACHIEVEMENTS                                                                                                          •    Spells that score VP score as instructed on the Spell card as long as the spell has been cast.
+     On your turn, if you meet the conditions of an Achievement (as shown on one of the four Achievement Tiles),           •    Dungeon Items score Victory Points for the following players:
+     you may claim it by taking the tile and placing it in front of you.                                                        – The player with the most Treasure Items (or tied for the most items): 10 VP
+     Each Achievement is worth 10 VP at the end of the game.                                                                    – The player with the second most Treasure Items (or tied for second most): 5 VP
+                                                                                                                           •    Achievement tiles score 10 VP each.
+     GAME END
+     Play continues around the table until any one of the following decks are depleted (all cards are taken, including    The player with the most Victory Points at the end of the game is the winner. In the case of a tie, the tied
+     the face-up cards): Wizard, Tower, Spell, or Familiar.                                                               player with the most Mana is the winner.
+     When this occurs, finish the current Round until all players who have not yet taken their turn have done so.
+     (Note: The last player in every game is the player to the right of the ‘Starting Player’ who went first at the
+                                                                                                                          OPTIONAL RULES
+     beginning of the game.) Then the game ends.
+                                                                                                                          Some players do not enjoy ‘gotcha’ type interactions.
+                                                                                                                          To play a game where this is minimized, before play,
+     INFORMATION                                                                                                          remove all spell cards with the star icon on the
+     During the game, all Ongoing Effect Spells, Wizard, and Tower cards, as well Reagents owned by the players           bottom of the card.
+     must be placed so that all players may see them (public information). Each player’s Mana and Gold, on the other
+     hand, are secret, and do not have to be visible.
+
+
+
+
+14                                                                                                                                                                                                                                          15
+                                               1) GATHER REAGENTS
+• Play a Gather Reagents Card                            • Increase the value of the Reagents shown on the
+• Take Reagents shown on the ‘Gather Reagents’ half        ‘Increase Value’ half
+  (plus any on your Wizard Cards)                        • Cast one spell (if you have the necessary reagents)
+
+                                     2) CONVERT REAGENTS TO MANA
+• Turn in one type of reagents to the supply             • Reduce the Value of that Reagent by the number of
+• Gain Mana = Value of that Reagent x Tokens turned in     Tokens turned in
+
+
+                                               3) RECRUIT WIZARD
+• Select one of the two Wizard Cards on offer and bid    • If the player who started the Auction didn’t win,
+  Mana in turn (or pass)                                   they may take another Action
+• Winner of the Auction pays the bid and takes the
+  Wizard Card
+
+              4) RESEARCH SPELL                                            5) CREATE A TOWER
+• Select a Spell Card from the four on offer                 • Pay either the Reagents or the Gold shown on the
+  and pay 5 Mana                                               Tower Card on offer
+• Place the Spell Card face down in front of you             • Take the Tower Card and place it in front of you
+• Cast the Spell if you have the necessary Reagents          • Towers add ‘1’ to your storage for Reagents
+
+                                               6) SUMMON FAMILIAR
+Use the Card for one of four purposes:                   d) Enter the Dungeon
+a) Score one School of Magic (1 Gold/ Card of the            • Draw cards from the top of the Dungeon Deck,
+   same School of Magic as the Familiar)                       stopping when you want
+b) Gather Reagents shown on the Familiar Card and            • Monster Cards ‘hit’; 2 hits = failure
+   Cast any number of Spells                                 • If you stop before failure, keep the treasure
+c) New Research: Clear the Spell Offer, Replace                cards and shuffle the monster cards back into
+   them with four new Spell Cards and select one               the Dungeon Deck
+   for free                                                  • If you fail, shuffle all drawn cards back into
+                                                               the Dungeon Deck
+
+
+
+
+                                     www.ForbiddenGames.net
+

@@ -1,0 +1,1857 @@
+{
+ "source": "Keith's PC: LizardWizardTrainingImages.zip and Padded.zip (Padded named folders = same photos padded to 640x640; accepted_feedback_* = 719 extra 336x336 photos of the same 61 spells, labeled '<Name> - <School>')",
+ "reagent_legend": {
+  "Mandrake": "orange root figure",
+  "Sulphur": "yellow powder pile",
+  "Toadstool": "red-capped white-spotted mushroom",
+  "Horn": "white curved horn",
+  "Nightshade": "dark blue berries on green leaves",
+  "Foxglove": "pink flowers",
+  "Eye of Newt": "yellow/gold slit eye"
+ },
+ "duration_legend": {
+  "Ongoing": "red circular-arrows icon",
+  "One-Time Use (1x)": "red '1x'"
+ },
+ "gotcha_star_note": "Small gold star in the bottom-center border = remove in the no-gotcha optional rule.",
+ "count": 61,
+ "cards": [
+  {
+   "id": "Adept_Conversion",
+   "deck": "Spell",
+   "name": "Adept Conversion",
+   "latin_subtitle": "Conversio Agentibus",
+   "school": "Druidry",
+   "school_icon": "green circle, gold leaves",
+   "school_side_label": "DRUIDRY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Toadstool": 2,
+    "Mandrake": 2
+   },
+   "duration": "Ongoing",
+   "effect": "May convert 2 types of Reagents",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Adept_Conversion/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Adept_Conversion/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Adept_Conversion/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/druidry/image6x3.png"
+   ],
+   "asset_image": "assets/Spell_Adept_Conversion.jpg"
+  },
+  {
+   "id": "Arch_Mage",
+   "deck": "Spell",
+   "name": "Arch-Mage",
+   "latin_subtitle": "Ultimum Magi",
+   "school": "Wild",
+   "school_icon": "dark circle, gold '?'",
+   "school_side_label": "WILD",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Horn": 1,
+    "Nightshade": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "duration": "Ongoing",
+   "effect": "+3 VP/ unique Wizard card. Note: Can be treated as any school of magic for scoring",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [
+    "School label on card edge reads 'WILD' with a '?' icon; one of each of the 7 reagents shown."
+   ],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Arch_Mage/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Arch_Mage/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Arch_Mage/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/Wild/image7x6.png"
+   ],
+   "asset_image": "assets/Spell_Arch_Mage.jpg"
+  },
+  {
+   "id": "Block_Denizens",
+   "deck": "Spell",
+   "name": "Block Denizens",
+   "latin_subtitle": "Creatura Obstructionum",
+   "school": "Necromancy",
+   "school_icon": "dark circle, gold dragon/bone head",
+   "school_side_label": "NECROMANCY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Nightshade": 2,
+    "Foxglove": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Denizens do not hit, and instead give you 1 Gold",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Denizens/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Denizens/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Denizens/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/necromancy/image1x6.png"
+   ],
+   "asset_image": "assets/Spell_Block_Denizens.jpg"
+  },
+  {
+   "id": "Block_Giant",
+   "deck": "Spell",
+   "name": "Block Giant",
+   "latin_subtitle": "Gigantes Obstructionum",
+   "school": "Necromancy",
+   "school_icon": "dark circle, gold dragon/bone head",
+   "school_side_label": "NECROMANCY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Nightshade": 2,
+    "Eye of Newt": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Giants do not hit, and instead give you 1 Gold",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Giant/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Giant/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Giant/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/necromancy/image6x5.png"
+   ],
+   "asset_image": "assets/Spell_Block_Giant.jpg"
+  },
+  {
+   "id": "Block_Goblin",
+   "deck": "Spell",
+   "name": "Block Goblin",
+   "latin_subtitle": "Cobalus Obstructionum",
+   "school": "Necromancy",
+   "school_icon": "dark circle, gold dragon/bone head",
+   "school_side_label": "NECROMANCY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Nightshade": 2,
+    "Horn": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Goblinoids do not hit, and instead give you 1 Gold",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Goblin/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Goblin/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Goblin/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/necromancy/image7x5.png"
+   ],
+   "asset_image": "assets/Spell_Block_Goblin.jpg"
+  },
+  {
+   "id": "Block_Undead",
+   "deck": "Spell",
+   "name": "Block Undead",
+   "latin_subtitle": "Mortuus Obstructionum",
+   "school": "Necromancy",
+   "school_icon": "dark circle, gold dragon/bone head",
+   "school_side_label": "NECROMANCY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Nightshade": 3
+   },
+   "duration": "Ongoing",
+   "effect": "Undead do not hit, and instead give you 1 Gold",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Undead/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Undead/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Block_Undead/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/necromancy/image2x6.png"
+   ],
+   "asset_image": "assets/Spell_Block_Undead.jpg"
+  },
+  {
+   "id": "Bloom",
+   "deck": "Spell",
+   "name": "Bloom",
+   "latin_subtitle": "Floreat",
+   "school": "Druidry",
+   "school_icon": "green circle, gold leaves",
+   "school_side_label": "DRUIDRY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Toadstool": 3
+   },
+   "duration": "Ongoing",
+   "effect": "+1 any Reagent when Gathering",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Bloom/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Bloom/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Bloom/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/druidry/image2x4.png"
+   ],
+   "asset_image": "assets/Spell_Bloom.jpg"
+  },
+  {
+   "id": "Charm",
+   "deck": "Spell",
+   "name": "Charm",
+   "latin_subtitle": "Perstringunt Leporem",
+   "school": "Enchantment",
+   "school_icon": "white/silver circle, gold star",
+   "school_side_label": "ENCHANTMENT",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Mandrake": 3,
+    "Foxglove": 2
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Take a Wizard Card from another player",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Charm/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Charm/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Charm/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/enchantment/image2x3.png"
+   ],
+   "asset_image": "assets/Spell_Charm.jpg"
+  },
+  {
+   "id": "Control_Undead",
+   "deck": "Spell",
+   "name": "Control Undead",
+   "latin_subtitle": "Ossa Virtute",
+   "school": "Necromancy",
+   "school_icon": "dark circle, gold dragon/bone head",
+   "school_side_label": "NECROMANCY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Nightshade": 4
+   },
+   "duration": "Ongoing",
+   "effect": "Ignore hits from and take any Undead card encountered when Dungeon Delving; +3 VP for each",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Control_Undead/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Control_Undead/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Control_Undead/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/necromancy/image3x6.png"
+   ],
+   "asset_image": "assets/Spell_Control_Undead.jpg"
+  },
+  {
+   "id": "Creation",
+   "deck": "Spell",
+   "name": "Creation",
+   "latin_subtitle": "Ex Nihilo",
+   "school": "Conjuring",
+   "school_icon": "red/gold mask",
+   "school_side_label": "CONJURING",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Horn": 4
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Take any available Card for free",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Creation/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Creation/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Creation/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/conjuring/image9x2.png"
+   ],
+   "asset_image": "assets/Spell_Creation.jpg"
+  },
+  {
+   "id": "Crystal_Ball",
+   "deck": "Spell",
+   "name": "Crystal Ball",
+   "latin_subtitle": "Congregatum Maxima",
+   "school": "Alchemy",
+   "school_icon": "purple circle, gold potion flask",
+   "school_side_label": "ALCHEMY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Eye of Newt": 3
+   },
+   "duration": "Ongoing",
+   "effect": "Max Hand Size = 5",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Crystal_Ball/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Crystal_Ball/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Crystal_Ball/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/alchemy/image4x5.png"
+   ],
+   "asset_image": "assets/Spell_Crystal_Ball.jpg"
+  },
+  {
+   "id": "Demonic_Possession",
+   "deck": "Spell",
+   "name": "Demonic Possession",
+   "latin_subtitle": "Possesssion Daemonibus",
+   "school": "Necromancy",
+   "school_icon": "dark circle, gold dragon/bone head",
+   "school_side_label": "NECROMANCY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Nightshade": 2,
+    "Mandrake": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Take a Familiar from another player and use it immediately",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [
+    "Latin subtitle printed with triple 's' ('Possesssion'), transcribed as printed."
+   ],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Demonic_Possession/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Demonic_Possession/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Demonic_Possession/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/necromancy/image8x5.png"
+   ],
+   "asset_image": "assets/Spell_Demonic_Possession.jpg"
+  },
+  {
+   "id": "Disintegrate_N",
+   "deck": "Spell",
+   "name": "Disintegrate",
+   "latin_subtitle": "Decrusto",
+   "school": "Necromancy",
+   "school_icon": "dark circle, gold dragon/bone head",
+   "school_side_label": "NECROMANCY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Nightshade": 2,
+    "Foxglove": 2
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Disintegrate any card owned by another player and place it out of play",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Disintegrate_N/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Disintegrate_N/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Disintegrate_N/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/necromancy/image4x6.png"
+   ],
+   "asset_image": "assets/Spell_Disintegrate_N.jpg"
+  },
+  {
+   "id": "Disintegrate_S",
+   "deck": "Spell",
+   "name": "Disintegrate",
+   "latin_subtitle": "Decrusto",
+   "school": "Sorcery",
+   "school_icon": "blue circle, gold lightning bolt",
+   "school_side_label": "SORCERY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Foxglove": 2,
+    "Nightshade": 2
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Disintegrate any card owned by another player and place it out of play",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Disintegrate_S/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Disintegrate_S/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Disintegrate_S/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/sorcery/image3x1.png"
+   ],
+   "asset_image": "assets/Spell_Disintegrate_S.jpg"
+  },
+  {
+   "id": "Divination",
+   "deck": "Spell",
+   "name": "Divination",
+   "latin_subtitle": "Divinatio Ambigua",
+   "school": "Sorcery",
+   "school_icon": "blue circle, gold lightning bolt",
+   "school_side_label": "SORCERY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Foxglove": 2,
+    "Sulphur": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Enter the Dungeon as an action without a Familiar",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Divination/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Divination/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Divination/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/sorcery/image5x1.png"
+   ],
+   "asset_image": "assets/Spell_Divination.jpg"
+  },
+  {
+   "id": "Earthquake",
+   "deck": "Spell",
+   "name": "Earthquake",
+   "latin_subtitle": "Terrae Motus",
+   "school": "Druidry",
+   "school_icon": "green circle, gold leaves",
+   "school_side_label": "DRUIDRY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Toadstool": 2,
+    "Sulphur": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Destroy (out of play) another player's Tower",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Earthquake/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Earthquake/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Earthquake/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/druidry/image9x4.png"
+   ],
+   "asset_image": "assets/Spell_Earthquake.jpg"
+  },
+  {
+   "id": "Energize",
+   "deck": "Spell",
+   "name": "Energize",
+   "latin_subtitle": "Pullulate",
+   "school": "Druidry",
+   "school_icon": "green circle, gold leaves",
+   "school_side_label": "DRUIDRY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Toadstool": 3,
+    "Foxglove": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Increase the mana value of a Reagent by 3 before converting",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Energize/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Energize/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Energize/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/druidry/image10x4.png"
+   ],
+   "asset_image": "assets/Spell_Energize.jpg"
+  },
+  {
+   "id": "Energy_Circle",
+   "deck": "Spell",
+   "name": "Energy Circle",
+   "latin_subtitle": "Navitas Circulus",
+   "school": "Conjuring",
+   "school_icon": "red/gold mask",
+   "school_side_label": "CONJURING",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Horn": 2,
+    "Toadstool": 2
+   },
+   "duration": "Ongoing",
+   "effect": "+5 Mana when any player summons a Familiar",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Energy_Circle/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Energy_Circle/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Energy_Circle/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/conjuring/image10x2.png"
+   ],
+   "asset_image": "assets/Spell_Energy_Circle.jpg"
+  },
+  {
+   "id": "Energy_Pulse",
+   "deck": "Spell",
+   "name": "Energy Pulse",
+   "latin_subtitle": "Pulsas Magicae",
+   "school": "Sorcery",
+   "school_icon": "blue circle, gold lightning bolt",
+   "school_side_label": "SORCERY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Foxglove": 3,
+    "Mandrake": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Destroy all Spell Shield spell cards currently owned by all players",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Energy_Pulse/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Energy_Pulse/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Energy_Pulse/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/sorcery/image8x1.png"
+   ],
+   "asset_image": "assets/Spell_Energy_Pulse.jpg"
+  },
+  {
+   "id": "Evolve",
+   "deck": "Spell",
+   "name": "Evolve",
+   "latin_subtitle": "Facti Veneficus",
+   "school": "Alchemy",
+   "school_icon": "purple circle, gold potion flask",
+   "school_side_label": "ALCHEMY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Eye of Newt": 3
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "One of your Familiars becomes a Wizard of the same school",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Evolve/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Evolve/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Evolve/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/alchemy/image2x5.png"
+   ],
+   "asset_image": "assets/Spell_Evolve.jpg"
+  },
+  {
+   "id": "Flame_Bolt_D",
+   "deck": "Spell",
+   "name": "Flame Bolt",
+   "latin_subtitle": "Ignis Pilum",
+   "school": "Druidry",
+   "school_icon": "green circle, gold leaves",
+   "school_side_label": "DRUIDRY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Toadstool": 2,
+    "Sulphur": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Destroy any card owned by another player and place it out of play",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Flame_Bolt_D/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Flame_Bolt_D/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Flame_Bolt_D/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/druidry/image4x4.png"
+   ],
+   "asset_image": "assets/Spell_Flame_Bolt_D.jpg"
+  },
+  {
+   "id": "Flame_Bolt_S",
+   "deck": "Spell",
+   "name": "Flame Bolt",
+   "latin_subtitle": "Ignis Pilum",
+   "school": "Sorcery",
+   "school_icon": "blue circle, gold lightning bolt",
+   "school_side_label": "SORCERY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Foxglove": 2,
+    "Sulphur": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Destroy any card owned by another player and place it out of play",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Flame_Bolt_S/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Flame_Bolt_S/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Flame_Bolt_S/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/sorcery/image4x1.png"
+   ],
+   "asset_image": "assets/Spell_Flame_Bolt_S.jpg"
+  },
+  {
+   "id": "Haste",
+   "deck": "Spell",
+   "name": "Haste",
+   "latin_subtitle": "Celeritas",
+   "school": "Enchantment",
+   "school_icon": "white/silver circle, gold star",
+   "school_side_label": "ENCHANTMENT",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Mandrake": 2,
+    "Toadstool": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Take a bonus action",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Haste/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Haste/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Haste/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/enchantment/image8x3.png"
+   ],
+   "asset_image": "assets/Spell_Haste.jpg"
+  },
+  {
+   "id": "Hoard_Mana",
+   "deck": "Spell",
+   "name": "Hoard Mana",
+   "latin_subtitle": "Magicis Divitiis",
+   "school": "Sorcery",
+   "school_icon": "blue circle, gold lightning bolt",
+   "school_side_label": "SORCERY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Foxglove": 3,
+    "Eye of Newt": 1
+   },
+   "duration": "Ongoing",
+   "effect": "+1 VP/ 7 Mana at the end of the game",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Hoard_Mana/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Hoard_Mana/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Hoard_Mana/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/sorcery/image7x1.png"
+   ],
+   "asset_image": "assets/Spell_Hoard_Mana.jpg"
+  },
+  {
+   "id": "Inexpensive",
+   "deck": "Spell",
+   "name": "Inexpensive",
+   "latin_subtitle": "Insumptuosus",
+   "school": "Thaumaturgy",
+   "school_icon": "orange/gold circle, sun/medallion",
+   "school_side_label": "THAUMATURGY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Sulphur": 2,
+    "Eye of Newt": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Build Towers for 1 fewer Gold",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Inexpensive/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Inexpensive/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Inexpensive/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/thaumaturgy/image3x2.png"
+   ],
+   "asset_image": "assets/Spell_Inexpensive.jpg"
+  },
+  {
+   "id": "Invisibility_Potion",
+   "deck": "Spell",
+   "name": "Invisibility Potion",
+   "latin_subtitle": "Potio Invisibilia",
+   "school": "Alchemy",
+   "school_icon": "purple circle, gold potion flask",
+   "school_side_label": "ALCHEMY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Eye of Newt": "X"
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Steal 1 Gold per Eye of Newt used in casting the Spell (from one player)",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [
+    "Cost printed as 'X' followed by one Eye of Newt icon: pay any number of Eye of Newt."
+   ],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Invisibility_Potion/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Invisibility_Potion/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Invisibility_Potion/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/alchemy/image1x5.png"
+   ],
+   "asset_image": "assets/Spell_Invisibility_Potion.jpg"
+  },
+  {
+   "id": "Mana_Drain",
+   "deck": "Spell",
+   "name": "Mana Drain",
+   "latin_subtitle": "Mana Exhauriebat",
+   "school": "Conjuring",
+   "school_icon": "red/gold mask",
+   "school_side_label": "CONJURING",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Horn": 3,
+    "Nightshade": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Steal 15 Mana from another player",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Drain/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Drain/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Drain/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/conjuring/image8x2.png"
+   ],
+   "asset_image": "assets/Spell_Mana_Drain.jpg"
+  },
+  {
+   "id": "Mana_Fountain",
+   "deck": "Spell",
+   "name": "Mana Fountain",
+   "latin_subtitle": "Magicae Fons",
+   "school": "Thaumaturgy",
+   "school_icon": "orange/gold circle, sun/medallion",
+   "school_side_label": "THAUMATURGY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Sulphur": 2,
+    "Foxglove": 2
+   },
+   "duration": "Ongoing",
+   "effect": "+5 Mana when any player builds a Tower",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Fountain/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Fountain/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Fountain/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/thaumaturgy/image2x2.png"
+   ],
+   "asset_image": "assets/Spell_Mana_Fountain.jpg"
+  },
+  {
+   "id": "Mana_Garden",
+   "deck": "Spell",
+   "name": "Mana Garden",
+   "latin_subtitle": "Magia Hortus",
+   "school": "Druidry",
+   "school_icon": "green circle, gold leaves",
+   "school_side_label": "DRUIDRY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Toadstool": 2,
+    "Mandrake": 2
+   },
+   "duration": "Ongoing",
+   "effect": "+5 Mana whenever you Gather Reagents",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Garden/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Garden/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Garden/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/druidry/image8x4.png"
+   ],
+   "asset_image": "assets/Spell_Mana_Garden.jpg"
+  },
+  {
+   "id": "Mana_Leak",
+   "deck": "Spell",
+   "name": "Mana Leak",
+   "latin_subtitle": "Mana Exhauriunt",
+   "school": "Conjuring",
+   "school_icon": "red/gold mask",
+   "school_side_label": "CONJURING",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Horn": 3,
+    "Foxglove": 1
+   },
+   "duration": "Ongoing",
+   "effect": "+5 Mana when any player recruits a Wizard",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Leak/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Leak/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Mana_Leak/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/conjuring/image7x2.png"
+   ],
+   "asset_image": "assets/Spell_Mana_Leak.jpg"
+  },
+  {
+   "id": "Master_Alchemist",
+   "deck": "Spell",
+   "name": "Master Alchemist",
+   "latin_subtitle": "Dominus Alchemist",
+   "school": "Alchemy",
+   "school_icon": "purple circle, gold potion flask",
+   "school_side_label": "ALCHEMY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Eye of Newt": 2,
+    "Horn": 1
+   },
+   "duration": "Ongoing",
+   "effect": "+1 VP/ 2 Gold",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Master_Alchemist/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Master_Alchemist/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Master_Alchemist/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/alchemy/image10x5.png"
+   ],
+   "asset_image": "assets/Spell_Master_Alchemist.jpg"
+  },
+  {
+   "id": "Maximum_Gather",
+   "deck": "Spell",
+   "name": "Maximum Gather",
+   "latin_subtitle": "Maiorem Augere",
+   "school": "Druidry",
+   "school_icon": "green circle, gold leaves",
+   "school_side_label": "DRUIDRY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Toadstool": 3
+   },
+   "duration": "Ongoing",
+   "effect": "Gather all Reagents shown on the top half of the Gather Reagents Card",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Maximum_Gather/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Maximum_Gather/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Maximum_Gather/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/druidry/image3x4.png"
+   ],
+   "asset_image": "assets/Spell_Maximum_Gather.jpg"
+  },
+  {
+   "id": "Miracle",
+   "deck": "Spell",
+   "name": "Miracle",
+   "latin_subtitle": "Miraculum",
+   "school": "Thaumaturgy",
+   "school_icon": "orange/gold circle, sun/medallion",
+   "school_side_label": "THAUMATURGY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Sulphur": 2,
+    "Toadstool": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Reverse the Reagents on the Gather and Increase Value sides of your Gather Reagent Card that you play if you choose to",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Miracle/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Miracle/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Miracle/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/thaumaturgy/image5x2.png"
+   ],
+   "asset_image": "assets/Spell_Miracle.jpg"
+  },
+  {
+   "id": "Obscure",
+   "deck": "Spell",
+   "name": "Obscure",
+   "latin_subtitle": "Obscurum",
+   "school": "Druidry",
+   "school_icon": "green circle, gold leaves",
+   "school_side_label": "DRUIDRY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Toadstool": 2,
+    "Foxglove": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "The targeted player may not enter the Dungeon the next time they try",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Obscure/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Obscure/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Obscure/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/druidry/image1x4.png"
+   ],
+   "asset_image": "assets/Spell_Obscure.jpg"
+  },
+  {
+   "id": "Order_of_the_Wand",
+   "deck": "Spell",
+   "name": "Order of the Wand",
+   "latin_subtitle": "Valorem Incremento",
+   "school": "Enchantment",
+   "school_icon": "white/silver circle, gold star",
+   "school_side_label": "ENCHANTMENT",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Mandrake": 3,
+    "Foxglove": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Wizard Cards = +2 VP",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Order_of_the_Wand/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Order_of_the_Wand/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Order_of_the_Wand/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/enchantment/image4x3.png"
+   ],
+   "asset_image": "assets/Spell_Order_of_the_Wand.jpg"
+  },
+  {
+   "id": "Perfect_Reagent",
+   "deck": "Spell",
+   "name": "Perfect Reagent",
+   "latin_subtitle": "Aedificate Agentibus",
+   "school": "Thaumaturgy",
+   "school_icon": "orange/gold circle, sun/medallion",
+   "school_side_label": "THAUMATURGY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Sulphur": 2,
+    "Toadstool": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Build Towers for 1 fewer Reagent",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Perfect_Reagent/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Perfect_Reagent/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Perfect_Reagent/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/thaumaturgy/image9x1.png"
+   ],
+   "asset_image": "assets/Spell_Perfect_Reagent.jpg"
+  },
+  {
+   "id": "Potent_Servant",
+   "deck": "Spell",
+   "name": "Potent Servant",
+   "latin_subtitle": "Potens Servis Suis",
+   "school": "Druidry",
+   "school_icon": "green circle, gold leaves",
+   "school_side_label": "DRUIDRY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Toadstool": 3
+   },
+   "duration": "Ongoing",
+   "effect": "Familiar Cards = +1VP",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Potent_Servant/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Potent_Servant/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Potent_Servant/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/druidry/image5x4.png"
+   ],
+   "asset_image": "assets/Spell_Potent_Servant.jpg"
+  },
+  {
+   "id": "Powerful_Helper",
+   "deck": "Spell",
+   "name": "Powerful Helper",
+   "latin_subtitle": "Potens Adiutor",
+   "school": "Alchemy",
+   "school_icon": "purple circle, gold potion flask",
+   "school_side_label": "ALCHEMY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Eye of Newt": 3
+   },
+   "duration": "Ongoing",
+   "effect": "When using a Familiar to score, gain +1 Gold/ Wizard and Familiar from its school of magic.",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Powerful_Helper/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Powerful_Helper/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Powerful_Helper/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/alchemy/image9x5.png"
+   ],
+   "asset_image": "assets/Spell_Powerful_Helper.jpg"
+  },
+  {
+   "id": "Pulsing_Towers",
+   "deck": "Spell",
+   "name": "Pulsing Towers",
+   "latin_subtitle": "Turris Tremerent",
+   "school": "Thaumaturgy",
+   "school_icon": "orange/gold circle, sun/medallion",
+   "school_side_label": "THAUMATURGY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Sulphur": 3,
+    "Toadstool": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Tower Cards = +1 VP",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Pulsing_Towers/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Pulsing_Towers/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Pulsing_Towers/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/thaumaturgy/image4x2.png"
+   ],
+   "asset_image": "assets/Spell_Pulsing_Towers.jpg"
+  },
+  {
+   "id": "Rise",
+   "deck": "Spell",
+   "name": "Rise",
+   "latin_subtitle": "Renovetur",
+   "school": "Necromancy",
+   "school_icon": "dark circle, gold dragon/bone head",
+   "school_side_label": "NECROMANCY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Nightshade": 2,
+    "Mandrake": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Re-activate one of your used Familiar Cards",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Rise/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Rise/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Rise/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/necromancy/image5x6.png"
+   ],
+   "asset_image": "assets/Spell_Rise.jpg"
+  },
+  {
+   "id": "Root_Cellar",
+   "deck": "Spell",
+   "name": "Root Cellar",
+   "latin_subtitle": "Cella Reponum",
+   "school": "Druidry",
+   "school_icon": "green circle, gold leaves",
+   "school_side_label": "DRUIDRY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Toadstool": 2,
+    "Sulphur": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Store +10 Reagents",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Root_Cellar/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Root_Cellar/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Root_Cellar/image3.jpg"
+   ],
+   "copies": 2,
+   "by_school_scans": [
+    "Spell_Cards/By_School/druidry/image4x7.png",
+    "Spell_Cards/By_School/druidry/image5x7.png"
+   ],
+   "asset_image": "assets/Spell_Root_Cellar.jpg"
+  },
+  {
+   "id": "Scribe",
+   "deck": "Spell",
+   "name": "Scribe",
+   "latin_subtitle": "Librorum",
+   "school": "Alchemy",
+   "school_icon": "purple circle, gold potion flask",
+   "school_side_label": "ALCHEMY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Eye of Newt": 2,
+    "Mandrake": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Take and cast one of the top 5 Spell Cards for free",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scribe/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scribe/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scribe/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/alchemy/image3x5.png"
+   ],
+   "asset_image": "assets/Spell_Scribe.jpg"
+  },
+  {
+   "id": "Scry_Dungeon",
+   "deck": "Spell",
+   "name": "Scry Dungeon",
+   "latin_subtitle": "Scry Lacum",
+   "school": "Sorcery",
+   "school_icon": "blue circle, gold lightning bolt",
+   "school_side_label": "SORCERY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Foxglove": 2,
+    "Nightshade": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Look at the top 10 cards in the Dungeon deck, and keep all Treasure Cards",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Dungeon/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Dungeon/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Dungeon/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/sorcery/image10x1.png"
+   ],
+   "asset_image": "assets/Spell_Scry_Dungeon.jpg"
+  },
+  {
+   "id": "Scry_Familiar",
+   "deck": "Spell",
+   "name": "Scry Familiar",
+   "latin_subtitle": "Scry Adiutor",
+   "school": "Sorcery",
+   "school_icon": "blue circle, gold lightning bolt",
+   "school_side_label": "SORCERY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Foxglove": 2,
+    "Horn": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Look at the top 5 cards in the Familiar Deck, and get one for free",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Familiar/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Familiar/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Familiar/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/sorcery/image6x1.png"
+   ],
+   "asset_image": "assets/Spell_Scry_Familiar.jpg"
+  },
+  {
+   "id": "Scry_Tower",
+   "deck": "Spell",
+   "name": "Scry Tower",
+   "latin_subtitle": "Scry Turrim",
+   "school": "Sorcery",
+   "school_icon": "blue circle, gold lightning bolt",
+   "school_side_label": "SORCERY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Foxglove": 2,
+    "Sulphur": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Look at the top 5 cards in the Tower Deck, and get one for free",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [
+    "Only 2 photos in the set."
+   ],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Tower/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Tower/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/sorcery/image2x1.png"
+   ],
+   "asset_image": "assets/Spell_Scry_Tower.jpg"
+  },
+  {
+   "id": "Scry_Wizard",
+   "deck": "Spell",
+   "name": "Scry Wizard",
+   "latin_subtitle": "Scry Veneficus",
+   "school": "Sorcery",
+   "school_icon": "blue circle, gold lightning bolt",
+   "school_side_label": "SORCERY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Foxglove": 2,
+    "Mandrake": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Look at the top 5 cards in the Wizard Deck, and get one for free",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Wizard/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Wizard/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Scry_Wizard/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/sorcery/image1x1.png"
+   ],
+   "asset_image": "assets/Spell_Scry_Wizard.jpg"
+  },
+  {
+   "id": "Secret_Society",
+   "deck": "Spell",
+   "name": "Secret Society",
+   "latin_subtitle": "Secretum Societatis",
+   "school": "Enchantment",
+   "school_icon": "white/silver circle, gold star",
+   "school_side_label": "ENCHANTMENT",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Mandrake": 2,
+    "Sulphur": 1
+   },
+   "duration": "Ongoing",
+   "effect": "May hide your Wizard Cards; Any negative Spell aimed at your Wizards affects a random Wizard of yours",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Secret_Society/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Secret_Society/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Secret_Society/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/enchantment/image10x3.png"
+   ],
+   "asset_image": "assets/Spell_Secret_Society.jpg"
+  },
+  {
+   "id": "Spell_Shield_A",
+   "deck": "Spell",
+   "name": "Spell Shield",
+   "latin_subtitle": "Magicis Obice",
+   "school": "Alchemy",
+   "school_icon": "purple circle, gold potion flask",
+   "school_side_label": "ALCHEMY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Eye of Newt": 2
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Protected from one negative Spell effect, then placed out of play",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_A/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_A/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_A/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/alchemy/image5x5.png"
+   ],
+   "asset_image": "assets/Spell_Spell_Shield_A.jpg"
+  },
+  {
+   "id": "Spell_Shield_C",
+   "deck": "Spell",
+   "name": "Spell Shield",
+   "latin_subtitle": "Magicis Obice",
+   "school": "Conjuring",
+   "school_icon": "red/gold mask",
+   "school_side_label": "CONJURING",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Horn": 2
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Protected from one negative Spell effect, then placed out of play",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_C/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_C/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_C/image3.jpg"
+   ],
+   "copies": 2,
+   "by_school_scans": [
+    "Spell_Cards/By_School/conjuring/image8x6.png",
+    "Spell_Cards/By_School/conjuring/image9x6.png"
+   ],
+   "asset_image": "assets/Spell_Spell_Shield_C.jpg"
+  },
+  {
+   "id": "Spell_Shield_E",
+   "deck": "Spell",
+   "name": "Spell Shield",
+   "latin_subtitle": "Magicis Obice",
+   "school": "Enchantment",
+   "school_icon": "white/silver circle, gold star",
+   "school_side_label": "ENCHANTMENT",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Mandrake": 2
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Protected from one negative Spell effect, then placed out of play",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_E/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_E/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_E/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/enchantment/image9x3.png"
+   ],
+   "asset_image": "assets/Spell_Spell_Shield_E.jpg"
+  },
+  {
+   "id": "Spell_Shield_T",
+   "deck": "Spell",
+   "name": "Spell Shield",
+   "latin_subtitle": "Magicis Obice",
+   "school": "Thaumaturgy",
+   "school_icon": "orange/gold circle, sun/medallion",
+   "school_side_label": "THAUMATURGY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Sulphur": 2
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Protected from one negative Spell effect, then placed out of play",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_T/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_T/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spell_Shield_T/image3.jpg"
+   ],
+   "copies": 2,
+   "by_school_scans": [
+    "Spell_Cards/By_School/thaumaturgy/image2x7.png",
+    "Spell_Cards/By_School/thaumaturgy/image3x7.png"
+   ],
+   "asset_image": "assets/Spell_Spell_Shield_T.jpg"
+  },
+  {
+   "id": "Spirit_Shield",
+   "deck": "Spell",
+   "name": "Spirit Shield",
+   "latin_subtitle": "Spiritus Clypeus",
+   "school": "Enchantment",
+   "school_icon": "white/silver circle, gold star",
+   "school_side_label": "ENCHANTMENT",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Mandrake": 2,
+    "Sulphur": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Ignore one additional hit per Dungeon Expedition",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spirit_Shield/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spirit_Shield/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Spirit_Shield/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/enchantment/image5x3.png"
+   ],
+   "asset_image": "assets/Spell_Spirit_Shield.jpg"
+  },
+  {
+   "id": "Summon_Helper",
+   "deck": "Spell",
+   "name": "Summon Helper",
+   "latin_subtitle": "Vocare Adiutor",
+   "school": "Conjuring",
+   "school_icon": "red/gold mask",
+   "school_side_label": "CONJURING",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Horn": 2,
+    "Mandrake": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Summon Familiar for 5 fewer Mana Cost",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Summon_Helper/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Summon_Helper/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Summon_Helper/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/conjuring/image6x2.png"
+   ],
+   "asset_image": "assets/Spell_Summon_Helper.jpg"
+  },
+  {
+   "id": "Swapo",
+   "deck": "Spell",
+   "name": "Swapo",
+   "latin_subtitle": "Verto",
+   "school": "Enchantment",
+   "school_icon": "white/silver circle, gold star",
+   "school_side_label": "ENCHANTMENT",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Mandrake": 2,
+    "Sulphur": 2
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Trade one of your Wizard or Tower Cards for the same type owned by another player",
+   "gotcha_star": true,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Swapo/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Swapo/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Swapo/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/enchantment/image1x3.png"
+   ],
+   "asset_image": "assets/Spell_Swapo.jpg"
+  },
+  {
+   "id": "Time_Shift",
+   "deck": "Spell",
+   "name": "Time Shift",
+   "latin_subtitle": "Tempus Subcinctus",
+   "school": "Enchantment",
+   "school_icon": "white/silver circle, gold star",
+   "school_side_label": "ENCHANTMENT",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Mandrake": 2,
+    "Foxglove": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Remove (out of play) the top 5 cards of any deck",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Time_Shift/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Time_Shift/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Time_Shift/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/enchantment/image7x3.png"
+   ],
+   "asset_image": "assets/Spell_Time_Shift.jpg"
+  },
+  {
+   "id": "Transform",
+   "deck": "Spell",
+   "name": "Transform",
+   "latin_subtitle": "Converto",
+   "school": "Alchemy",
+   "school_icon": "purple circle, gold potion flask",
+   "school_side_label": "ALCHEMY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Eye of Newt": 3
+   },
+   "duration": "Ongoing",
+   "effect": "Transform any Reagent to another Reagent at 2:1 ratio before Converting to Mana",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Transform/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Transform/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Transform/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/alchemy/image6x4.png"
+   ],
+   "asset_image": "assets/Spell_Transform.jpg"
+  },
+  {
+   "id": "Transmute",
+   "deck": "Spell",
+   "name": "Transmute",
+   "latin_subtitle": "Conversus est Aurum",
+   "school": "Alchemy",
+   "school_icon": "purple circle, gold potion flask",
+   "school_side_label": "ALCHEMY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Eye of Newt": 2,
+    "Sulphur": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Transmute any number of Reagents to Gold at a 2:1 ratio",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Transmute/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Transmute/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Transmute/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/alchemy/image7x4.png"
+   ],
+   "asset_image": "assets/Spell_Transmute.jpg"
+  },
+  {
+   "id": "Trap",
+   "deck": "Spell",
+   "name": "Trap!",
+   "latin_subtitle": "Captionem",
+   "school": "Thaumaturgy",
+   "school_icon": "orange/gold circle, sun/medallion",
+   "school_side_label": "THAUMATURGY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Sulphur": 2,
+    "Mandrake": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Add a Trap Card to the Dungeon",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [
+    "Card title printed 'Trap!'. No gotcha star printed, despite the targeting effect. The Trap Card it adds is not among these photos."
+   ],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Trap/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Trap/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Trap/image3.jpg"
+   ],
+   "copies": 2,
+   "by_school_scans": [
+    "Spell_Cards/By_School/thaumaturgy/image10x6.png",
+    "Spell_Cards/By_School/thaumaturgy/image1x7.png"
+   ],
+   "asset_image": "assets/Spell_Trap.jpg"
+  },
+  {
+   "id": "Treasure",
+   "deck": "Spell",
+   "name": "Treasure",
+   "latin_subtitle": "Opulentos",
+   "school": "Conjuring",
+   "school_icon": "red/gold mask",
+   "school_side_label": "CONJURING",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Horn": 2,
+    "Eye of Newt": 1
+   },
+   "duration": "Ongoing",
+   "effect": "Gain 2 Gold each time you enter the Dungeon",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Treasure/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Treasure/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Treasure/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/conjuring/image1x2.png"
+   ],
+   "asset_image": "assets/Spell_Treasure.jpg"
+  },
+  {
+   "id": "Undying",
+   "deck": "Spell",
+   "name": "Undying",
+   "latin_subtitle": "Non Mortui",
+   "school": "Necromancy",
+   "school_icon": "dark circle, gold dragon/bone head",
+   "school_side_label": "NECROMANCY",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Nightshade": 2,
+    "Foxglove": 1,
+    "Horn": 1
+   },
+   "duration": "Ongoing",
+   "effect": "+3 VP/ Necromancer Wizard and Familiar Cards owned",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Undying/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Undying/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Undying/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/necromancy/image6x6.png"
+   ],
+   "asset_image": "assets/Spell_Undying.jpg"
+  },
+  {
+   "id": "Wand_Tax",
+   "deck": "Spell",
+   "name": "Wand Tax",
+   "latin_subtitle": "Impostoro",
+   "school": "Enchantment",
+   "school_icon": "white/silver circle, gold star",
+   "school_side_label": "ENCHANTMENT",
+   "mana_cost": 5,
+   "cast_cost_reagents": {
+    "Mandrake": 2,
+    "Eye of Newt": 1
+   },
+   "duration": "One-Time Use (1x)",
+   "effect": "Gain 2 Gold/ Card of any School of Magic of your choice",
+   "gotcha_star": false,
+   "vp_box": null,
+   "transcription_status": "full",
+   "notes": [],
+   "photos": [
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Wand_Tax/image1.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Wand_Tax/image2.jpg",
+    "/workspace/lizard-wizard/pc/train/LizardWizardTrainingImages/Wand_Tax/image3.jpg"
+   ],
+   "copies": 1,
+   "by_school_scans": [
+    "Spell_Cards/By_School/enchantment/image3x3.png"
+   ],
+   "asset_image": "assets/Spell_Wand_Tax.jpg"
+  }
+ ],
+ "distinct_spells": 61,
+ "physical_spell_cards_with_copies": 65,
+ "copies_note": "Rulebook says 65 Spell cards. By_School has 65 clean scans: 61 distinct spells plus a second physical copy of Spell Shield (Conjuring), Spell Shield (Thaumaturgy), Trap! and Root Cellar (each copy was scanned at a different grid position; pixel-diff shows the faces are identical). No new spells were found beyond the 61 already transcribed. The 6 .jpeg files in By_School/necromancy are not spells (see other_cards_from_pc.json)."
+}
