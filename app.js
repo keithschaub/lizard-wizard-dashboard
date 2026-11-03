@@ -318,66 +318,9 @@ game_state = fix_paths(game_state)
             }
         }
 
-        // If tapped on empty board space, show action menu
+        // If tapped on empty board space, show mats overlay
         if (!hitCard) {
-            this.showActionMenu();
-        }
-    }
-
-    showActionMenu() {
-        const menu = document.createElement('div');
-        menu.className = 'action-menu-overlay';
-        menu.innerHTML = `
-            <div class="action-menu">
-                <h2>Actions</h2>
-                <button class="action-btn" data-action="gather">🃏 Gather Reagents</button>
-                <button class="action-btn" data-action="convert">💎 Convert to Mana</button>
-                <button class="action-btn" data-action="build">🗼 Build Tower</button>
-                <button class="action-btn" data-action="research">📜 Research Spell</button>
-                <button class="action-btn" data-action="summon">🔮 Summon Familiar</button>
-                <button class="action-btn" data-action="dungeon">⚔️ Enter Dungeon</button>
-                <button class="action-btn" data-action="auction">🧙 Recruit Wizard</button>
-                <button class="action-btn" data-action="mats">📊 View Mats</button>
-                <button class="action-btn" data-action="close">❌ Cancel</button>
-            </div>
-        `;
-        document.body.appendChild(menu);
-
-        menu.querySelectorAll('.action-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const action = btn.dataset.action;
-                menu.remove();
-                this.handleAction(action);
-            });
-        });
-    }
-
-    handleAction(action) {
-        switch (action) {
-            case 'gather':
-                this.startGatherAction();
-                break;
-            case 'convert':
-                this.startConvertAction();
-                break;
-            case 'build':
-                this.startBuildAction();
-                break;
-            case 'research':
-                this.startResearchAction();
-                break;
-            case 'summon':
-                this.startSummonAction();
-                break;
-            case 'dungeon':
-                this.startDungeonDelve();
-                break;
-            case 'auction':
-                this.startWizardAuction();
-                break;
-            case 'mats':
-                this.showMatsOverlay();
-                break;
+            this.showMatsOverlay();
         }
     }
 
@@ -812,7 +755,21 @@ except Exception as e:
         console.log('Card tapped:', cardBox);
         this.vibrate(10);
         
-        if (cardBox.card) {
+        // Direct action based on card type
+        if (cardBox.type === 'spell_face') {
+            // Research this spell
+            this.researchSpell(cardBox.card);
+        } else if (cardBox.type === 'wiz_face') {
+            // Start auction for this wizard
+            this.showBiddingArena(cardBox.card);
+        } else if (cardBox.type === 'tower_face') {
+            // Build this tower
+            this.buildTower(cardBox.card);
+        } else if (cardBox.type === 'fam_face') {
+            // Summon this familiar
+            this.summonFamiliar(cardBox.card);
+        } else if (cardBox.card) {
+            // Fallback: expand card to see details
             this.expandCard(cardBox.card);
         }
     }
@@ -1033,69 +990,191 @@ A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
     async drawFaceUpCards(ctx) {
         if (!this.gameState) return;
 
-        const cardWidth = 120;
-        const cardHeight = 168;
-        const spacing = 20;
+        // Card dimensions based on board size (scaled to canvas)
+        const cardWidth = 100;
+        const cardHeight = 140;
+        const spacing = 10;
         
-        // Reagent face-up card positions (top of board)
-        const reagentY = 50;
-        const reagentX = 200;
+        // Initialize hitboxes
+        this.cardHitboxes = [];
+        this.deckHitboxes = [];
         
-        if (this.gameState.reagent_face && this.gameState.reagent_face.length > 0) {
+        // Load and draw reagent face-up cards (top center)
+        if (this.gameState.reagent_face) {
+            const reagentStartX = 400;
+            const reagentY = 50;
+            
             for (let i = 0; i < this.gameState.reagent_face.length; i++) {
                 const card = this.gameState.reagent_face[i];
                 if (card) {
-                    const x = reagentX + i * (cardWidth + spacing);
-                    const y = reagentY;
-                    
-                    // Draw card placeholder (will load actual images in next iteration)
-                    ctx.fillStyle = 'rgba(100, 50, 150, 0.5)';
-                    ctx.fillRect(x, y, cardWidth, cardHeight);
-                    ctx.strokeStyle = 'rgba(212, 175, 55, 0.8)';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(x, y, cardWidth, cardHeight);
-                    
-                    // Store hitbox for tap detection
-                    if (!this.cardHitboxes) this.cardHitboxes = [];
-                    this.cardHitboxes.push({
-                        x, y, width: cardWidth, height: cardHeight,
-                        type: 'reagent_deck',
-                        index: i,
-                        card: card
-                    });
+                    const x = reagentStartX + i * (cardWidth + spacing);
+                    await this.drawCard(ctx, card, x, reagentY, cardWidth, cardHeight, 'reagent_face', i);
                 }
             }
         }
 
-        // Draw deck indicators
-        this.drawDeckIndicator(ctx, 50, 300, 'Reagent\nDeck', this.gameState.reagent_deck || 0);
-        this.drawDeckIndicator(ctx, 50, 500, 'Spell\nDeck', this.gameState.spell_deck || 0);
-        this.drawDeckIndicator(ctx, 50, 700, 'Wizard\nDeck', this.gameState.wiz_deck || 0);
+        // Load and draw spell face-up cards
+        if (this.gameState.spell_face) {
+            const spellStartX = 400;
+            const spellY = 220;
+            
+            for (let i = 0; i < this.gameState.spell_face.length; i++) {
+                const card = this.gameState.spell_face[i];
+                if (card) {
+                    const x = spellStartX + i * (cardWidth + spacing);
+                    await this.drawCard(ctx, card, x, spellY, cardWidth, cardHeight, 'spell_face', i);
+                }
+            }
+        }
+
+        // Load and draw wizard face-up cards
+        if (this.gameState.wiz_face) {
+            const wizStartX = 400;
+            const wizY = 390;
+            
+            for (let i = 0; i < this.gameState.wiz_face.length; i++) {
+                const card = this.gameState.wiz_face[i];
+                if (card) {
+                    const x = wizStartX + i * (cardWidth + spacing);
+                    await this.drawCard(ctx, card, x, wizY, cardWidth, cardHeight, 'wiz_face', i);
+                }
+            }
+        }
+
+        // Load and draw tower face-up cards
+        if (this.gameState.tower_face) {
+            const towerStartX = 400;
+            const towerY = 560;
+            
+            for (let i = 0; i < this.gameState.tower_face.length; i++) {
+                const card = this.gameState.tower_face[i];
+                if (card) {
+                    const x = towerStartX + i * (cardWidth + spacing);
+                    await this.drawCard(ctx, card, x, towerY, cardWidth, cardHeight, 'tower_face', i);
+                }
+            }
+        }
+
+        // Draw deck indicators (left side)
+        this.drawDeckIndicator(ctx, 50, 50, 'Reagent Deck', this.gameState.reagent_deck || 0, 'reagent_deck');
+        this.drawDeckIndicator(ctx, 50, 220, 'Spell Deck', this.gameState.spell_deck || 0, 'spell_deck');
+        this.drawDeckIndicator(ctx, 50, 390, 'Wizard Deck', this.gameState.wiz_deck || 0, 'wiz_deck');
+        this.drawDeckIndicator(ctx, 50, 560, 'Tower Deck', this.gameState.tower_deck || 0, 'tower_deck');
+        this.drawDeckIndicator(ctx, 50, 730, 'Familiar Deck', this.gameState.fam_deck || 0, 'fam_deck');
+        this.drawDeckIndicator(ctx, 200, 730, 'Dungeon Deck', this.gameState.dungeon_deck || 0, 'dungeon_deck');
     }
 
-    drawDeckIndicator(ctx, x, y, label, count) {
+    async drawCard(ctx, cardPath, x, y, width, height, type, index) {
+        try {
+            // Load card image
+            const img = await this.loadImage(cardPath);
+            
+            // Draw card
+            ctx.drawImage(img, x, y, width, height);
+            
+            // Add glow if this card is a legal action
+            if (this.isLegalAction(type, cardPath)) {
+                ctx.strokeStyle = 'rgba(212, 175, 55, 1)';
+                ctx.lineWidth = 3;
+                ctx.shadowColor = 'rgba(212, 175, 55, 0.8)';
+                ctx.shadowBlur = 15;
+                ctx.strokeRect(x, y, width, height);
+                ctx.shadowBlur = 0;
+            }
+            
+            // Store hitbox
+            this.cardHitboxes.push({
+                x, y, width, height,
+                type, index,
+                card: cardPath
+            });
+        } catch (error) {
+            // Fallback: draw colored rectangle
+            ctx.fillStyle = type.includes('spell') ? 'rgba(147, 112, 219, 0.7)' : 
+                           type.includes('wiz') ? 'rgba(212, 175, 55, 0.7)' :
+                           type.includes('tower') ? 'rgba(169, 169, 169, 0.7)' :
+                           'rgba(100, 150, 200, 0.7)';
+            ctx.fillRect(x, y, width, height);
+            ctx.strokeStyle = 'rgba(212, 175, 55, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, width, height);
+            
+            this.cardHitboxes.push({
+                x, y, width, height,
+                type, index,
+                card: cardPath
+            });
+        }
+    }
+
+    isLegalAction(cardType, cardPath) {
+        // Determine if tapping this card is a legal action
+        const player = this.getCurrentPlayer();
+        if (!player) return false;
+
+        // All face-up cards can be researched/recruited/built/summoned if player can afford
+        if (cardType === 'spell_face') return true;
+        if (cardType === 'wiz_face') return player.mana > 0;
+        if (cardType === 'tower_face') return true; // Can build with reagents or gold
+        if (cardType === 'fam_face') return player.mana > 0;
+        if (cardType === 'reagent_face') return false; // Reagents gathered from hand, not face-up
+
+        return false;
+    }
+
+    drawDeckIndicator(ctx, x, y, label, count, deckType) {
+        const width = 100;
+        const height = 140;
+        
         ctx.fillStyle = 'rgba(42, 47, 62, 0.9)';
-        ctx.fillRect(x, y, 100, 140);
-        ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, 100, 140);
+        ctx.fillRect(x, y, width, height);
+        
+        // Glow if this is a legal action
+        const isLegal = this.isDeckLegalAction(deckType, count);
+        if (isLegal) {
+            ctx.strokeStyle = 'rgba(212, 175, 55, 1)';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = 'rgba(212, 175, 55, 0.8)';
+            ctx.shadowBlur = 15;
+        } else {
+            ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
+            ctx.lineWidth = 2;
+        }
+        ctx.strokeRect(x, y, width, height);
+        ctx.shadowBlur = 0;
         
         ctx.fillStyle = '#d4af37';
-        ctx.font = 'bold 16px sans-serif';
+        ctx.font = 'bold 14px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(label.split('\n')[0], x + 50, y + 50);
-        ctx.fillText(label.split('\n')[1] || '', x + 50, y + 70);
+        const words = label.split(' ');
+        ctx.fillText(words[0], x + 50, y + 50);
+        if (words[1]) ctx.fillText(words[1], x + 50, y + 70);
         
         ctx.font = 'bold 24px sans-serif';
         ctx.fillText(count.toString(), x + 50, y + 110);
         
         // Store hitbox
-        if (!this.deckHitboxes) this.deckHitboxes = [];
         this.deckHitboxes.push({
-            x, y, width: 100, height: 140,
-            type: label.replace('\n', '_').toLowerCase(),
+            x, y, width, height,
+            type: deckType,
             count: count
         });
+    }
+
+    isDeckLegalAction(deckType, count) {
+        if (count === 0) return false;
+        
+        const player = this.getCurrentPlayer();
+        if (!player) return false;
+
+        // Reagent deck: can always gather if you have cards in hand
+        if (deckType === 'reagent_deck') return player.hand && player.hand.length > 0;
+        
+        // Dungeon: can delve if treasure exists
+        if (deckType === 'dungeon_deck') return count > 0;
+        
+        // Other decks: not directly tappable (tap face-up cards instead)
+        return false;
     }
 
     loadImage(src) {
@@ -1201,6 +1280,13 @@ A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
                 html += `</div></div>`;
             }
 
+            // Add Convert action button for current player
+            if (player.name === this.currentPlayer && player.tok && player.tok.length > 0) {
+                html += `<div class="mat-section">
+                    <button class="btn-primary convert-action-btn">Convert Reagents to Mana</button>
+                </div>`;
+            }
+
             matDiv.innerHTML = html;
             
             // Add click handlers for card expansion
@@ -1210,6 +1296,15 @@ A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
                     this.expandCard(cardPath);
                 });
             });
+            
+            // Add convert button handler
+            const convertBtn = matDiv.querySelector('.convert-action-btn');
+            if (convertBtn) {
+                convertBtn.addEventListener('click', () => {
+                    document.getElementById('mats-overlay').classList.add('hidden');
+                    this.startConvertAction();
+                });
+            }
             
             grid.appendChild(matDiv);
         }
