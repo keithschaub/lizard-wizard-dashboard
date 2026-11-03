@@ -14,9 +14,15 @@ if a source JSON is newer than carddb.json.
     python3 scripts/carddb.py [validate|show KEY]
 """
 import json, os
-_R = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-# Support both 'cards/' (web) and 'assets/' (original) paths
-_CARDS_DIR = 'cards' if os.path.exists(os.path.join(_R, 'cards')) else 'assets'
+# In Pyodide: files are in /home/pyodide/cards/
+# In normal Python: files are in ../cards/ or ../assets/
+if os.environ.get('PYODIDE_ENV'):
+    _R = '/home/pyodide'
+    _CARDS_DIR = 'cards'
+else:
+    _R = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+    # Support both 'cards/' (web) and 'assets/' (original) paths
+    _CARDS_DIR = 'cards' if os.path.exists(os.path.join(_R, 'cards')) else 'assets'
 PATH = os.path.join(_R, _CARDS_DIR, 'carddb.json')
 _SRC = ['spells_from_pc.json', 'cards.json', 'reagent_cards.json', 'other_cards_from_pc.json', 'dungeon_cards.json']
 _DB = None
