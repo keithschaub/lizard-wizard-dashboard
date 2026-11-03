@@ -1989,9 +1989,44 @@ json.dumps(castable)
 
     async castSpell(spellKey) {
         try {
-            // TODO: Implement spell casting
-            this.showToast(`Casting ${spellKey} (implementation pending)`);
+            // Cast spell through Python engine
+            await this.pyodide.runPythonAsync(`
+import actions as A
+
+player_name = "${this.currentPlayer}"
+spell_key = "${spellKey}"
+
+# Find the spell in player's spells and mark as cast
+player = A.P(game_state, player_name)
+for spell in player.get('spells', []):
+    if spell_key in spell['img'] and not spell.get('cast'):
+        spell['cast'] = True
+        
+        # Check if spell has immediate effects
+        import spell_effects as SE
+        
+        # Mana Garden: +5 mana (already handled in gather)
+        # Energize, Transmute, etc. are on-demand not on-cast
+        
+        A.log(game_state, {
+            'r': game_state['meta'].get('round'),
+            'who': player_name,
+            'act': 'cast',
+            'spell': spell_key
+        })
+        break
+            `);
+
+            this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
+            
+            this.showToast(`Cast ${spellKey}!`);
+            this.vibrate(25);
+            this.playSound('cast');
+            this.addLogEntry(this.currentPlayer, `Cast spell: ${spellKey}`);
+            
             document.getElementById('castable-spells').classList.add('hidden');
+            await this.renderBoard();
+            
         } catch (error) {
             console.error('Cast spell failed:', error);
             this.showToast('Cast failed: ' + error.message);
