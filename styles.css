@@ -540,3 +540,194 @@ h2 {
         --text-secondary: #666666;
     }
 }
+
+/* Gathering UI Enhancements */
+.castable-spells-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.castable-spell-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.castable-spell-card {
+    background: var(--bg-medium);
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.castable-spell-card.glow {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.8); }
+}
+
+.castable-spell-card:active {
+    transform: scale(0.95);
+}
+
+.castable-spell-card img {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.spell-name {
+    font-weight: bold;
+    margin-top: 8px;
+    color: var(--accent-gold);
+}
+
+.spell-cost {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.hand-selection-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hand-selection-content {
+    max-width: 600px;
+    width: 90%;
+    padding: 20px;
+}
+
+.hand-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.hand-card {
+    cursor: pointer;
+    transition: transform 0.2s;
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.hand-card:hover, .hand-card:active {
+    transform: scale(1.05);
+    border-color: var(--accent-gold);
+}
+
+.hand-card img {
+    width: 100%;
+    display: block;
+}
+
+.reagent-card-display {
+    position: relative;
+    max-width: 300px;
+    margin: 0 auto 20px;
+}
+
+.reagent-card-display img {
+    width: 100%;
+    border-radius: 12px;
+}
+
+.card-half-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--accent-gold);
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.card-half-label.top {
+    top: 0;
+    border-radius: 12px 12px 0 0;
+}
+
+.card-half-label.bottom {
+    bottom: 0;
+    border-radius: 0 0 12px 12px;
+}
+
+.reagent-icons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 12px;
+}
+
+.gather-instruction {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.wizard-bonus-display {
+    background: var(--bg-light);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    margin-top: 15px;
+}
+
+.bonus-list {
+    margin-top: 8px;
+    color: var(--accent-gold);
+    font-size: 0.9rem;
+}
+
+.token-putback-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.token-putback {
+    background: var(--bg-light);
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.token-putback.selected {
+    border-color: var(--accent-red);
+    background: rgba(220, 20, 60, 0.2);
+    transform: scale(0.95);
+}
+
+.token-putback:active {
+    transform: scale(0.9);
+}

@@ -735,30 +735,119 @@ json.dumps({
             return;
         }
 
-        // For simplicity, gather with first card in hand
-        const cardPath = player.hand[0];
-        const cardKey = cardPath.split('/').pop();
+        // Show hand selection
+        this.showHandSelection(player.hand);
+    }
+
+    showHandSelection(hand) {
+        const overlay = document.createElement('div');
+        overlay.className = 'hand-selection-overlay';
+        overlay.innerHTML = `
+            <div class="hand-selection-content">
+                <h2>Select Card to Gather</h2>
+                <div class="hand-cards">
+                    ${hand.map((card, i) => `
+                        <div class="hand-card" data-index="${i}" data-card="${card}">
+                            <img src="${card}" alt="Card ${i + 1}">
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn-secondary cancel-hand">Cancel</button>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        overlay.querySelectorAll('.hand-card').forEach(card => {
+            card.addEventListener('click', async () => {
+                const cardPath = card.dataset.card;
+                overlay.remove();
+                await this.selectGatherCard(cardPath);
+            });
+        });
+        
+        overlay.querySelector('.cancel-hand').addEventListener('click', () => overlay.remove());
+    }
+
+    async selectGatherCard(cardPath) {
+        const cardKey = cardPath.split('/').pop().replace('.webp', '.jpg');
 
         try {
-            // Get card gather icons from Python
+            // Get card info including Miracle check
             const gatherInfo = await this.pyodide.runPythonAsync(`
 import json
 card_key = "${cardKey}"
+player = A.P(game_state, "${this.currentPlayer}")
+
+# Check for Miracle cast
+has_miracle = any('Miracle' in x.get('img', '') and x.get('cast') for x in player.get('spells', []))
+
+# Get icons (will be reversed if Miracle is active and player chooses)
 gather_icons, increase_icons = CD.reagent_icons(card_key)
+
+# Check for Maximum Gather
+has_max_gather = any('Maximum_Gather' in x.get('img', '') and x.get('cast') for x in player.get('spells', []))
+
+# Wizard bonuses
+wizard_bonuses = []
+W = A._cards()[1]
+for w in player.get('wizards', []):
+    if w in W and W[w].get('gather_bonus_reagent'):
+        wizard_bonuses.append(A.norm(W[w]['gather_bonus_reagent']))
+
 json.dumps({
     'gather': gather_icons,
-    'increase': increase_icons
+    'increase': increase_icons,
+    'has_miracle': has_miracle,
+    'has_max_gather': has_max_gather,
+    'wizard_bonuses': wizard_bonuses,
+    'card_key': card_key
 })
             `);
 
             const info = JSON.parse(gatherInfo);
-            this.currentGatherCard = {path: cardPath, key: cardKey, ...info};
+            this.currentGatherCard = {path: cardPath, ...info};
             
-            this.showGatherUI(this.currentGatherCard);
+            // If Miracle, ask if player wants to reverse
+            if (info.has_miracle) {
+                this.askMiracleReverse(info);
+            } else {
+                this.showGatherUI(this.currentGatherCard);
+            }
         } catch (error) {
-            console.error('Gather action failed:', error);
-            this.showToast('Failed to start gathering');
+            console.error('Gather selection failed:', error);
+            this.showToast('Failed to select card: ' + error.message);
         }
+    }
+
+    askMiracleReverse(info) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>Miracle Active</h2>
+                <p>Reverse the Gather and Increase Value halves?</p>
+                <button class="btn-primary" id="miracle-yes">Yes, Reverse</button>
+                <button class="btn-secondary" id="miracle-no">No, Keep Normal</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        modal.querySelector('#miracle-yes').addEventListener('click', () => {
+            this.currentGatherCard.reversed = true;
+            // Swap gather and increase icons
+            const temp = this.currentGatherCard.gather;
+            this.currentGatherCard.gather = this.currentGatherCard.increase;
+            this.currentGatherCard.increase = temp;
+            modal.remove();
+            this.showGatherUI(this.currentGatherCard);
+        });
+        
+        modal.querySelector('#miracle-no').addEventListener('click', () => {
+            this.currentGatherCard.reversed = false;
+            modal.remove();
+            this.showGatherUI(this.currentGatherCard);
+        });
     }
 
     getCurrentPlayer() {
@@ -771,17 +860,26 @@ json.dumps({
         const selection = document.getElementById('gather-selection');
         const bonusDiv = document.getElementById('gather-bonus');
 
-        // Show card being gathered
-        cardDisplay.innerHTML = `<img src="${cardInfo.path}" alt="Gathering card">`;
+        // Show card being gathered with both halves
+        cardDisplay.innerHTML = `
+            <div class="reagent-card-display">
+                <img src="${cardInfo.path}" alt="Reagent Card">
+                <div class="card-half-label top">${cardInfo.reversed ? 'INCREASE VALUE (gathering from)' : 'GATHER REAGENTS'}</div>
+                <div class="card-half-label bottom">${cardInfo.reversed ? 'GATHER REAGENTS (gathering from)' : 'INCREASE VALUE'}</div>
+            </div>
+        `;
 
-        // Show gather options
+        // Show gather options with tap-to-select/deselect
         const gatherIcons = cardInfo.gather;
-        const keepCount = gatherIcons.length > 3 ? 3 : gatherIcons.length; // TODO: Check Maximum Gather
+        const keepCount = cardInfo.has_max_gather ? gatherIcons.length : Math.min(3, gatherIcons.length);
         
         document.getElementById('keep-count').textContent = keepCount;
 
-        selection.innerHTML = '';
+        selection.innerHTML = '<div class="gather-instruction">Tap reagents to select (tap again to deselect)</div>';
         this.gatherSelection = [];
+        
+        const iconsContainer = document.createElement('div');
+        iconsContainer.className = 'reagent-icons-grid';
 
         gatherIcons.forEach((reagent, i) => {
             const option = document.createElement('div');
@@ -789,75 +887,240 @@ json.dumps({
             option.dataset.reagent = reagent;
             option.dataset.index = i;
             
-            // TODO: Load actual reagent icon
+            const iconPath = `public/art/icons/reagent_icons/${reagent}.webp`;
             option.innerHTML = `
-                <div class="reagent-icon" style="background: #4169e1; border-radius: 50%;"></div>
-                <div>${reagent.replace('_', ' ')}</div>
+                <div class="reagent-icon">
+                    <div style="background: var(--accent-purple); width: 40px; height: 40px; border-radius: 50%; margin: 0 auto;"></div>
+                </div>
+                <div class="reagent-name">${reagent.replace('_', ' ')}</div>
             `;
 
             option.addEventListener('click', () => {
-                this.toggleReagentSelection(option, reagent, keepCount);
+                this.toggleReagentSelectionAutoCommit(option, reagent, keepCount, cardInfo);
             });
 
-            selection.appendChild(option);
+            iconsContainer.appendChild(option);
         });
+        
+        selection.appendChild(iconsContainer);
 
         // Show wizard bonuses
-        const player = this.getCurrentPlayer();
-        if (player && player.wizards && player.wizards.length > 0) {
-            bonusDiv.innerHTML = `<p>Wizard Bonuses: +${player.wizards.length} reagents</p>`;
+        if (cardInfo.wizard_bonuses && cardInfo.wizard_bonuses.length > 0) {
+            bonusDiv.innerHTML = `
+                <div class="wizard-bonus-display">
+                    <strong>Wizard Bonuses:</strong> +${cardInfo.wizard_bonuses.length} reagents
+                    <div class="bonus-list">${cardInfo.wizard_bonuses.map(b => b.replace('_', ' ')).join(', ')}</div>
+                </div>
+            `;
         } else {
             bonusDiv.innerHTML = '';
         }
+
+        // Hide commit button (auto-commits on last selection)
+        document.getElementById('gather-commit').style.display = 'none';
 
         gatherUI.classList.remove('hidden');
         this.vibrate(20);
     }
 
-    toggleReagentSelection(element, reagent, maxCount) {
+    toggleReagentSelectionAutoCommit(element, reagent, maxCount, cardInfo) {
         const isSelected = element.classList.contains('selected');
         
         if (isSelected) {
+            // Deselect
             element.classList.remove('selected');
             const index = this.gatherSelection.indexOf(reagent);
             if (index > -1) this.gatherSelection.splice(index, 1);
+            this.vibrate(5);
         } else {
+            // Select
             if (this.gatherSelection.length < maxCount) {
                 element.classList.add('selected');
                 this.gatherSelection.push(reagent);
                 this.vibrate(10);
+                
+                // Auto-commit on last selection
+                if (this.gatherSelection.length === maxCount) {
+                    setTimeout(() => this.commitGatherAutomatic(cardInfo), 300);
+                }
             } else {
-                this.showToast(`Can only keep ${maxCount} reagents`);
+                this.showToast(`Already selected ${maxCount} reagents`);
+                this.vibrate([10, 50, 10]);
             }
         }
-
-        // Enable commit button when correct number selected
-        const commitBtn = document.getElementById('gather-commit');
-        commitBtn.disabled = this.gatherSelection.length !== maxCount;
     }
 
-    async commitGather() {
+    async commitGatherAutomatic(cardInfo) {
+        this.vibrate(30);
+        // Proceed to check castable spells
+        await this.processGatherWithEngine(cardInfo);
+    }
+
+    async processGatherWithEngine(cardInfo) {
         try {
             const player = this.currentPlayer;
-            const cardKey = this.currentGatherCard.key.replace('.webp', '.jpg');
-            const keepList = this.gatherSelection;
+            const cardKey = cardInfo.card_key;
+            const keepList = this.gatherSelection.length > 0 ? this.gatherSelection : null;
 
-            // Call Python engine to process gather
+            // First, check what spells are castable BEFORE gathering (with anticipated tokens)
+            const castableInfo = await this.pyodide.runPythonAsync(`
+import json
+
+player = A.P(game_state, "${player}")
+current_tokens = player.get('tok', [])
+
+# Simulate gather to see what we'll have
+card_key = "${cardKey}"
+keep = ${JSON.stringify(keepList)}
+R, W = A._cards()
+card_id = card_key.replace('.jpg', '').replace('Reagent_', '')
+if not card_id.startswith('Reagent_'):
+    card_id = 'Reagent_' + card_id
+
+# Get what we'll gather
+c = R[card_id]
+icons = [A.norm(x) for x in c['gather_icons_in_print_order']]
+gathered = keep if keep and len(keep) > 0 else icons[:3]
+
+# Add wizard bonuses
+wizard_bonuses = []
+for w in player.get('wizards', []):
+    if w in W and W[w].get('gather_bonus_reagent'):
+        wizard_bonuses.append(A.norm(W[w]['gather_bonus_reagent']))
+
+anticipated_tokens = current_tokens + gathered + wizard_bonuses
+
+# Check castable spells
+castable = []
+for spell in player.get('spells', []):
+    if not spell.get('cast'):
+        spell_key = spell['img'].split('/')[-1]
+        try:
+            cost = CD.cast_cost(spell_key)
+            if cost:
+                cost_norm = [A.norm(c) for c in cost]
+                token_counts = {}
+                for t in anticipated_tokens:
+                    token_counts[t] = token_counts.get(t, 0) + 1
+                
+                can_cast = all(token_counts.get(c, 0) >= cost_norm.count(c) for c in set(cost_norm))
+                
+                if can_cast:
+                    castable.append({
+                        'key': spell_key,
+                        'img': spell['img'],
+                        'cost': cost,
+                        'name': CD.display(spell_key)
+                    })
+        except:
+            pass
+
+json.dumps({
+    'castable': castable,
+    'anticipated_tokens': anticipated_tokens
+})
+            `);
+
+            const info = JSON.parse(castableInfo);
+            
+            if (info.castable.length > 0) {
+                // Show castable spells BEFORE committing gather
+                this.showCastableSpellsPreGather(info.castable, cardInfo);
+            } else {
+                // No castable spells, commit gather directly
+                await this.commitGatherToEngine(cardInfo, null);
+            }
+            
+        } catch (error) {
+            console.error('Gather processing failed:', error);
+            this.showToast('Failed to process gather: ' + error.message);
+        }
+    }
+
+    showCastableSpellsPreGather(spells, cardInfo) {
+        // Hide gather UI
+        document.getElementById('gather-ui').classList.add('hidden');
+        
+        // Show castable spells
+        const castableDiv = document.getElementById('castable-spells');
+        castableDiv.innerHTML = '<h3>Cast a spell? (cost paid BEFORE storage check)</h3>';
+        castableDiv.className = 'castable-spells-overlay';
+        
+        const spellGrid = document.createElement('div');
+        spellGrid.className = 'castable-spell-grid';
+        
+        spells.forEach(spell => {
+            const spellCard = document.createElement('div');
+            spellCard.className = 'castable-spell-card glow';
+            spellCard.innerHTML = `
+                <img src="${spell.img}" alt="${spell.name}">
+                <div class="spell-name">${spell.name}</div>
+                <div class="spell-cost">Cost: ${spell.cost.join(', ')}</div>
+            `;
+            spellCard.addEventListener('click', () => {
+                castableDiv.classList.add('hidden');
+                this.castSpellDuringGather(spell, cardInfo);
+            });
+            spellGrid.appendChild(spellCard);
+        });
+        
+        castableDiv.appendChild(spellGrid);
+
+        const skipBtn = document.createElement('button');
+        skipBtn.className = 'btn-secondary';
+        skipBtn.textContent = 'Skip casting';
+        skipBtn.addEventListener('click', () => {
+            castableDiv.classList.add('hidden');
+            this.commitGatherToEngine(cardInfo, null);
+        });
+        castableDiv.appendChild(skipBtn);
+
+        castableDiv.classList.remove('hidden');
+    }
+
+    async castSpellDuringGather(spell, cardInfo) {
+        this.vibrate(20);
+        // Commit gather with spell cast
+        await this.commitGatherToEngine(cardInfo, spell);
+    }
+
+    async commitGatherToEngine(cardInfo, spellToCast) {
+        try {
+            const player = this.currentPlayer;
+            const cardKey = cardInfo.card_key;
+            const keepList = this.gatherSelection.length > 0 ? this.gatherSelection : null;
+            const spendList = spellToCast ? spellToCast.cost : null;
+
+            // Call Python engine
             await this.pyodide.runPythonAsync(`
 import json
 
-# Update game_state with current JS state
-game_state = ${JSON.stringify(this.gameState)}
-
-# Process gather action
 player_name = "${player}"
 card_key = "${cardKey}"
-keep = ${JSON.stringify(keepList)} if len(${JSON.stringify(keepList)}) > 0 else None
+keep = ${JSON.stringify(keepList)}
+spend = ${JSON.stringify(spendList)}
 
 try:
-    # Call actions.gather
-    A.gather(game_state, player_name, card_key, keep=keep)
+    # Call actions.gather with spend for cast
+    A.gather(game_state, player_name, card_key, keep=keep, spend=spend)
+    
+    # Mark spell as cast if provided
+    ${spellToCast ? `
+    player = A.P(game_state, player_name)
+    for spell in player.get('spells', []):
+        if '${spellToCast.key}' in spell['img'] and not spell.get('cast'):
+            spell['cast'] = True
+            break
+    ` : ''}
+    
     result = "success"
+except ValueError as e:
+    # Storage limit exceeded
+    if 'over storage' in str(e).lower():
+        result = "over_storage"
+        error_msg = str(e)
+    else:
+        result = f"error: {str(e)}"
 except Exception as e:
     result = f"error: {str(e)}"
     print(result)
@@ -866,26 +1129,108 @@ except Exception as e:
             const result = this.pyodide.globals.get('result');
             
             if (result === 'success') {
-                // Get updated state back
+                // Get updated state
                 this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
                 
-                this.showToast('Gathered successfully!');
+                this.showToast(spellToCast ? `Cast ${spellToCast.name}!` : 'Gathered!');
                 this.vibrate(30);
-                this.playSound('gather');
                 
-                // Check for castable spells
-                await this.checkCastableSpells();
+                document.getElementById('gather-ui').classList.add('hidden');
+                this.gatherSelection = [];
+                await this.renderBoard();
+                
+            } else if (result === 'over_storage') {
+                // Show storage put-back UI
+                await this.showStoragePutBack();
+                
             } else {
                 throw new Error(result);
             }
             
-            document.getElementById('gather-ui').classList.add('hidden');
-            this.gatherSelection = [];
+        } catch (error) {
+            console.error('Gather commit failed:', error);
+            this.showToast('Gather failed: ' + error.message);
+        }
+    }
+
+    async showStoragePutBack() {
+        const player = this.getCurrentPlayer();
+        const capacity = await this.pyodide.runPythonAsync(`
+player = A.P(game_state, "${this.currentPlayer}")
+A.capacity(player)
+        `);
+
+        const storageDiv = document.getElementById('storage-warning');
+        storageDiv.innerHTML = `
+            <h3>Over Storage Limit!</h3>
+            <p>You have ${player.tok.length} tokens but capacity is ${capacity}.</p>
+            <p>Tap tokens to put back (${player.tok.length - capacity} needed):</p>
+            <div class="token-putback-grid">
+                ${player.tok.map((token, i) => `
+                    <div class="token-putback" data-index="${i}" data-token="${token}">
+                        ${token.replace('_', ' ')}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        this.putBackSelection = [];
+
+        storageDiv.querySelectorAll('.token-putback').forEach(el => {
+            el.addEventListener('click', () => {
+                const token = el.dataset.token;
+                const index = parseInt(el.dataset.index);
+                
+                if (el.classList.contains('selected')) {
+                    el.classList.remove('selected');
+                    const idx = this.putBackSelection.indexOf(index);
+                    if (idx > -1) this.putBackSelection.splice(idx, 1);
+                } else {
+                    el.classList.add('selected');
+                    this.putBackSelection.push(index);
+                    this.vibrate(10);
+                }
+
+                // Auto-commit when correct number selected
+                const needed = player.tok.length - capacity;
+                if (this.putBackSelection.length === needed) {
+                    setTimeout(() => this.commitPutBack(needed), 300);
+                }
+            });
+        });
+
+        storageDiv.classList.remove('hidden');
+    }
+
+    async commitPutBack(needed) {
+        try {
+            const tokensToRemove = this.putBackSelection.map(i => 
+                this.getCurrentPlayer().tok[i]
+            );
+
+            await this.pyodide.runPythonAsync(`
+import json
+
+player = A.P(game_state, "${this.currentPlayer}")
+tokens_to_remove = ${JSON.stringify(tokensToRemove)}
+
+for token in tokens_to_remove:
+    if token in player['tok']:
+        player['tok'].remove(token)
+
+result = "success"
+            `);
+
+            this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
+            
+            document.getElementById('storage-warning').classList.add('hidden');
+            this.showToast('Storage adjusted');
+            this.vibrate(20);
             await this.renderBoard();
             
         } catch (error) {
-            console.error('Gather failed:', error);
-            this.showToast('Gather failed: ' + error.message);
+            console.error('Put back failed:', error);
+            this.showToast('Failed to adjust storage');
         }
     }
 
