@@ -318,9 +318,381 @@ game_state = fix_paths(game_state)
             }
         }
 
-        // If tapped on empty board space, show mats overlay
+        // If tapped on empty board space, show action menu
         if (!hitCard) {
-            this.showMatsOverlay();
+            this.showActionMenu();
+        }
+    }
+
+    showActionMenu() {
+        const menu = document.createElement('div');
+        menu.className = 'action-menu-overlay';
+        menu.innerHTML = `
+            <div class="action-menu">
+                <h2>Actions</h2>
+                <button class="action-btn" data-action="gather">🃏 Gather Reagents</button>
+                <button class="action-btn" data-action="convert">💎 Convert to Mana</button>
+                <button class="action-btn" data-action="build">🗼 Build Tower</button>
+                <button class="action-btn" data-action="research">📜 Research Spell</button>
+                <button class="action-btn" data-action="summon">🔮 Summon Familiar</button>
+                <button class="action-btn" data-action="dungeon">⚔️ Enter Dungeon</button>
+                <button class="action-btn" data-action="auction">🧙 Recruit Wizard</button>
+                <button class="action-btn" data-action="mats">📊 View Mats</button>
+                <button class="action-btn" data-action="close">❌ Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(menu);
+
+        menu.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.dataset.action;
+                menu.remove();
+                this.handleAction(action);
+            });
+        });
+    }
+
+    handleAction(action) {
+        switch (action) {
+            case 'gather':
+                this.startGatherAction();
+                break;
+            case 'convert':
+                this.startConvertAction();
+                break;
+            case 'build':
+                this.startBuildAction();
+                break;
+            case 'research':
+                this.startResearchAction();
+                break;
+            case 'summon':
+                this.startSummonAction();
+                break;
+            case 'dungeon':
+                this.startDungeonDelve();
+                break;
+            case 'auction':
+                this.startWizardAuction();
+                break;
+            case 'mats':
+                this.showMatsOverlay();
+                break;
+        }
+    }
+
+    async startConvertAction() {
+        const player = this.getCurrentPlayer();
+        if (!player.tok || player.tok.length === 0) {
+            this.showToast('No reagents to convert');
+            return;
+        }
+
+        // Group tokens by type
+        const tokenCounts = {};
+        player.tok.forEach(t => {
+            tokenCounts[t] = (tokenCounts[t] || 0) + 1;
+        });
+
+        // Show conversion UI
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>Convert Reagents to Mana</h2>
+                <p>Select reagent type and amount</p>
+                <div class="convert-options">
+                    ${Object.entries(tokenCounts).map(([token, count]) => `
+                        <div class="convert-option" data-token="${token}">
+                            <div class="token-type">${token.replace('_', ' ')}</div>
+                            <div class="token-count">x${count}</div>
+                            <input type="number" min="1" max="${count}" value="1" class="convert-amount">
+                            <button class="btn-primary convert-btn">Convert</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn-secondary">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.querySelectorAll('.convert-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const option = btn.closest('.convert-option');
+                const token = option.dataset.token;
+                const amount = parseInt(option.querySelector('.convert-amount').value);
+                
+                try {
+                    await this.pyodide.runPythonAsync(`
+import actions as A
+A.convert(game_state, "${this.currentPlayer}", "${token}", ${amount})
+                    `);
+
+                    this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
+                    
+                    const trackValue = await this.pyodide.runPythonAsync(`game_state['tracks']['${token}']`);
+                    const manaGained = trackValue * amount;
+                    
+                    this.showToast(`Converted ${amount} ${token.replace('_', ' ')} for ${manaGained} mana`);
+                    this.vibrate(30);
+                    
+                    modal.remove();
+                    await this.renderBoard();
+                } catch (error) {
+                    this.showToast('Convert failed: ' + error.message);
+                }
+            };
+        });
+
+        modal.querySelector('.btn-secondary').onclick = () => modal.remove();
+    }
+
+    async startBuildAction() {
+        // Get available towers
+        const towers = this.gameState.tower_face?.filter(t => t) || [];
+        if (towers.length === 0) {
+            this.showToast('No towers available');
+            return;
+        }
+
+        // Show tower selection
+        this.showTowerSelection(towers);
+    }
+
+    async showTowerSelection(towers) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>Build Tower</h2>
+                <div class="tower-grid">
+                    ${towers.map((tower, i) => `
+                        <div class="tower-card" data-tower="${tower}">
+                            <img src="${tower}" alt="Tower">
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn-secondary">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.querySelectorAll('.tower-card').forEach(card => {
+            card.addEventListener('click', async () => {
+                const tower = card.dataset.tower;
+                modal.remove();
+                await this.buildTower(tower);
+            });
+        });
+
+        modal.querySelector('.btn-secondary').onclick = () => modal.remove();
+    }
+
+    async buildTower(towerImg) {
+        try {
+            // Get tower cost
+            const costInfo = await this.pyodide.runPythonAsync(`
+import json
+import carddb as CD
+
+tower_key = "${towerImg.split('/').pop()}"
+tier, reagent, school = CD.tower_info(tower_key)
+
+json.dumps({
+    'tier': tier,
+    'reagent': reagent,
+    'school': school,
+    'cost_reagent': tier,
+    'cost_gold': tier * 2
+})
+            `);
+
+            const cost = JSON.parse(costInfo);
+
+            // Ask payment method
+            const payment = await new Promise(resolve => {
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <h2>Pay for Tower (Tier ${cost.tier})</h2>
+                        <button class="btn-primary" data-method="reagent">
+                            ${cost.cost_reagent} ${cost.reagent.replace('_', ' ')}
+                        </button>
+                        <button class="btn-primary" data-method="gold">
+                            ${cost.cost_gold} Gold
+                        </button>
+                        <button class="btn-secondary">Cancel</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                modal.querySelectorAll('[data-method]').forEach(btn => {
+                    btn.onclick = () => {
+                        modal.remove();
+                        resolve(btn.dataset.method);
+                    };
+                });
+
+                modal.querySelector('.btn-secondary').onclick = () => {
+                    modal.remove();
+                    resolve(null);
+                };
+            });
+
+            if (!payment) return;
+
+            // Build tower
+            await this.pyodide.runPythonAsync(`
+import actions as A
+
+tower_img = "${towerImg}"
+payment = "${payment}"
+
+A.build(game_state, "${this.currentPlayer}", tower_img, payment)
+            `);
+
+            this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
+
+            this.showToast('Tower built!');
+            this.vibrate(40);
+            await this.renderBoard();
+
+        } catch (error) {
+            console.error('Build failed:', error);
+            this.showToast('Build failed: ' + error.message);
+        }
+    }
+
+    async startResearchAction() {
+        const spells = this.gameState.spell_face?.filter(s => s) || [];
+        if (spells.length === 0) {
+            this.showToast('No spells available');
+            return;
+        }
+
+        this.showSpellSelection(spells);
+    }
+
+    async showSpellSelection(spells) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>Research Spell</h2>
+                <div class="spell-grid">
+                    ${spells.map((spell, i) => `
+                        <div class="spell-card" data-spell="${spell}">
+                            <img src="${spell}" alt="Spell">
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn-secondary">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.querySelectorAll('.spell-card').forEach(card => {
+            card.addEventListener('click', async () => {
+                const spell = card.dataset.spell;
+                modal.remove();
+                await this.researchSpell(spell);
+            });
+        });
+
+        modal.querySelector('.btn-secondary').onclick = () => modal.remove();
+    }
+
+    async researchSpell(spellImg) {
+        try {
+            await this.pyodide.runPythonAsync(`
+import actions as A
+
+spell_img = "${spellImg}"
+# Research without casting immediately
+A.research(game_state, "${this.currentPlayer}", spell_img, None)
+            `);
+
+            this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
+
+            this.showToast('Spell researched!');
+            this.vibrate(30);
+            await this.renderBoard();
+
+        } catch (error) {
+            console.error('Research failed:', error);
+            this.showToast('Research failed: ' + error.message);
+        }
+    }
+
+    async startSummonAction() {
+        const familiars = this.gameState.fam_face?.filter(f => f) || [];
+        if (familiars.length === 0) {
+            this.showToast('No familiars available');
+            return;
+        }
+
+        this.showFamiliarSelection(familiars);
+    }
+
+    async showFamiliarSelection(familiars) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>Summon Familiar</h2>
+                <div class="familiar-grid">
+                    ${familiars.map((fam, i) => `
+                        <div class="familiar-card" data-familiar="${fam}">
+                            <img src="${fam}" alt="Familiar">
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn-secondary">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.querySelectorAll('.familiar-card').forEach(card => {
+            card.addEventListener('click', async () => {
+                const familiar = card.dataset.familiar;
+                modal.remove();
+                await this.summonFamiliar(familiar);
+            });
+        });
+
+        modal.querySelector('.btn-secondary').onclick = () => modal.remove();
+    }
+
+    async summonFamiliar(familiarImg) {
+        try {
+            // Get familiar cost
+            const cost = await this.pyodide.runPythonAsync(`
+import spell_effects as SE
+
+fam_img = "${familiarImg}"
+player = A.P(game_state, "${this.currentPlayer}")
+SE.familiar_cost(player, fam_img)
+            `);
+
+            // Ask how to use familiar (for now, just score)
+            await this.pyodide.runPythonAsync(`
+import actions as A
+
+fam_img = "${familiarImg}"
+# Summon for score (simplest case)
+A.summon_familiar(game_state, "${this.currentPlayer}", fam_img, 'score')
+            `);
+
+            this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
+
+            this.showToast(`Familiar summoned for ${cost} mana!`);
+            this.vibrate(35);
+            await this.renderBoard();
+
+        } catch (error) {
+            console.error('Summon failed:', error);
+            this.showToast('Summon failed: ' + error.message);
         }
     }
 
@@ -342,7 +714,160 @@ game_state = fix_paths(game_state)
             this.startGatherAction();
         } else if (deckBox.type === 'dungeon_deck') {
             this.startDungeonDelve();
+        } else if (deckBox.type === 'wizard_deck') {
+            this.startWizardAuction();
         }
+    }
+
+    async startWizardAuction() {
+        try {
+            // Get face-up wizards
+            const wizards = this.gameState.wiz_face?.filter(w => w) || [];
+            if (wizards.length === 0) {
+                this.showToast('No wizards available');
+                return;
+            }
+
+            // Show wizard selection
+            this.showWizardSelection(wizards);
+            
+        } catch (error) {
+            console.error('Auction start failed:', error);
+            this.showToast('Failed to start auction: ' + error.message);
+        }
+    }
+
+    showWizardSelection(wizards) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>Select Wizard to Bid On</h2>
+                <div class="wizard-grid">
+                    ${wizards.map((wiz, i) => `
+                        <div class="wizard-card" data-wizard="${wiz}" data-index="${i}">
+                            <img src="${wiz}" alt="Wizard">
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn-secondary close-wizard-select">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.querySelectorAll('.wizard-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const wizard = card.dataset.wizard;
+                modal.remove();
+                this.showBiddingArena(wizard);
+            });
+        });
+
+        modal.querySelector('.close-wizard-select').addEventListener('click', () => modal.remove());
+    }
+
+    async showBiddingArena(wizardImg) {
+        const player = this.getCurrentPlayer();
+        const maxBid = player.mana;
+
+        const auctionUI = document.getElementById('auction-ui');
+        const wizardDisplay = document.getElementById('auction-wizard');
+        const playersDiv = document.getElementById('auction-players');
+        const controls = document.getElementById('auction-controls');
+
+        // Get wizard info
+        const wizardInfo = await this.pyodide.runPythonAsync(`
+import json
+wiz_key = "${wizardImg.split('/').pop()}"
+wiz = CD.get(wiz_key)
+json.dumps({
+    'name': wiz.get('name', wiz_key),
+    'school': wiz.get('school', 'Unknown'),
+    'bonus': wiz.get('gather_bonus', '')
+})
+        `);
+
+        const info = JSON.parse(wizardInfo);
+
+        wizardDisplay.innerHTML = `
+            <img src="${wizardImg}" alt="${info.name}">
+            <div class="wizard-info">
+                <h3>${info.name}</h3>
+                <p>${info.school}</p>
+                <p>+1 ${info.bonus} when gathering</p>
+            </div>
+        `;
+
+        // Show players in clockwise order (Keith on left)
+        const players = this.gameState.players;
+        const keithIndex = players.findIndex(p => p.name === this.currentPlayer);
+        const orderedPlayers = [
+            ...players.slice(keithIndex),
+            ...players.slice(0, keithIndex)
+        ];
+
+        playersDiv.innerHTML = orderedPlayers.map((p, i) => `
+            <div class="auction-player ${p.name === this.currentPlayer ? 'active' : ''}">
+                <div class="player-name">${p.name}</div>
+                <div class="player-bid">-</div>
+            </div>
+        `).join('');
+
+        // Bidding controls
+        const slider = document.getElementById('bid-slider');
+        const bidAmount = document.getElementById('bid-amount');
+        slider.max = maxBid;
+        slider.value = 1;
+        bidAmount.textContent = 1;
+
+        slider.oninput = (e) => {
+            bidAmount.textContent = e.target.value;
+        };
+
+        document.getElementById('bid-btn').onclick = () => {
+            const bid = parseInt(slider.value);
+            this.submitBid(wizardImg, bid);
+        };
+
+        document.getElementById('pass-btn').onclick = () => {
+            this.passBid(wizardImg);
+        };
+
+        auctionUI.classList.remove('hidden');
+        this.vibrate(20);
+    }
+
+    async submitBid(wizardImg, bid) {
+        try {
+            // For simplicity, assume Keith wins immediately at his bid price
+            // (Full auction with AI would require turn processing)
+            await this.pyodide.runPythonAsync(`
+import actions as A
+
+player_name = "${this.currentPlayer}"
+wiz_img = "${wizardImg}"
+price = ${bid}
+
+A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
+            `);
+
+            this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
+
+            this.showToast(`Won wizard for ${bid} mana!`);
+            this.vibrate(50);
+
+            document.getElementById('auction-ui').classList.add('hidden');
+            await this.renderBoard();
+
+        } catch (error) {
+            console.error('Bid failed:', error);
+            this.showToast('Bid failed: ' + error.message);
+        }
+    }
+
+    async passBid(wizardImg) {
+        this.showToast('Passed on auction');
+        document.getElementById('auction-ui').classList.add('hidden');
     }
 
     async renderBoard() {

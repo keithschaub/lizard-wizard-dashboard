@@ -731,3 +731,231 @@ h2 {
 .token-putback:active {
     transform: scale(0.9);
 }
+
+/* Action Menu */
+.action-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-menu {
+    background: var(--bg-medium);
+    border: 2px solid var(--accent-gold);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.action-menu h2 {
+    margin-bottom: 20px;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 15px;
+    margin: 8px 0;
+    background: var(--bg-light);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.action-btn:hover, .action-btn:active {
+    border-color: var(--accent-gold);
+    background: rgba(212, 175, 55, 0.2);
+    transform: translateX(4px);
+}
+
+/* Convert UI */
+.convert-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.convert-option {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: var(--bg-light);
+    border-radius: 8px;
+}
+
+.token-type {
+    font-weight: bold;
+    color: var(--accent-gold);
+}
+
+.convert-amount {
+    width: 60px;
+    padding: 6px;
+    background: var(--bg-dark);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 4px;
+    color: var(--text-primary);
+}
+
+/* Tower/Spell/Familiar Grids */
+.tower-grid, .spell-grid, .familiar-grid, .wizard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.tower-card, .spell-card, .familiar-card, .wizard-card {
+    cursor: pointer;
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.tower-card:hover, .spell-card:hover, .familiar-card:hover, .wizard-card:hover,
+.tower-card:active, .spell-card:active, .familiar-card:active, .wizard-card:active {
+    border-color: var(--accent-gold);
+    transform: scale(1.05);
+}
+
+.tower-card img, .spell-card img, .familiar-card img, .wizard-card img {
+    width: 100%;
+    display: block;
+}
+
+/* Dungeon UI */
+.dungeon-card-shown {
+    background: var(--bg-light);
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.dungeon-card-shown.hit {
+    border-color: var(--accent-red);
+    background: rgba(220, 20, 60, 0.1);
+}
+
+.dungeon-card-shown.safe {
+    border-color: var(--accent-blue);
+    background: rgba(65, 105, 225, 0.1);
+}
+
+.card-type {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--accent-gold);
+    margin-bottom: 10px;
+}
+
+.card-name {
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.card-gold {
+    font-size: 1.1rem;
+    color: var(--accent-gold);
+}
+
+.drawn-cards {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.mini-card {
+    width: 30px;
+    height: 40px;
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.mini-card.monster {
+    background: var(--accent-red);
+}
+
+.mini-card.treasure {
+    background: var(--accent-gold);
+    color: var(--bg-dark);
+}
+
+.mini-card.trap {
+    background: var(--bg-dark);
+}
+
+/* Auction UI */
+.wizard-info {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.wizard-info h3 {
+    color: var(--accent-gold);
+    margin-bottom: 8px;
+}
+
+.auction-players {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.auction-player {
+    background: var(--bg-light);
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+
+.auction-player.active {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+}
+
+.player-name {
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.player-bid {
+    color: var(--accent-gold);
+    font-size: 1.1rem;
+}
+
+.bid-display {
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--accent-gold);
+    margin: 15px 0;
+}
+
+#bid-slider {
+    width: 100%;
+    margin: 10px 0;
+}
