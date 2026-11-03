@@ -22,6 +22,20 @@ export function closeAll() { document.querySelectorAll('#overlays .overlay').for
 function closeBtn(fn, testid = 'ov-close') { return h('button', { class: 'ov-close', 'aria-label': 'Close', 'data-testid': testid, onclick: (e) => { e.stopPropagation(); fn(); } }, '×'); }
 const wait = () => { let res; const p = new Promise((r) => { res = r; }); return [p, res]; };
 
+// Card art flying from one place to another (auction win, loot to the mat, builds).
+export function fly(src, from, toEl, { w = 54, hgt = 76 } = {}) {
+  if (!from || !toEl) return;
+  const to = toEl.getBoundingClientRect();
+  const img = h('img', { class: 'fly', src, alt: '', style: { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` } });
+  document.body.append(img);
+  requestAnimationFrame(() => requestAnimationFrame(() => Object.assign(img.style, {
+    left: `${to.left + to.width / 2 - w / 2}px`, top: `${to.top + to.height / 2 - hgt / 2}px`, width: `${w}px`, height: `${hgt}px`, opacity: '0.15', transform: 'rotate(-8deg)',
+  })));
+  setTimeout(() => img.remove(), 820);
+}
+const dockTarget = () => document.querySelector('[data-testid=my-vp]');
+const slotRectOf = (key) => { const el = document.querySelector(`#board [data-key="${key}"]`); return el ? el.getBoundingClientRect() : null; };
+
 // ------------------------------------------------------------------ card text (carddb only)
 export function cardInfo(g, key) {
   const c = g.cards[key] || {};
@@ -174,7 +188,7 @@ function castPicker(g, host, castable, { multi = false, title = 'Cast a spell wi
     const info = g.cards[c.key] || {};
     const el = h('button', { class: 'castopt', 'data-testid': `cast-${c.key}` },
       h('img', { src: art(c.key), alt: c.key }), h('div', { class: 'co-name' }, info.display || c.key), h('div', { class: 'co-text' }, info.effect || ''),
-      c.cost?.length ? h('div', {}, costIcons(c.cost)) : null);
+      c.cost?.length ? h('div', { class: 'co-cost' }, costIcons(c.cost)) : null);
     el.onclick = () => {
       if (!multi) { g.sfx('cast'); done({ cast: c }); return; }
       if (chosen.has(c.key)) { chosen.delete(c.key); el.classList.remove('on'); } else { chosen.add(c.key); el.classList.add('on'); }
@@ -303,8 +317,9 @@ export function summonFlow(g, fk) {
   const uses = new Set(L.uses);
   const act = (use) => async () => {
     if (use === 'gather') { await summonGather(g, fk); return; }
+    const from = slotRectOf(fk);
     const r = await g.act('act_summon', { familiar: fk, use }, { sound: use === 'score' ? 'coin' : 'select' });
-    if (r) g.afterAction();
+    if (r) { fly(art(fk), from, dockTarget()); g.afterAction(); }
   };
   expandCard(g, fk, { actions: [
     { label: `Summon to Score`, sub: `${L.cost} mana · +${L.score_gold} Gold`, testid: 'summon-score', disabled: !uses.has('score'), onClick: act('score') },
@@ -345,7 +360,7 @@ export function researchFlow(g, sk) {
   const L = g.v.legal.research[sk];
   const cost = Object.entries(g.cards[sk]?.cost?.reagents || {}).flatMap(([r, n]) => (n === 'X' ? [r] : Array.from({ length: n }, () => r)));
   expandCard(g, sk, { actions: [
-    { label: 'Research', sub: `${L.mana} mana`, testid: 'research-only', onClick: async () => { const r = await g.act('act_research', { spell: sk, cast: false }, { sound: 'select' }); if (r) g.afterAction(); } },
+    { label: 'Research', sub: `${L.mana} mana`, testid: 'research-only', onClick: async () => { const from = slotRectOf(sk); const r = await g.act('act_research', { spell: sk, cast: false }, { sound: 'select' }); if (r) { fly(art(sk), from, dockTarget()); g.afterAction(); } } },
     { label: 'Research & Cast', sub: [`${L.mana} mana + `, ...costIcons(cost), L.x ? '×X' : ''], testid: 'research-cast', disabled: !L.castable, onClick: async (ov) => {
       let x = null, target = null;
       if (L.x) {
@@ -353,17 +368,23 @@ export function researchFlow(g, sk) {
         const eyes = g.me_().tok.filter((t) => t === 'Eye_of_Newt').length;
         const xt = await xTargetPicker(g, ov.el, eyes); x = xt.x; target = xt.target;
       }
+      const from = slotRectOf(sk);
       const r = await g.act('act_research', { spell: sk, cast: true, x, target }, { sound: 'cast' });
-      if (r) g.afterAction();
+      if (r) { fly(art(sk), from, dockTarget()); g.afterAction(); }
     } },
   ] });
 }
 
 export function buildFlow(g) {
   const B = g.v.legal.build;
+  const build = async (pay) => {
+    const from = slotRectOf(B.tower);
+    const r = await g.act('act_build', { pay }, { sound: 'build' });
+    if (r) { fly(art(B.tower), from, dockTarget()); g.afterAction(); }
+  };
   expandCard(g, B.tower, { actions: [
-    B.reagent ? { label: 'Build with reagents', sub: costIcons(Array.from({ length: B.reagent.n }, () => B.reagent.reagent)), testid: 'build-reagent', onClick: async () => { const r = await g.act('act_build', { pay: 'reagent' }, { sound: 'build' }); if (r) g.afterAction(); } } : null,
-    B.gold ? { label: 'Build with Gold', sub: `${B.gold.n} Gold`, testid: 'build-gold', onClick: async () => { const r = await g.act('act_build', { pay: 'gold' }, { sound: 'build' }); if (r) g.afterAction(); } } : null,
+    B.reagent ? { label: 'Build with reagents', sub: costIcons(Array.from({ length: B.reagent.n }, () => B.reagent.reagent)), testid: 'build-reagent', onClick: () => build('reagent') } : null,
+    B.gold ? { label: 'Build with Gold', sub: `${B.gold.n} Gold`, testid: 'build-gold', onClick: () => build('gold') } : null,
   ].filter(Boolean) });
 }
 
@@ -515,9 +536,12 @@ export async function dungeonFlow(g) {
         const gold = kept.reduce((s, c) => s + (c.gold || 0), 0) + (was.bonus_gold || 0);
         const items = kept.filter((c) => c.subtype === 'Item').map((c) => c.name);
         ov.el.innerHTML = '';
-        ov.el.append(h('div', { class: 'ov-title' }, 'The Dungeon'), h('div', { class: 'result good', 'data-testid': 'dungeon-result' }, `Collected ${gold} Gold${items.length ? ' + ' + items.join(', ') : ''}`),
-          h('div', { class: 'drawn' }, was.kept.map((k) => h('div', { class: 'dc new' }, h('img', { src: art(k), alt: k })))));
-        await sleep(1300);
+        const loot = h('div', { class: 'drawn' }, was.kept.map((k) => h('div', { class: 'dc new' }, h('img', { src: art(k), alt: k }))));
+        ov.el.append(h('div', { class: 'ov-title' }, 'The Dungeon'), h('div', { class: 'result good', 'data-testid': 'dungeon-result' }, `Collected ${gold} Gold${items.length ? ' + ' + items.join(', ') : ''}`), loot);
+        await sleep(700);
+        const gt = document.querySelector('[data-testid=my-gold]');
+        loot.querySelectorAll('img').forEach((im, i) => setTimeout(() => { fly(im.src, im.getBoundingClientRect(), gt); g.sfx('coin'); }, i * 140));
+        await sleep(900);
       }
       break;
     }
@@ -569,7 +593,8 @@ export async function arena(g, { mode, wizard = null }) {
   const playTail = async (tail, fast = false) => { for (; shown < tail.length; shown++) await showBid(tail[shown][0], tail[shown][1], fast || g.skip); };
 
   const controls = (min, max, opening) => {
-    const [p, done] = wait();
+    const [p, resolve] = wait();
+    const done = (x) => { bar.querySelectorAll('button, input').forEach((b) => { b.disabled = true; }); resolve(x); };
     bar.innerHTML = '';
     if (max < min) {
       bar.append(h('div', { class: 'ov-sub' }, `You have ${max} mana — you cannot beat ${min - 1}`), h('div', { class: 'bidbtns' }, h('button', { class: 'act secondary', 'data-testid': 'bid-pass', onclick: () => done({ pass: true }) }, 'Pass')));
@@ -597,6 +622,8 @@ export async function arena(g, { mode, wizard = null }) {
       const w = e.who;
       Object.values(seats).forEach((s) => s.classList.remove('active'));
       seats[w]?.classList.add('winner');
+      const ci = ringEl.querySelector('.arena-center img');
+      if (ci && seats[w]) fly(art(card), ci.getBoundingClientRect(), seats[w].querySelector('.avatar'), { w: 40, hgt: 56 });
       msg.textContent = `${w === me ? 'You win' : w + ' wins'} ${g.cards[card]?.name || ''} for ${e.price} mana`;
       msg.setAttribute('data-testid', 'arena-winner');
       g.sfx(w === me ? 'win' : 'coin');
@@ -622,7 +649,7 @@ export async function arena(g, { mode, wizard = null }) {
       seats[me].classList.add('active');
       const c = await controls(a.high + 1, g.me_().mana, false);
       const r = c.pass ? await g.act('act_pass', {}) : await g.act('act_bid', { n: c.bid });
-      if (!r) continue;
+      if (!r) { const vr = await g.call('view'); if (vr.ok) g.setView(vr.result); }
     }
   } finally { ov.close(); }
   return true;

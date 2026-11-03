@@ -7,6 +7,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 python3 -c "import PIL" 2>/dev/null || python3 -m pip install --quiet pillow
 python3 "$ROOT/tools/build_engine_assets.py"
+touch "$ROOT/engine/cards/carddb.json"   # carddb.py rebuilds it if a source JSON looks newer (fresh checkouts have arbitrary mtimes)
 SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO="sudo"
 $SUDO mkdir -p /workspace
 $SUDO ln -sfn "$ROOT/engine" /workspace/lizard-wizard

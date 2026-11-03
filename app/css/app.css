@@ -222,7 +222,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .hot.on::after { content: '✓'; position: absolute; right: -4px; top: -4px; width: 20px; height: 20px; border-radius: 50%; background: var(--teal); color: #05241c; font-weight: 700; font-size: 13px; display: grid; place-items: center; }
 .half-tag { position: absolute; left: 6%; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 8px; letter-spacing: .4px; }
 .counter { display: flex; align-items: center; gap: 10px; font-weight: 700; }
-.counter .pill { font-family: var(--display); font-size: 17px; color: #05241c; background: linear-gradient(180deg, #9ff7e0, #3cc7a4); padding: 4px 14px; border-radius: 16px; box-shadow: 0 0 14px rgba(111, 240, 208, .5); }
+.counter .pill { font-family: var(--sans); font-size: 18px; color: #05241c; background: linear-gradient(180deg, #9ff7e0, #3cc7a4); padding: 4px 14px; border-radius: 16px; box-shadow: 0 0 14px rgba(111, 240, 208, .5); }
 .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: min(94vw, 480px); }
 .chip { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 4px 12px 4px 6px; border-radius: 20px; border: 1px solid var(--line); background: rgba(255, 255, 255, .05); font-weight: 700; font-size: 14px; }
 .chip img { width: 28px; height: 28px; object-fit: contain; }
@@ -235,7 +235,9 @@ img { -webkit-user-drag: none; user-select: none; }
 .tokbtn.on::after { content: '↩'; position: absolute; right: -5px; top: -5px; width: 20px; height: 20px; border-radius: 50%; background: var(--red); color: #fff; font-size: 12px; display: grid; place-items: center; }
 .cast-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: min(96vw, 520px); }
 .castopt { width: 150px; display: flex; flex-direction: column; gap: 6px; align-items: center; padding: 8px; border-radius: 12px; border: 1px solid rgba(214, 180, 90, .7); background: rgba(30, 24, 8, .7); position: relative; }
-.castopt img { width: 118px; border-radius: 8px; }
+.castopt > img { width: 118px; border-radius: 8px; }
+.castopt .co-cost { display: flex; gap: 3px; justify-content: center; }
+.castopt .co-cost img { width: 24px; height: 24px; object-fit: contain; }
 .castopt .co-name { font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--gold-hi); text-align: center; }
 .castopt .co-text { font-size: 12.5px; line-height: 1.25; text-align: center; color: #e8e2cc; }
 .castopt::after { content: ''; position: absolute; inset: -4px; border-radius: 15px; box-shadow: 0 0 0 2px var(--glow), 0 0 20px 4px rgba(255, 211, 107, .6); animation: pulse 1.6s ease-in-out infinite; pointer-events: none; }
