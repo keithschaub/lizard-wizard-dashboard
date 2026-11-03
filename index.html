@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="theme-color" content="#070a18">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Lizard Wizard</title>
+  <link rel="icon" href="app/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="art/board/game_board_clean.webp" as="image">
+  <link rel="stylesheet" href="app/css/app.css">
+</head>
+<body>
+  <div id="app" data-testid="app">
+    <header id="topbar">
+      <div class="tb-left">
+        <span class="tb-round" data-testid="round">Round –</span>
+        <span class="tb-turn" data-testid="turn"></span>
+      </div>
+      <div class="tb-right">
+        <button class="tb-btn" id="btn-log" data-testid="btn-log" aria-label="Game log"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+        <button class="tb-btn" id="btn-mute" data-testid="btn-mute" aria-label="Sound"></button>
+        <button class="tb-btn" id="btn-menu" data-testid="btn-menu" aria-label="Game menu"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="19" r="1.8" fill="currentColor"/></svg></button>
+      </div>
+    </header>
+    <main id="stage" data-testid="stage">
+      <div id="board" data-testid="board"></div>
+      <button id="btn-reset-zoom" class="hidden" data-testid="reset-zoom" aria-label="Reset zoom"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </main>
+    <footer id="dock" data-testid="dock"></footer>
+    <div id="banner-layer"></div>
+    <div id="overlays"></div>
+    <div id="toast" role="status"></div>
+    <div id="loader" data-testid="loader">
+      <div class="loader-inner">
+        <div class="loader-title">Lizard Wizard</div>
+        <div class="loader-orb"></div>
+        <div class="loader-status" id="loader-status">Opening the spellbook…</div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="app/js/main.js"></script>
+</body>
+</html>
