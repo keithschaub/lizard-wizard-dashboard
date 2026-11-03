@@ -1001,7 +1001,7 @@ A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
         this.deckHitboxes = [];
         
         // Load and draw reagent face-up cards (top center)
-        if (this.gameState.reagent_face) {
+        if (this.gameState.reagent_face && Array.isArray(this.gameState.reagent_face)) {
             const reagentStartX = 400;
             const reagentY = 50;
             
@@ -1015,7 +1015,7 @@ A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
         }
 
         // Load and draw spell face-up cards
-        if (this.gameState.spell_face) {
+        if (this.gameState.spell_face && Array.isArray(this.gameState.spell_face)) {
             const spellStartX = 400;
             const spellY = 220;
             
@@ -1029,7 +1029,7 @@ A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
         }
 
         // Load and draw wizard face-up cards
-        if (this.gameState.wiz_face) {
+        if (this.gameState.wiz_face && Array.isArray(this.gameState.wiz_face)) {
             const wizStartX = 400;
             const wizY = 390;
             
@@ -1043,12 +1043,16 @@ A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
         }
 
         // Load and draw tower face-up cards
-        if (this.gameState.tower_face) {
+        // Note: tower_face might be a string in g8, normalize to array
+        const towerCards = this.gameState.tower_face 
+            ? (Array.isArray(this.gameState.tower_face) ? this.gameState.tower_face : [this.gameState.tower_face])
+            : [];
+        if (towerCards.length > 0) {
             const towerStartX = 400;
             const towerY = 560;
             
-            for (let i = 0; i < this.gameState.tower_face.length; i++) {
-                const card = this.gameState.tower_face[i];
+            for (let i = 0; i < towerCards.length; i++) {
+                const card = towerCards[i];
                 if (card) {
                     const x = towerStartX + i * (cardWidth + spacing);
                     await this.drawCard(ctx, card, x, towerY, cardWidth, cardHeight, 'tower_face', i);
