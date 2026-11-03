@@ -196,6 +196,9 @@ game_state = fix_paths(game_state)
         document.getElementById('export-game').addEventListener('click', () => this.exportGame());
         document.getElementById('import-game').addEventListener('click', () => this.importGame());
 
+        // Gather UI
+        document.getElementById('gather-commit')?.addEventListener('click', () => this.commitGather());
+
         // Board interactions
         this.setupBoardInteractions();
     }
@@ -233,11 +236,63 @@ game_state = fix_paths(game_state)
         const x = (event.clientX || event.changedTouches[0].clientX) - rect.left;
         const y = (event.clientY || event.changedTouches[0].clientY) - rect.top;
 
-        console.log('Board tapped at', x, y);
+        // Convert screen coordinates to board coordinates
+        const boardX = (x - this.boardOffset.x) / this.boardScale;
+        const boardY = (y - this.boardOffset.y) / this.boardScale;
 
-        // For now, show the mats overlay on any tap on empty board space
-        // TODO: Detect specific card regions
-        this.showMatsOverlay();
+        console.log('Board tapped at', boardX, boardY);
+
+        // Check if tapped on a card
+        let hitCard = false;
+        
+        if (this.cardHitboxes) {
+            for (const box of this.cardHitboxes) {
+                if (boardX >= box.x && boardX <= box.x + box.width &&
+                    boardY >= box.y && boardY <= box.y + box.height) {
+                    this.handleCardTap(box);
+                    hitCard = true;
+                    break;
+                }
+            }
+        }
+
+        // Check if tapped on a deck
+        if (!hitCard && this.deckHitboxes) {
+            for (const box of this.deckHitboxes) {
+                if (boardX >= box.x && boardX <= box.x + box.width &&
+                    boardY >= box.y && boardY <= box.y + box.height) {
+                    this.handleDeckTap(box);
+                    hitCard = true;
+                    break;
+                }
+            }
+        }
+
+        // If tapped on empty board space, show mats overlay
+        if (!hitCard) {
+            this.showMatsOverlay();
+        }
+    }
+
+    handleCardTap(cardBox) {
+        console.log('Card tapped:', cardBox);
+        this.vibrate(10);
+        
+        if (cardBox.card) {
+            this.expandCard(cardBox.card);
+        }
+    }
+
+    handleDeckTap(deckBox) {
+        console.log('Deck tapped:', deckBox);
+        this.vibrate(15);
+        
+        if (deckBox.type === 'reagent_deck' && deckBox.count > 0) {
+            // Start gather action if it's player's turn
+            this.startGatherAction();
+        } else if (deckBox.type === 'dungeon_deck') {
+            this.startDungeonDelve();
+        }
     }
 
     async renderBoard() {
@@ -270,22 +325,87 @@ game_state = fix_paths(game_state)
     }
 
     drawGameElements(ctx, offsetX, offsetY, scale) {
-        // Placeholder for drawing face-up cards, decks, etc.
-        // Will be implemented in Milestone 2
+        // Store scale for hitbox detection
+        this.boardScale = scale;
+        this.boardOffset = {x: offsetX, y: offsetY};
+        
         ctx.save();
         ctx.translate(offsetX, offsetY);
         ctx.scale(scale, scale);
         
-        // Draw placeholders for interactive elements
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.3)';
-        ctx.strokeStyle = 'rgba(212, 175, 55, 0.8)';
-        ctx.lineWidth = 2;
-        
-        // Example: Reagent deck position (will be refined)
-        ctx.fillRect(100, 100, 80, 112);
-        ctx.strokeRect(100, 100, 80, 112);
+        // Draw face-up cards on board
+        // Based on g8_state structure: reagent_face, spell_face, wiz_face, tower_face, fam_face
+        this.drawFaceUpCards(ctx);
         
         ctx.restore();
+    }
+
+    async drawFaceUpCards(ctx) {
+        if (!this.gameState) return;
+
+        const cardWidth = 120;
+        const cardHeight = 168;
+        const spacing = 20;
+        
+        // Reagent face-up card positions (top of board)
+        const reagentY = 50;
+        const reagentX = 200;
+        
+        if (this.gameState.reagent_face && this.gameState.reagent_face.length > 0) {
+            for (let i = 0; i < this.gameState.reagent_face.length; i++) {
+                const card = this.gameState.reagent_face[i];
+                if (card) {
+                    const x = reagentX + i * (cardWidth + spacing);
+                    const y = reagentY;
+                    
+                    // Draw card placeholder (will load actual images in next iteration)
+                    ctx.fillStyle = 'rgba(100, 50, 150, 0.5)';
+                    ctx.fillRect(x, y, cardWidth, cardHeight);
+                    ctx.strokeStyle = 'rgba(212, 175, 55, 0.8)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, cardWidth, cardHeight);
+                    
+                    // Store hitbox for tap detection
+                    if (!this.cardHitboxes) this.cardHitboxes = [];
+                    this.cardHitboxes.push({
+                        x, y, width: cardWidth, height: cardHeight,
+                        type: 'reagent_deck',
+                        index: i,
+                        card: card
+                    });
+                }
+            }
+        }
+
+        // Draw deck indicators
+        this.drawDeckIndicator(ctx, 50, 300, 'Reagent\nDeck', this.gameState.reagent_deck || 0);
+        this.drawDeckIndicator(ctx, 50, 500, 'Spell\nDeck', this.gameState.spell_deck || 0);
+        this.drawDeckIndicator(ctx, 50, 700, 'Wizard\nDeck', this.gameState.wiz_deck || 0);
+    }
+
+    drawDeckIndicator(ctx, x, y, label, count) {
+        ctx.fillStyle = 'rgba(42, 47, 62, 0.9)';
+        ctx.fillRect(x, y, 100, 140);
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, 100, 140);
+        
+        ctx.fillStyle = '#d4af37';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(label.split('\n')[0], x + 50, y + 50);
+        ctx.fillText(label.split('\n')[1] || '', x + 50, y + 70);
+        
+        ctx.font = 'bold 24px sans-serif';
+        ctx.fillText(count.toString(), x + 50, y + 110);
+        
+        // Store hitbox
+        if (!this.deckHitboxes) this.deckHitboxes = [];
+        this.deckHitboxes.push({
+            x, y, width: 100, height: 140,
+            type: label.replace('\n', '_').toLowerCase(),
+            count: count
+        });
     }
 
     loadImage(src) {
@@ -555,6 +675,129 @@ json.dumps({
             // Placeholder for sound effects
             // Will be implemented in Milestone 4
         }
+    }
+
+    async startGatherAction() {
+        // Get current player's hand
+        const player = this.getCurrentPlayer();
+        if (!player || !player.hand || player.hand.length === 0) {
+            this.showToast('No cards in hand');
+            return;
+        }
+
+        // For simplicity, gather with first card in hand
+        const cardPath = player.hand[0];
+        const cardKey = cardPath.split('/').pop();
+
+        try {
+            // Get card gather icons from Python
+            const gatherInfo = await this.pyodide.runPythonAsync(`
+import json
+card_key = "${cardKey}"
+gather_icons, increase_icons = CD.reagent_icons(card_key)
+json.dumps({
+    'gather': gather_icons,
+    'increase': increase_icons
+})
+            `);
+
+            const info = JSON.parse(gatherInfo);
+            this.currentGatherCard = {path: cardPath, key: cardKey, ...info};
+            
+            this.showGatherUI(this.currentGatherCard);
+        } catch (error) {
+            console.error('Gather action failed:', error);
+            this.showToast('Failed to start gathering');
+        }
+    }
+
+    getCurrentPlayer() {
+        return this.gameState?.players?.find(p => p.name === this.currentPlayer);
+    }
+
+    showGatherUI(cardInfo) {
+        const gatherUI = document.getElementById('gather-ui');
+        const cardDisplay = document.getElementById('gather-card-display');
+        const selection = document.getElementById('gather-selection');
+        const bonusDiv = document.getElementById('gather-bonus');
+
+        // Show card being gathered
+        cardDisplay.innerHTML = `<img src="${cardInfo.path}" alt="Gathering card">`;
+
+        // Show gather options
+        const gatherIcons = cardInfo.gather;
+        const keepCount = gatherIcons.length > 3 ? 3 : gatherIcons.length; // TODO: Check Maximum Gather
+        
+        document.getElementById('keep-count').textContent = keepCount;
+
+        selection.innerHTML = '';
+        this.gatherSelection = [];
+
+        gatherIcons.forEach((reagent, i) => {
+            const option = document.createElement('div');
+            option.className = 'reagent-option';
+            option.dataset.reagent = reagent;
+            option.dataset.index = i;
+            
+            // TODO: Load actual reagent icon
+            option.innerHTML = `
+                <div class="reagent-icon" style="background: #4169e1; border-radius: 50%;"></div>
+                <div>${reagent.replace('_', ' ')}</div>
+            `;
+
+            option.addEventListener('click', () => {
+                this.toggleReagentSelection(option, reagent, keepCount);
+            });
+
+            selection.appendChild(option);
+        });
+
+        // Show wizard bonuses
+        const player = this.getCurrentPlayer();
+        if (player && player.wizards && player.wizards.length > 0) {
+            bonusDiv.innerHTML = `<p>Wizard Bonuses: +${player.wizards.length} reagents</p>`;
+        } else {
+            bonusDiv.innerHTML = '';
+        }
+
+        gatherUI.classList.remove('hidden');
+        this.vibrate(20);
+    }
+
+    toggleReagentSelection(element, reagent, maxCount) {
+        const isSelected = element.classList.contains('selected');
+        
+        if (isSelected) {
+            element.classList.remove('selected');
+            const index = this.gatherSelection.indexOf(reagent);
+            if (index > -1) this.gatherSelection.splice(index, 1);
+        } else {
+            if (this.gatherSelection.length < maxCount) {
+                element.classList.add('selected');
+                this.gatherSelection.push(reagent);
+                this.vibrate(10);
+            } else {
+                this.showToast(`Can only keep ${maxCount} reagents`);
+            }
+        }
+
+        // Enable commit button when correct number selected
+        const commitBtn = document.getElementById('gather-commit');
+        commitBtn.disabled = this.gatherSelection.length !== maxCount;
+    }
+
+    async commitGather() {
+        // TODO: Call Python engine to process gather
+        // For now, just update UI
+        this.showToast('Gather action committed (engine integration pending)');
+        document.getElementById('gather-ui').classList.add('hidden');
+        this.gatherSelection = [];
+        await this.renderBoard();
+    }
+
+    startDungeonDelve() {
+        this.showToast('Dungeon delve (to be implemented)');
+        // TODO: Implement dungeon UI
     }
 }
 
