@@ -1,106 +1,111 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lizard Wizard Dashboard</title>
-
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="styles.css" />
-
-  <!-- Firebase + script references -->
-  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
-  <script src="firebase-init.js" defer></script>
-  <script src="script.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Lizard Wizard - Phone-first board game">
+    <title>Lizard Wizard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
 </head>
-
 <body>
-  <h1>Lizard Wizard Dashboard</h1>
-
-  <!-- Dashboard Container -->
-  <div id="dashboard" class="grid-container"></div>
-
- 
-  <!-- Delete Mode Indicator (optional) -->
-  <div id="delete-mode-indicator" class="hidden">
-    <p>Delete Mode Active: Click a card to delete it.</p>
-  </div>
-
-  <!-- Category Selection Popup -->
-  <div id="card-selection" class="card-selection-modal">
-    <h3>Select Card Type</h3>
-    <div class="card-options">
-      <div onclick="selectCard('Wizard')">
-        <img src="assets/wizardIcon.png" alt="Wizard Icon">
-        <span>Wizard</span>
-      </div>
-      <div onclick="selectCard('Tower')">
-        <img src="assets/towerIcon.png" alt="Tower Icon">
-        <span>Tower</span>
-      </div>
-      <div onclick="selectCard('Familiar')">
-        <img src="assets/familiarIcon.png" alt="Familiar Icon">
-        <span>Familiar</span>
-      </div>
-      <div onclick="selectCard('Spell')">
-        <img src="assets/spellIcon.png" alt="Spell Icon">
-        <span>Spell</span>
-      </div>
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <h1>🦎 Lizard Wizard</h1>
+            <div class="loading-spinner"></div>
+            <p id="loading-status">Initializing Python engine...</p>
+            <div class="loading-bar">
+                <div id="loading-progress" class="loading-progress"></div>
+            </div>
+        </div>
     </div>
-    <button onclick="closeCardSelection()">Close</button>
-  </div>
 
-  <!-- School Selection (Wizard/Tower/Familiar) -->
-  <div id="school-selection" class="card-selection-modal">
-    <h3>Select School of Magic</h3>
-    <div class="card-options">
-      <div onclick="selectSchool('Druidry')">
-        <img src="assets/greenDruidry.webp" alt="Druidry Icon">
-        <span>Druidry</span>
-      </div>
-      <div onclick="selectSchool('Sorcery')">
-        <img src="assets/blueSorcery.webp" alt="Sorcery Icon">
-        <span>Sorcery</span>
-      </div>
-      <div onclick="selectSchool('Thaumaturgy')">
-        <img src="assets/goldThaumaturgy.webp" alt="Thaumaturgy Icon">
-        <span>Thaumaturgy</span>
-      </div>
-      <div onclick="selectSchool('Alchemy')">
-        <img src="assets/purpleAlchemy.webp" alt="Alchemy Icon">
-        <span>Alchemy</span>
-      </div>
-      <div onclick="selectSchool('Enchantment')">
-        <img src="assets/whiteEnchantment.webp" alt="Enchantment Icon">
-        <span>Enchantment</span>
-      </div>
-      <div onclick="selectSchool('Necromancy')">
-        <img src="assets/blackNecromancy.webp" alt="Necromancy Icon">
-        <span>Necromancy</span>
-      </div>
-      <div onclick="selectSchool('Conjuring')">
-        <img src="assets/redConjuring.webp" alt="Conjuring Icon">
-        <span>Conjuring</span>
-      </div>
+    <div id="game-container" class="game-container hidden">
+        <div id="board-view" class="board-view">
+            <canvas id="board-canvas"></canvas>
+            <div id="board-overlay" class="board-overlay">
+                <div class="top-bar">
+                    <button id="mute-toggle" class="icon-btn">🔊</button>
+                    <div class="round-indicator">R<span id="round-num">1</span></div>
+                    <button id="menu-btn" class="icon-btn">☰</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="card-expand" class="card-expand hidden">
+            <div class="card-expand-content">
+                <img id="card-expand-img" src="" alt="Card">
+                <div id="card-expand-text" class="card-text"></div>
+            </div>
+        </div>
+
+        <div id="mats-overlay" class="mats-overlay hidden">
+            <div class="mats-content">
+                <button class="close-btn">×</button>
+                <div id="mats-grid" class="mats-grid"></div>
+            </div>
+        </div>
+
+        <div id="gather-ui" class="gather-ui hidden">
+            <div class="gather-content">
+                <h2>Gather Reagents</h2>
+                <div id="gather-card-display" class="gather-card-display"></div>
+                <div id="gather-selection" class="gather-selection"></div>
+                <div class="keep-counter">Keep <span id="keep-count">3</span></div>
+                <div id="gather-bonus" class="gather-bonus"></div>
+                <div id="castable-spells" class="castable-spells hidden"></div>
+                <div id="storage-warning" class="storage-warning hidden"></div>
+                <button id="gather-commit" class="btn-primary" disabled>Gather</button>
+            </div>
+        </div>
+
+        <div id="dungeon-ui" class="dungeon-ui hidden">
+            <div class="dungeon-content">
+                <h2>Dungeon Delve</h2>
+                <div id="dungeon-card" class="dungeon-card-display"></div>
+                <div id="dungeon-hits" class="dungeon-hits">Hits: <span>0</span> / <span>2</span></div>
+                <div id="dungeon-drawn" class="dungeon-drawn"></div>
+                <button id="dungeon-continue" class="btn-primary">Draw Card</button>
+                <button id="dungeon-stop" class="btn-secondary">Stop & Collect</button>
+            </div>
+        </div>
+
+        <div id="auction-ui" class="auction-ui hidden">
+            <div class="auction-content">
+                <h2>Wizard Auction</h2>
+                <div id="auction-wizard" class="auction-wizard-display"></div>
+                <div id="auction-players" class="auction-players"></div>
+                <div id="auction-controls" class="auction-controls">
+                    <input type="range" id="bid-slider" min="1" max="20" value="1">
+                    <div class="bid-display">Bid: <span id="bid-amount">1</span> Mana</div>
+                    <button id="bid-btn" class="btn-primary">Bid</button>
+                    <button id="pass-btn" class="btn-secondary">Pass</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="action-log" class="action-log collapsed">
+            <div class="log-header" id="log-toggle">
+                <span>📜 Action Log</span>
+                <span class="chevron">▼</span>
+            </div>
+            <div id="log-content" class="log-content"></div>
+        </div>
+
+        <div id="menu-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Menu</h2>
+                <button id="save-game" class="btn-primary">Save Game</button>
+                <button id="load-game" class="btn-primary">Load Game</button>
+                <button id="export-game" class="btn-secondary">Export to File</button>
+                <button id="import-game" class="btn-secondary">Import from File</button>
+                <button id="view-rules" class="btn-secondary">View Rules</button>
+                <button id="close-menu" class="btn-secondary">Close</button>
+            </div>
+        </div>
     </div>
-    <button onclick="closeSchoolSelection()">Close</button>
-  </div>
 
-  <!-- Spell Selection Popup (list from spell_cards.json) -->
-  <div id="spell-selection" class="card-selection-modal">
-    <h3>Select Spell</h3>
-    <div id="spell-list" class="spell-list">
-      <!-- script.js populates this using ALL_SPELLS -->
-    </div>
-    <button onclick="closeSpellListPopup()">Close</button>
-  </div>
-
-<div id="spell-card-modal" class="modal">
-  <span class="close-modal">&times;</span>
-  <img class="modal-image" alt="Spell Card">
-</div>
-
+    <script type="module" src="app.js"></script>
 </body>
 </html>

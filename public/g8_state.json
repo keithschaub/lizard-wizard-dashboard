@@ -1,0 +1,857 @@
+{
+  "seed": 32552,
+  "hands_seed": 577888,
+  "board_seed": 32552,
+  "players": [
+    {
+      "name": "Keith",
+      "hand": [
+        "public/art/Reagent_51.webp",
+        "public/art/Reagent_14.webp",
+        "public/art/Reagent_15.webp"
+      ],
+      "tok": [
+        "Toadstool",
+        "Horn",
+        "Nightshade",
+        "Mandrake",
+        "Sulphur"
+      ],
+      "mana": 20,
+      "gold": 0,
+      "wizards": [],
+      "towers": [],
+      "spells": [],
+      "familiars": [],
+      "achievements": []
+    },
+    {
+      "name": "Newt",
+      "hand": [
+        "public/art/Reagent_23.webp",
+        "public/art/Reagent_46.webp",
+        "public/art/Reagent_30.webp"
+      ],
+      "tok": [
+        "Foxglove",
+        "Nightshade"
+      ],
+      "mana": 0,
+      "gold": 0,
+      "wizards": [
+        "public/art/Wizard_Serpentium_Machinus.webp"
+      ],
+      "towers": [],
+      "spells": [],
+      "familiars": [],
+      "achievements": []
+    },
+    {
+      "name": "LizWiz",
+      "hand": [
+        "public/art/Reagent_43.webp",
+        "public/art/Reagent_41.webp",
+        "public/art/Reagent_34.webp"
+      ],
+      "tok": [
+        "Foxglove",
+        "Horn"
+      ],
+      "mana": 15,
+      "gold": 4,
+      "wizards": [],
+      "towers": [],
+      "spells": [],
+      "familiars": [
+        "public/art/Familiar_5_Troglodytam.webp"
+      ],
+      "achievements": []
+    }
+  ],
+  "start": "Keith",
+  "reag_list": [
+    "public/art/Reagent_25.webp",
+    "public/art/Reagent_56.webp",
+    "public/art/Reagent_08.webp",
+    "public/art/Reagent_48.webp",
+    "public/art/Reagent_55.webp",
+    "public/art/Reagent_54.webp",
+    "public/art/Reagent_47.webp",
+    "public/art/Reagent_39.webp",
+    "public/art/Reagent_37.webp",
+    "public/art/Reagent_11.webp",
+    "public/art/Reagent_29.webp",
+    "public/art/Reagent_28.webp",
+    "public/art/Reagent_31.webp",
+    "public/art/Reagent_18.webp",
+    "public/art/Reagent_22.webp",
+    "public/art/Reagent_52.webp",
+    "public/art/Reagent_09.webp",
+    "public/art/Reagent_27.webp",
+    "public/art/Reagent_21.webp",
+    "public/art/Reagent_53.webp",
+    "public/art/Reagent_50.webp",
+    "public/art/Reagent_35.webp",
+    "public/art/Reagent_04.webp",
+    "public/art/Reagent_44.webp",
+    "public/art/Reagent_45.webp",
+    "public/art/Reagent_38.webp",
+    "public/art/Reagent_02.webp",
+    "public/art/Reagent_40.webp",
+    "public/art/Reagent_20.webp",
+    "public/art/Reagent_17.webp",
+    "public/art/Reagent_12.webp",
+    "public/art/Reagent_05.webp",
+    "public/art/Reagent_06.webp",
+    "public/art/Reagent_07.webp",
+    "public/art/Reagent_24.webp",
+    "public/art/Reagent_42.webp",
+    "public/art/Reagent_01.webp",
+    "public/art/Reagent_03.webp",
+    "public/art/Reagent_13.webp",
+    "public/art/Reagent_49.webp",
+    "public/art/Reagent_19.webp",
+    "public/art/Reagent_10.webp",
+    "public/art/Reagent_32.webp",
+    "public/art/Reagent_16.webp",
+    "public/art/Reagent_26.webp",
+    "public/art/Reagent_33.webp"
+  ],
+  "reag_deck": 46,
+  "reag_discard": [
+    "public/art/Reagent_36.webp"
+  ],
+  "tracks": {
+    "Mandrake": 2,
+    "Eye_of_Newt": 1,
+    "Nightshade": 1,
+    "Sulphur": 1,
+    "Foxglove": 2,
+    "Toadstool": 2,
+    "Horn": 1
+  },
+  "turn": 0,
+  "next": "Keith",
+  "meta": {
+    "coaching_log": "game/coaching_log_g8.md",
+    "show_coaching": false,
+    "round": 2,
+    "game_over": false,
+    "num_players": 3,
+    "seat_order": [
+      "Keith",
+      "Newt",
+      "LizWiz"
+    ],
+    "humans": [
+      "Keith"
+    ],
+    "mode": "free-for-all (each AI plays only for itself; humans play for themselves)",
+    "deck_convention": "*_list = remaining face-down cards only, top=index 0, draw via pop(0); *_deck == len(*_list); no pointers",
+    "ai_seed": 514876,
+    "pending": null,
+    "phase": "play",
+    "ai_levels": {
+      "Newt": "normal",
+      "LizWiz": "normal"
+    },
+    "ai_profiles": {
+      "Newt": "spellslinger",
+      "LizWiz": "delver"
+    },
+    "ai_random": true,
+    "private_mats": true,
+    "show_gold": true,
+    "log": [
+      {
+        "r": 1,
+        "act": "turn",
+        "seat": "Keith"
+      },
+      {
+        "r": 0,
+        "act": "setup_picks",
+        "picks": {
+          "Keith": [
+            "Toadstool",
+            "Horn"
+          ],
+          "Newt": [
+            "Foxglove",
+            "Nightshade"
+          ],
+          "LizWiz": [
+            "Foxglove",
+            "Horn"
+          ]
+        }
+      },
+      {
+        "r": 1,
+        "who": "Keith",
+        "act": "gather",
+        "card": "Reagent_36",
+        "got": [
+          "Nightshade",
+          "Mandrake",
+          "Sulphur"
+        ],
+        "bonus": [],
+        "inc": [
+          "Foxglove",
+          "Mandrake",
+          "Toadstool"
+        ]
+      },
+      {
+        "r": 1,
+        "act": "turn",
+        "seat": "Newt"
+      },
+      {
+        "r": 1,
+        "act": "auction",
+        "won": "Newt",
+        "item": "Serpentium_Machinus",
+        "price": 20,
+        "starter": "Newt",
+        "bids_tail": [
+          [
+            "Newt",
+            1
+          ],
+          [
+            "LizWiz",
+            2
+          ],
+          [
+            "Keith",
+            3
+          ],
+          [
+            "Newt",
+            4
+          ],
+          [
+            "LizWiz",
+            5
+          ],
+          [
+            "Keith",
+            6
+          ],
+          [
+            "Newt",
+            7
+          ],
+          [
+            "LizWiz",
+            8
+          ],
+          [
+            "Keith",
+            9
+          ],
+          [
+            "Newt",
+            10
+          ],
+          [
+            "LizWiz",
+            11
+          ],
+          [
+            "Keith",
+            "pass"
+          ],
+          [
+            "Newt",
+            12
+          ],
+          [
+            "LizWiz",
+            13
+          ],
+          [
+            "Newt",
+            14
+          ],
+          [
+            "LizWiz",
+            15
+          ],
+          [
+            "Newt",
+            16
+          ],
+          [
+            "LizWiz",
+            17
+          ],
+          [
+            "Newt",
+            18
+          ],
+          [
+            "LizWiz",
+            19
+          ],
+          [
+            "Newt",
+            20
+          ],
+          [
+            "LizWiz",
+            "pass"
+          ]
+        ]
+      },
+      {
+        "r": 1,
+        "act": "turn",
+        "seat": "LizWiz"
+      },
+      {
+        "r": 1,
+        "who": "LizWiz",
+        "act": "summon",
+        "familiar": "Familiar_5_Troglodytam.jpg",
+        "cost": 5,
+        "use": "dungeon"
+      },
+      {
+        "r": 1,
+        "who": "LizWiz",
+        "act": "dungeon",
+        "drawn": [
+          {
+            "deck": "Dungeon",
+            "type": "Treasure",
+            "subtype": "Gold",
+            "text": "Collect 2 Gold",
+            "gold": 2
+          },
+          {
+            "deck": "Dungeon",
+            "type": "Treasure",
+            "subtype": "Gold",
+            "text": "Collect 1 Gold",
+            "gold": 1
+          },
+          {
+            "deck": "Dungeon",
+            "type": "Monster",
+            "name": "Manticore",
+            "monster_type": "Dungeon Denizen"
+          },
+          {
+            "deck": "Dungeon",
+            "type": "Treasure",
+            "subtype": "Gold",
+            "text": "Collect 1 Gold",
+            "gold": 1
+          }
+        ],
+        "hits": 1,
+        "success": true,
+        "kept": [
+          {
+            "deck": "Dungeon",
+            "type": "Treasure",
+            "subtype": "Gold",
+            "text": "Collect 2 Gold",
+            "gold": 2
+          },
+          {
+            "deck": "Dungeon",
+            "type": "Treasure",
+            "subtype": "Gold",
+            "text": "Collect 1 Gold",
+            "gold": 1
+          },
+          {
+            "deck": "Dungeon",
+            "type": "Treasure",
+            "subtype": "Gold",
+            "text": "Collect 1 Gold",
+            "gold": 1
+          }
+        ],
+        "bonus_gold": 0,
+        "undead": 0
+      },
+      {
+        "r": 2,
+        "act": "turn",
+        "seat": "Keith"
+      }
+    ]
+  },
+  "tower_face": "public/art/Tower_T1_Obelisk_of_Puzzles.webp",
+  "wiz_face": [
+    "public/art/Wizard_Draco_Mortemus.webp",
+    "public/art/Wizard_Bufonem_Creaturae.webp"
+  ],
+  "fam_face": [
+    "public/art/Familiar_5_Imp.webp",
+    "public/art/Familiar_5_Bufonem.webp"
+  ],
+  "spell_face": [
+    "public/art/Spell_Scry_Tower.webp",
+    "public/art/Spell_Haste.webp",
+    "public/art/Spell_Spell_Shield_T.webp",
+    "public/art/Spell_Scribe.webp"
+  ],
+  "tow_list": [
+    "public/art/Tower_T1_Keep_of_Elixers.webp",
+    "public/art/Tower_T1_Ivory_Spire.webp",
+    "public/art/Tower_T1_Azure_Tower.webp",
+    "public/art/Tower_T1_Obsidian_Fortress.webp",
+    "public/art/Tower_T1_Emerald_Stronghold.webp",
+    "public/art/Tower_T1_Vermillion_Citadel.webp",
+    "public/art/Tower_T2_Obelisk_of_Puzzles.webp",
+    "public/art/Tower_T2_Ivory_Spire.webp",
+    "public/art/Tower_T2_Keep_of_Elixers.webp",
+    "public/art/Tower_T2_Emerald_Stronghold.webp",
+    "public/art/Tower_T2_Azure_Tower.webp",
+    "public/art/Tower_T2_Obsidian_Fortress.webp",
+    "public/art/Tower_T2_Vermillion_Citadel.webp",
+    "public/art/Tower_T3_Obsidian_Fortress.webp",
+    "public/art/Tower_T3_Vermillion_Citadel.webp",
+    "public/art/Tower_T3_Azure_Tower.webp",
+    "public/art/Tower_T3_Emerald_Stronghold.webp",
+    "public/art/Tower_T3_Ivory_Spire.webp",
+    "public/art/Tower_T3_Keep_of_Elixers.webp",
+    "public/art/Tower_T3_Obelisk_of_Puzzles.webp"
+  ],
+  "wiz_list": [
+    "public/art/Wizard_Bufonem_Creaturae.webp",
+    "public/art/Wizard_Serpentium_Machinus.webp",
+    "public/art/Wizard_Lacerta_Arborus.webp",
+    "public/art/Wizard_Bufonem_Creaturae.webp",
+    "public/art/Wizard_Reptilius_Venenum.webp",
+    "public/art/Wizard_Draco_Mortemus.webp",
+    "public/art/Wizard_Anguis_Magicus.webp",
+    "public/art/Wizard_Anguis_Magicus.webp",
+    "public/art/Wizard_Reptilius_Venenum.webp",
+    "public/art/Wizard_Draco_Mortemus.webp",
+    "public/art/Wizard_Lacerta_Arborus.webp",
+    "public/art/Wizard_Ignus_Fulgorus.webp",
+    "public/art/Wizard_Reptilius_Venenum.webp",
+    "public/art/Wizard_Ignus_Fulgorus.webp",
+    "public/art/Wizard_Anguis_Magicus.webp",
+    "public/art/Wizard_Ignus_Fulgorus.webp",
+    "public/art/Wizard_Serpentium_Machinus.webp",
+    "public/art/Wizard_Lacerta_Arborus.webp"
+  ],
+  "fam_list": [
+    "public/art/Familiar_5_Vulpes.webp",
+    "public/art/Familiar_5_Aranea.webp",
+    "public/art/Familiar_5_Nympharum.webp",
+    "public/art/Familiar_5_Corvum.webp",
+    "public/art/Familiar_10_Bufonem.webp",
+    "public/art/Familiar_10_Aranea.webp",
+    "public/art/Familiar_10_Vulpes.webp",
+    "public/art/Familiar_10_Imp.webp",
+    "public/art/Familiar_10_Corvum.webp",
+    "public/art/Familiar_10_Troglodytam.webp",
+    "public/art/Familiar_10_Nympharum.webp",
+    "public/art/Familiar_15_Bufonem.webp",
+    "public/art/Familiar_15_Troglodytam.webp",
+    "public/art/Familiar_15_Imp.webp",
+    "public/art/Familiar_15_Aranea.webp",
+    "public/art/Familiar_15_Vulpes.webp",
+    "public/art/Familiar_15_Corvum.webp",
+    "public/art/Familiar_15_Nympharum.webp",
+    "public/art/Familiar_20_Imp.webp",
+    "public/art/Familiar_20_Aranea.webp",
+    "public/art/Familiar_20_Vulpes.webp",
+    "public/art/Familiar_20_Nympharum.webp",
+    "public/art/Familiar_20_Corvum.webp",
+    "public/art/Familiar_20_Bufonem.webp",
+    "public/art/Familiar_20_Troglodytam.webp"
+  ],
+  "spell_list": [
+    "public/art/Spell_Maximum_Gather.webp",
+    "public/art/Spell_Scry_Dungeon.webp",
+    "public/art/Spell_Root_Cellar.webp",
+    "public/art/Spell_Bloom.webp",
+    "public/art/Spell_Potent_Servant.webp",
+    "public/art/Spell_Pulsing_Towers.webp",
+    "public/art/Spell_Spell_Shield_C.webp",
+    "public/art/Spell_Invisibility_Potion.webp",
+    "public/art/Spell_Block_Goblin.webp",
+    "public/art/Spell_Control_Undead.webp",
+    "public/art/Spell_Disintegrate_S.webp",
+    "public/art/Spell_Block_Denizens.webp",
+    "public/art/Spell_Secret_Society.webp",
+    "public/art/Spell_Flame_Bolt_D.webp",
+    "public/art/Spell_Energy_Pulse.webp",
+    "public/art/Spell_Wand_Tax.webp",
+    "public/art/Spell_Flame_Bolt_S.webp",
+    "public/art/Spell_Root_Cellar.webp",
+    "public/art/Spell_Scry_Familiar.webp",
+    "public/art/Spell_Swapo.webp",
+    "public/art/Spell_Block_Undead.webp",
+    "public/art/Spell_Master_Alchemist.webp",
+    "public/art/Spell_Perfect_Reagent.webp",
+    "public/art/Spell_Adept_Conversion.webp",
+    "public/art/Spell_Block_Giant.webp",
+    "public/art/Spell_Charm.webp",
+    "public/art/Spell_Miracle.webp",
+    "public/art/Spell_Obscure.webp",
+    "public/art/Spell_Crystal_Ball.webp",
+    "public/art/Spell_Summon_Helper.webp",
+    "public/art/Spell_Hoard_Mana.webp",
+    "public/art/Spell_Divination.webp",
+    "public/art/Spell_Energize.webp",
+    "public/art/Spell_Treasure.webp",
+    "public/art/Spell_Energy_Circle.webp",
+    "public/art/Spell_Rise.webp",
+    "public/art/Spell_Spirit_Shield.webp",
+    "public/art/Spell_Powerful_Helper.webp",
+    "public/art/Spell_Earthquake.webp",
+    "public/art/Spell_Transmute.webp",
+    "public/art/Spell_Trap.webp",
+    "public/art/Spell_Creation.webp",
+    "public/art/Spell_Trap.webp",
+    "public/art/Spell_Transform.webp",
+    "public/art/Spell_Undying.webp",
+    "public/art/Spell_Arch_Mage.webp",
+    "public/art/Spell_Spell_Shield_A.webp",
+    "public/art/Spell_Spell_Shield_C.webp",
+    "public/art/Spell_Evolve.webp",
+    "public/art/Spell_Mana_Leak.webp",
+    "public/art/Spell_Mana_Fountain.webp",
+    "public/art/Spell_Mana_Garden.webp",
+    "public/art/Spell_Spell_Shield_E.webp",
+    "public/art/Spell_Scry_Wizard.webp",
+    "public/art/Spell_Time_Shift.webp",
+    "public/art/Spell_Mana_Drain.webp",
+    "public/art/Spell_Order_of_the_Wand.webp",
+    "public/art/Spell_Demonic_Possession.webp",
+    "public/art/Spell_Disintegrate_N.webp",
+    "public/art/Spell_Spell_Shield_T.webp",
+    "public/art/Spell_Inexpensive.webp"
+  ],
+  "dungeon_deck": 48,
+  "ach": [
+    "5 Necromancy cards",
+    "10 Gold",
+    "5 Wizards",
+    "5 Druidry cards"
+  ],
+  "out_of_play": [],
+  "tower_deck": 20,
+  "wiz_deck": 18,
+  "fam_deck": 25,
+  "spell_deck": 61,
+  "dungeon_list": [
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Golem",
+      "monster_type": "Giant"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Item",
+      "name": "Diamonds"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Bugbear",
+      "monster_type": "Goblinoid"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Kobold",
+      "monster_type": "Goblinoid"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Lich",
+      "monster_type": "Undead"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Ogre",
+      "monster_type": "Giant"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 2 Gold",
+      "gold": 2
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 2 Gold",
+      "gold": 2
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Item",
+      "name": "Helm"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Gargoyle",
+      "monster_type": "Dungeon Denizen"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Item",
+      "name": "Necklace"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Giant",
+      "monster_type": "Giant"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Item",
+      "name": "Rubies"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Floating Eye",
+      "monster_type": "Dungeon Denizen"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 2 Gold",
+      "gold": 2
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Zombie",
+      "monster_type": "Undead"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Vampire",
+      "monster_type": "Undead"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Hobgoblin",
+      "monster_type": "Goblinoid"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 2 Gold",
+      "gold": 2
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Item",
+      "name": "Idol"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Item",
+      "name": "Sword"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 2 Gold",
+      "gold": 2
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Great Dragon",
+      "monster_type": "Giant"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Manticore",
+      "monster_type": "Dungeon Denizen"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Item",
+      "name": "Mask"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Ghoul",
+      "monster_type": "Undead"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Item",
+      "name": "Ring"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Hydra",
+      "monster_type": "Dungeon Denizen"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Medusa",
+      "monster_type": "Dungeon Denizen"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 2 Gold",
+      "gold": 2
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 2 Gold",
+      "gold": 2
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Orc",
+      "monster_type": "Goblinoid"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Gold",
+      "text": "Collect 1 Gold",
+      "gold": 1
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Item",
+      "name": "Emeralds"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Goblin",
+      "monster_type": "Goblinoid"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Treasure",
+      "subtype": "Item",
+      "name": "Dagger"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Skeleton",
+      "monster_type": "Undead"
+    },
+    {
+      "deck": "Dungeon",
+      "type": "Monster",
+      "name": "Troll",
+      "monster_type": "Giant"
+    }
+  ]
+}

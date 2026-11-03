@@ -1,0 +1,36 @@
+
+Running 2 tests using 1 worker
+
+(node:5367) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/2] [Mobile Chrome] › tests/game-playthrough.spec.js:6:7 › Lizard Wizard Mobile Playthrough › loads game and takes screenshots
+  1) [Mobile Chrome] › tests/game-playthrough.spec.js:6:7 › Lizard Wizard Mobile Playthrough › loads game and takes screenshots 
+
+    TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.
+    Call log:
+      - waiting for locator('#game-container:not(.hidden)') to be visible
+
+
+       9 |
+      10 |     // Wait for loading to complete (Pyodide takes time)
+    > 11 |     await page.waitForSelector('#game-container:not(.hidden)', { timeout: 120000 });
+         |                ^
+      12 |
+      13 |     // Screenshot 1: Board view
+      14 |     await page.waitForTimeout(2000); // Let board render
+        at /workspace/tests/game-playthrough.spec.js:11:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/game-playthrough-Lizard-Wi-6f7dc--game-and-takes-screenshots-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/game-playthrough-Lizard-Wi-6f7dc--game-and-takes-screenshots-Mobile-Chrome/error-context.md
+
+
+(node:5460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[2/2] [Mobile Chrome] › tests/game-playthrough.spec.js:97:7 › Lizard Wizard Mobile Playthrough › verifies core UI elements exist

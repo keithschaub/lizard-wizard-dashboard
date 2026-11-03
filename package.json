@@ -1,0 +1,13 @@
+{
+  "name": "lizard-wizard-web",
+  "version": "1.0.0",
+  "description": "Lizard Wizard browser game",
+  "scripts": {
+    "test": "python3 public/scripts/test_engine_core.py",
+    "test:e2e": "playwright test",
+    "serve": "python3 serve.py"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

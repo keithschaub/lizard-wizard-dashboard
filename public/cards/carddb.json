@@ -1,0 +1,4800 @@
+{
+ "aliases": {
+  "Familiar_Bufonem.jpg": "Familiar_10_Bufonem.jpg",
+  "Familiar_Corvum.jpg": "Familiar_10_Corvum.jpg",
+  "Tower_Obsidian_Fortress.jpg": "Tower_T1_Obsidian_Fortress.jpg",
+  "Tower_Vermillion_Citadel.jpg": "Tower_T1_Vermillion_Citadel.jpg"
+ },
+ "appendix_differences": [
+  "Spell_Block_Giant.jpg: cards.json reagents {'Sulphur': 2} vs photo {'Nightshade': 2, 'Eye of Newt': 1} (photo used)",
+  "Spell_Block_Goblin.jpg: cards.json reagents {'Sulphur': 2} vs photo {'Nightshade': 2, 'Horn': 1} (photo used)",
+  "Spell_Block_Undead.jpg: cards.json reagents {'Nightshade': 2} vs photo {'Nightshade': 3} (photo used)",
+  "Spell_Earthquake.jpg: cards.json reagents {'Toadstool': 2, 'Sulphur': 2} vs photo {'Toadstool': 2, 'Sulphur': 1} (photo used)",
+  "Spell_Mana_Garden.jpg: cards.json reagents {'Toadstool': 2, 'Mandrake': 1, 'Mandrake(?)': 1} vs photo {'Toadstool': 2, 'Mandrake': 2} (photo used)",
+  "Spell_Master_Alchemist.jpg: cards.json reagents {'Eye of Newt': 1, 'Horn': 1} vs photo {'Eye of Newt': 2, 'Horn': 1} (photo used)",
+  "Spell_Obscure.jpg: cards.json says 'Enchantment', photo says Druidry (photo used)",
+  "Spell_Obscure.jpg: cards.json reagents {'Mandrake': 2, 'Nightshade': 2} vs photo {'Toadstool': 2, 'Foxglove': 1} (photo used)",
+  "Spell_Spirit_Shield.jpg: cards.json reagents {'Mandrake': 3, 'Sulphur': 1} vs photo {'Mandrake': 2, 'Sulphur': 1} (photo used)",
+  "Spell_Transmute.jpg: cards.json reagents {'Eye of Newt': 2} vs photo {'Eye of Newt': 2, 'Sulphur': 1} (photo used)",
+  "Spell_Wand_Tax.jpg: cards.json reagents {'Mandrake': 2, '(more cut off)': 1} vs photo {'Mandrake': 2, 'Eye of Newt': 1} (photo used)"
+ ],
+ "built_from": [
+  "spells_from_pc.json",
+  "cards.json",
+  "reagent_cards.json",
+  "other_cards_from_pc.json",
+  "dungeon_cards.json"
+ ],
+ "cards": {
+  "Achievement:10 Gold": {
+   "deck": "Achievement",
+   "display": "10 Gold",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:10 Gold",
+   "name": "10 Gold",
+   "school": null,
+   "school_reagent": null,
+   "schoolless": true,
+   "source": "cards.json achievements",
+   "tile_icon": "Gold",
+   "vp": 10
+  },
+  "Achievement:100 Mana": {
+   "deck": "Achievement",
+   "display": "100 Mana",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:100 Mana",
+   "name": "100 Mana",
+   "school": null,
+   "school_reagent": null,
+   "schoolless": true,
+   "source": "cards.json achievements",
+   "tile_icon": "Mana",
+   "vp": 10
+  },
+  "Achievement:5 Alchemy cards": {
+   "deck": "Achievement",
+   "display": "5 Alchemy cards (Alchemy)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:5 Alchemy cards",
+   "name": "5 Alchemy cards",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:5 Conjuring cards": {
+   "deck": "Achievement",
+   "display": "5 Conjuring cards (Conjuring)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:5 Conjuring cards",
+   "name": "5 Conjuring cards",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:5 Druidry cards": {
+   "deck": "Achievement",
+   "display": "5 Druidry cards (Druidry)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:5 Druidry cards",
+   "name": "5 Druidry cards",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:5 Enchantment cards": {
+   "deck": "Achievement",
+   "display": "5 Enchantment cards (Enchantment)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:5 Enchantment cards",
+   "name": "5 Enchantment cards",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:5 Necromancy cards": {
+   "deck": "Achievement",
+   "display": "5 Necromancy cards (Necromancy)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:5 Necromancy cards",
+   "name": "5 Necromancy cards",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:5 Sorcery cards": {
+   "deck": "Achievement",
+   "display": "5 Sorcery cards (Sorcery)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:5 Sorcery cards",
+   "name": "5 Sorcery cards",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:5 Thaumaturgy cards": {
+   "deck": "Achievement",
+   "display": "5 Thaumaturgy cards (Thaumaturgy)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:5 Thaumaturgy cards",
+   "name": "5 Thaumaturgy cards",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:5 Wizards": {
+   "deck": "Achievement",
+   "display": "5 Wizards",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:5 Wizards",
+   "name": "5 Wizards",
+   "school": null,
+   "school_reagent": null,
+   "schoolless": true,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:7 Familiars": {
+   "deck": "Achievement",
+   "display": "7 Familiars",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:7 Familiars",
+   "name": "7 Familiars",
+   "school": null,
+   "school_reagent": null,
+   "schoolless": true,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:7 Spells": {
+   "deck": "Achievement",
+   "display": "7 Spells",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:7 Spells",
+   "name": "7 Spells",
+   "school": null,
+   "school_reagent": null,
+   "schoolless": true,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:7 Towers": {
+   "deck": "Achievement",
+   "display": "7 Towers",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:7 Towers",
+   "name": "7 Towers",
+   "school": null,
+   "school_reagent": null,
+   "schoolless": true,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:x7 Eye of Newt": {
+   "deck": "Achievement",
+   "display": "x7 Eye of Newt (Alchemy)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:x7 Eye of Newt",
+   "name": "x7 Eye of Newt",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:x7 Foxglove": {
+   "deck": "Achievement",
+   "display": "x7 Foxglove (Sorcery)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:x7 Foxglove",
+   "name": "x7 Foxglove",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:x7 Horn": {
+   "deck": "Achievement",
+   "display": "x7 Horn (Conjuring)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:x7 Horn",
+   "name": "x7 Horn",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:x7 Mandrake": {
+   "deck": "Achievement",
+   "display": "x7 Mandrake (Enchantment)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:x7 Mandrake",
+   "name": "x7 Mandrake",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:x7 Nightshade": {
+   "deck": "Achievement",
+   "display": "x7 Nightshade (Necromancy)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:x7 Nightshade",
+   "name": "x7 Nightshade",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:x7 Sulphur": {
+   "deck": "Achievement",
+   "display": "x7 Sulphur (Thaumaturgy)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:x7 Sulphur",
+   "name": "x7 Sulphur",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Achievement:x7 Toadstool": {
+   "deck": "Achievement",
+   "display": "x7 Toadstool (Druidry)",
+   "effect": "Claim on your turn when met: 10 VP",
+   "key": "Achievement:x7 Toadstool",
+   "name": "x7 Toadstool",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "schoolless": false,
+   "source": "cards.json achievements",
+   "tile_icon": null,
+   "vp": 10
+  },
+  "Dungeon_Dagger.jpg": {
+   "deck": "Dungeon",
+   "display": "Dagger",
+   "effect": "Dagger",
+   "gold": null,
+   "hits": null,
+   "item": "Dagger",
+   "key": "Dungeon_Dagger.jpg",
+   "kind": "item",
+   "monster_type": null,
+   "name": "Dagger",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Diamonds.jpg": {
+   "deck": "Dungeon",
+   "display": "Diamonds",
+   "effect": "Diamonds",
+   "gold": null,
+   "hits": null,
+   "item": "Diamonds",
+   "key": "Dungeon_Diamonds.jpg",
+   "kind": "item",
+   "monster_type": null,
+   "name": "Diamonds",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Emeralds.jpg": {
+   "deck": "Dungeon",
+   "display": "Emeralds",
+   "effect": "Emeralds",
+   "gold": null,
+   "hits": null,
+   "item": "Emeralds",
+   "key": "Dungeon_Emeralds.jpg",
+   "kind": "item",
+   "monster_type": null,
+   "name": "Emeralds",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_a.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_a.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_b.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_b.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_c.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_c.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_d.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_d.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_e.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_e.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_f.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_f.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_g.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_g.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_h.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_h.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_i.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_i.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_j.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_j.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_k.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_k.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_l.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_l.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold1_m.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 1 Gold",
+   "effect": "Collect 1 Gold",
+   "gold": 1,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold1_m.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 1 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold2_a.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 2 Gold",
+   "effect": "Collect 2 Gold",
+   "gold": 2,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold2_a.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 2 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold2_b.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 2 Gold",
+   "effect": "Collect 2 Gold",
+   "gold": 2,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold2_b.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 2 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold2_c.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 2 Gold",
+   "effect": "Collect 2 Gold",
+   "gold": 2,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold2_c.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 2 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold2_d.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 2 Gold",
+   "effect": "Collect 2 Gold",
+   "gold": 2,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold2_d.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 2 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold2_e.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 2 Gold",
+   "effect": "Collect 2 Gold",
+   "gold": 2,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold2_e.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 2 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold2_f.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 2 Gold",
+   "effect": "Collect 2 Gold",
+   "gold": 2,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold2_f.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 2 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold2_g.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 2 Gold",
+   "effect": "Collect 2 Gold",
+   "gold": 2,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold2_g.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 2 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Gold2_h.jpg": {
+   "deck": "Dungeon",
+   "display": "Collect 2 Gold",
+   "effect": "Collect 2 Gold",
+   "gold": 2,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Gold2_h.jpg",
+   "kind": "gold",
+   "monster_type": null,
+   "name": "Collect 2 Gold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Helm.jpg": {
+   "deck": "Dungeon",
+   "display": "Helm",
+   "effect": "Helm",
+   "gold": null,
+   "hits": null,
+   "item": "Helm",
+   "key": "Dungeon_Helm.jpg",
+   "kind": "item",
+   "monster_type": null,
+   "name": "Helm",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Idol.jpg": {
+   "deck": "Dungeon",
+   "display": "Idol",
+   "effect": "Idol",
+   "gold": null,
+   "hits": null,
+   "item": "Idol",
+   "key": "Dungeon_Idol.jpg",
+   "kind": "item",
+   "monster_type": null,
+   "name": "Idol",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Mask.jpg": {
+   "deck": "Dungeon",
+   "display": "Mask",
+   "effect": "Mask",
+   "gold": null,
+   "hits": null,
+   "item": "Mask",
+   "key": "Dungeon_Mask.jpg",
+   "kind": "item",
+   "monster_type": null,
+   "name": "Mask",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Bugbear.jpg": {
+   "deck": "Dungeon",
+   "display": "Bugbear (Goblinoid)",
+   "effect": "Goblinoid",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Bugbear.jpg",
+   "kind": "monster",
+   "monster_type": "Goblinoid",
+   "name": "Bugbear",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Floating_Eye.jpg": {
+   "deck": "Dungeon",
+   "display": "Floating Eye (Dungeon Denizen)",
+   "effect": "Dungeon Denizen",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Floating_Eye.jpg",
+   "kind": "monster",
+   "monster_type": "Dungeon Denizen",
+   "name": "Floating Eye",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Gargoyle.jpg": {
+   "deck": "Dungeon",
+   "display": "Gargoyle (Dungeon Denizen)",
+   "effect": "Dungeon Denizen",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Gargoyle.jpg",
+   "kind": "monster",
+   "monster_type": "Dungeon Denizen",
+   "name": "Gargoyle",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Ghoul.jpg": {
+   "deck": "Dungeon",
+   "display": "Ghoul (Undead)",
+   "effect": "Undead",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Ghoul.jpg",
+   "kind": "monster",
+   "monster_type": "Undead",
+   "name": "Ghoul",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Giant.jpg": {
+   "deck": "Dungeon",
+   "display": "Giant (Giant)",
+   "effect": "Giant",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Giant.jpg",
+   "kind": "monster",
+   "monster_type": "Giant",
+   "name": "Giant",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Goblin.jpg": {
+   "deck": "Dungeon",
+   "display": "Goblin (Goblinoid)",
+   "effect": "Goblinoid",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Goblin.jpg",
+   "kind": "monster",
+   "monster_type": "Goblinoid",
+   "name": "Goblin",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Golem.jpg": {
+   "deck": "Dungeon",
+   "display": "Golem (Giant)",
+   "effect": "Giant",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Golem.jpg",
+   "kind": "monster",
+   "monster_type": "Giant",
+   "name": "Golem",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Great_Dragon.jpg": {
+   "deck": "Dungeon",
+   "display": "Great Dragon (Giant)",
+   "effect": "Giant",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Great_Dragon.jpg",
+   "kind": "monster",
+   "monster_type": "Giant",
+   "name": "Great Dragon",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Hobgoblin.jpg": {
+   "deck": "Dungeon",
+   "display": "Hobgoblin (Goblinoid)",
+   "effect": "Goblinoid",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Hobgoblin.jpg",
+   "kind": "monster",
+   "monster_type": "Goblinoid",
+   "name": "Hobgoblin",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Hydra.jpg": {
+   "deck": "Dungeon",
+   "display": "Hydra (Dungeon Denizen)",
+   "effect": "Dungeon Denizen",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Hydra.jpg",
+   "kind": "monster",
+   "monster_type": "Dungeon Denizen",
+   "name": "Hydra",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Kobold.jpg": {
+   "deck": "Dungeon",
+   "display": "Kobold (Goblinoid)",
+   "effect": "Goblinoid",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Kobold.jpg",
+   "kind": "monster",
+   "monster_type": "Goblinoid",
+   "name": "Kobold",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Lich.jpg": {
+   "deck": "Dungeon",
+   "display": "Lich (Undead)",
+   "effect": "Undead",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Lich.jpg",
+   "kind": "monster",
+   "monster_type": "Undead",
+   "name": "Lich",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Manticore.jpg": {
+   "deck": "Dungeon",
+   "display": "Manticore (Dungeon Denizen)",
+   "effect": "Dungeon Denizen",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Manticore.jpg",
+   "kind": "monster",
+   "monster_type": "Dungeon Denizen",
+   "name": "Manticore",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Medusa.jpg": {
+   "deck": "Dungeon",
+   "display": "Medusa (Dungeon Denizen)",
+   "effect": "Dungeon Denizen",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Medusa.jpg",
+   "kind": "monster",
+   "monster_type": "Dungeon Denizen",
+   "name": "Medusa",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Ogre.jpg": {
+   "deck": "Dungeon",
+   "display": "Ogre (Giant)",
+   "effect": "Giant",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Ogre.jpg",
+   "kind": "monster",
+   "monster_type": "Giant",
+   "name": "Ogre",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Orc.jpg": {
+   "deck": "Dungeon",
+   "display": "Orc (Goblinoid)",
+   "effect": "Goblinoid",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Orc.jpg",
+   "kind": "monster",
+   "monster_type": "Goblinoid",
+   "name": "Orc",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Skeleton.jpg": {
+   "deck": "Dungeon",
+   "display": "Skeleton (Undead)",
+   "effect": "Undead",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Skeleton.jpg",
+   "kind": "monster",
+   "monster_type": "Undead",
+   "name": "Skeleton",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Troll.jpg": {
+   "deck": "Dungeon",
+   "display": "Troll (Giant)",
+   "effect": "Giant",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Troll.jpg",
+   "kind": "monster",
+   "monster_type": "Giant",
+   "name": "Troll",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Vampire.jpg": {
+   "deck": "Dungeon",
+   "display": "Vampire (Undead)",
+   "effect": "Undead",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Vampire.jpg",
+   "kind": "monster",
+   "monster_type": "Undead",
+   "name": "Vampire",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Monster_Zombie.jpg": {
+   "deck": "Dungeon",
+   "display": "Zombie (Undead)",
+   "effect": "Undead",
+   "gold": null,
+   "hits": null,
+   "item": null,
+   "key": "Dungeon_Monster_Zombie.jpg",
+   "kind": "monster",
+   "monster_type": "Undead",
+   "name": "Zombie",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Necklace.jpg": {
+   "deck": "Dungeon",
+   "display": "Necklace",
+   "effect": "Necklace",
+   "gold": null,
+   "hits": null,
+   "item": "Necklace",
+   "key": "Dungeon_Necklace.jpg",
+   "kind": "item",
+   "monster_type": null,
+   "name": "Necklace",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Ring.jpg": {
+   "deck": "Dungeon",
+   "display": "Ring",
+   "effect": "Ring",
+   "gold": null,
+   "hits": null,
+   "item": "Ring",
+   "key": "Dungeon_Ring.jpg",
+   "kind": "item",
+   "monster_type": null,
+   "name": "Ring",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Rubies.jpg": {
+   "deck": "Dungeon",
+   "display": "Rubies",
+   "effect": "Rubies",
+   "gold": null,
+   "hits": null,
+   "item": "Rubies",
+   "key": "Dungeon_Rubies.jpg",
+   "kind": "item",
+   "monster_type": null,
+   "name": "Rubies",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Sword.jpg": {
+   "deck": "Dungeon",
+   "display": "Sword",
+   "effect": "Sword",
+   "gold": null,
+   "hits": null,
+   "item": "Sword",
+   "key": "Dungeon_Sword.jpg",
+   "kind": "item",
+   "monster_type": null,
+   "name": "Sword",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Trap_a.jpg": {
+   "deck": "Dungeon",
+   "display": "It's a Trap!",
+   "effect": "x2 Hits",
+   "gold": null,
+   "hits": 2,
+   "item": null,
+   "key": "Dungeon_Trap_a.jpg",
+   "kind": "trap",
+   "monster_type": null,
+   "name": "It's a Trap!",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Dungeon_Trap_b.jpg": {
+   "deck": "Dungeon",
+   "display": "It's a Trap!",
+   "effect": "x2 Hits",
+   "gold": null,
+   "hits": 2,
+   "item": null,
+   "key": "Dungeon_Trap_b.jpg",
+   "kind": "trap",
+   "monster_type": null,
+   "name": "It's a Trap!",
+   "school": null,
+   "source": "dungeon_cards.json (Keith photos)"
+  },
+  "Familiar_10_Aranea.jpg": {
+   "collect": 4,
+   "cost": {
+    "mana": 10
+   },
+   "deck": "Familiar",
+   "display": "Aranea 10 (Enchantment)",
+   "effect": "New Research | Collect 4 Mandrake & Cast Spells || Enter the Dungeon | 1 Gold / Enchantment Card",
+   "key": "Familiar_10_Aranea.jpg",
+   "name": "Aranea",
+   "reagent": "Mandrake",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_10_Bufonem.jpg": {
+   "collect": 4,
+   "cost": {
+    "mana": 10
+   },
+   "deck": "Familiar",
+   "display": "Bufonem 10 (Alchemy)",
+   "effect": "New Research | Collect 4 Eye of Newt & Cast Spells || Enter the Dungeon | 1 Gold / Alchemy Card",
+   "key": "Familiar_10_Bufonem.jpg",
+   "name": "Bufonem",
+   "reagent": "Eye_of_Newt",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_10_Corvum.jpg": {
+   "collect": 4,
+   "cost": {
+    "mana": 10
+   },
+   "deck": "Familiar",
+   "display": "Corvum 10 (Necromancy)",
+   "effect": "New Research | Collect 4 Nightshade & Cast Spells || Enter the Dungeon | 1 Gold / Necromancy Card",
+   "key": "Familiar_10_Corvum.jpg",
+   "name": "Corvum",
+   "reagent": "Nightshade",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_10_Imp.jpg": {
+   "collect": 4,
+   "cost": {
+    "mana": 10
+   },
+   "deck": "Familiar",
+   "display": "Imp 10 (Sorcery)",
+   "effect": "New Research | Collect 4 Foxglove & Cast Spells || Enter the Dungeon | 1 Gold / Sorcery Card",
+   "key": "Familiar_10_Imp.jpg",
+   "name": "Imp",
+   "reagent": "Foxglove",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_10_Nympharum.jpg": {
+   "collect": 4,
+   "cost": {
+    "mana": 10
+   },
+   "deck": "Familiar",
+   "display": "Nympharum 10 (Druidry)",
+   "effect": "New Research | Collect 4 Toadstool & Cast Spells || Enter the Dungeon | 1 Gold / Druidry Card",
+   "key": "Familiar_10_Nympharum.jpg",
+   "name": "Nympharum",
+   "reagent": "Toadstool",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_10_Troglodytam.jpg": {
+   "collect": 4,
+   "cost": {
+    "mana": 10
+   },
+   "deck": "Familiar",
+   "display": "Troglodytam 10 (Thaumaturgy)",
+   "effect": "New Research | Collect 4 Sulphur & Cast Spells || Enter the Dungeon | 1 Gold / Thaumaturgy Card",
+   "key": "Familiar_10_Troglodytam.jpg",
+   "name": "Troglodytam",
+   "reagent": "Sulphur",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_10_Vulpes.jpg": {
+   "collect": 4,
+   "cost": {
+    "mana": 10
+   },
+   "deck": "Familiar",
+   "display": "Vulpes 10 (Conjuring)",
+   "effect": "New Research | Collect 4 Horn & Cast Spells || Enter the Dungeon | 1 Gold / Conjuring Card",
+   "key": "Familiar_10_Vulpes.jpg",
+   "name": "Vulpes",
+   "reagent": "Horn",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_15_Aranea.jpg": {
+   "collect": 5,
+   "cost": {
+    "mana": 15
+   },
+   "deck": "Familiar",
+   "display": "Aranea 15 (Enchantment)",
+   "effect": "New Research | Collect 5 Mandrake & Cast Spells || Enter the Dungeon | 1 Gold / Enchantment Card",
+   "key": "Familiar_15_Aranea.jpg",
+   "name": "Aranea",
+   "reagent": "Mandrake",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_15_Bufonem.jpg": {
+   "collect": 5,
+   "cost": {
+    "mana": 15
+   },
+   "deck": "Familiar",
+   "display": "Bufonem 15 (Alchemy)",
+   "effect": "New Research | Collect 5 Eye of Newt & Cast Spells || Enter the Dungeon | 1 Gold / Alchemy Card",
+   "key": "Familiar_15_Bufonem.jpg",
+   "name": "Bufonem",
+   "reagent": "Eye_of_Newt",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_15_Corvum.jpg": {
+   "collect": 5,
+   "cost": {
+    "mana": 15
+   },
+   "deck": "Familiar",
+   "display": "Corvum 15 (Necromancy)",
+   "effect": "New Research | Collect 5 Nightshade & Cast Spells || Enter the Dungeon | 1 Gold / Necromancy Card",
+   "key": "Familiar_15_Corvum.jpg",
+   "name": "Corvum",
+   "reagent": "Nightshade",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_15_Imp.jpg": {
+   "collect": 5,
+   "cost": {
+    "mana": 15
+   },
+   "deck": "Familiar",
+   "display": "Imp 15 (Sorcery)",
+   "effect": "New Research | Collect 5 Foxglove & Cast Spells || Enter the Dungeon | 1 Gold / Sorcery Card",
+   "key": "Familiar_15_Imp.jpg",
+   "name": "Imp",
+   "reagent": "Foxglove",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_15_Nympharum.jpg": {
+   "collect": 5,
+   "cost": {
+    "mana": 15
+   },
+   "deck": "Familiar",
+   "display": "Nympharum 15 (Druidry)",
+   "effect": "New Research | Collect 5 Toadstool & Cast Spells || Enter the Dungeon | 1 Gold / Druidry Card",
+   "key": "Familiar_15_Nympharum.jpg",
+   "name": "Nympharum",
+   "reagent": "Toadstool",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_15_Troglodytam.jpg": {
+   "collect": 5,
+   "cost": {
+    "mana": 15
+   },
+   "deck": "Familiar",
+   "display": "Troglodytam 15 (Thaumaturgy)",
+   "effect": "New Research | Collect 5 Sulphur & Cast Spells || Enter the Dungeon | 1 Gold / Thaumaturgy Card",
+   "key": "Familiar_15_Troglodytam.jpg",
+   "name": "Troglodytam",
+   "reagent": "Sulphur",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_15_Vulpes.jpg": {
+   "collect": 5,
+   "cost": {
+    "mana": 15
+   },
+   "deck": "Familiar",
+   "display": "Vulpes 15 (Conjuring)",
+   "effect": "New Research | Collect 5 Horn & Cast Spells || Enter the Dungeon | 1 Gold / Conjuring Card",
+   "key": "Familiar_15_Vulpes.jpg",
+   "name": "Vulpes",
+   "reagent": "Horn",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_20_Aranea.jpg": {
+   "collect": 6,
+   "cost": {
+    "mana": 20
+   },
+   "deck": "Familiar",
+   "display": "Aranea 20 (Enchantment)",
+   "effect": "New Research | Collect 6 Mandrake & Cast Spells || Enter the Dungeon | 1 Gold / Enchantment Card",
+   "key": "Familiar_20_Aranea.jpg",
+   "name": "Aranea",
+   "reagent": "Mandrake",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_20_Bufonem.jpg": {
+   "collect": 6,
+   "cost": {
+    "mana": 20
+   },
+   "deck": "Familiar",
+   "display": "Bufonem 20 (Alchemy)",
+   "effect": "New Research | Collect 6 Eye of Newt & Cast Spells || Enter the Dungeon | 1 Gold / Alchemy Card",
+   "key": "Familiar_20_Bufonem.jpg",
+   "name": "Bufonem",
+   "reagent": "Eye_of_Newt",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_20_Corvum.jpg": {
+   "collect": 6,
+   "cost": {
+    "mana": 20
+   },
+   "deck": "Familiar",
+   "display": "Corvum 20 (Necromancy)",
+   "effect": "New Research | Collect 6 Nightshade & Cast Spells || Enter the Dungeon | 1 Gold / Necromancy Card",
+   "key": "Familiar_20_Corvum.jpg",
+   "name": "Corvum",
+   "reagent": "Nightshade",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_20_Imp.jpg": {
+   "collect": 6,
+   "cost": {
+    "mana": 20
+   },
+   "deck": "Familiar",
+   "display": "Imp 20 (Sorcery)",
+   "effect": "New Research | Collect 6 Foxglove & Cast Spells || Enter the Dungeon | 1 Gold / Sorcery Card",
+   "key": "Familiar_20_Imp.jpg",
+   "name": "Imp",
+   "reagent": "Foxglove",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_20_Nympharum.jpg": {
+   "collect": 6,
+   "cost": {
+    "mana": 20
+   },
+   "deck": "Familiar",
+   "display": "Nympharum 20 (Druidry)",
+   "effect": "New Research | Collect 6 Toadstool & Cast Spells || Enter the Dungeon | 1 Gold / Druidry Card",
+   "key": "Familiar_20_Nympharum.jpg",
+   "name": "Nympharum",
+   "reagent": "Toadstool",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_20_Troglodytam.jpg": {
+   "collect": 6,
+   "cost": {
+    "mana": 20
+   },
+   "deck": "Familiar",
+   "display": "Troglodytam 20 (Thaumaturgy)",
+   "effect": "New Research | Collect 6 Sulphur & Cast Spells || Enter the Dungeon | 1 Gold / Thaumaturgy Card",
+   "key": "Familiar_20_Troglodytam.jpg",
+   "name": "Troglodytam",
+   "reagent": "Sulphur",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_20_Vulpes.jpg": {
+   "collect": 6,
+   "cost": {
+    "mana": 20
+   },
+   "deck": "Familiar",
+   "display": "Vulpes 20 (Conjuring)",
+   "effect": "New Research | Collect 6 Horn & Cast Spells || Enter the Dungeon | 1 Gold / Conjuring Card",
+   "key": "Familiar_20_Vulpes.jpg",
+   "name": "Vulpes",
+   "reagent": "Horn",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_25_Aranea.jpg": {
+   "collect": 7,
+   "cost": {
+    "mana": 25
+   },
+   "deck": "Familiar",
+   "display": "Aranea 25 (Enchantment)",
+   "effect": "New Research | Collect 7 Mandrake & Cast Spells || Enter the Dungeon | 1 Gold / Enchantment Card",
+   "key": "Familiar_25_Aranea.jpg",
+   "name": "Aranea",
+   "reagent": "Mandrake",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_25_Bufonem.jpg": {
+   "collect": 7,
+   "cost": {
+    "mana": 25
+   },
+   "deck": "Familiar",
+   "display": "Bufonem 25 (Alchemy)",
+   "effect": "New Research | Collect 7 Eye of Newt & Cast Spells || Enter the Dungeon | 1 Gold / Alchemy Card",
+   "key": "Familiar_25_Bufonem.jpg",
+   "name": "Bufonem",
+   "reagent": "Eye_of_Newt",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_25_Corvum.jpg": {
+   "collect": 7,
+   "cost": {
+    "mana": 25
+   },
+   "deck": "Familiar",
+   "display": "Corvum 25 (Necromancy)",
+   "effect": "New Research | Collect 7 Nightshade & Cast Spells || Enter the Dungeon | 1 Gold / Necromancy Card",
+   "key": "Familiar_25_Corvum.jpg",
+   "name": "Corvum",
+   "reagent": "Nightshade",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_25_Imp.jpg": {
+   "collect": 7,
+   "cost": {
+    "mana": 25
+   },
+   "deck": "Familiar",
+   "display": "Imp 25 (Sorcery)",
+   "effect": "New Research | Collect 7 Foxglove & Cast Spells || Enter the Dungeon | 1 Gold / Sorcery Card",
+   "key": "Familiar_25_Imp.jpg",
+   "name": "Imp",
+   "reagent": "Foxglove",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_25_Nympharum.jpg": {
+   "collect": 7,
+   "cost": {
+    "mana": 25
+   },
+   "deck": "Familiar",
+   "display": "Nympharum 25 (Druidry)",
+   "effect": "New Research | Collect 7 Toadstool & Cast Spells || Enter the Dungeon | 1 Gold / Druidry Card",
+   "key": "Familiar_25_Nympharum.jpg",
+   "name": "Nympharum",
+   "reagent": "Toadstool",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_25_Troglodytam.jpg": {
+   "collect": 7,
+   "cost": {
+    "mana": 25
+   },
+   "deck": "Familiar",
+   "display": "Troglodytam 25 (Thaumaturgy)",
+   "effect": "New Research | Collect 7 Sulphur & Cast Spells || Enter the Dungeon | 1 Gold / Thaumaturgy Card",
+   "key": "Familiar_25_Troglodytam.jpg",
+   "name": "Troglodytam",
+   "reagent": "Sulphur",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_25_Vulpes.jpg": {
+   "collect": 7,
+   "cost": {
+    "mana": 25
+   },
+   "deck": "Familiar",
+   "display": "Vulpes 25 (Conjuring)",
+   "effect": "New Research | Collect 7 Horn & Cast Spells || Enter the Dungeon | 1 Gold / Conjuring Card",
+   "key": "Familiar_25_Vulpes.jpg",
+   "name": "Vulpes",
+   "reagent": "Horn",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_5_Aranea.jpg": {
+   "collect": 3,
+   "cost": {
+    "mana": 5
+   },
+   "deck": "Familiar",
+   "display": "Aranea 5 (Enchantment)",
+   "effect": "New Research | Collect 3 Mandrake & Cast Spells || Enter the Dungeon | 1 Gold / Enchantment Card",
+   "key": "Familiar_5_Aranea.jpg",
+   "name": "Aranea",
+   "reagent": "Mandrake",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_5_Bufonem.jpg": {
+   "collect": 3,
+   "cost": {
+    "mana": 5
+   },
+   "deck": "Familiar",
+   "display": "Bufonem 5 (Alchemy)",
+   "effect": "New Research | Collect 3 Eye of Newt & Cast Spells || Enter the Dungeon | 1 Gold / Alchemy Card",
+   "key": "Familiar_5_Bufonem.jpg",
+   "name": "Bufonem",
+   "reagent": "Eye_of_Newt",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_5_Corvum.jpg": {
+   "collect": 3,
+   "cost": {
+    "mana": 5
+   },
+   "deck": "Familiar",
+   "display": "Corvum 5 (Necromancy)",
+   "effect": "New Research | Collect 3 Nightshade & Cast Spells || Enter the Dungeon | 1 Gold / Necromancy Card",
+   "key": "Familiar_5_Corvum.jpg",
+   "name": "Corvum",
+   "reagent": "Nightshade",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_5_Imp.jpg": {
+   "collect": 3,
+   "cost": {
+    "mana": 5
+   },
+   "deck": "Familiar",
+   "display": "Imp 5 (Sorcery)",
+   "effect": "New Research | Collect 3 Foxglove & Cast Spells || Enter the Dungeon | 1 Gold / Sorcery Card",
+   "key": "Familiar_5_Imp.jpg",
+   "name": "Imp",
+   "reagent": "Foxglove",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_5_Nympharum.jpg": {
+   "collect": 3,
+   "cost": {
+    "mana": 5
+   },
+   "deck": "Familiar",
+   "display": "Nympharum 5 (Druidry)",
+   "effect": "New Research | Collect 3 Toadstool & Cast Spells || Enter the Dungeon | 1 Gold / Druidry Card",
+   "key": "Familiar_5_Nympharum.jpg",
+   "name": "Nympharum",
+   "reagent": "Toadstool",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_5_Troglodytam.jpg": {
+   "collect": 3,
+   "cost": {
+    "mana": 5
+   },
+   "deck": "Familiar",
+   "display": "Troglodytam 5 (Thaumaturgy)",
+   "effect": "New Research | Collect 3 Sulphur & Cast Spells || Enter the Dungeon | 1 Gold / Thaumaturgy Card",
+   "key": "Familiar_5_Troglodytam.jpg",
+   "name": "Troglodytam",
+   "reagent": "Sulphur",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Familiar_5_Vulpes.jpg": {
+   "collect": 3,
+   "cost": {
+    "mana": 5
+   },
+   "deck": "Familiar",
+   "display": "Vulpes 5 (Conjuring)",
+   "effect": "New Research | Collect 3 Horn & Cast Spells || Enter the Dungeon | 1 Gold / Conjuring Card",
+   "key": "Familiar_5_Vulpes.jpg",
+   "name": "Vulpes",
+   "reagent": "Horn",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "cards.json familiars (photo confirmed)"
+  },
+  "Reagent_01.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 01",
+   "gather_icons": [
+    "Horn",
+    "Nightshade",
+    "Foxglove"
+   ],
+   "increase_icons": [
+    "Foxglove",
+    "Sulphur",
+    "Horn"
+   ],
+   "key": "Reagent_01.jpg",
+   "name": "Reagent 01",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_02.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 02",
+   "gather_icons": [
+    "Nightshade",
+    "Nightshade",
+    "Mandrake",
+    "Foxglove"
+   ],
+   "increase_icons": [
+    "Toadstool",
+    "Mandrake",
+    "Eye_of_Newt",
+    "Sulphur"
+   ],
+   "key": "Reagent_02.jpg",
+   "name": "Reagent 02",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_03.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 03",
+   "gather_icons": [
+    "Nightshade",
+    "Sulphur",
+    "Eye_of_Newt",
+    "Horn"
+   ],
+   "increase_icons": [
+    "Foxglove",
+    "Foxglove",
+    "Horn",
+    "Nightshade"
+   ],
+   "key": "Reagent_03.jpg",
+   "name": "Reagent 03",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_04.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 04",
+   "gather_icons": [
+    "Eye_of_Newt",
+    "Eye_of_Newt",
+    "Toadstool",
+    "Mandrake"
+   ],
+   "increase_icons": [
+    "Eye_of_Newt",
+    "Toadstool",
+    "Sulphur"
+   ],
+   "key": "Reagent_04.jpg",
+   "name": "Reagent 04",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_05.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 05",
+   "gather_icons": [
+    "Toadstool",
+    "Mandrake",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Eye_of_Newt",
+    "Foxglove",
+    "Horn"
+   ],
+   "key": "Reagent_05.jpg",
+   "name": "Reagent 05",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_06.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 06",
+   "gather_icons": [
+    "Nightshade",
+    "Foxglove",
+    "Eye_of_Newt"
+   ],
+   "increase_icons": [
+    "Sulphur",
+    "Eye_of_Newt",
+    "Horn"
+   ],
+   "key": "Reagent_06.jpg",
+   "name": "Reagent 06",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_07.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 07",
+   "gather_icons": [
+    "Nightshade",
+    "Eye_of_Newt",
+    "Foxglove"
+   ],
+   "increase_icons": [
+    "Sulphur",
+    "Toadstool",
+    "Eye_of_Newt"
+   ],
+   "key": "Reagent_07.jpg",
+   "name": "Reagent 07",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_08.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 08",
+   "gather_icons": [
+    "Foxglove",
+    "Mandrake",
+    "Toadstool",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Horn",
+    "Horn",
+    "Toadstool",
+    "Mandrake"
+   ],
+   "key": "Reagent_08.jpg",
+   "name": "Reagent 08",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_09.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 09",
+   "gather_icons": [
+    "Eye_of_Newt",
+    "Horn",
+    "Sulphur",
+    "Foxglove"
+   ],
+   "increase_icons": [
+    "Nightshade",
+    "Nightshade",
+    "Horn"
+   ],
+   "key": "Reagent_09.jpg",
+   "name": "Reagent 09",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_10.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 10",
+   "gather_icons": [
+    "Sulphur",
+    "Nightshade",
+    "Foxglove"
+   ],
+   "increase_icons": [
+    "Horn",
+    "Nightshade",
+    "Toadstool"
+   ],
+   "key": "Reagent_10.jpg",
+   "name": "Reagent 10",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_11.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 11",
+   "gather_icons": [
+    "Foxglove",
+    "Sulphur",
+    "Toadstool"
+   ],
+   "increase_icons": [
+    "Horn",
+    "Eye_of_Newt",
+    "Mandrake"
+   ],
+   "key": "Reagent_11.jpg",
+   "name": "Reagent 11",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_12.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 12",
+   "gather_icons": [
+    "Foxglove",
+    "Foxglove",
+    "Foxglove",
+    "Toadstool",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Sulphur",
+    "Eye_of_Newt",
+    "Horn",
+    "Nightshade"
+   ],
+   "key": "Reagent_12.jpg",
+   "name": "Reagent 12",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_13.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 13",
+   "gather_icons": [
+    "Eye_of_Newt",
+    "Horn",
+    "Eye_of_Newt",
+    "Eye_of_Newt",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Mandrake",
+    "Nightshade",
+    "Horn",
+    "Foxglove"
+   ],
+   "key": "Reagent_13.jpg",
+   "name": "Reagent 13",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_14.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 14",
+   "gather_icons": [
+    "Mandrake",
+    "Toadstool",
+    "Eye_of_Newt",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Horn",
+    "Nightshade",
+    "Horn",
+    "Eye_of_Newt"
+   ],
+   "key": "Reagent_14.jpg",
+   "name": "Reagent 14",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_15.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 15",
+   "gather_icons": [
+    "Eye_of_Newt",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "increase_icons": [
+    "Sulphur",
+    "Foxglove",
+    "Toadstool"
+   ],
+   "key": "Reagent_15.jpg",
+   "name": "Reagent 15",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_16.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 16",
+   "gather_icons": [
+    "Eye_of_Newt",
+    "Sulphur",
+    "Eye_of_Newt",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Horn",
+    "Horn",
+    "Sulphur"
+   ],
+   "key": "Reagent_16.jpg",
+   "name": "Reagent 16",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_17.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 17",
+   "gather_icons": [
+    "Mandrake",
+    "Sulphur",
+    "Toadstool"
+   ],
+   "increase_icons": [
+    "Mandrake",
+    "Nightshade",
+    "Eye_of_Newt"
+   ],
+   "key": "Reagent_17.jpg",
+   "name": "Reagent 17",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_18.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 18",
+   "gather_icons": [
+    "Toadstool",
+    "Foxglove",
+    "Eye_of_Newt"
+   ],
+   "increase_icons": [
+    "Sulphur",
+    "Mandrake",
+    "Nightshade"
+   ],
+   "key": "Reagent_18.jpg",
+   "name": "Reagent 18",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_19.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 19",
+   "gather_icons": [
+    "Foxglove",
+    "Eye_of_Newt",
+    "Sulphur",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Eye_of_Newt",
+    "Horn",
+    "Eye_of_Newt",
+    "Nightshade"
+   ],
+   "key": "Reagent_19.jpg",
+   "name": "Reagent 19",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_20.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 20",
+   "gather_icons": [
+    "Sulphur",
+    "Eye_of_Newt",
+    "Mandrake"
+   ],
+   "increase_icons": [
+    "Foxglove",
+    "Foxglove",
+    "Horn"
+   ],
+   "key": "Reagent_20.jpg",
+   "name": "Reagent 20",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_21.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 21",
+   "gather_icons": [
+    "Horn",
+    "Sulphur",
+    "Toadstool"
+   ],
+   "increase_icons": [
+    "Mandrake",
+    "Mandrake",
+    "Nightshade"
+   ],
+   "key": "Reagent_21.jpg",
+   "name": "Reagent 21",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_22.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 22",
+   "gather_icons": [
+    "Toadstool",
+    "Toadstool",
+    "Mandrake",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Eye_of_Newt",
+    "Foxglove",
+    "Mandrake"
+   ],
+   "key": "Reagent_22.jpg",
+   "name": "Reagent 22",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_23.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 23",
+   "gather_icons": [
+    "Horn",
+    "Horn",
+    "Horn",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "increase_icons": [
+    "Eye_of_Newt",
+    "Foxglove",
+    "Horn",
+    "Mandrake"
+   ],
+   "key": "Reagent_23.jpg",
+   "name": "Reagent 23",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_24.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 24",
+   "gather_icons": [
+    "Toadstool",
+    "Horn",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Toadstool",
+    "Toadstool",
+    "Foxglove"
+   ],
+   "key": "Reagent_24.jpg",
+   "name": "Reagent 24",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_25.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 25",
+   "gather_icons": [
+    "Nightshade",
+    "Foxglove",
+    "Mandrake",
+    "Horn"
+   ],
+   "increase_icons": [
+    "Toadstool",
+    "Eye_of_Newt",
+    "Horn",
+    "Nightshade"
+   ],
+   "key": "Reagent_25.jpg",
+   "name": "Reagent 25",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_26.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 26",
+   "gather_icons": [
+    "Foxglove",
+    "Horn",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Mandrake",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "key": "Reagent_26.jpg",
+   "name": "Reagent 26",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_27.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 27",
+   "gather_icons": [
+    "Mandrake",
+    "Mandrake",
+    "Sulphur",
+    "Horn"
+   ],
+   "increase_icons": [
+    "Nightshade",
+    "Sulphur",
+    "Mandrake",
+    "Toadstool"
+   ],
+   "key": "Reagent_27.jpg",
+   "name": "Reagent 27",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_28.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 28",
+   "gather_icons": [
+    "Sulphur",
+    "Sulphur",
+    "Sulphur",
+    "Foxglove",
+    "Eye_of_Newt"
+   ],
+   "increase_icons": [
+    "Horn",
+    "Mandrake",
+    "Sulphur",
+    "Nightshade"
+   ],
+   "key": "Reagent_28.jpg",
+   "name": "Reagent 28",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_29.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 29",
+   "gather_icons": [
+    "Horn",
+    "Horn",
+    "Eye_of_Newt",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Toadstool",
+    "Foxglove",
+    "Sulphur",
+    "Eye_of_Newt"
+   ],
+   "key": "Reagent_29.jpg",
+   "name": "Reagent 29",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_30.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 30",
+   "gather_icons": [
+    "Sulphur",
+    "Horn",
+    "Sulphur",
+    "Eye_of_Newt"
+   ],
+   "increase_icons": [
+    "Eye_of_Newt",
+    "Eye_of_Newt",
+    "Nightshade"
+   ],
+   "key": "Reagent_30.jpg",
+   "name": "Reagent 30",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_31.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 31",
+   "gather_icons": [
+    "Toadstool",
+    "Foxglove",
+    "Toadstool",
+    "Horn"
+   ],
+   "increase_icons": [
+    "Horn",
+    "Nightshade",
+    "Toadstool",
+    "Mandrake"
+   ],
+   "key": "Reagent_31.jpg",
+   "name": "Reagent 31",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_32.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 32",
+   "gather_icons": [
+    "Foxglove",
+    "Toadstool",
+    "Horn",
+    "Mandrake"
+   ],
+   "increase_icons": [
+    "Horn",
+    "Toadstool",
+    "Horn",
+    "Mandrake"
+   ],
+   "key": "Reagent_32.jpg",
+   "name": "Reagent 32",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_33.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 33",
+   "gather_icons": [
+    "Foxglove",
+    "Foxglove",
+    "Mandrake",
+    "Horn"
+   ],
+   "increase_icons": [
+    "Nightshade",
+    "Nightshade",
+    "Foxglove"
+   ],
+   "key": "Reagent_33.jpg",
+   "name": "Reagent 33",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_34.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 34",
+   "gather_icons": [
+    "Mandrake",
+    "Foxglove",
+    "Eye_of_Newt"
+   ],
+   "increase_icons": [
+    "Sulphur",
+    "Sulphur",
+    "Mandrake"
+   ],
+   "key": "Reagent_34.jpg",
+   "name": "Reagent 34",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_35.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 35",
+   "gather_icons": [
+    "Mandrake",
+    "Mandrake",
+    "Mandrake",
+    "Nightshade",
+    "Foxglove"
+   ],
+   "increase_icons": [
+    "Toadstool",
+    "Foxglove",
+    "Sulphur",
+    "Eye_of_Newt"
+   ],
+   "key": "Reagent_35.jpg",
+   "name": "Reagent 35",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_36.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 36",
+   "gather_icons": [
+    "Nightshade",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "increase_icons": [
+    "Foxglove",
+    "Mandrake",
+    "Toadstool"
+   ],
+   "key": "Reagent_36.jpg",
+   "name": "Reagent 36",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_37.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 37",
+   "gather_icons": [
+    "Mandrake",
+    "Horn",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Toadstool",
+    "Horn",
+    "Sulphur"
+   ],
+   "key": "Reagent_37.jpg",
+   "name": "Reagent 37",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_38.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 38",
+   "gather_icons": [
+    "Nightshade",
+    "Toadstool",
+    "Horn"
+   ],
+   "increase_icons": [
+    "Sulphur",
+    "Sulphur",
+    "Foxglove"
+   ],
+   "key": "Reagent_38.jpg",
+   "name": "Reagent 38",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_39.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 39",
+   "gather_icons": [
+    "Sulphur",
+    "Foxglove",
+    "Mandrake",
+    "Horn"
+   ],
+   "increase_icons": [
+    "Sulphur",
+    "Sulphur",
+    "Foxglove"
+   ],
+   "key": "Reagent_39.jpg",
+   "name": "Reagent 39",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_40.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 40",
+   "gather_icons": [
+    "Toadstool",
+    "Sulphur",
+    "Eye_of_Newt",
+    "Nightshade"
+   ],
+   "increase_icons": [
+    "Horn",
+    "Sulphur",
+    "Foxglove"
+   ],
+   "key": "Reagent_40.jpg",
+   "name": "Reagent 40",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_41.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 41",
+   "gather_icons": [
+    "Nightshade",
+    "Nightshade",
+    "Toadstool",
+    "Nightshade",
+    "Sulphur"
+   ],
+   "increase_icons": [
+    "Nightshade",
+    "Foxglove",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "key": "Reagent_41.jpg",
+   "name": "Reagent 41",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_42.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 42",
+   "gather_icons": [
+    "Toadstool",
+    "Toadstool",
+    "Mandrake",
+    "Toadstool",
+    "Eye_of_Newt"
+   ],
+   "increase_icons": [
+    "Mandrake",
+    "Eye_of_Newt",
+    "Mandrake",
+    "Horn"
+   ],
+   "key": "Reagent_42.jpg",
+   "name": "Reagent 42",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_43.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 43",
+   "gather_icons": [
+    "Sulphur",
+    "Nightshade",
+    "Toadstool",
+    "Mandrake"
+   ],
+   "increase_icons": [
+    "Toadstool",
+    "Eye_of_Newt",
+    "Toadstool",
+    "Foxglove"
+   ],
+   "key": "Reagent_43.jpg",
+   "name": "Reagent 43",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_44.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 44",
+   "gather_icons": [
+    "Nightshade",
+    "Toadstool",
+    "Horn",
+    "Eye_of_Newt"
+   ],
+   "increase_icons": [
+    "Toadstool",
+    "Sulphur",
+    "Mandrake",
+    "Nightshade"
+   ],
+   "key": "Reagent_44.jpg",
+   "name": "Reagent 44",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_45.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 45",
+   "gather_icons": [
+    "Mandrake",
+    "Mandrake",
+    "Toadstool",
+    "Foxglove"
+   ],
+   "increase_icons": [
+    "Eye_of_Newt",
+    "Eye_of_Newt",
+    "Toadstool"
+   ],
+   "key": "Reagent_45.jpg",
+   "name": "Reagent 45",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_46.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 46",
+   "gather_icons": [
+    "Mandrake",
+    "Sulphur",
+    "Eye_of_Newt",
+    "Horn"
+   ],
+   "increase_icons": [
+    "Foxglove",
+    "Foxglove",
+    "Eye_of_Newt"
+   ],
+   "key": "Reagent_46.jpg",
+   "name": "Reagent 46",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_47.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 47",
+   "gather_icons": [
+    "Sulphur",
+    "Toadstool",
+    "Horn"
+   ],
+   "increase_icons": [
+    "Nightshade",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "key": "Reagent_47.jpg",
+   "name": "Reagent 47",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_48.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 48",
+   "gather_icons": [
+    "Horn",
+    "Sulphur",
+    "Horn",
+    "Foxglove"
+   ],
+   "increase_icons": [
+    "Nightshade",
+    "Nightshade",
+    "Eye_of_Newt"
+   ],
+   "key": "Reagent_48.jpg",
+   "name": "Reagent 48",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_49.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 49",
+   "gather_icons": [
+    "Horn",
+    "Eye_of_Newt",
+    "Mandrake"
+   ],
+   "increase_icons": [
+    "Foxglove",
+    "Eye_of_Newt",
+    "Toadstool"
+   ],
+   "key": "Reagent_49.jpg",
+   "name": "Reagent 49",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_50.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 50",
+   "gather_icons": [
+    "Nightshade",
+    "Eye_of_Newt",
+    "Nightshade",
+    "Toadstool"
+   ],
+   "increase_icons": [
+    "Toadstool",
+    "Toadstool",
+    "Sulphur"
+   ],
+   "key": "Reagent_50.jpg",
+   "name": "Reagent 50",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_51.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 51",
+   "gather_icons": [
+    "Foxglove",
+    "Eye_of_Newt",
+    "Mandrake"
+   ],
+   "increase_icons": [
+    "Foxglove",
+    "Toadstool",
+    "Nightshade"
+   ],
+   "key": "Reagent_51.jpg",
+   "name": "Reagent 51",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_52.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 52",
+   "gather_icons": [
+    "Toadstool",
+    "Foxglove",
+    "Horn",
+    "Sulphur"
+   ],
+   "increase_icons": [
+    "Nightshade",
+    "Horn",
+    "Nightshade",
+    "Eye_of_Newt"
+   ],
+   "key": "Reagent_52.jpg",
+   "name": "Reagent 52",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_53.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 53",
+   "gather_icons": [
+    "Eye_of_Newt",
+    "Toadstool",
+    "Horn"
+   ],
+   "increase_icons": [
+    "Nightshade",
+    "Eye_of_Newt",
+    "Foxglove"
+   ],
+   "key": "Reagent_53.jpg",
+   "name": "Reagent 53",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_54.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 54",
+   "gather_icons": [
+    "Sulphur",
+    "Nightshade",
+    "Sulphur",
+    "Toadstool"
+   ],
+   "increase_icons": [
+    "Mandrake",
+    "Sulphur",
+    "Toadstool",
+    "Horn"
+   ],
+   "key": "Reagent_54.jpg",
+   "name": "Reagent 54",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_55.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 55",
+   "gather_icons": [
+    "Mandrake",
+    "Foxglove",
+    "Eye_of_Newt",
+    "Toadstool"
+   ],
+   "increase_icons": [
+    "Foxglove",
+    "Toadstool",
+    "Nightshade"
+   ],
+   "key": "Reagent_55.jpg",
+   "name": "Reagent 55",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Reagent_56.jpg": {
+   "deck": "Reagent",
+   "display": "Reagent 56",
+   "gather_icons": [
+    "Foxglove",
+    "Foxglove",
+    "Eye_of_Newt",
+    "Sulphur"
+   ],
+   "increase_icons": [
+    "Mandrake",
+    "Toadstool",
+    "Foxglove",
+    "Eye_of_Newt"
+   ],
+   "key": "Reagent_56.jpg",
+   "name": "Reagent 56",
+   "school": null,
+   "source": "reagent_cards.json (Keith scans)"
+  },
+  "Spell_Adept_Conversion.jpg": {
+   "attack": false,
+   "base": "Adept_Conversion",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Mandrake": 2,
+     "Toadstool": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Adept Conversion (Druidry)",
+   "duration": "ongoing",
+   "effect": "May convert 2 types of Reagents",
+   "gotcha_star": false,
+   "key": "Spell_Adept_Conversion.jpg",
+   "name": "Adept Conversion",
+   "negative": false,
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Arch_Mage.jpg": {
+   "attack": false,
+   "base": "Arch_Mage",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 1,
+     "Foxglove": 1,
+     "Horn": 1,
+     "Mandrake": 1,
+     "Nightshade": 1,
+     "Sulphur": 1,
+     "Toadstool": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Arch-Mage (Wild)",
+   "duration": "ongoing",
+   "effect": "+3 VP/ unique Wizard card. Note: Can be treated as any school of magic for scoring",
+   "gotcha_star": false,
+   "key": "Spell_Arch_Mage.jpg",
+   "name": "Arch-Mage",
+   "negative": false,
+   "school": "Wild",
+   "school_reagent": null,
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Block_Denizens.jpg": {
+   "attack": false,
+   "base": "Block_Denizens",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 1,
+     "Nightshade": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Block Denizens (Necromancy)",
+   "duration": "ongoing",
+   "effect": "Denizens do not hit, and instead give you 1 Gold",
+   "gotcha_star": false,
+   "key": "Spell_Block_Denizens.jpg",
+   "name": "Block Denizens",
+   "negative": false,
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Block_Giant.jpg": {
+   "attack": false,
+   "base": "Block_Giant",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 1,
+     "Nightshade": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Block Giant (Necromancy)",
+   "duration": "ongoing",
+   "effect": "Giants do not hit, and instead give you 1 Gold",
+   "gotcha_star": false,
+   "key": "Spell_Block_Giant.jpg",
+   "name": "Block Giant",
+   "negative": false,
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Block_Goblin.jpg": {
+   "attack": false,
+   "base": "Block_Goblin",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Horn": 1,
+     "Nightshade": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Block Goblin (Necromancy)",
+   "duration": "ongoing",
+   "effect": "Goblinoids do not hit, and instead give you 1 Gold",
+   "gotcha_star": false,
+   "key": "Spell_Block_Goblin.jpg",
+   "name": "Block Goblin",
+   "negative": false,
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Block_Undead.jpg": {
+   "attack": false,
+   "base": "Block_Undead",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Nightshade": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Block Undead (Necromancy)",
+   "duration": "ongoing",
+   "effect": "Undead do not hit, and instead give you 1 Gold",
+   "gotcha_star": false,
+   "key": "Spell_Block_Undead.jpg",
+   "name": "Block Undead",
+   "negative": false,
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Bloom.jpg": {
+   "attack": false,
+   "base": "Bloom",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Toadstool": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Bloom (Druidry)",
+   "duration": "ongoing",
+   "effect": "+1 any Reagent when Gathering",
+   "gotcha_star": false,
+   "key": "Spell_Bloom.jpg",
+   "name": "Bloom",
+   "negative": false,
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Charm.jpg": {
+   "attack": true,
+   "base": "Charm",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 2,
+     "Mandrake": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Charm (Enchantment)",
+   "duration": "1x",
+   "effect": "Take a Wizard Card from another player",
+   "gotcha_star": true,
+   "key": "Spell_Charm.jpg",
+   "name": "Charm",
+   "negative": true,
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Control_Undead.jpg": {
+   "attack": false,
+   "base": "Control_Undead",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Nightshade": 4
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Control Undead (Necromancy)",
+   "duration": "ongoing",
+   "effect": "Ignore hits from and take any Undead card encountered when Dungeon Delving; +3 VP for each",
+   "gotcha_star": false,
+   "key": "Spell_Control_Undead.jpg",
+   "name": "Control Undead",
+   "negative": false,
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Creation.jpg": {
+   "attack": false,
+   "base": "Creation",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Horn": 4
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Creation (Conjuring)",
+   "duration": "1x",
+   "effect": "Take any available Card for free",
+   "gotcha_star": false,
+   "key": "Spell_Creation.jpg",
+   "name": "Creation",
+   "negative": false,
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Crystal_Ball.jpg": {
+   "attack": false,
+   "base": "Crystal_Ball",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Crystal Ball (Alchemy)",
+   "duration": "ongoing",
+   "effect": "Max Hand Size = 5",
+   "gotcha_star": false,
+   "key": "Spell_Crystal_Ball.jpg",
+   "name": "Crystal Ball",
+   "negative": false,
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Demonic_Possession.jpg": {
+   "attack": false,
+   "base": "Demonic_Possession",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Mandrake": 1,
+     "Nightshade": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Demonic Possession (Necromancy)",
+   "duration": "1x",
+   "effect": "Take a Familiar from another player and use it immediately",
+   "gotcha_star": true,
+   "key": "Spell_Demonic_Possession.jpg",
+   "name": "Demonic Possession",
+   "negative": true,
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Disintegrate_N.jpg": {
+   "attack": true,
+   "base": "Disintegrate",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 2,
+     "Nightshade": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Disintegrate (Necromancy)",
+   "duration": "1x",
+   "effect": "Disintegrate any card owned by another player and place it out of play",
+   "gotcha_star": true,
+   "key": "Spell_Disintegrate_N.jpg",
+   "name": "Disintegrate",
+   "negative": true,
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": "N",
+   "vp_box": null
+  },
+  "Spell_Disintegrate_S.jpg": {
+   "attack": true,
+   "base": "Disintegrate",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 2,
+     "Nightshade": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Disintegrate (Sorcery)",
+   "duration": "1x",
+   "effect": "Disintegrate any card owned by another player and place it out of play",
+   "gotcha_star": true,
+   "key": "Spell_Disintegrate_S.jpg",
+   "name": "Disintegrate",
+   "negative": true,
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": "S",
+   "vp_box": null
+  },
+  "Spell_Divination.jpg": {
+   "attack": false,
+   "base": "Divination",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 2,
+     "Sulphur": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Divination (Sorcery)",
+   "duration": "ongoing",
+   "effect": "Enter the Dungeon as an action without a Familiar",
+   "gotcha_star": false,
+   "key": "Spell_Divination.jpg",
+   "name": "Divination",
+   "negative": false,
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Earthquake.jpg": {
+   "attack": true,
+   "base": "Earthquake",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Sulphur": 1,
+     "Toadstool": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Earthquake (Druidry)",
+   "duration": "1x",
+   "effect": "Destroy (out of play) another player's Tower",
+   "gotcha_star": true,
+   "key": "Spell_Earthquake.jpg",
+   "name": "Earthquake",
+   "negative": true,
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Energize.jpg": {
+   "attack": false,
+   "base": "Energize",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 1,
+     "Toadstool": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Energize (Druidry)",
+   "duration": "ongoing",
+   "effect": "Increase the mana value of a Reagent by 3 before converting",
+   "gotcha_star": false,
+   "key": "Spell_Energize.jpg",
+   "name": "Energize",
+   "negative": false,
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Energy_Circle.jpg": {
+   "attack": false,
+   "base": "Energy_Circle",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Horn": 2,
+     "Toadstool": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Energy Circle (Conjuring)",
+   "duration": "ongoing",
+   "effect": "+5 Mana when any player summons a Familiar",
+   "gotcha_star": false,
+   "key": "Spell_Energy_Circle.jpg",
+   "name": "Energy Circle",
+   "negative": false,
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Energy_Pulse.jpg": {
+   "attack": false,
+   "base": "Energy_Pulse",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 3,
+     "Mandrake": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Energy Pulse (Sorcery)",
+   "duration": "1x",
+   "effect": "Destroy all Spell Shield spell cards currently owned by all players",
+   "gotcha_star": true,
+   "key": "Spell_Energy_Pulse.jpg",
+   "name": "Energy Pulse",
+   "negative": false,
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Evolve.jpg": {
+   "attack": false,
+   "base": "Evolve",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Evolve (Alchemy)",
+   "duration": "1x",
+   "effect": "One of your Familiars becomes a Wizard of the same school",
+   "gotcha_star": false,
+   "key": "Spell_Evolve.jpg",
+   "name": "Evolve",
+   "negative": false,
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Flame_Bolt_D.jpg": {
+   "attack": true,
+   "base": "Flame_Bolt",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Sulphur": 1,
+     "Toadstool": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Flame Bolt (Druidry)",
+   "duration": "1x",
+   "effect": "Destroy any card owned by another player and place it out of play",
+   "gotcha_star": true,
+   "key": "Spell_Flame_Bolt_D.jpg",
+   "name": "Flame Bolt",
+   "negative": true,
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": "D",
+   "vp_box": null
+  },
+  "Spell_Flame_Bolt_S.jpg": {
+   "attack": true,
+   "base": "Flame_Bolt",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 2,
+     "Sulphur": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Flame Bolt (Sorcery)",
+   "duration": "1x",
+   "effect": "Destroy any card owned by another player and place it out of play",
+   "gotcha_star": true,
+   "key": "Spell_Flame_Bolt_S.jpg",
+   "name": "Flame Bolt",
+   "negative": true,
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": "S",
+   "vp_box": null
+  },
+  "Spell_Haste.jpg": {
+   "attack": false,
+   "base": "Haste",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Mandrake": 2,
+     "Toadstool": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Haste (Enchantment)",
+   "duration": "1x",
+   "effect": "Take a bonus action",
+   "gotcha_star": false,
+   "key": "Spell_Haste.jpg",
+   "name": "Haste",
+   "negative": false,
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Hoard_Mana.jpg": {
+   "attack": false,
+   "base": "Hoard_Mana",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 1,
+     "Foxglove": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Hoard Mana (Sorcery)",
+   "duration": "ongoing",
+   "effect": "+1 VP/ 7 Mana at the end of the game",
+   "gotcha_star": false,
+   "key": "Spell_Hoard_Mana.jpg",
+   "name": "Hoard Mana",
+   "negative": false,
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Inexpensive.jpg": {
+   "attack": false,
+   "base": "Inexpensive",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 1,
+     "Sulphur": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Inexpensive (Thaumaturgy)",
+   "duration": "ongoing",
+   "effect": "Build Towers for 1 fewer Gold",
+   "gotcha_star": false,
+   "key": "Spell_Inexpensive.jpg",
+   "name": "Inexpensive",
+   "negative": false,
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Invisibility_Potion.jpg": {
+   "attack": false,
+   "base": "Invisibility_Potion",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": "X"
+    },
+    "variable": true
+   },
+   "deck": "Spell",
+   "display": "Invisibility Potion (Alchemy)",
+   "duration": "1x",
+   "effect": "Steal 1 Gold per Eye of Newt used in casting the Spell (from one player)",
+   "gotcha_star": true,
+   "key": "Spell_Invisibility_Potion.jpg",
+   "name": "Invisibility Potion",
+   "negative": true,
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Mana_Drain.jpg": {
+   "attack": true,
+   "base": "Mana_Drain",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Horn": 3,
+     "Nightshade": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Mana Drain (Conjuring)",
+   "duration": "1x",
+   "effect": "Steal 15 Mana from another player",
+   "gotcha_star": true,
+   "key": "Spell_Mana_Drain.jpg",
+   "name": "Mana Drain",
+   "negative": true,
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Mana_Fountain.jpg": {
+   "attack": false,
+   "base": "Mana_Fountain",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 2,
+     "Sulphur": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Mana Fountain (Thaumaturgy)",
+   "duration": "ongoing",
+   "effect": "+5 Mana when any player builds a Tower",
+   "gotcha_star": false,
+   "key": "Spell_Mana_Fountain.jpg",
+   "name": "Mana Fountain",
+   "negative": false,
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Mana_Garden.jpg": {
+   "attack": false,
+   "base": "Mana_Garden",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Mandrake": 2,
+     "Toadstool": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Mana Garden (Druidry)",
+   "duration": "ongoing",
+   "effect": "+5 Mana whenever you Gather Reagents",
+   "gotcha_star": false,
+   "key": "Spell_Mana_Garden.jpg",
+   "name": "Mana Garden",
+   "negative": false,
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Mana_Leak.jpg": {
+   "attack": false,
+   "base": "Mana_Leak",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 1,
+     "Horn": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Mana Leak (Conjuring)",
+   "duration": "ongoing",
+   "effect": "+5 Mana when any player recruits a Wizard",
+   "gotcha_star": false,
+   "key": "Spell_Mana_Leak.jpg",
+   "name": "Mana Leak",
+   "negative": false,
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Master_Alchemist.jpg": {
+   "attack": false,
+   "base": "Master_Alchemist",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 2,
+     "Horn": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Master Alchemist (Alchemy)",
+   "duration": "ongoing",
+   "effect": "+1 VP/ 2 Gold",
+   "gotcha_star": false,
+   "key": "Spell_Master_Alchemist.jpg",
+   "name": "Master Alchemist",
+   "negative": false,
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Maximum_Gather.jpg": {
+   "attack": false,
+   "base": "Maximum_Gather",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Toadstool": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Maximum Gather (Druidry)",
+   "duration": "ongoing",
+   "effect": "Gather all Reagents shown on the top half of the Gather Reagents Card",
+   "gotcha_star": false,
+   "key": "Spell_Maximum_Gather.jpg",
+   "name": "Maximum Gather",
+   "negative": false,
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Miracle.jpg": {
+   "attack": false,
+   "base": "Miracle",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Sulphur": 2,
+     "Toadstool": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Miracle (Thaumaturgy)",
+   "duration": "ongoing",
+   "effect": "Reverse the Reagents on the Gather and Increase Value sides of your Gather Reagent Card that you play if you choose to",
+   "gotcha_star": false,
+   "key": "Spell_Miracle.jpg",
+   "name": "Miracle",
+   "negative": false,
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Obscure.jpg": {
+   "attack": false,
+   "base": "Obscure",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 1,
+     "Toadstool": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Obscure (Druidry)",
+   "duration": "1x",
+   "effect": "The targeted player may not enter the Dungeon the next time they try",
+   "gotcha_star": true,
+   "key": "Spell_Obscure.jpg",
+   "name": "Obscure",
+   "negative": true,
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Order_of_the_Wand.jpg": {
+   "attack": false,
+   "base": "Order_of_the_Wand",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 1,
+     "Mandrake": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Order of the Wand (Enchantment)",
+   "duration": "ongoing",
+   "effect": "Wizard Cards = +2 VP",
+   "gotcha_star": false,
+   "key": "Spell_Order_of_the_Wand.jpg",
+   "name": "Order of the Wand",
+   "negative": false,
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Perfect_Reagent.jpg": {
+   "attack": false,
+   "base": "Perfect_Reagent",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Sulphur": 2,
+     "Toadstool": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Perfect Reagent (Thaumaturgy)",
+   "duration": "ongoing",
+   "effect": "Build Towers for 1 fewer Reagent",
+   "gotcha_star": false,
+   "key": "Spell_Perfect_Reagent.jpg",
+   "name": "Perfect Reagent",
+   "negative": false,
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Potent_Servant.jpg": {
+   "attack": false,
+   "base": "Potent_Servant",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Toadstool": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Potent Servant (Druidry)",
+   "duration": "ongoing",
+   "effect": "Familiar Cards = +1VP",
+   "gotcha_star": false,
+   "key": "Spell_Potent_Servant.jpg",
+   "name": "Potent Servant",
+   "negative": false,
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Powerful_Helper.jpg": {
+   "attack": false,
+   "base": "Powerful_Helper",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Powerful Helper (Alchemy)",
+   "duration": "ongoing",
+   "effect": "When using a Familiar to score, gain +1 Gold/ Wizard and Familiar from its school of magic.",
+   "gotcha_star": false,
+   "key": "Spell_Powerful_Helper.jpg",
+   "name": "Powerful Helper",
+   "negative": false,
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Pulsing_Towers.jpg": {
+   "attack": false,
+   "base": "Pulsing_Towers",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Sulphur": 3,
+     "Toadstool": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Pulsing Towers (Thaumaturgy)",
+   "duration": "ongoing",
+   "effect": "Tower Cards = +1 VP",
+   "gotcha_star": false,
+   "key": "Spell_Pulsing_Towers.jpg",
+   "name": "Pulsing Towers",
+   "negative": false,
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Rise.jpg": {
+   "attack": false,
+   "base": "Rise",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Mandrake": 1,
+     "Nightshade": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Rise (Necromancy)",
+   "duration": "1x",
+   "effect": "Re-activate one of your used Familiar Cards",
+   "gotcha_star": false,
+   "key": "Spell_Rise.jpg",
+   "name": "Rise",
+   "negative": false,
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Root_Cellar.jpg": {
+   "attack": false,
+   "base": "Root_Cellar",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Sulphur": 1,
+     "Toadstool": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Root Cellar (Druidry)",
+   "duration": "ongoing",
+   "effect": "Store +10 Reagents",
+   "gotcha_star": false,
+   "key": "Spell_Root_Cellar.jpg",
+   "name": "Root Cellar",
+   "negative": false,
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Scribe.jpg": {
+   "attack": false,
+   "base": "Scribe",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 2,
+     "Mandrake": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Scribe (Alchemy)",
+   "duration": "1x",
+   "effect": "Take and cast one of the top 5 Spell Cards for free",
+   "gotcha_star": false,
+   "key": "Spell_Scribe.jpg",
+   "name": "Scribe",
+   "negative": false,
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Scry_Dungeon.jpg": {
+   "attack": false,
+   "base": "Scry_Dungeon",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 2,
+     "Nightshade": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Scry Dungeon (Sorcery)",
+   "duration": "1x",
+   "effect": "Look at the top 10 cards in the Dungeon deck, and keep all Treasure Cards",
+   "gotcha_star": false,
+   "key": "Spell_Scry_Dungeon.jpg",
+   "name": "Scry Dungeon",
+   "negative": false,
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Scry_Familiar.jpg": {
+   "attack": false,
+   "base": "Scry_Familiar",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 2,
+     "Horn": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Scry Familiar (Sorcery)",
+   "duration": "1x",
+   "effect": "Look at the top 5 cards in the Familiar Deck, and get one for free",
+   "gotcha_star": false,
+   "key": "Spell_Scry_Familiar.jpg",
+   "name": "Scry Familiar",
+   "negative": false,
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Scry_Tower.jpg": {
+   "attack": false,
+   "base": "Scry_Tower",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 2,
+     "Sulphur": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Scry Tower (Sorcery)",
+   "duration": "1x",
+   "effect": "Look at the top 5 cards in the Tower Deck, and get one for free",
+   "gotcha_star": false,
+   "key": "Spell_Scry_Tower.jpg",
+   "name": "Scry Tower",
+   "negative": false,
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Scry_Wizard.jpg": {
+   "attack": false,
+   "base": "Scry_Wizard",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 2,
+     "Mandrake": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Scry Wizard (Sorcery)",
+   "duration": "1x",
+   "effect": "Look at the top 5 cards in the Wizard Deck, and get one for free",
+   "gotcha_star": false,
+   "key": "Spell_Scry_Wizard.jpg",
+   "name": "Scry Wizard",
+   "negative": false,
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Secret_Society.jpg": {
+   "attack": false,
+   "base": "Secret_Society",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Mandrake": 2,
+     "Sulphur": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Secret Society (Enchantment)",
+   "duration": "ongoing",
+   "effect": "May hide your Wizard Cards; Any negative Spell aimed at your Wizards affects a random Wizard of yours",
+   "gotcha_star": true,
+   "key": "Spell_Secret_Society.jpg",
+   "name": "Secret Society",
+   "negative": false,
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Spell_Shield_A.jpg": {
+   "attack": false,
+   "base": "Spell_Shield",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Spell Shield (Alchemy)",
+   "duration": "1x",
+   "effect": "Protected from one negative Spell effect, then placed out of play",
+   "gotcha_star": true,
+   "key": "Spell_Spell_Shield_A.jpg",
+   "name": "Spell Shield",
+   "negative": false,
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": "A",
+   "vp_box": null
+  },
+  "Spell_Spell_Shield_C.jpg": {
+   "attack": false,
+   "base": "Spell_Shield",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Horn": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Spell Shield (Conjuring)",
+   "duration": "1x",
+   "effect": "Protected from one negative Spell effect, then placed out of play",
+   "gotcha_star": true,
+   "key": "Spell_Spell_Shield_C.jpg",
+   "name": "Spell Shield",
+   "negative": false,
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": "C",
+   "vp_box": null
+  },
+  "Spell_Spell_Shield_E.jpg": {
+   "attack": false,
+   "base": "Spell_Shield",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Mandrake": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Spell Shield (Enchantment)",
+   "duration": "1x",
+   "effect": "Protected from one negative Spell effect, then placed out of play",
+   "gotcha_star": true,
+   "key": "Spell_Spell_Shield_E.jpg",
+   "name": "Spell Shield",
+   "negative": false,
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": "E",
+   "vp_box": null
+  },
+  "Spell_Spell_Shield_T.jpg": {
+   "attack": false,
+   "base": "Spell_Shield",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Sulphur": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Spell Shield (Thaumaturgy)",
+   "duration": "1x",
+   "effect": "Protected from one negative Spell effect, then placed out of play",
+   "gotcha_star": true,
+   "key": "Spell_Spell_Shield_T.jpg",
+   "name": "Spell Shield",
+   "negative": false,
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": "T",
+   "vp_box": null
+  },
+  "Spell_Spirit_Shield.jpg": {
+   "attack": false,
+   "base": "Spirit_Shield",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Mandrake": 2,
+     "Sulphur": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Spirit Shield (Enchantment)",
+   "duration": "ongoing",
+   "effect": "Ignore one additional hit per Dungeon Expedition",
+   "gotcha_star": false,
+   "key": "Spell_Spirit_Shield.jpg",
+   "name": "Spirit Shield",
+   "negative": false,
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Summon_Helper.jpg": {
+   "attack": false,
+   "base": "Summon_Helper",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Horn": 2,
+     "Mandrake": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Summon Helper (Conjuring)",
+   "duration": "ongoing",
+   "effect": "Summon Familiar for 5 fewer Mana Cost",
+   "gotcha_star": false,
+   "key": "Spell_Summon_Helper.jpg",
+   "name": "Summon Helper",
+   "negative": false,
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Swapo.jpg": {
+   "attack": false,
+   "base": "Swapo",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Mandrake": 2,
+     "Sulphur": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Swapo (Enchantment)",
+   "duration": "1x",
+   "effect": "Trade one of your Wizard or Tower Cards for the same type owned by another player",
+   "gotcha_star": true,
+   "key": "Spell_Swapo.jpg",
+   "name": "Swapo",
+   "negative": true,
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Time_Shift.jpg": {
+   "attack": false,
+   "base": "Time_Shift",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 1,
+     "Mandrake": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Time Shift (Enchantment)",
+   "duration": "1x",
+   "effect": "Remove (out of play) the top 5 cards of any deck",
+   "gotcha_star": false,
+   "key": "Spell_Time_Shift.jpg",
+   "name": "Time Shift",
+   "negative": false,
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Transform.jpg": {
+   "attack": false,
+   "base": "Transform",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 3
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Transform (Alchemy)",
+   "duration": "ongoing",
+   "effect": "Transform any Reagent to another Reagent at 2:1 ratio before Converting to Mana",
+   "gotcha_star": false,
+   "key": "Spell_Transform.jpg",
+   "name": "Transform",
+   "negative": false,
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Transmute.jpg": {
+   "attack": false,
+   "base": "Transmute",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 2,
+     "Sulphur": 1
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Transmute (Alchemy)",
+   "duration": "1x",
+   "effect": "Transmute any number of Reagents to Gold at a 2:1 ratio",
+   "gotcha_star": false,
+   "key": "Spell_Transmute.jpg",
+   "name": "Transmute",
+   "negative": false,
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Trap.jpg": {
+   "attack": false,
+   "base": "Trap",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Mandrake": 1,
+     "Sulphur": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Trap! (Thaumaturgy)",
+   "duration": "1x",
+   "effect": "Add a Trap Card to the Dungeon",
+   "gotcha_star": false,
+   "key": "Spell_Trap.jpg",
+   "name": "Trap!",
+   "negative": false,
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Treasure.jpg": {
+   "attack": false,
+   "base": "Treasure",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 1,
+     "Horn": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Treasure (Conjuring)",
+   "duration": "ongoing",
+   "effect": "Gain 2 Gold each time you enter the Dungeon",
+   "gotcha_star": false,
+   "key": "Spell_Treasure.jpg",
+   "name": "Treasure",
+   "negative": false,
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Undying.jpg": {
+   "attack": false,
+   "base": "Undying",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Foxglove": 1,
+     "Horn": 1,
+     "Nightshade": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Undying (Necromancy)",
+   "duration": "ongoing",
+   "effect": "+3 VP/ Necromancer Wizard and Familiar Cards owned",
+   "gotcha_star": false,
+   "key": "Spell_Undying.jpg",
+   "name": "Undying",
+   "negative": false,
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Spell_Wand_Tax.jpg": {
+   "attack": false,
+   "base": "Wand_Tax",
+   "cost": {
+    "mana": 5,
+    "reagents": {
+     "Eye_of_Newt": 1,
+     "Mandrake": 2
+    },
+    "variable": false
+   },
+   "deck": "Spell",
+   "display": "Wand Tax (Enchantment)",
+   "duration": "1x",
+   "effect": "Gain 2 Gold/ Card of any School of Magic of your choice",
+   "gotcha_star": false,
+   "key": "Spell_Wand_Tax.jpg",
+   "name": "Wand Tax",
+   "negative": false,
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "spells_from_pc.json (Keith photos)",
+   "transcription_status": "full",
+   "variant": null,
+   "vp_box": null
+  },
+  "Tower_T1_Azure_Tower.jpg": {
+   "cost": {
+    "gold": 1,
+    "reagent": "Foxglove",
+    "reagent_count": 1,
+    "tier": 1
+   },
+   "deck": "Tower",
+   "display": "Azure Tower T1 (Sorcery)",
+   "effect": null,
+   "key": "Tower_T1_Azure_Tower.jpg",
+   "name": "Azure Tower",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 1
+  },
+  "Tower_T1_Emerald_Stronghold.jpg": {
+   "cost": {
+    "gold": 1,
+    "reagent": "Toadstool",
+    "reagent_count": 1,
+    "tier": 1
+   },
+   "deck": "Tower",
+   "display": "Emerald Stronghold T1 (Druidry)",
+   "effect": null,
+   "key": "Tower_T1_Emerald_Stronghold.jpg",
+   "name": "Emerald Stronghold",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 1
+  },
+  "Tower_T1_Ivory_Spire.jpg": {
+   "cost": {
+    "gold": 1,
+    "reagent": "Mandrake",
+    "reagent_count": 1,
+    "tier": 1
+   },
+   "deck": "Tower",
+   "display": "Ivory Spire T1 (Enchantment)",
+   "effect": null,
+   "key": "Tower_T1_Ivory_Spire.jpg",
+   "name": "Ivory Spire",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 1
+  },
+  "Tower_T1_Keep_of_Elixers.jpg": {
+   "cost": {
+    "gold": 1,
+    "reagent": "Eye_of_Newt",
+    "reagent_count": 1,
+    "tier": 1
+   },
+   "deck": "Tower",
+   "display": "Keep of Elixers T1 (Alchemy)",
+   "effect": null,
+   "key": "Tower_T1_Keep_of_Elixers.jpg",
+   "name": "Keep of Elixers",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 1
+  },
+  "Tower_T1_Obelisk_of_Puzzles.jpg": {
+   "cost": {
+    "gold": 1,
+    "reagent": "Sulphur",
+    "reagent_count": 1,
+    "tier": 1
+   },
+   "deck": "Tower",
+   "display": "Obelisk of Puzzles T1 (Thaumaturgy)",
+   "effect": null,
+   "key": "Tower_T1_Obelisk_of_Puzzles.jpg",
+   "name": "Obelisk of Puzzles",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 1
+  },
+  "Tower_T1_Obsidian_Fortress.jpg": {
+   "cost": {
+    "gold": 1,
+    "reagent": "Nightshade",
+    "reagent_count": 1,
+    "tier": 1
+   },
+   "deck": "Tower",
+   "display": "Obsidian Fortress T1 (Necromancy)",
+   "effect": null,
+   "key": "Tower_T1_Obsidian_Fortress.jpg",
+   "name": "Obsidian Fortress",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 1
+  },
+  "Tower_T1_Vermillion_Citadel.jpg": {
+   "cost": {
+    "gold": 1,
+    "reagent": "Horn",
+    "reagent_count": 1,
+    "tier": 1
+   },
+   "deck": "Tower",
+   "display": "Vermillion Citadel T1 (Conjuring)",
+   "effect": null,
+   "key": "Tower_T1_Vermillion_Citadel.jpg",
+   "name": "Vermillion Citadel",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 1
+  },
+  "Tower_T2_Azure_Tower.jpg": {
+   "cost": {
+    "gold": 2,
+    "reagent": "Foxglove",
+    "reagent_count": 2,
+    "tier": 2
+   },
+   "deck": "Tower",
+   "display": "Azure Tower T2 (Sorcery)",
+   "effect": null,
+   "key": "Tower_T2_Azure_Tower.jpg",
+   "name": "Azure Tower",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 2
+  },
+  "Tower_T2_Emerald_Stronghold.jpg": {
+   "cost": {
+    "gold": 2,
+    "reagent": "Toadstool",
+    "reagent_count": 2,
+    "tier": 2
+   },
+   "deck": "Tower",
+   "display": "Emerald Stronghold T2 (Druidry)",
+   "effect": null,
+   "key": "Tower_T2_Emerald_Stronghold.jpg",
+   "name": "Emerald Stronghold",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 2
+  },
+  "Tower_T2_Ivory_Spire.jpg": {
+   "cost": {
+    "gold": 2,
+    "reagent": "Mandrake",
+    "reagent_count": 2,
+    "tier": 2
+   },
+   "deck": "Tower",
+   "display": "Ivory Spire T2 (Enchantment)",
+   "effect": null,
+   "key": "Tower_T2_Ivory_Spire.jpg",
+   "name": "Ivory Spire",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 2
+  },
+  "Tower_T2_Keep_of_Elixers.jpg": {
+   "cost": {
+    "gold": 2,
+    "reagent": "Eye_of_Newt",
+    "reagent_count": 2,
+    "tier": 2
+   },
+   "deck": "Tower",
+   "display": "Keep of Elixers T2 (Alchemy)",
+   "effect": null,
+   "key": "Tower_T2_Keep_of_Elixers.jpg",
+   "name": "Keep of Elixers",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 2
+  },
+  "Tower_T2_Obelisk_of_Puzzles.jpg": {
+   "cost": {
+    "gold": 2,
+    "reagent": "Sulphur",
+    "reagent_count": 2,
+    "tier": 2
+   },
+   "deck": "Tower",
+   "display": "Obelisk of Puzzles T2 (Thaumaturgy)",
+   "effect": null,
+   "key": "Tower_T2_Obelisk_of_Puzzles.jpg",
+   "name": "Obelisk of Puzzles",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 2
+  },
+  "Tower_T2_Obsidian_Fortress.jpg": {
+   "cost": {
+    "gold": 2,
+    "reagent": "Nightshade",
+    "reagent_count": 2,
+    "tier": 2
+   },
+   "deck": "Tower",
+   "display": "Obsidian Fortress T2 (Necromancy)",
+   "effect": null,
+   "key": "Tower_T2_Obsidian_Fortress.jpg",
+   "name": "Obsidian Fortress",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 2
+  },
+  "Tower_T2_Vermillion_Citadel.jpg": {
+   "cost": {
+    "gold": 2,
+    "reagent": "Horn",
+    "reagent_count": 2,
+    "tier": 2
+   },
+   "deck": "Tower",
+   "display": "Vermillion Citadel T2 (Conjuring)",
+   "effect": null,
+   "key": "Tower_T2_Vermillion_Citadel.jpg",
+   "name": "Vermillion Citadel",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 2
+  },
+  "Tower_T3_Azure_Tower.jpg": {
+   "cost": {
+    "gold": 3,
+    "reagent": "Foxglove",
+    "reagent_count": 3,
+    "tier": 3
+   },
+   "deck": "Tower",
+   "display": "Azure Tower T3 (Sorcery)",
+   "effect": null,
+   "key": "Tower_T3_Azure_Tower.jpg",
+   "name": "Azure Tower",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 3
+  },
+  "Tower_T3_Emerald_Stronghold.jpg": {
+   "cost": {
+    "gold": 3,
+    "reagent": "Toadstool",
+    "reagent_count": 3,
+    "tier": 3
+   },
+   "deck": "Tower",
+   "display": "Emerald Stronghold T3 (Druidry)",
+   "effect": null,
+   "key": "Tower_T3_Emerald_Stronghold.jpg",
+   "name": "Emerald Stronghold",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 3
+  },
+  "Tower_T3_Ivory_Spire.jpg": {
+   "cost": {
+    "gold": 3,
+    "reagent": "Mandrake",
+    "reagent_count": 3,
+    "tier": 3
+   },
+   "deck": "Tower",
+   "display": "Ivory Spire T3 (Enchantment)",
+   "effect": null,
+   "key": "Tower_T3_Ivory_Spire.jpg",
+   "name": "Ivory Spire",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 3
+  },
+  "Tower_T3_Keep_of_Elixers.jpg": {
+   "cost": {
+    "gold": 3,
+    "reagent": "Eye_of_Newt",
+    "reagent_count": 3,
+    "tier": 3
+   },
+   "deck": "Tower",
+   "display": "Keep of Elixers T3 (Alchemy)",
+   "effect": null,
+   "key": "Tower_T3_Keep_of_Elixers.jpg",
+   "name": "Keep of Elixers",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 3
+  },
+  "Tower_T3_Obelisk_of_Puzzles.jpg": {
+   "cost": {
+    "gold": 3,
+    "reagent": "Sulphur",
+    "reagent_count": 3,
+    "tier": 3
+   },
+   "deck": "Tower",
+   "display": "Obelisk of Puzzles T3 (Thaumaturgy)",
+   "effect": null,
+   "key": "Tower_T3_Obelisk_of_Puzzles.jpg",
+   "name": "Obelisk of Puzzles",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 3
+  },
+  "Tower_T3_Obsidian_Fortress.jpg": {
+   "cost": {
+    "gold": 3,
+    "reagent": "Nightshade",
+    "reagent_count": 3,
+    "tier": 3
+   },
+   "deck": "Tower",
+   "display": "Obsidian Fortress T3 (Necromancy)",
+   "effect": null,
+   "key": "Tower_T3_Obsidian_Fortress.jpg",
+   "name": "Obsidian Fortress",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 3
+  },
+  "Tower_T3_Vermillion_Citadel.jpg": {
+   "cost": {
+    "gold": 3,
+    "reagent": "Horn",
+    "reagent_count": 3,
+    "tier": 3
+   },
+   "deck": "Tower",
+   "display": "Vermillion Citadel T3 (Conjuring)",
+   "effect": null,
+   "key": "Tower_T3_Vermillion_Citadel.jpg",
+   "name": "Vermillion Citadel",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 3
+  },
+  "Tower_T4_Azure_Tower.jpg": {
+   "cost": {
+    "gold": 4,
+    "reagent": "Foxglove",
+    "reagent_count": 4,
+    "tier": 4
+   },
+   "deck": "Tower",
+   "display": "Azure Tower T4 (Sorcery)",
+   "effect": null,
+   "key": "Tower_T4_Azure_Tower.jpg",
+   "name": "Azure Tower",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 4
+  },
+  "Tower_T4_Emerald_Stronghold.jpg": {
+   "cost": {
+    "gold": 4,
+    "reagent": "Toadstool",
+    "reagent_count": 4,
+    "tier": 4
+   },
+   "deck": "Tower",
+   "display": "Emerald Stronghold T4 (Druidry)",
+   "effect": null,
+   "key": "Tower_T4_Emerald_Stronghold.jpg",
+   "name": "Emerald Stronghold",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 4
+  },
+  "Tower_T4_Ivory_Spire.jpg": {
+   "cost": {
+    "gold": 4,
+    "reagent": "Mandrake",
+    "reagent_count": 4,
+    "tier": 4
+   },
+   "deck": "Tower",
+   "display": "Ivory Spire T4 (Enchantment)",
+   "effect": null,
+   "key": "Tower_T4_Ivory_Spire.jpg",
+   "name": "Ivory Spire",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 4
+  },
+  "Tower_T4_Keep_of_Elixers.jpg": {
+   "cost": {
+    "gold": 4,
+    "reagent": "Eye_of_Newt",
+    "reagent_count": 4,
+    "tier": 4
+   },
+   "deck": "Tower",
+   "display": "Keep of Elixers T4 (Alchemy)",
+   "effect": null,
+   "key": "Tower_T4_Keep_of_Elixers.jpg",
+   "name": "Keep of Elixers",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 4
+  },
+  "Tower_T4_Obelisk_of_Puzzles.jpg": {
+   "cost": {
+    "gold": 4,
+    "reagent": "Sulphur",
+    "reagent_count": 4,
+    "tier": 4
+   },
+   "deck": "Tower",
+   "display": "Obelisk of Puzzles T4 (Thaumaturgy)",
+   "effect": null,
+   "key": "Tower_T4_Obelisk_of_Puzzles.jpg",
+   "name": "Obelisk of Puzzles",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 4
+  },
+  "Tower_T4_Obsidian_Fortress.jpg": {
+   "cost": {
+    "gold": 4,
+    "reagent": "Nightshade",
+    "reagent_count": 4,
+    "tier": 4
+   },
+   "deck": "Tower",
+   "display": "Obsidian Fortress T4 (Necromancy)",
+   "effect": null,
+   "key": "Tower_T4_Obsidian_Fortress.jpg",
+   "name": "Obsidian Fortress",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 4
+  },
+  "Tower_T4_Vermillion_Citadel.jpg": {
+   "cost": {
+    "gold": 4,
+    "reagent": "Horn",
+    "reagent_count": 4,
+    "tier": 4
+   },
+   "deck": "Tower",
+   "display": "Vermillion Citadel T4 (Conjuring)",
+   "effect": null,
+   "key": "Tower_T4_Vermillion_Citadel.jpg",
+   "name": "Vermillion Citadel",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "cards.json towers (photo confirmed)",
+   "tier": 4
+  },
+  "Wizard_Anguis_Magicus.jpg": {
+   "cost": {
+    "auction": true
+   },
+   "deck": "Wizard",
+   "display": "Anguis Magicus (Sorcery)",
+   "effect": "+1 Foxglove whenever you Gather",
+   "gather_bonus": "Foxglove",
+   "key": "Wizard_Anguis_Magicus.jpg",
+   "name": "Anguis Magicus",
+   "school": "Sorcery",
+   "school_reagent": "Foxglove",
+   "source": "cards.json wizards"
+  },
+  "Wizard_Bufonem_Creaturae.jpg": {
+   "cost": {
+    "auction": true
+   },
+   "deck": "Wizard",
+   "display": "Bufonem Creaturae (Conjuring)",
+   "effect": "+1 Horn whenever you Gather",
+   "gather_bonus": "Horn",
+   "key": "Wizard_Bufonem_Creaturae.jpg",
+   "name": "Bufonem Creaturae",
+   "school": "Conjuring",
+   "school_reagent": "Horn",
+   "source": "cards.json wizards"
+  },
+  "Wizard_Draco_Mortemus.jpg": {
+   "cost": {
+    "auction": true
+   },
+   "deck": "Wizard",
+   "display": "Draco Mortemus (Necromancy)",
+   "effect": "+1 Nightshade whenever you Gather",
+   "gather_bonus": "Nightshade",
+   "key": "Wizard_Draco_Mortemus.jpg",
+   "name": "Draco Mortemus",
+   "school": "Necromancy",
+   "school_reagent": "Nightshade",
+   "source": "cards.json wizards"
+  },
+  "Wizard_Ignus_Fulgorus.jpg": {
+   "cost": {
+    "auction": true
+   },
+   "deck": "Wizard",
+   "display": "Ignus Fulgorus (Enchantment)",
+   "effect": "+1 Mandrake whenever you Gather",
+   "gather_bonus": "Mandrake",
+   "key": "Wizard_Ignus_Fulgorus.jpg",
+   "name": "Ignus Fulgorus",
+   "school": "Enchantment",
+   "school_reagent": "Mandrake",
+   "source": "cards.json wizards"
+  },
+  "Wizard_Lacerta_Arborus.jpg": {
+   "cost": {
+    "auction": true
+   },
+   "deck": "Wizard",
+   "display": "Lacerta Arborus (Druidry)",
+   "effect": "+1 Toadstool whenever you Gather",
+   "gather_bonus": "Toadstool",
+   "key": "Wizard_Lacerta_Arborus.jpg",
+   "name": "Lacerta Arborus",
+   "school": "Druidry",
+   "school_reagent": "Toadstool",
+   "source": "cards.json wizards"
+  },
+  "Wizard_Reptilius_Venenum.jpg": {
+   "cost": {
+    "auction": true
+   },
+   "deck": "Wizard",
+   "display": "Reptilius Venenum (Alchemy)",
+   "effect": "+1 Eye of Newt whenever you Gather",
+   "gather_bonus": "Eye_of_Newt",
+   "key": "Wizard_Reptilius_Venenum.jpg",
+   "name": "Reptilius Venenum",
+   "school": "Alchemy",
+   "school_reagent": "Eye_of_Newt",
+   "source": "cards.json wizards + other_cards_from_pc.json"
+  },
+  "Wizard_Serpentium_Machinus.jpg": {
+   "cost": {
+    "auction": true
+   },
+   "deck": "Wizard",
+   "display": "Serpentium Machinus (Thaumaturgy)",
+   "effect": "+1 Sulphur whenever you Gather",
+   "gather_bonus": "Sulphur",
+   "key": "Wizard_Serpentium_Machinus.jpg",
+   "name": "Serpentium Machinus",
+   "school": "Thaumaturgy",
+   "school_reagent": "Sulphur",
+   "source": "cards.json wizards + other_cards_from_pc.json"
+  }
+ },
+ "conflicts": [],
+ "reagent_school": {
+  "Eye_of_Newt": "Alchemy",
+  "Foxglove": "Sorcery",
+  "Horn": "Conjuring",
+  "Mandrake": "Enchantment",
+  "Nightshade": "Necromancy",
+  "Sulphur": "Thaumaturgy",
+  "Toadstool": "Druidry"
+ },
+ "school_reagent_map": {
+  "Alchemy": "Eye_of_Newt",
+  "Conjuring": "Horn",
+  "Druidry": "Toadstool",
+  "Enchantment": "Mandrake",
+  "Necromancy": "Nightshade",
+  "Sorcery": "Foxglove",
+  "Thaumaturgy": "Sulphur"
+ },
+ "version": 1
+}
