@@ -18,7 +18,7 @@ jobs:
       with:
         python-version: "3.11"
     
-    - name: Run engine tests
+    - name: Run engine core tests
       run: |
         cd public/scripts
-        python test_turn_process.py
+        python test_engine_core.py

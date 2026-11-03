@@ -55,7 +55,7 @@ for c in json.load(open(os.path.join(_R, 'cards', 'spells_from_pc.json')))['card
         except Exception: pass
     SPELL[k] = dict(name=c['name'], school=S.school(k) or c['school'], one_time='1x' in c['duration'], variable=var,
                     cost=lst, effect=c['effect'], copies=int(c.get('copies') or 1))
-DUNGEON_CARDS = [x for x in json.load(open(os.path.join(_R, 'assets', 'dungeon_from_photos.json')))['cards']]
+DUNGEON_CARDS = [x for x in json.load(open(os.path.join(_R, 'cards', 'dungeon_cards.json')))['cards']] if os.path.exists(os.path.join(_R, 'cards', 'dungeon_cards.json')) else []
 NEGATIVE = ('Spell_Flame_Bolt', 'Spell_Disintegrate', 'Spell_Earthquake', 'Spell_Charm', 'Spell_Mana_Drain', 'Spell_Swapo',
             'Spell_Demonic_Possession', 'Spell_Invisibility_Potion', 'Spell_Obscure')
 # effects the engine (actions.py / spell_effects.py / ai_sim.py) can resolve automatically; others are valued 0 for effect

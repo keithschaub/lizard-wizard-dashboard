@@ -10,7 +10,7 @@ import carddb as _CD
 SCH={k:c['school'] for k,c in _CD._load()['cards'].items() if c.get('school')}
 SCH.update({a:SCH[t] for a,t in _CD._load()['aliases'].items() if t in SCH})
 def school(path): return SCH.get(os.path.basename(path)) if path else None
-_miss=[f for f in os.listdir(os.path.join(_R,'assets')) if f.startswith('Spell_') and not SCH.get(f)]
+_miss=[f for f in os.listdir(os.path.join(_R,'art')) if f.startswith('Spell_') and f.endswith('.webp') and not SCH.get(f.replace('.webp', '.jpg'))] if os.path.exists(os.path.join(_R,'art')) else []
 if _miss: print('WARNING scoring: spells with no school:',_miss)
 
 def _pairing_brute(p):
