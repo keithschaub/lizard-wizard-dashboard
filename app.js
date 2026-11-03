@@ -1067,8 +1067,16 @@ A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
 
     async drawCard(ctx, cardPath, x, y, width, height, type, index) {
         try {
+            // Normalize card path: convert "Spell_X.jpg" to "public/art/Spell_X.webp"
+            let imgPath = cardPath;
+            if (!imgPath.startsWith('public/') && !imgPath.startsWith('http')) {
+                // Extract filename
+                const filename = imgPath.split('/').pop().replace('.jpg', '.webp');
+                imgPath = `public/art/${filename}`;
+            }
+            
             // Load card image
-            const img = await this.loadImage(cardPath);
+            const img = await this.loadImage(imgPath);
             
             // Draw card
             ctx.drawImage(img, x, y, width, height);
