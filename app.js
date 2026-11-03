@@ -963,7 +963,7 @@ A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
 
         ctx.drawImage(bgImg, offsetX, offsetY, scaledWidth, scaledHeight);
 
-        // TODO: Draw cards on board (reagent deck, face-up cards, etc.)
+        // Draw all face-up cards and decks with glowing legal targets
         this.drawGameElements(ctx, offsetX, offsetY, scale);
 
         // Update round indicator
