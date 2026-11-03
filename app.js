@@ -1323,9 +1323,212 @@ json.dumps(castable)
         }
     }
 
-    startDungeonDelve() {
-        this.showToast('Dungeon delve (to be implemented)');
-        // TODO: Implement dungeon UI
+    async startDungeonDelve() {
+        try {
+            // Check if dungeon has treasure left
+            const canDelve = await this.pyodide.runPythonAsync(`
+import spell_effects as SE
+SE.dungeon_treasure_left(game_state)
+            `);
+
+            if (!canDelve) {
+                this.showToast('No treasure left in dungeon!');
+                return;
+            }
+
+            // Initialize dungeon state
+            this.dungeonState = {
+                hits: 0,
+                drawn: [],
+                continuing: true
+            };
+
+            // Get hit limit
+            const limit = await this.pyodide.runPythonAsync(`
+import spell_effects as SE
+player = A.P(game_state, "${this.currentPlayer}")
+2 + (1 if SE.has_cast(player, 'Spirit_Shield') else 0)
+            `);
+
+            this.dungeonState.limit = limit;
+            
+            // Show dungeon UI
+            this.showDungeonUI();
+            
+            // Draw first card
+            await this.drawDungeonCard();
+            
+        } catch (error) {
+            console.error('Dungeon delve failed:', error);
+            this.showToast('Failed to start dungeon: ' + error.message);
+        }
+    }
+
+    showDungeonUI() {
+        const dungeonUI = document.getElementById('dungeon-ui');
+        dungeonUI.classList.remove('hidden');
+        
+        document.getElementById('dungeon-hits').innerHTML = `
+            Hits: <span id="dungeon-hit-count">0</span> / <span>${this.dungeonState.limit}</span>
+        `;
+        
+        document.getElementById('dungeon-drawn').innerHTML = '<div class="drawn-cards"></div>';
+        
+        // Wire up buttons
+        document.getElementById('dungeon-continue').onclick = () => this.drawDungeonCard();
+        document.getElementById('dungeon-stop').onclick = () => this.stopDungeonDelve();
+    }
+
+    async drawDungeonCard() {
+        try {
+            // Draw one card from Python
+            const result = await this.pyodide.runPythonAsync(`
+import json
+import spell_effects as SE
+
+player = A.P(game_state, "${this.currentPlayer}")
+deck = A.ensure_dungeon(game_state)
+
+if not deck:
+    json.dumps({'error': 'No cards left'})
+else:
+    card = deck.pop(0)
+    
+    # Calculate hits
+    hits = 0
+    if card['type'] == 'Monster':
+        monster_type = card.get('monster_type')
+        if monster_type == 'Undead' and SE.has_cast(player, 'Control_Undead'):
+            hits = 0  # Control Undead ignores
+        elif SE.has_cast(player, SE.BLOCK.get(monster_type, '~')):
+            hits = 0  # Block spell active, +1 Gold instead
+        else:
+            hits = 1
+    elif card['type'] == 'Trap':
+        hits = 2
+    
+    json.dumps({
+        'card': card,
+        'hits': hits,
+        'deck_left': len(deck)
+    })
+            `);
+
+            const data = JSON.parse(result);
+            
+            if (data.error) {
+                this.showToast(data.error);
+                return;
+            }
+
+            // Update state
+            this.dungeonState.hits += data.hits;
+            this.dungeonState.drawn.push(data.card);
+
+            // Show card
+            this.displayDungeonCard(data.card, data.hits);
+
+            // Update hit counter
+            document.getElementById('dungeon-hit-count').textContent = this.dungeonState.hits;
+
+            // Check if defeated
+            if (this.dungeonState.hits >= this.dungeonState.limit) {
+                this.vibrate([20, 50, 20, 50, 20]);
+                this.showToast('Defeated! Lost everything.');
+                setTimeout(() => this.finishDungeonDelve(false), 1500);
+            } else {
+                this.vibrate(data.hits > 0 ? 20 : 10);
+            }
+
+        } catch (error) {
+            console.error('Draw card failed:', error);
+            this.showToast('Failed to draw card: ' + error.message);
+        }
+    }
+
+    displayDungeonCard(card, hits) {
+        const cardDiv = document.getElementById('dungeon-card');
+        const cardName = card.name || card.key || 'Card';
+        const cardType = card.type;
+        const hitText = hits > 0 ? ` (${hits} hit${hits > 1 ? 's' : ''})` : ' (no hit)';
+        
+        cardDiv.innerHTML = `
+            <div class="dungeon-card-shown ${hits > 0 ? 'hit' : 'safe'}">
+                <div class="card-type">${cardType}${hitText}</div>
+                <div class="card-name">${cardName}</div>
+                ${card.gold ? `<div class="card-gold">🪙 ${card.gold} Gold</div>` : ''}
+            </div>
+        `;
+
+        // Add to drawn pile
+        const drawnDiv = document.querySelector('.drawn-cards');
+        const miniCard = document.createElement('div');
+        miniCard.className = `mini-card ${cardType.toLowerCase()}`;
+        miniCard.textContent = cardType[0];
+        drawnDiv.appendChild(miniCard);
+    }
+
+    async stopDungeonDelve() {
+        this.vibrate(30);
+        await this.finishDungeonDelve(true);
+    }
+
+    async finishDungeonDelve(success) {
+        try {
+            // Process dungeon result in Python
+            await this.pyodide.runPythonAsync(`
+import json
+import spell_effects as SE
+
+player = A.P(game_state, "${this.currentPlayer}")
+success = ${success ? 'True' : 'False'}
+
+# Count drawn cards by type
+drawn = ${JSON.stringify(this.dungeonState.drawn)}
+treasure_count = sum(1 for c in drawn if c['type'] == 'Treasure')
+gold_gained = 0
+
+if success:
+    # Keep treasures
+    for card in drawn:
+        if card['type'] == 'Treasure':
+            if card.get('subtype') == 'Gold':
+                gold_gained += card.get('gold', 0)
+                player['gold'] = player.get('gold', 0) + card['gold']
+            else:
+                player.setdefault('treasures', []).append(card)
+
+# Log
+A.log(game_state, {
+    'r': game_state['meta'].get('round'),
+    'who': "${this.currentPlayer}",
+    'act': 'dungeon',
+    'hits': ${this.dungeonState.hits},
+    'success': success,
+    'treasure_count': treasure_count,
+    'gold_gained': gold_gained
+})
+
+result = "success"
+            `);
+
+            this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
+
+            const message = success 
+                ? `Collected ${this.dungeonState.drawn.filter(c => c.type === 'Treasure').length} treasures!`
+                : 'Defeated! Lost everything.';
+            
+            this.showToast(message);
+            
+            document.getElementById('dungeon-ui').classList.add('hidden');
+            this.dungeonState = null;
+            
+            await this.renderBoard();
+            
+        } catch (error) {
+            console.error('Finish dungeon failed:', error);
+            this.showToast('Failed to complete dungeon: ' + error.message);
+        }
     }
 }
 
