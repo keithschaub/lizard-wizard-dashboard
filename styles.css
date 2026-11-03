@@ -959,3 +959,36 @@ h2 {
     width: 100%;
     margin: 10px 0;
 }
+
+/* AI Turn Indicator */
+.ai-turn-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(10, 14, 26, 0.95);
+    border: 2px solid var(--accent-gold);
+    border-radius: 12px;
+    padding: 30px 50px;
+    z-index: 2000;
+    font-size: 1.5rem;
+    color: var(--accent-gold);
+    cursor: pointer;
+    animation: pulse 2s infinite;
+}
+
+.ai-turn-indicator:active {
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+/* Log Entries */
+.log-card {
+    margin-top: 8px;
+    max-width: 100px;
+}
+
+.log-card img {
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}

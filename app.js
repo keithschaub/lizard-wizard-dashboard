@@ -435,9 +435,12 @@ A.convert(game_state, "${this.currentPlayer}", "${token}", ${amount})
                     
                     this.showToast(`Converted ${amount} ${token.replace('_', ' ')} for ${manaGained} mana`);
                     this.vibrate(30);
+                    this.playSound('convert');
+                    this.addLogEntry(this.currentPlayer, `Converted ${amount} ${token.replace('_', ' ')} for ${manaGained} mana`);
                     
                     modal.remove();
                     await this.renderBoard();
+                    await this.processAITurns();
                 } catch (error) {
                     this.showToast('Convert failed: ' + error.message);
                 }
@@ -556,7 +559,10 @@ A.build(game_state, "${this.currentPlayer}", tower_img, payment)
 
             this.showToast('Tower built!');
             this.vibrate(40);
+            this.playSound('build');
+            this.addLogEntry(this.currentPlayer, 'Built tower', towerImg);
             await this.renderBoard();
+            await this.processAITurns();
 
         } catch (error) {
             console.error('Build failed:', error);
@@ -617,7 +623,10 @@ A.research(game_state, "${this.currentPlayer}", spell_img, None)
 
             this.showToast('Spell researched!');
             this.vibrate(30);
+            this.playSound('cast');
+            this.addLogEntry(this.currentPlayer, 'Researched spell', spellImg);
             await this.renderBoard();
+            await this.processAITurns();
 
         } catch (error) {
             console.error('Research failed:', error);
@@ -688,11 +697,114 @@ A.summon_familiar(game_state, "${this.currentPlayer}", fam_img, 'score')
 
             this.showToast(`Familiar summoned for ${cost} mana!`);
             this.vibrate(35);
+            this.playSound('cast');
+            this.addLogEntry(this.currentPlayer, `Summoned familiar for ${cost} mana`, familiarImg);
             await this.renderBoard();
+            await this.processAITurns();
 
         } catch (error) {
             console.error('Summon failed:', error);
             this.showToast('Summon failed: ' + error.message);
+        }
+    }
+
+    async processAITurns() {
+        // Get AI players
+        const aiPlayers = this.gameState.players.filter(p => p.name !== this.currentPlayer);
+
+        for (const ai of aiPlayers) {
+            await this.processAITurn(ai.name);
+        }
+    }
+
+    async processAITurn(playerName) {
+        try {
+            // Show AI turn indicator
+            const indicator = document.createElement('div');
+            indicator.className = 'ai-turn-indicator';
+            indicator.innerHTML = `<div>${playerName}'s turn...</div>`;
+            document.body.appendChild(indicator);
+
+            // Let user tap to skip animation
+            let skipped = false;
+            const skipHandler = () => {
+                skipped = true;
+            };
+            indicator.addEventListener('click', skipHandler);
+
+            // Animate for 1-2 seconds
+            const animDuration = skipped ? 0 : (1000 + Math.random() * 1000);
+            await new Promise(resolve => setTimeout(resolve, animDuration));
+
+            // Get AI action from Python
+            const actionResult = await this.pyodide.runPythonAsync(`
+import json
+import ai_policy as AI
+
+player_name = "${playerName}"
+player = A.P(game_state, player_name)
+
+# Get AI view (hide opponent hands)
+view = dict(game_state)
+for p in view['players']:
+    if p['name'] != player_name:
+        p['hand'] = []
+        p['mana'] = 0  # Hide mana
+
+# Get best action from AI
+try:
+    action_info = AI.best_action(view, player_name)
+    json.dumps({
+        'action': action_info,
+        'player': player_name
+    })
+except Exception as e:
+    json.dumps({
+        'error': str(e),
+        'player': player_name
+    })
+            `);
+
+            const result = JSON.parse(actionResult);
+
+            if (result.error) {
+                console.log(`AI ${playerName} has no valid actions:`, result.error);
+                this.addLogEntry(playerName, 'No action (passed)');
+            } else {
+                // Execute AI action (simplified)
+                const actionType = result.action?.type || 'unknown';
+                this.addLogEntry(playerName, `Performed ${actionType} action`);
+            }
+
+            // Update state
+            this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
+
+            indicator.remove();
+            await this.renderBoard();
+
+        } catch (error) {
+            console.error(`AI turn failed for ${playerName}:`, error);
+        }
+    }
+
+    addLogEntry(player, action, cardImg = null) {
+        const logContent = document.getElementById('log-content');
+        
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        
+        let html = `<span class="player">${player}</span>: ${action}`;
+        
+        if (cardImg) {
+            html += `<div class="log-card"><img src="${cardImg}" alt="Card"></div>`;
+        }
+        
+        entry.innerHTML = html;
+        logContent.insertBefore(entry, logContent.firstChild);
+        
+        // Keep last 50 entries
+        while (logContent.children.length > 50) {
+            logContent.removeChild(logContent.lastChild);
         }
     }
 
@@ -855,9 +967,12 @@ A.recruit(game_state, player_name, wiz_img, price, starter=player_name, bids=[])
 
             this.showToast(`Won wizard for ${bid} mana!`);
             this.vibrate(50);
+            this.playSound('win');
+            this.addLogEntry(this.currentPlayer, `Recruited wizard for ${bid} mana`, wizardImg);
 
             document.getElementById('auction-ui').classList.add('hidden');
             await this.renderBoard();
+            await this.processAITurns();
 
         } catch (error) {
             console.error('Bid failed:', error);
@@ -1246,9 +1361,38 @@ json.dumps({
     }
 
     playSound(sound) {
-        if (!this.muted) {
-            // Placeholder for sound effects
-            // Will be implemented in Milestone 4
+        if (!this.muted && typeof AudioContext !== 'undefined') {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                // Different sounds for different actions
+                const sounds = {
+                    'gather': { freq: 440, type: 'sine', duration: 0.1 },
+                    'cast': { freq: 880, type: 'square', duration: 0.15 },
+                    'build': { freq: 220, type: 'triangle', duration: 0.2 },
+                    'convert': { freq: 330, type: 'sine', duration: 0.12 },
+                    'win': { freq: 660, type: 'sine', duration: 0.3 },
+                    'tap': { freq: 550, type: 'sine', duration: 0.05 }
+                };
+
+                const config = sounds[sound] || sounds['tap'];
+                
+                oscillator.type = config.type;
+                oscillator.frequency.setValueAtTime(config.freq, audioCtx.currentTime);
+                
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + config.duration);
+
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + config.duration);
+            } catch (error) {
+                console.log('Sound playback failed:', error);
+            }
         }
     }
 
@@ -1659,10 +1803,16 @@ except Exception as e:
                 
                 this.showToast(spellToCast ? `Cast ${spellToCast.name}!` : 'Gathered!');
                 this.vibrate(30);
+                this.playSound(spellToCast ? 'cast' : 'gather');
+                
+                this.addLogEntry(this.currentPlayer, spellToCast ? `Gathered and cast ${spellToCast.name}` : 'Gathered reagents');
                 
                 document.getElementById('gather-ui').classList.add('hidden');
                 this.gatherSelection = [];
                 await this.renderBoard();
+                
+                // Process AI turns after player action
+                await this.processAITurns();
                 
             } else if (result === 'over_storage') {
                 // Show storage put-back UI
