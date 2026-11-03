@@ -44,11 +44,18 @@ class LizardWizardApp {
     async loadPythonEngine() {
         this.updateLoadingStatus('Loading game engine...', 30);
         
+        // Create proper directory structure
+        try {
+            this.pyodide.FS.mkdir('/home/pyodide/cards');
+        } catch (e) {
+            // Directory might already exist
+        }
+        
         // Load all Python files
         const scripts = [
             'actions.py', 'carddb.py', 'scoring.py', 'spell_effects.py',
             'turn.py', 'turn_package.py', 'ai_policy.py', 'ai_sim.py',
-            'new_game.py', 'test_turn_process.py'
+            'new_game.py'
         ];
 
         for (const script of scripts) {
@@ -57,37 +64,80 @@ class LizardWizardApp {
             this.pyodide.FS.writeFile(`/home/pyodide/${script}`, code);
         }
 
-        // Load card data
+        // Load card data into cards/ directory
         const cards = [
             'carddb.json', 'cards.json', 'reagent_cards.json',
             'dungeon_cards.json', 'spells_from_pc.json', 'other_cards_from_pc.json'
         ];
 
-        this.pyodide.FS.mkdir('/home/pyodide/assets');
         for (const card of cards) {
             const response = await fetch(`public/cards/${card}`);
             const data = await response.text();
-            this.pyodide.FS.writeFile(`/home/pyodide/assets/${card}`, data);
+            this.pyodide.FS.writeFile(`/home/pyodide/cards/${card}`, data);
         }
 
         this.updateLoadingStatus('Initializing game modules...', 50);
         
-        // Initialize Python modules
+        // Initialize Python modules with proper error handling
         await this.pyodide.runPythonAsync(`
 import sys
 sys.path.insert(0, '/home/pyodide')
-import json
-import actions as A
-import carddb as CD
-import scoring as S
-import spell_effects as SE
-import turn_package as TP
-import ai_policy as AI
-import ai_sim as SIM
 
-# Patch file paths to use web paths
+# Setup minimal environment
 import os
-os.path.exists = lambda p: True  # Stub for now
+os.chdir('/home/pyodide')
+
+# Patch os.path.exists to check Pyodide FS
+_pyodide_fs = sys.modules.get('pyodide_ffi', None)
+
+import json
+
+# Load modules with error handling
+try:
+    import carddb as CD
+    print("✓ carddb loaded")
+except Exception as e:
+    print(f"✗ carddb failed: {e}")
+    raise
+
+try:
+    import scoring as S
+    print("✓ scoring loaded")
+except Exception as e:
+    print(f"✗ scoring failed: {e}")
+
+try:
+    import spell_effects as SE
+    print("✓ spell_effects loaded")
+except Exception as e:
+    print(f"✗ spell_effects failed: {e}")
+
+try:
+    import actions as A
+    print("✓ actions loaded")
+except Exception as e:
+    print(f"✗ actions failed: {e}")
+    raise
+
+try:
+    import turn_package as TP
+    print("✓ turn_package loaded")
+except Exception as e:
+    print(f"✗ turn_package failed: {e}")
+
+try:
+    import ai_policy as AI
+    print("✓ ai_policy loaded")
+except Exception as e:
+    print(f"✗ ai_policy failed: {e}")
+
+try:
+    import ai_sim as SIM
+    print("✓ ai_sim loaded")
+except Exception as e:
+    print(f"✗ ai_sim failed: {e}")
+
+print("All modules loaded successfully")
         `);
 
         this.updateLoadingStatus('Game engine loaded', 60);
@@ -787,12 +837,145 @@ json.dumps({
     }
 
     async commitGather() {
-        // TODO: Call Python engine to process gather
-        // For now, just update UI
-        this.showToast('Gather action committed (engine integration pending)');
-        document.getElementById('gather-ui').classList.add('hidden');
-        this.gatherSelection = [];
-        await this.renderBoard();
+        try {
+            const player = this.currentPlayer;
+            const cardKey = this.currentGatherCard.key.replace('.webp', '.jpg');
+            const keepList = this.gatherSelection;
+
+            // Call Python engine to process gather
+            await this.pyodide.runPythonAsync(`
+import json
+
+# Update game_state with current JS state
+game_state = ${JSON.stringify(this.gameState)}
+
+# Process gather action
+player_name = "${player}"
+card_key = "${cardKey}"
+keep = ${JSON.stringify(keepList)} if len(${JSON.stringify(keepList)}) > 0 else None
+
+try:
+    # Call actions.gather
+    A.gather(game_state, player_name, card_key, keep=keep)
+    result = "success"
+except Exception as e:
+    result = f"error: {str(e)}"
+    print(result)
+            `);
+
+            const result = this.pyodide.globals.get('result');
+            
+            if (result === 'success') {
+                // Get updated state back
+                this.gameState = this.pyodide.globals.get('game_state').toJs({dict_converter: Object.fromEntries});
+                
+                this.showToast('Gathered successfully!');
+                this.vibrate(30);
+                this.playSound('gather');
+                
+                // Check for castable spells
+                await this.checkCastableSpells();
+            } else {
+                throw new Error(result);
+            }
+            
+            document.getElementById('gather-ui').classList.add('hidden');
+            this.gatherSelection = [];
+            await this.renderBoard();
+            
+        } catch (error) {
+            console.error('Gather failed:', error);
+            this.showToast('Gather failed: ' + error.message);
+        }
+    }
+
+    async checkCastableSpells() {
+        const player = this.getCurrentPlayer();
+        if (!player || !player.spells || player.spells.length === 0) {
+            return;
+        }
+
+        // Check which spells can be cast with current tokens
+        try {
+            const castableInfo = await this.pyodide.runPythonAsync(`
+import json
+
+player = A.P(game_state, "${this.currentPlayer}")
+tokens = player.get('tok', [])
+
+castable = []
+for spell in player.get('spells', []):
+    if not spell.get('cast'):
+        spell_key = spell['img'].split('/')[-1]
+        try:
+            cost = CD.cast_cost(spell_key)
+            if cost:
+                cost_norm = [A.norm(c) for c in cost]
+                # Check if we have enough tokens
+                token_counts = {}
+                for t in tokens:
+                    token_counts[t] = token_counts.get(t, 0) + 1
+                
+                can_cast = True
+                for c in cost_norm:
+                    if token_counts.get(c, 0) < cost_norm.count(c):
+                        can_cast = False
+                        break
+                
+                if can_cast:
+                    castable.append({
+                        'key': spell_key,
+                        'cost': cost,
+                        'name': CD.display(spell_key)
+                    })
+        except:
+            pass
+
+json.dumps(castable)
+            `);
+
+            const castable = JSON.parse(castableInfo);
+            
+            if (castable.length > 0) {
+                this.showCastableSpells(castable);
+            }
+        } catch (error) {
+            console.error('Failed to check castable spells:', error);
+        }
+    }
+
+    showCastableSpells(spells) {
+        const castableDiv = document.getElementById('castable-spells');
+        castableDiv.innerHTML = '<h4>Cast a spell?</h4>';
+        
+        spells.forEach(spell => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-primary';
+            btn.textContent = `Cast: ${spell.name}`;
+            btn.addEventListener('click', () => this.castSpell(spell.key));
+            castableDiv.appendChild(btn);
+        });
+
+        const skipBtn = document.createElement('button');
+        skipBtn.className = 'btn-secondary';
+        skipBtn.textContent = 'Skip casting';
+        skipBtn.addEventListener('click', () => {
+            castableDiv.classList.add('hidden');
+        });
+        castableDiv.appendChild(skipBtn);
+
+        castableDiv.classList.remove('hidden');
+    }
+
+    async castSpell(spellKey) {
+        try {
+            // TODO: Implement spell casting
+            this.showToast(`Casting ${spellKey} (implementation pending)`);
+            document.getElementById('castable-spells').classList.add('hidden');
+        } catch (error) {
+            console.error('Cast spell failed:', error);
+            this.showToast('Cast failed: ' + error.message);
+        }
     }
 
     startDungeonDelve() {
