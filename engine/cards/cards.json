@@ -1,0 +1,2863 @@
+{
+ "game": "Lizard Wizard (Forbidden Games, 2021)",
+ "generated": "2026-10-31",
+ "sources": {
+  "RB": "Production rulebook (Mar 2021) /workspace/lizard-wizard/LizardWizard-Rulebook-na.pdf  <- https://gamers-hq.de/media/pdf/85/81/62/LizardWizard-Rulebook-na.pdf",
+  "UG": "Pre-production rulebook (Feb 2021, 20 pp, has APPENDIX: SPELL LIST + ACHIEVEMENT TILES) /workspace/lizard-wizard/LizardWizard-Rulebook-universitygames-preprod.pdf <- http://images.salsify.com/image/upload/s--4xDJBhsD--/nqozldlvrzwoqweyushn.pdf (linked from https://www.universitygames.com/games/strategy/51123)",
+  "CDM": "Production card photos, The Curious Desi Mind review https://curiousdesimind.wordpress.com/2021/12/14/lizard-wizard-review/ (cards/blog_images/cdm_*)",
+  "FBG": "Production card photos, The Friendly Boardgamer https://thefriendlyboardgamer.wordpress.com/2022/02/08/lizard-wizard-final-thoughts/ (cards/blog_images/fbg_*)",
+  "MM": "Production photos, Meeple Mountain review https://www.meeplemountain.com/reviews/lizard-wizard/ (cards/blog_images/mm_*)",
+  "BGGIMG": "BGG gallery images https://boardgamegeek.com/boardgame/312767/lizard-wizard/images (cards/bgg_images/pic<ID>.*)",
+  "GD": "PROTOTYPE (2020) card photos, GeekDad https://geekdad.com/2020/07/kickstarter-tabletop-review-lizard-wizard/ (cards/geekdad/*) - values may differ from production",
+  "PROMO": "2020 publisher promo images of one Wizard+Familiar per school, BGG pics 5516586-5516593 (pre-production familiar text format)",
+  "TT": "Tabletopia screenshot BGG pic5545858 (Kickstarter-era digital version; costs/text differ from production)",
+  "BGGF": "BGG forum threads (text dump cards/sources/bgg_threads_all.txt); thread URL https://boardgamegeek.com/thread/<id>"
+ },
+ "school_reagent_map": {
+  "Conjuring": "Horn",
+  "Sorcery": "Foxglove",
+  "Alchemy": "Eye of Newt",
+  "Enchantment": "Mandrake",
+  "Druidry": "Toadstool",
+  "Thaumaturgy": "Sulphur",
+  "Necromancy": "Nightshade"
+ },
+ "school_reagent_map_src": "Production familiars (CDM) and tier-1 towers (CDM)",
+ "wizards": {
+  "deck_size": 28,
+  "structure": "4 per school (CDM review: '28 cards in each deck (4 cards of each of the 7 schools)'); one unique art/name per school seen. Whether all 4 copies of a school are identical is INFERRED (reviewer shows 'all the unique art' = 7).",
+  "card_text": "Wizard cards have no rules text: name, school icon (top right), one reagent icon (top left) = +1 of that reagent whenever you Gather (RB p.10).",
+  "unique_cards": [
+   {
+    "name": "Bufonem Creaturae",
+    "school": "Conjuring",
+    "gather_bonus_reagent": "Horn",
+    "src": [
+     "CDM",
+     "PROMO",
+     "KEITH_PHOTO"
+    ],
+    "image": "assets/Wizard_Bufonem_Creaturae.jpg"
+   },
+   {
+    "name": "Anguis Magicus",
+    "school": "Sorcery",
+    "gather_bonus_reagent": "Foxglove",
+    "src": [
+     "CDM",
+     "PROMO",
+     "KEITH_PHOTO"
+    ],
+    "image": "assets/Wizard_Anguis_Magicus.jpg"
+   },
+   {
+    "name": "Reptilius Venenum",
+    "school": "Alchemy",
+    "gather_bonus_reagent": "Eye of Newt",
+    "src": [
+     "CDM",
+     "PROMO",
+     "BGGIMG:6713934",
+     "KEITH_PHOTO"
+    ],
+    "image": "assets/Wizard_Reptilius_Venenum.jpg"
+   },
+   {
+    "name": "Ignus Fulgorus",
+    "school": "Enchantment",
+    "gather_bonus_reagent": "Mandrake",
+    "src": [
+     "CDM",
+     "GD",
+     "KEITH_PHOTO"
+    ],
+    "image": "assets/Wizard_Ignus_Fulgorus.jpg"
+   },
+   {
+    "name": "Lacerta Arborus",
+    "school": "Druidry",
+    "gather_bonus_reagent": "Toadstool",
+    "src": [
+     "FBG",
+     "MM",
+     "PROMO",
+     "KEITH_PHOTO"
+    ],
+    "image": "assets/Wizard_Lacerta_Arborus.jpg"
+   },
+   {
+    "name": "Serpentium Machinus",
+    "school": "Thaumaturgy",
+    "gather_bonus_reagent": "Sulphur",
+    "src": [
+     "CDM",
+     "PROMO",
+     "KEITH_PHOTO"
+    ],
+    "image": "assets/Wizard_Serpentium_Machinus.jpg"
+   },
+   {
+    "name": "Draco Mortemus",
+    "school": "Necromancy",
+    "gather_bonus_reagent": "Nightshade",
+    "src": [
+     "CDM",
+     "PROMO",
+     "KEITH_PHOTO"
+    ],
+    "image": "assets/Wizard_Draco_Mortemus.jpg"
+   }
+  ],
+  "coverage": "all 7 unique wizards confirmed from Keith photos (name, school, bonus reagent)"
+ },
+ "towers": {
+  "deck_size": 28,
+  "structure": "7 schools x 4 tiers; tier N costs N x school reagent OR N Gold. No ability text.",
+  "cards": [
+   {
+    "name": "Vermillion Citadel",
+    "school": "Conjuring",
+    "tier": 1,
+    "reagent": "Horn",
+    "reagent_cost": 1,
+    "gold_cost": 1,
+    "cost": "1x Horn or 1 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T1_Vermillion_Citadel.jpg"
+   },
+   {
+    "name": "Azure Tower",
+    "school": "Sorcery",
+    "tier": 1,
+    "reagent": "Foxglove",
+    "reagent_cost": 1,
+    "gold_cost": 1,
+    "cost": "1x Foxglove or 1 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T1_Azure_Tower.jpg"
+   },
+   {
+    "name": "Keep of Elixers",
+    "school": "Alchemy",
+    "tier": 1,
+    "reagent": "Eye of Newt",
+    "reagent_cost": 1,
+    "gold_cost": 1,
+    "cost": "1x Eye of Newt or 1 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T1_Keep_of_Elixers.jpg"
+   },
+   {
+    "name": "Ivory Spire",
+    "school": "Enchantment",
+    "tier": 1,
+    "reagent": "Mandrake",
+    "reagent_cost": 1,
+    "gold_cost": 1,
+    "cost": "1x Mandrake or 1 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T1_Ivory_Spire.jpg"
+   },
+   {
+    "name": "Emerald Stronghold",
+    "school": "Druidry",
+    "tier": 1,
+    "reagent": "Toadstool",
+    "reagent_cost": 1,
+    "gold_cost": 1,
+    "cost": "1x Toadstool or 1 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T1_Emerald_Stronghold.jpg"
+   },
+   {
+    "name": "Obelisk of Puzzles",
+    "school": "Thaumaturgy",
+    "tier": 1,
+    "reagent": "Sulphur",
+    "reagent_cost": 1,
+    "gold_cost": 1,
+    "cost": "1x Sulphur or 1 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T1_Obelisk_of_Puzzles.jpg"
+   },
+   {
+    "name": "Obsidian Fortress",
+    "school": "Necromancy",
+    "tier": 1,
+    "reagent": "Nightshade",
+    "reagent_cost": 1,
+    "gold_cost": 1,
+    "cost": "1x Nightshade or 1 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T1_Obsidian_Fortress.jpg"
+   },
+   {
+    "name": "Vermillion Citadel",
+    "school": "Conjuring",
+    "tier": 2,
+    "reagent": "Horn",
+    "reagent_cost": 2,
+    "gold_cost": 2,
+    "cost": "2x Horn or 2 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T2_Vermillion_Citadel.jpg"
+   },
+   {
+    "name": "Azure Tower",
+    "school": "Sorcery",
+    "tier": 2,
+    "reagent": "Foxglove",
+    "reagent_cost": 2,
+    "gold_cost": 2,
+    "cost": "2x Foxglove or 2 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T2_Azure_Tower.jpg"
+   },
+   {
+    "name": "Keep of Elixers",
+    "school": "Alchemy",
+    "tier": 2,
+    "reagent": "Eye of Newt",
+    "reagent_cost": 2,
+    "gold_cost": 2,
+    "cost": "2x Eye of Newt or 2 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T2_Keep_of_Elixers.jpg"
+   },
+   {
+    "name": "Ivory Spire",
+    "school": "Enchantment",
+    "tier": 2,
+    "reagent": "Mandrake",
+    "reagent_cost": 2,
+    "gold_cost": 2,
+    "cost": "2x Mandrake or 2 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T2_Ivory_Spire.jpg"
+   },
+   {
+    "name": "Emerald Stronghold",
+    "school": "Druidry",
+    "tier": 2,
+    "reagent": "Toadstool",
+    "reagent_cost": 2,
+    "gold_cost": 2,
+    "cost": "2x Toadstool or 2 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T2_Emerald_Stronghold.jpg"
+   },
+   {
+    "name": "Obelisk of Puzzles",
+    "school": "Thaumaturgy",
+    "tier": 2,
+    "reagent": "Sulphur",
+    "reagent_cost": 2,
+    "gold_cost": 2,
+    "cost": "2x Sulphur or 2 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T2_Obelisk_of_Puzzles.jpg"
+   },
+   {
+    "name": "Obsidian Fortress",
+    "school": "Necromancy",
+    "tier": 2,
+    "reagent": "Nightshade",
+    "reagent_cost": 2,
+    "gold_cost": 2,
+    "cost": "2x Nightshade or 2 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T2_Obsidian_Fortress.jpg"
+   },
+   {
+    "name": "Vermillion Citadel",
+    "school": "Conjuring",
+    "tier": 3,
+    "reagent": "Horn",
+    "reagent_cost": 3,
+    "gold_cost": 3,
+    "cost": "3x Horn or 3 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T3_Vermillion_Citadel.jpg"
+   },
+   {
+    "name": "Azure Tower",
+    "school": "Sorcery",
+    "tier": 3,
+    "reagent": "Foxglove",
+    "reagent_cost": 3,
+    "gold_cost": 3,
+    "cost": "3x Foxglove or 3 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T3_Azure_Tower.jpg"
+   },
+   {
+    "name": "Keep of Elixers",
+    "school": "Alchemy",
+    "tier": 3,
+    "reagent": "Eye of Newt",
+    "reagent_cost": 3,
+    "gold_cost": 3,
+    "cost": "3x Eye of Newt or 3 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T3_Keep_of_Elixers.jpg"
+   },
+   {
+    "name": "Ivory Spire",
+    "school": "Enchantment",
+    "tier": 3,
+    "reagent": "Mandrake",
+    "reagent_cost": 3,
+    "gold_cost": 3,
+    "cost": "3x Mandrake or 3 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T3_Ivory_Spire.jpg"
+   },
+   {
+    "name": "Emerald Stronghold",
+    "school": "Druidry",
+    "tier": 3,
+    "reagent": "Toadstool",
+    "reagent_cost": 3,
+    "gold_cost": 3,
+    "cost": "3x Toadstool or 3 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T3_Emerald_Stronghold.jpg"
+   },
+   {
+    "name": "Obelisk of Puzzles",
+    "school": "Thaumaturgy",
+    "tier": 3,
+    "reagent": "Sulphur",
+    "reagent_cost": 3,
+    "gold_cost": 3,
+    "cost": "3x Sulphur or 3 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T3_Obelisk_of_Puzzles.jpg"
+   },
+   {
+    "name": "Obsidian Fortress",
+    "school": "Necromancy",
+    "tier": 3,
+    "reagent": "Nightshade",
+    "reagent_cost": 3,
+    "gold_cost": 3,
+    "cost": "3x Nightshade or 3 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T3_Obsidian_Fortress.jpg"
+   },
+   {
+    "name": "Vermillion Citadel",
+    "school": "Conjuring",
+    "tier": 4,
+    "reagent": "Horn",
+    "reagent_cost": 4,
+    "gold_cost": 4,
+    "cost": "4x Horn or 4 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T4_Vermillion_Citadel.jpg"
+   },
+   {
+    "name": "Azure Tower",
+    "school": "Sorcery",
+    "tier": 4,
+    "reagent": "Foxglove",
+    "reagent_cost": 4,
+    "gold_cost": 4,
+    "cost": "4x Foxglove or 4 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T4_Azure_Tower.jpg"
+   },
+   {
+    "name": "Keep of Elixers",
+    "school": "Alchemy",
+    "tier": 4,
+    "reagent": "Eye of Newt",
+    "reagent_cost": 4,
+    "gold_cost": 4,
+    "cost": "4x Eye of Newt or 4 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T4_Keep_of_Elixers.jpg"
+   },
+   {
+    "name": "Ivory Spire",
+    "school": "Enchantment",
+    "tier": 4,
+    "reagent": "Mandrake",
+    "reagent_cost": 4,
+    "gold_cost": 4,
+    "cost": "4x Mandrake or 4 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T4_Ivory_Spire.jpg"
+   },
+   {
+    "name": "Emerald Stronghold",
+    "school": "Druidry",
+    "tier": 4,
+    "reagent": "Toadstool",
+    "reagent_cost": 4,
+    "gold_cost": 4,
+    "cost": "4x Toadstool or 4 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T4_Emerald_Stronghold.jpg"
+   },
+   {
+    "name": "Obelisk of Puzzles",
+    "school": "Thaumaturgy",
+    "tier": 4,
+    "reagent": "Sulphur",
+    "reagent_cost": 4,
+    "gold_cost": 4,
+    "cost": "4x Sulphur or 4 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T4_Obelisk_of_Puzzles.jpg"
+   },
+   {
+    "name": "Obsidian Fortress",
+    "school": "Necromancy",
+    "tier": 4,
+    "reagent": "Nightshade",
+    "reagent_cost": 4,
+    "gold_cost": 4,
+    "cost": "4x Nightshade or 4 Gold",
+    "photo_confirmed": true,
+    "image": "assets/Tower_T4_Obsidian_Fortress.jpg"
+   }
+  ],
+  "coverage": "complete; verified from Keith photos (all 4 tiers price-confirmed)",
+  "note": "Prototype tier-4 = 3 Gold is superseded; production is 4 Gold."
+ },
+ "familiars": {
+  "deck_size": 35,
+  "structure": "7 schools x 5 mana tiers (5/10/15/20/25); collect 3/4/5/6/7",
+  "cards": [
+   {
+    "name": "Vulpes",
+    "school": "Conjuring",
+    "cost_mana": 5,
+    "collect": 3,
+    "reagent": "Horn",
+    "text": "New Research | Collect 3 Horn & Cast Spells || Enter the Dungeon | 1 Gold / Conjuring Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_5_Vulpes.jpg"
+   },
+   {
+    "name": "Imp",
+    "school": "Sorcery",
+    "cost_mana": 5,
+    "collect": 3,
+    "reagent": "Foxglove",
+    "text": "New Research | Collect 3 Foxglove & Cast Spells || Enter the Dungeon | 1 Gold / Sorcery Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_5_Imp.jpg"
+   },
+   {
+    "name": "Bufonem",
+    "school": "Alchemy",
+    "cost_mana": 5,
+    "collect": 3,
+    "reagent": "Eye of Newt",
+    "text": "New Research | Collect 3 Eye of Newt & Cast Spells || Enter the Dungeon | 1 Gold / Alchemy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_5_Bufonem.jpg"
+   },
+   {
+    "name": "Aranea",
+    "school": "Enchantment",
+    "cost_mana": 5,
+    "collect": 3,
+    "reagent": "Mandrake",
+    "text": "New Research | Collect 3 Mandrake & Cast Spells || Enter the Dungeon | 1 Gold / Enchantment Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_5_Aranea.jpg"
+   },
+   {
+    "name": "Nympharum",
+    "school": "Druidry",
+    "cost_mana": 5,
+    "collect": 3,
+    "reagent": "Toadstool",
+    "text": "New Research | Collect 3 Toadstool & Cast Spells || Enter the Dungeon | 1 Gold / Druidry Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_5_Nympharum.jpg"
+   },
+   {
+    "name": "Troglodytam",
+    "school": "Thaumaturgy",
+    "cost_mana": 5,
+    "collect": 3,
+    "reagent": "Sulphur",
+    "text": "New Research | Collect 3 Sulphur & Cast Spells || Enter the Dungeon | 1 Gold / Thaumaturgy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_5_Troglodytam.jpg"
+   },
+   {
+    "name": "Corvum",
+    "school": "Necromancy",
+    "cost_mana": 5,
+    "collect": 3,
+    "reagent": "Nightshade",
+    "text": "New Research | Collect 3 Nightshade & Cast Spells || Enter the Dungeon | 1 Gold / Necromancy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_5_Corvum.jpg"
+   },
+   {
+    "name": "Vulpes",
+    "school": "Conjuring",
+    "cost_mana": 10,
+    "collect": 4,
+    "reagent": "Horn",
+    "text": "New Research | Collect 4 Horn & Cast Spells || Enter the Dungeon | 1 Gold / Conjuring Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_10_Vulpes.jpg"
+   },
+   {
+    "name": "Imp",
+    "school": "Sorcery",
+    "cost_mana": 10,
+    "collect": 4,
+    "reagent": "Foxglove",
+    "text": "New Research | Collect 4 Foxglove & Cast Spells || Enter the Dungeon | 1 Gold / Sorcery Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_10_Imp.jpg"
+   },
+   {
+    "name": "Bufonem",
+    "school": "Alchemy",
+    "cost_mana": 10,
+    "collect": 4,
+    "reagent": "Eye of Newt",
+    "text": "New Research | Collect 4 Eye of Newt & Cast Spells || Enter the Dungeon | 1 Gold / Alchemy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_10_Bufonem.jpg"
+   },
+   {
+    "name": "Aranea",
+    "school": "Enchantment",
+    "cost_mana": 10,
+    "collect": 4,
+    "reagent": "Mandrake",
+    "text": "New Research | Collect 4 Mandrake & Cast Spells || Enter the Dungeon | 1 Gold / Enchantment Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_10_Aranea.jpg"
+   },
+   {
+    "name": "Nympharum",
+    "school": "Druidry",
+    "cost_mana": 10,
+    "collect": 4,
+    "reagent": "Toadstool",
+    "text": "New Research | Collect 4 Toadstool & Cast Spells || Enter the Dungeon | 1 Gold / Druidry Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_10_Nympharum.jpg"
+   },
+   {
+    "name": "Troglodytam",
+    "school": "Thaumaturgy",
+    "cost_mana": 10,
+    "collect": 4,
+    "reagent": "Sulphur",
+    "text": "New Research | Collect 4 Sulphur & Cast Spells || Enter the Dungeon | 1 Gold / Thaumaturgy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_10_Troglodytam.jpg"
+   },
+   {
+    "name": "Corvum",
+    "school": "Necromancy",
+    "cost_mana": 10,
+    "collect": 4,
+    "reagent": "Nightshade",
+    "text": "New Research | Collect 4 Nightshade & Cast Spells || Enter the Dungeon | 1 Gold / Necromancy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_10_Corvum.jpg"
+   },
+   {
+    "name": "Vulpes",
+    "school": "Conjuring",
+    "cost_mana": 15,
+    "collect": 5,
+    "reagent": "Horn",
+    "text": "New Research | Collect 5 Horn & Cast Spells || Enter the Dungeon | 1 Gold / Conjuring Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_15_Vulpes.jpg"
+   },
+   {
+    "name": "Imp",
+    "school": "Sorcery",
+    "cost_mana": 15,
+    "collect": 5,
+    "reagent": "Foxglove",
+    "text": "New Research | Collect 5 Foxglove & Cast Spells || Enter the Dungeon | 1 Gold / Sorcery Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_15_Imp.jpg"
+   },
+   {
+    "name": "Bufonem",
+    "school": "Alchemy",
+    "cost_mana": 15,
+    "collect": 5,
+    "reagent": "Eye of Newt",
+    "text": "New Research | Collect 5 Eye of Newt & Cast Spells || Enter the Dungeon | 1 Gold / Alchemy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_15_Bufonem.jpg"
+   },
+   {
+    "name": "Aranea",
+    "school": "Enchantment",
+    "cost_mana": 15,
+    "collect": 5,
+    "reagent": "Mandrake",
+    "text": "New Research | Collect 5 Mandrake & Cast Spells || Enter the Dungeon | 1 Gold / Enchantment Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_15_Aranea.jpg"
+   },
+   {
+    "name": "Nympharum",
+    "school": "Druidry",
+    "cost_mana": 15,
+    "collect": 5,
+    "reagent": "Toadstool",
+    "text": "New Research | Collect 5 Toadstool & Cast Spells || Enter the Dungeon | 1 Gold / Druidry Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_15_Nympharum.jpg"
+   },
+   {
+    "name": "Troglodytam",
+    "school": "Thaumaturgy",
+    "cost_mana": 15,
+    "collect": 5,
+    "reagent": "Sulphur",
+    "text": "New Research | Collect 5 Sulphur & Cast Spells || Enter the Dungeon | 1 Gold / Thaumaturgy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_15_Troglodytam.jpg"
+   },
+   {
+    "name": "Corvum",
+    "school": "Necromancy",
+    "cost_mana": 15,
+    "collect": 5,
+    "reagent": "Nightshade",
+    "text": "New Research | Collect 5 Nightshade & Cast Spells || Enter the Dungeon | 1 Gold / Necromancy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_15_Corvum.jpg"
+   },
+   {
+    "name": "Vulpes",
+    "school": "Conjuring",
+    "cost_mana": 20,
+    "collect": 6,
+    "reagent": "Horn",
+    "text": "New Research | Collect 6 Horn & Cast Spells || Enter the Dungeon | 1 Gold / Conjuring Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_20_Vulpes.jpg"
+   },
+   {
+    "name": "Imp",
+    "school": "Sorcery",
+    "cost_mana": 20,
+    "collect": 6,
+    "reagent": "Foxglove",
+    "text": "New Research | Collect 6 Foxglove & Cast Spells || Enter the Dungeon | 1 Gold / Sorcery Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_20_Imp.jpg"
+   },
+   {
+    "name": "Bufonem",
+    "school": "Alchemy",
+    "cost_mana": 20,
+    "collect": 6,
+    "reagent": "Eye of Newt",
+    "text": "New Research | Collect 6 Eye of Newt & Cast Spells || Enter the Dungeon | 1 Gold / Alchemy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_20_Bufonem.jpg"
+   },
+   {
+    "name": "Aranea",
+    "school": "Enchantment",
+    "cost_mana": 20,
+    "collect": 6,
+    "reagent": "Mandrake",
+    "text": "New Research | Collect 6 Mandrake & Cast Spells || Enter the Dungeon | 1 Gold / Enchantment Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_20_Aranea.jpg"
+   },
+   {
+    "name": "Nympharum",
+    "school": "Druidry",
+    "cost_mana": 20,
+    "collect": 6,
+    "reagent": "Toadstool",
+    "text": "New Research | Collect 6 Toadstool & Cast Spells || Enter the Dungeon | 1 Gold / Druidry Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_20_Nympharum.jpg"
+   },
+   {
+    "name": "Troglodytam",
+    "school": "Thaumaturgy",
+    "cost_mana": 20,
+    "collect": 6,
+    "reagent": "Sulphur",
+    "text": "New Research | Collect 6 Sulphur & Cast Spells || Enter the Dungeon | 1 Gold / Thaumaturgy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_20_Troglodytam.jpg"
+   },
+   {
+    "name": "Corvum",
+    "school": "Necromancy",
+    "cost_mana": 20,
+    "collect": 6,
+    "reagent": "Nightshade",
+    "text": "New Research | Collect 6 Nightshade & Cast Spells || Enter the Dungeon | 1 Gold / Necromancy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_20_Corvum.jpg"
+   },
+   {
+    "name": "Vulpes",
+    "school": "Conjuring",
+    "cost_mana": 25,
+    "collect": 7,
+    "reagent": "Horn",
+    "text": "New Research | Collect 7 Horn & Cast Spells || Enter the Dungeon | 1 Gold / Conjuring Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_25_Vulpes.jpg"
+   },
+   {
+    "name": "Imp",
+    "school": "Sorcery",
+    "cost_mana": 25,
+    "collect": 7,
+    "reagent": "Foxglove",
+    "text": "New Research | Collect 7 Foxglove & Cast Spells || Enter the Dungeon | 1 Gold / Sorcery Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_25_Imp.jpg"
+   },
+   {
+    "name": "Bufonem",
+    "school": "Alchemy",
+    "cost_mana": 25,
+    "collect": 7,
+    "reagent": "Eye of Newt",
+    "text": "New Research | Collect 7 Eye of Newt & Cast Spells || Enter the Dungeon | 1 Gold / Alchemy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_25_Bufonem.jpg"
+   },
+   {
+    "name": "Aranea",
+    "school": "Enchantment",
+    "cost_mana": 25,
+    "collect": 7,
+    "reagent": "Mandrake",
+    "text": "New Research | Collect 7 Mandrake & Cast Spells || Enter the Dungeon | 1 Gold / Enchantment Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_25_Aranea.jpg"
+   },
+   {
+    "name": "Nympharum",
+    "school": "Druidry",
+    "cost_mana": 25,
+    "collect": 7,
+    "reagent": "Toadstool",
+    "text": "New Research | Collect 7 Toadstool & Cast Spells || Enter the Dungeon | 1 Gold / Druidry Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_25_Nympharum.jpg"
+   },
+   {
+    "name": "Troglodytam",
+    "school": "Thaumaturgy",
+    "cost_mana": 25,
+    "collect": 7,
+    "reagent": "Sulphur",
+    "text": "New Research | Collect 7 Sulphur & Cast Spells || Enter the Dungeon | 1 Gold / Thaumaturgy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_25_Troglodytam.jpg"
+   },
+   {
+    "name": "Corvum",
+    "school": "Necromancy",
+    "cost_mana": 25,
+    "collect": 7,
+    "reagent": "Nightshade",
+    "text": "New Research | Collect 7 Nightshade & Cast Spells || Enter the Dungeon | 1 Gold / Necromancy Card",
+    "photo_confirmed": true,
+    "image": "assets/Familiar_25_Corvum.jpg"
+   }
+  ],
+  "coverage": "complete; all tiers verified from Keith photos"
+ },
+ "spells": {
+  "deck_size": 65,
+  "research_cost": "Production cards seen all show 5 Mana (quick-ref says 'pay 5 Mana'); KS/Tabletopia version had 5-25.",
+  "duration_icons": {
+   "ongoing": "circular arrows - stays active",
+   "1x": "one-time use",
+   "recast (red arrow)": "pre-prod/KS 're-cast' type; production photos show mostly ongoing/1x"
+  },
+  "school_counts_on_cards (BGG 2781232)": {
+   "Druidry": 11,
+   "Conjuring": 8,
+   "Thaumaturgy": 9,
+   "Alchemy": 9,
+   "Necromancy": 9,
+   "Sorcery": "9 (or 8)",
+   "Enchantment": 9,
+   "Wild": "1 (Arch-Mage)",
+   "note": "Rulebook appendix lists some schools differently (Obscure=Druidry on card; Disintegrates=Sorcery & Necromancy on card; Traps=Thaumaturgy on card)"
+  },
+  "take_that_optional_rule": "Remove spells with a star icon (RB). UG pre-prod named them: Terrae Motus, Perstringunt Leporem, Potio Invisibilia, Mana Exhauriebat, Decrusto, Magicis Obice, Verto,...",
+  "unmatched_preproduction_spells": [
+   {
+    "latin": "Aedificate Agentibus",
+    "school": "Thaumaturgy",
+    "duration": "ongoing",
+    "reagents": [
+     "Sulphur",
+     "Sulphur",
+     "Toadstool"
+    ],
+    "text": "Build Towers for 1 fewer Reagent"
+   },
+   {
+    "latin": "Valorem Incremento (Wizards)",
+    "school": "Conjuring",
+    "duration": "ongoing",
+    "reagents": [
+     "Horn",
+     "Horn",
+     "Horn",
+     "Foxglove"
+    ],
+    "text": "Wizard Cards = +1 VP"
+   },
+   {
+    "latin": "Mana Exhauriunt",
+    "school": "Conjuring",
+    "duration": "ongoing",
+    "reagents": [
+     "Horn",
+     "Horn",
+     "Horn",
+     "Foxglove"
+    ],
+    "text": "+5 Mana whenever a Wizard is recruited"
+   },
+   {
+    "latin": "Ignis Pilum",
+    "school": "Sorcery",
+    "duration": "ongoing",
+    "reagents": [
+     "Foxglove",
+     "Foxglove",
+     "Sulphur"
+    ],
+    "text": "Ignore hit from and eliminate (out of play) the first Monster revealed in your next Dungeon Delving"
+   },
+   {
+    "latin": "Magicis Obice (Thaumaturgy)",
+    "school": "Thaumaturgy",
+    "duration": "ongoing",
+    "reagents": [
+     "Sulphur",
+     "Sulphur",
+     "Sulphur"
+    ],
+    "text": "Protected from all negative Spell effects"
+   }
+  ],
+  "unmatched_note": "These UG pre-prod spells have no certain English name; candidates: Perfect Reagent / Order of the Wand / Mana Leak / Flame Bolt.",
+  "prototype_2020_spells_GD": [
+   {
+    "latin": "Ignis Pilum",
+    "school": "Sorcery",
+    "text": "Eliminate (out of play) the first 2 Monsters revealed in your next Dungeon Delving",
+    "duration": "1x",
+    "reagents": [
+     "Foxglove",
+     "Foxglove",
+     "Foxglove",
+     "Sulphur"
+    ]
+   },
+   {
+    "latin": "Ossa Virtute",
+    "school": "Necromancy",
+    "text": "Take any Undead card encountered when Dungeon Delving; +4 VP each",
+    "duration": "ongoing",
+    "reagents": [
+     "Nightshade",
+     "Nightshade",
+     "Nightshade",
+     "Nightshade"
+    ]
+   },
+   {
+    "latin": "Opulentos",
+    "school": "Conjuring",
+    "text": "Gain 1 Gold when Dungeon delving",
+    "duration": "ongoing",
+    "reagents": [
+     "Horn",
+     "Horn",
+     "Horn",
+     "Eye of Newt"
+    ]
+   },
+   {
+    "latin": "Cobalus Obstructum",
+    "school": "Thaumaturgy",
+    "text": "Block all hits from Goblinoid",
+    "duration": "ongoing",
+    "reagents": [
+     "Sulphur",
+     "Sulphur",
+     "Sulphur",
+     "Sulphur"
+    ]
+   },
+   {
+    "latin": "Mana Exhauriunt",
+    "school": "Conjuring",
+    "text": "+5 Mana whenever a Wizard is recruited",
+    "duration": "ongoing",
+    "reagents": [
+     "Horn",
+     "Horn",
+     "Horn",
+     "Foxglove"
+    ]
+   },
+   {
+    "latin": "Congregatum Maxima",
+    "school": "Alchemy",
+    "text": "Max Hand Size = 5",
+    "duration": "ongoing",
+    "reagents": [
+     "Eye of Newt",
+     "Eye of Newt",
+     "Eye of Newt",
+     "Eye of Newt"
+    ]
+   },
+   {
+    "latin": "Insumptuosus",
+    "school": "Thaumaturgy",
+    "text": "Build Tower for 1 Gold",
+    "duration": "ongoing",
+    "reagents": [
+     "Sulphur",
+     "Sulphur",
+     "Sulphur",
+     "Eye of Newt"
+    ]
+   },
+   {
+    "latin": "Floreat",
+    "school": "Druidry",
+    "text": "+1 any Reagent when Gathering",
+    "duration": "ongoing",
+    "reagents": [
+     "Toadstool",
+     "Toadstool",
+     "Toadstool"
+    ]
+   },
+   {
+    "latin": "Terrae Motus",
+    "school": "Druidry",
+    "text": "Destroy (out of play) another player's Tower",
+    "duration": "1x",
+    "reagents": [
+     "Toadstool",
+     "Toadstool",
+     "Sulphur",
+     "Sulphur"
+    ]
+   },
+   {
+    "latin": "Possession Daemonibus",
+    "school": "Necromancy",
+    "text": "Take a Familiar from another player and use it immediately",
+    "duration": "1x",
+    "reagents": [
+     "Nightshade",
+     "Nightshade",
+     "Mandrake"
+    ]
+   },
+   {
+    "latin": "Potio Invisibilia",
+    "school": "Alchemy",
+    "text": "Steal 1 Gold per 2 Eye of Newt used in casting the Spell (from one player)",
+    "duration": "1x",
+    "reagents": "x Eye of Newt"
+   },
+   {
+    "latin": "Magicis Obice",
+    "school": "Thaumaturgy",
+    "text": "Protected from all negative Spell effects",
+    "duration": "ongoing",
+    "reagents": [
+     "Sulphur",
+     "Sulphur",
+     "Sulphur"
+    ]
+   },
+   {
+    "latin": "Valorem Incremento",
+    "school": "Thaumaturgy",
+    "text": "Tower Cards = +1 VP",
+    "duration": "ongoing",
+    "reagents": [
+     "Sulphur",
+     "Sulphur",
+     "Sulphur",
+     "Toadstool"
+    ]
+   },
+   {
+    "latin": "Non Mortui",
+    "school": "Necromancy",
+    "text": "+3 VP/ Necromancer Wizard and Familiar Cards owned",
+    "duration": "ongoing",
+    "reagents": [
+     "Nightshade",
+     "Nightshade",
+     "Foxglove",
+     "Horn"
+    ]
+   },
+   {
+    "latin": "Impostoro",
+    "school": "Enchantment",
+    "text": "Gain 1 Gold/ Card of a School of Magic of your choice",
+    "duration": "1x",
+    "reagents": [
+     "Mandrake",
+     "Mandrake",
+     "Mandrake",
+     "Eye of Newt"
+    ]
+   },
+   {
+    "latin": "Magicis Divitiis",
+    "school": "Sorcery",
+    "text": "+1 VP/ 10 Mana at the end of the game",
+    "duration": "ongoing",
+    "reagents": [
+     "Foxglove",
+     "Foxglove",
+     "Foxglove",
+     "Eye of Newt"
+    ]
+   },
+   {
+    "latin": "Maiorem Clypeus",
+    "school": "Enchantment",
+    "text": "Ignore two hits per Dungeon Delving",
+    "duration": "ongoing",
+    "reagents": [
+     "Mandrake",
+     "Mandrake",
+     "Mandrake",
+     "Mandrake",
+     "Sulphur"
+    ]
+   }
+  ],
+  "tabletopia_KS_version_TT": [
+   {
+    "latin": "Mana Exhauriebat",
+    "cost_mana": 10,
+    "school": "Conjuring",
+    "text": "Steal 20 Mana from another player",
+    "duration": "1x",
+    "reagents": [
+     "Horn",
+     "Horn",
+     "Horn",
+     "Nightshade"
+    ]
+   },
+   {
+    "latin": "Conversus est Aurum",
+    "cost_mana": 20,
+    "school": "Alchemy",
+    "text": "Transmute any number of one type of Reagent to Gold at 3 - 1 ratio",
+    "duration": "recast",
+    "reagents": [
+     "Eye of Newt",
+     "Eye of Newt"
+    ]
+   },
+   {
+    "latin": "Floreat",
+    "cost_mana": 25,
+    "school": "Druidry",
+    "text": "+1 any Reagent when Gathering",
+    "duration": "ongoing",
+    "reagents": [
+     "Toadstool",
+     "Toadstool",
+     "Toadstool"
+    ]
+   },
+   {
+    "latin": "Skry Lacum",
+    "cost_mana": 5,
+    "school": "Sorcery",
+    "text": "Look at the top 6(?) Dungeon Cards, and keep one of the Treasure Cards",
+    "duration": "recast",
+    "reagents": "FFF + Sulphur x3 (low-res)"
+   }
+  ],
+  "cards": [
+   {
+    "name": "Evolve",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Facti Veneficus",
+     "school": "Alchemy",
+     "duration": "1x",
+     "reagents": [
+      "Eye of Newt",
+      "Eye of Newt",
+      "Eye of Newt"
+     ],
+     "text": "One of your Familiars becomes a Wizard of the same school"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "One of your Familiars becomes a Wizard of the same school",
+     "src": "BGGF:2781232-area thread (Arch-Mage/Evolve post)"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Crystal Ball",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Congregatum Maxima",
+     "school": "Alchemy",
+     "duration": "ongoing",
+     "reagents": [
+      "Eye of Newt",
+      "Eye of Newt",
+      "Eye of Newt"
+     ],
+     "text": "Max Hand Size = 5"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "Max Hand Size = 5",
+     "src": "BGGF (Crystal Ball question)"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Scry Dungeon",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Skry Lacum",
+     "school": "Sorcery",
+     "duration": "1x",
+     "reagents": [
+      "Foxglove",
+      "Foxglove",
+      "Nightshade"
+     ],
+     "text": "Look at the top 10 cards in the Dungeon deck, and keep all Treasure Cards"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "Production text reportedly 'look at the top 10' Dungeon cards and keep the treasures",
+     "src": "BGGF (Scry Dungeon question) + thread 2774383"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)",
+    "card_correction": "Nov 2, 2026: corrected from the actual card image assets/Spell_Scry_Dungeon.jpg (cost 2 Foxglove + 1 Nightshade, top 10, 1x)."
+   },
+   {
+    "name": "Scry Tower",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Skry Turrim",
+     "school": "Sorcery",
+     "duration": "recast",
+     "reagents": [
+      "Foxglove",
+      "Foxglove",
+      "Sulphur"
+     ],
+     "text": "Look at the top 5 cards in the Tower Deck, and buy one"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Scry Wizard",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Skry Veneficus",
+     "school": "Sorcery",
+     "duration": "recast",
+     "reagents": [
+      "Foxglove",
+      "Foxglove",
+      "Mandrake"
+     ],
+     "text": "Look at the top 5 cards in the Wizard Deck, and buy one for 10 Mana"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Scry Familiar",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Skry Adiutor",
+     "school": "Sorcery",
+     "duration": "recast",
+     "reagents": [
+      "Foxglove",
+      "Foxglove",
+      "Horn"
+     ],
+     "text": "Look at the top 5 cards in the Familiar Deck, and buy one"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Block Goblin",
+    "copy": 1,
+    "school": "Necromancy (per production photo icon)",
+    "cost_mana": 5,
+    "src": [
+     "BGGIMG:6526396"
+    ],
+    "status": "pre-production appendix only (production values may differ)",
+    "preproduction_appendix": {
+     "latin": "Cobalus Obstructum",
+     "school": "Thaumaturgy",
+     "duration": "ongoing",
+     "reagents": [
+      "Sulphur",
+      "Sulphur"
+     ],
+     "text": "Goblinoids do not hit, and instead give you 1 Gold"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Block Undead",
+    "copy": 1,
+    "school": "Necromancy",
+    "cost_mana": 5,
+    "src": [
+     "BGGIMG:6526396"
+    ],
+    "status": "pre-production appendix only (production values may differ)",
+    "preproduction_appendix": {
+     "latin": "Mortuus Obstructum",
+     "school": "Necromancy",
+     "duration": "ongoing",
+     "reagents": [
+      "Nightshade",
+      "Nightshade"
+     ],
+     "text": "Undead do not hit, and instead give you 1 Gold"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Block Giant",
+    "copy": 1,
+    "school": "Necromancy (per production photo icon)",
+    "cost_mana": 5,
+    "src": [
+     "BGGIMG:6526396"
+    ],
+    "status": "pre-production appendix only (production values may differ)",
+    "preproduction_appendix": {
+     "latin": "Gigantes Obstructum",
+     "school": "Thaumaturgy",
+     "duration": "ongoing",
+     "reagents": [
+      "Sulphur",
+      "Sulphur"
+     ],
+     "text": "Giants do not hit, and instead give you 1 Gold"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Block Denizens",
+    "copy": 1,
+    "latin": "Creatura Obstructionum",
+    "school": "Necromancy",
+    "cost_mana": 5,
+    "duration": "ongoing",
+    "reagents": [
+     "Nightshade",
+     "Nightshade",
+     "Foxglove"
+    ],
+    "text": "Denizens do not hit, and instead give you 1 Gold",
+    "src": [
+     "FBG:ei0a3268"
+    ],
+    "status": "production-confirmed",
+    "preproduction_appendix": {
+     "latin": "Creatura Obstructum",
+     "school": "Necromancy",
+     "duration": "ongoing",
+     "reagents": [
+      "Nightshade",
+      "Nightshade"
+     ],
+     "text": "Denizens do not hit, and instead give you 1 Gold"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Spirit Shield",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Spiritus Clypeus",
+     "school": "Enchantment",
+     "duration": "ongoing",
+     "reagents": [
+      "Mandrake",
+      "Mandrake",
+      "Mandrake",
+      "Sulphur"
+     ],
+     "text": "Ignore one additional hit per Dungeon Expedition"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Root Cellar",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Cella Reponum (x2)",
+     "school": "Druidry",
+     "duration": "ongoing",
+     "reagents": [
+      "Toadstool",
+      "Toadstool",
+      "Sulphur"
+     ],
+     "text": "Store +10 Reagents"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "Store +10 Reagents",
+     "src": "BGGF:2812238; RB p.10 confirms +10"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Root Cellar",
+    "copy": 2,
+    "preproduction_appendix": {
+     "latin": "Cella Reponum (x2)",
+     "school": "Druidry",
+     "duration": "ongoing",
+     "reagents": [
+      "Toadstool",
+      "Toadstool",
+      "Sulphur"
+     ],
+     "text": "Store +10 Reagents"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "Store +10 Reagents",
+     "src": "BGGF:2812238; RB p.10 confirms +10"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Divination",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Divinatio Ambigua",
+     "school": "Sorcery",
+     "duration": "ongoing",
+     "reagents": [
+      "Foxglove",
+      "Foxglove",
+      "Sulphur"
+     ],
+     "text": "Enter the Dungeon as an action without a Familiar"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Perfect Reagent",
+    "copy": 1,
+    "status": "name only"
+   },
+   {
+    "name": "Inexpensive",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Insumptuosus",
+     "school": "Thaumaturgy",
+     "duration": "ongoing",
+     "reagents": [
+      "Sulphur",
+      "Sulphur",
+      "Eye of Newt"
+     ],
+     "text": "Build Towers for 1 fewer Gold"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Summon Helper",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Vocare Adiutor",
+     "school": "Conjuring",
+     "duration": "ongoing",
+     "reagents": [
+      "Horn",
+      "Horn",
+      "Mandrake"
+     ],
+     "text": "Summon Familiar for 5 fewer Mana Cost"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Rise",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Renovetur",
+     "school": "Necromancy",
+     "duration": "1x",
+     "reagents": [
+      "Nightshade",
+      "Nightshade",
+      "Mandrake"
+     ],
+     "text": "Re-activate one of your used Familiar Cards"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Energize",
+    "copy": 1,
+    "latin": "Pullulate",
+    "school": "Druidry",
+    "cost_mana": 5,
+    "duration": "ongoing",
+    "reagents": [
+     "Toadstool",
+     "Toadstool",
+     "Toadstool",
+     "Foxglove"
+    ],
+    "text": "Increase the mana value of a Reagent by 3 before converting",
+    "src": [
+     "CDM"
+    ],
+    "status": "production-confirmed",
+    "preproduction_appendix": {
+     "latin": "Pullulate",
+     "school": "Druidry",
+     "duration": "ongoing",
+     "reagents": [
+      "Toadstool",
+      "Toadstool",
+      "Toadstool",
+      "Foxglove"
+     ],
+     "text": "Increase the mana value of a Reagent by 3 before converting"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "Increase the mana value of a Reagent by 3 before converting",
+     "src": "BGGF:3458268"
+    }
+   },
+   {
+    "name": "Treasure",
+    "copy": 1,
+    "latin": "Opulentos",
+    "school": "Conjuring",
+    "cost_mana": 5,
+    "text": "Gain 2 Gold each time you e[nter the Dungeon] (cut off; full text from UG pre-prod)",
+    "src": [
+     "BGGIMG:6526396",
+     "UG"
+    ],
+    "status": "production-partial",
+    "preproduction_appendix": {
+     "latin": "Opulentos",
+     "school": "Conjuring",
+     "duration": "ongoing",
+     "reagents": [
+      "Horn",
+      "Horn",
+      "Eye of Newt"
+     ],
+     "text": "Gain 2 Gold each time you enter the Dungeon"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Order of the Wand",
+    "copy": 1,
+    "bgg_quoted_text": {
+     "text": "(text not quoted; a user asks if it gives VP = Wizard cards + 2)",
+     "src": "BGGF:3610703"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Pulsing Towers",
+    "copy": 1,
+    "latin": "Turris Tremerent",
+    "school": "Thaumaturgy",
+    "cost_mana": 5,
+    "duration": "ongoing",
+    "reagents": [
+     "Sulphur",
+     "Sulphur",
+     "Sulphur",
+     "Toadstool"
+    ],
+    "text": "Tower Cards = +1 VP",
+    "src": [
+     "CDM"
+    ],
+    "status": "production-confirmed",
+    "preproduction_appendix": {
+     "latin": "Valorem Incremento (Towers)",
+     "school": "Thaumaturgy",
+     "duration": "ongoing",
+     "reagents": [
+      "Sulphur",
+      "Sulphur",
+      "Sulphur",
+      "Toadstool"
+     ],
+     "text": "Tower Cards = +1 VP"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Haste",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Celeritas",
+     "school": "Enchantment",
+     "duration": "recast",
+     "reagents": [
+      "Mandrake",
+      "Mandrake",
+      "Toadstool"
+     ],
+     "text": "Take a bonus action"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Transmute",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Conversus est Aurum",
+     "school": "Alchemy",
+     "duration": "recast",
+     "reagents": [
+      "Eye of Newt",
+      "Eye of Newt"
+     ],
+     "text": "Transmute any number of Reagents to Gold at a 3 - 1 ratio"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Transform",
+    "copy": 1,
+    "latin": "Converto",
+    "cost_mana": 5,
+    "text": "Transform any Reagent to another Reagent at 2:1 ratio before Converting to Mana",
+    "src": [
+     "BGGIMG:6713931"
+    ],
+    "status": "production-confirmed text",
+    "preproduction_appendix": {
+     "latin": "Converto",
+     "school": "Alchemy",
+     "duration": "ongoing",
+     "reagents": [
+      "Eye of Newt",
+      "Eye of Newt",
+      "Eye of Newt"
+     ],
+     "text": "Transmute any Reagent to another Reagent at 2 - 1 ratio before Converting to Mana"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Swapo",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Verto",
+     "school": "Enchantment",
+     "duration": "1x",
+     "reagents": [
+      "Mandrake",
+      "Mandrake",
+      "Sulphur",
+      "Sulphur"
+     ],
+     "text": "Trade one of your Wizard or Tower Cards for the same type owned by another player"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "Trade one of your wizard or tower cards for the same type owned by another player.",
+     "src": "BGGF:2776987"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Wand Tax",
+    "copy": 1,
+    "latin": "Impostoro",
+    "school": "Enchantment",
+    "cost_mana": 5,
+    "duration": "1x",
+    "reagents": [
+     "Mandrake",
+     "Mandrake",
+     "(more cut off)"
+    ],
+    "text": "Gain 2 Gold/ Card of any School of Magic of your choice",
+    "src": [
+     "FBG:ei0a3268"
+    ],
+    "status": "production-confirmed (reagents partial)",
+    "ruling": "BGG thread 2818425: 2 Gold per card you own of the chosen school",
+    "preproduction_appendix": {
+     "latin": "Impostoro",
+     "school": "Enchantment",
+     "duration": "1x",
+     "reagents": [
+      "Mandrake",
+      "Mandrake",
+      "Eye of Newt"
+     ],
+     "text": "Gain 1 Gold/ Card of any School of Magic of your choice"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Disintegrate",
+    "copy": 1,
+    "latin": "Decrusto",
+    "school": "Sorcery",
+    "cost_mana": 5,
+    "duration": "1x",
+    "reagents": [
+     "Foxglove",
+     "Foxglove",
+     "Nightshade",
+     "Nightshade"
+    ],
+    "text": "Disintegrate any card owned by another player and place it out of play",
+    "take_that_star": true,
+    "src": [
+     "CDM"
+    ],
+    "status": "production-confirmed",
+    "note": "BGG thread 2781232: the two Disintegrate cards are marked Sorcery and Necromancy on the cards",
+    "preproduction_appendix": {
+     "latin": "Decrusto",
+     "school": "Necromancy",
+     "duration": "1x",
+     "reagents": [
+      "Nightshade",
+      "Nightshade",
+      "Foxglove",
+      "Foxglove"
+     ],
+     "text": "Disintegrate any card owned by another player and place it out of play"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "Disintegrate any card owned by another player and place it out of play.",
+     "src": "BGGF:2776987"
+    }
+   },
+   {
+    "name": "Disintegrate",
+    "copy": 2,
+    "bgg_quoted_text": {
+     "text": "Disintegrate any card owned by another player and place it out of play.",
+     "src": "BGGF:2776987"
+    },
+    "note": "Second Disintegrate: marked Necromancy on the card (BGG 2781232); cost not seen",
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Creation",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Ex Nihilo",
+     "school": "Conjuring",
+     "duration": "1x",
+     "reagents": [
+      "Horn",
+      "Horn",
+      "Horn",
+      "Horn"
+     ],
+     "text": "Take any available Card for free"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "Take any available card for free.",
+     "src": "BGGF:2850541 (publisher: any offer - Wizard, Tower, Familiar or Spell)"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Potent Servant",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Potens Servis Suis",
+     "school": "Druidry",
+     "duration": "ongoing",
+     "reagents": [
+      "Toadstool",
+      "Toadstool",
+      "Toadstool"
+     ],
+     "text": "Familiar Cards = +1 VP"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Maximum Gather",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Maiorem Augere",
+     "school": "Druidry",
+     "duration": "ongoing",
+     "reagents": [
+      "Toadstool",
+      "Toadstool",
+      "Toadstool"
+     ],
+     "text": "Gather all Reagents shown on the top half of the Gather Reagents Card"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Adept Conversion",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Conversio Agentibus",
+     "school": "Druidry",
+     "duration": "ongoing",
+     "reagents": [
+      "Toadstool",
+      "Toadstool",
+      "Mandrake",
+      "Mandrake"
+     ],
+     "text": "May convert 2 types of Reagents"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "May Convert 2 types of Reagents",
+     "src": "BGGF"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Powerful Helper",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Potens Adiutor",
+     "school": "Alchemy",
+     "duration": "ongoing",
+     "reagents": [
+      "Eye of Newt",
+      "Eye of Newt",
+      "Eye of Newt"
+     ],
+     "text": "+1 Gold / School of Magic Card when using a Familiar to generate Gold"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "When using a Familiar to score, gain +1 Gold/ Wizard and Familiar from its school of magic.",
+     "src": "BGGF (Undying/Powerful Helper post)"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)",
+    "reagents_correction": "Keith (Nov 2, 2026): production card needs 3 Eye of Newt, not 4"
+   },
+   {
+    "name": "Mana Hoard",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Magicis Divitiis",
+     "school": "Sorcery",
+     "duration": "ongoing",
+     "reagents": [
+      "Foxglove",
+      "Foxglove",
+      "Foxglove",
+      "Eye of Newt"
+     ],
+     "text": "+1 VP/ 7 Mana at the end of the game"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Mana Leak",
+    "copy": 1,
+    "bgg_quoted_text": {
+     "text": "'+5 Mana when any player ...' (trigger not quoted)",
+     "src": "BGGF:2818425 lists Mana Leak with Energy Circle & Mana Fountain as '+5 mana when any player...'"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Mana Drain",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Mana Exhauriebat",
+     "school": "Conjuring",
+     "duration": "1x",
+     "reagents": [
+      "Horn",
+      "Horn",
+      "Horn",
+      "Nightshade"
+     ],
+     "text": "Steal 15 Mana from another player"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Flame Bolt",
+    "copy": 1,
+    "bgg_quoted_text": {
+     "text": "Destroy any card owned by another player and place it out of play.",
+     "src": "BGGF:2776987 (cheaper than Disintegrate)"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Flame Bolt",
+    "copy": 2,
+    "bgg_quoted_text": {
+     "text": "Destroy any card owned by another player and place it out of play.",
+     "src": "BGGF:2776987 (cheaper than Disintegrate)"
+    },
+    "note": "Second copy; school/cost not seen",
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Energy Pulse",
+    "copy": 1,
+    "bgg_quoted_text": {
+     "text": "Energy Pulse/ Industria Pulsas: Destroy all Spell Shield spell cards currently owned by all players (1x) cost FFFM",
+     "src": "BGGF:2781232 quoting KS update #4"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Arch-Mage",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Ultimum Magi",
+     "school": "Wild (?)",
+     "duration": "ongoing",
+     "reagents": [
+      "Mandrake",
+      "Sulphur",
+      "Toadstool",
+      "Horn",
+      "Nightshade",
+      "Foxglove",
+      "Eye of Newt"
+     ],
+     "text": "+3 VP/ unique Wizard card (Note: Can be treated as any school of magic for scoring)."
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "+3 VP / unique Wizard card; can be treated as any school of magic for scoring (wild symbol)",
+     "src": "BGGF:2784244 + achievements thread"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Obscure",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Obscurum",
+     "school": "Enchantment",
+     "duration": "1x",
+     "reagents": [
+      "Mandrake",
+      "Mandrake",
+      "Nightshade",
+      "Nightshade"
+     ],
+     "text": "The targeted player may not enter the Dungeon for the rest of the game"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "The targeted player may not enter the dungeon the next time they try",
+     "src": "BGGF:3029280 (production text differs from UG 'for the rest of the game')"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Time Shift",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Tempus Subcinctus",
+     "school": "Enchantment",
+     "duration": "1x",
+     "reagents": [
+      "Mandrake",
+      "Mandrake",
+      "Foxglove"
+     ],
+     "text": "Remove (out of play) the top 5 cards of any deck"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Demonic Possession",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Possession Daemonibus",
+     "school": "Necromancy",
+     "duration": "1x",
+     "reagents": [
+      "Nightshade",
+      "Nightshade",
+      "Mandrake"
+     ],
+     "text": "Take a Familiar from another player and use it immediately"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Bloom",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Floreat",
+     "school": "Druidry",
+     "duration": "ongoing",
+     "reagents": [
+      "Toadstool",
+      "Toadstool",
+      "Toadstool"
+     ],
+     "text": "+1 any Reagent when Gathering"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "+1 any reagent when gathering",
+     "src": "BGGF:2774529"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Undying",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Non Mortui",
+     "school": "Necromancy",
+     "duration": "ongoing",
+     "reagents": [
+      "Nightshade",
+      "Nightshade",
+      "Foxglove",
+      "Horn"
+     ],
+     "text": "+3 VP/ Necromancer Wizard and Familiar Cards owned"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "bgg_quoted_text": {
+     "text": "+3 VP/ Necromancer Wizard and Familiar Cards owned",
+     "src": "BGGF (Undying/Powerful Helper post); ruling thread 2817974: +3 per Necro Wizard and +3 per Necro Familiar"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Invisibility Potion",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Potio Invisibilia",
+     "school": "Alchemy",
+     "duration": "1x",
+     "reagents": "x EE (variable: X Eye of Newt)",
+     "text": "Steal 1 Gold per 2 Eye of Newt used in casting the Spell (from one player)"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Control Undead",
+    "copy": 1,
+    "latin": "Ossa Virtute",
+    "school": "Necromancy",
+    "cost_mana": 5,
+    "duration": "ongoing",
+    "reagents": [
+     "Nightshade",
+     "Nightshade",
+     "Nightshade",
+     "Nightshade"
+    ],
+    "text": "Ignore hits from and take any Undead card encountered when Dungeon Delving; +3 VP for each",
+    "src": [
+     "CDM"
+    ],
+    "status": "production-confirmed",
+    "preproduction_appendix": {
+     "latin": "Ossa Virtute",
+     "school": "Necromancy",
+     "duration": "ongoing",
+     "reagents": [
+      "Nightshade",
+      "Nightshade",
+      "Nightshade",
+      "Nightshade"
+     ],
+     "text": "Ignore hits from and take any Undead card encountered when Dungeon Delving; +4 VP for each"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Scribe",
+    "copy": 1,
+    "latin": "Librorum",
+    "school": "Alchemy",
+    "cost_mana": 5,
+    "duration": "1x",
+    "reagents": [
+     "Eye of Newt",
+     "Eye of Newt",
+     "Mandrake"
+    ],
+    "text": "Take and cast one of the top 5 Spell Cards for free",
+    "src": [
+     "CDM"
+    ],
+    "status": "production-confirmed",
+    "preproduction_appendix": {
+     "latin": "Librorum",
+     "school": "Alchemy",
+     "duration": "1x",
+     "reagents": [
+      "Eye of Newt",
+      "Eye of Newt",
+      "Mandrake"
+     ],
+     "text": "Take and cast one of the top 5 Spell Cards for free"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Earthquake",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Terrae Motus",
+     "school": "Druidry",
+     "duration": "1x",
+     "reagents": [
+      "Toadstool",
+      "Toadstool",
+      "Sulphur",
+      "Sulphur"
+     ],
+     "text": "Destroy (out of play) another player's Tower"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Charm",
+    "copy": 1,
+    "latin": "Perstringunt Leporem",
+    "school": "Enchantment",
+    "cost_mana": 5,
+    "duration": "1x",
+    "reagents": [
+     "Mandrake",
+     "Mandrake",
+     "Mandrake",
+     "Foxglove",
+     "Foxglove"
+    ],
+    "text": "Take a Wizard Card from another player",
+    "take_that_star": true,
+    "src": [
+     "CDM"
+    ],
+    "status": "production-confirmed",
+    "preproduction_appendix": {
+     "latin": "Perstringunt Leporem",
+     "school": "Enchantment",
+     "duration": "1x",
+     "reagents": [
+      "Mandrake",
+      "Mandrake",
+      "Mandrake",
+      "Foxglove",
+      "Foxglove"
+     ],
+     "text": "Take a Wizard Card from another player"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Miracle",
+    "copy": 1,
+    "preproduction_appendix": {
+     "latin": "Miraculum",
+     "school": "Thaumaturgy",
+     "duration": "ongoing",
+     "reagents": [
+      "Sulphur",
+      "Sulphur",
+      "Toadstool"
+     ],
+     "text": "Reverse the Reagents on the Gather and Increase Value sides of your Gather Reagent Card that you play if you choose to"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)",
+    "status": "pre-production appendix only (production values may differ)"
+   },
+   {
+    "name": "Spell Shield",
+    "copy": 1,
+    "latin": "Magicis Obice",
+    "school": "Conjuring",
+    "cost_mana": 5,
+    "duration": "1x",
+    "reagents": [
+     "Horn",
+     "Horn"
+    ],
+    "text": "Protected from one negative Spell effect, then placed out of play",
+    "take_that_star": true,
+    "src": [
+     "CDM"
+    ],
+    "status": "production-confirmed",
+    "preproduction_appendix": {
+     "latin": "Magicis Obice (Conjuring)",
+     "school": "Conjuring",
+     "duration": "ongoing",
+     "reagents": [
+      "Horn",
+      "Horn",
+      "Horn"
+     ],
+     "text": "Protected from all negative Spell effects"
+    },
+    "latin_mapping": "inferred by matching effect text (UG pre-prod uses Latin titles only)"
+   },
+   {
+    "name": "Spell Shield",
+    "copy": 2,
+    "latin": "Magicis Obice",
+    "school": "Thaumaturgy",
+    "cost_mana": 5,
+    "duration": "1x",
+    "reagents": [
+     "Sulphur",
+     "Sulphur"
+    ],
+    "text": "Protected from one negative Spell effect, then placed out of play",
+    "src": [
+     "FBG:ei0a3268"
+    ],
+    "status": "production-confirmed"
+   },
+   {
+    "name": "Spell Shield",
+    "copy": 3,
+    "latin": "Magicis Obice (assumed)",
+    "school": "UNKNOWN (school icon not visible; reagents 2x Mandrake suggest Enchantment)",
+    "cost_mana": 5,
+    "duration": "1x",
+    "reagents": [
+     "Mandrake",
+     "Mandrake"
+    ],
+    "text": "Protected from one negative Spell effect, then placed out of play (text partially visible)",
+    "src": [
+     "FBG:ei0a3274"
+    ],
+    "status": "production-partial"
+   },
+   {
+    "name": "Spell Shield",
+    "copy": 4,
+    "note": "Additional Spell Shield copy; school/cost not seen (6 Spell Shields total per BGG appendix listing)",
+    "status": "name only"
+   },
+   {
+    "name": "Spell Shield",
+    "copy": 5,
+    "note": "Additional Spell Shield copy; school/cost not seen (6 Spell Shields total per BGG appendix listing)",
+    "status": "name only"
+   },
+   {
+    "name": "Spell Shield",
+    "copy": 6,
+    "note": "Additional Spell Shield copy; school/cost not seen (6 Spell Shields total per BGG appendix listing)",
+    "status": "name only"
+   },
+   {
+    "name": "Secret Society",
+    "copy": 1,
+    "bgg_quoted_text": {
+     "text": "Secret Society/ Secretum Societatis: May hide your Wizard Cards; Any negative Spell aimed at your Wizards effects a random Wizard of yours (ongoing) cost MMS",
+     "src": "BGGF:2781232 quoting KS update #4"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Mana Fountain",
+    "copy": 1,
+    "latin": "Magicae Fons",
+    "school": "Thaumaturgy",
+    "cost_mana": 5,
+    "duration": "ongoing",
+    "reagents": [
+     "Sulphur",
+     "Sulphur",
+     "Foxglove",
+     "Foxglove"
+    ],
+    "text": "+5 Mana when any player builds a Tower",
+    "src": [
+     "FBG:ei0a3274",
+     "BGGF:2781232 (KS update #4)"
+    ],
+    "status": "production-confirmed"
+   },
+   {
+    "name": "Mana Garden",
+    "copy": 1,
+    "latin": "Magia Hortus",
+    "school": "Druidry",
+    "cost_mana": 5,
+    "duration": "ongoing",
+    "reagents": [
+     "Toadstool",
+     "Toadstool",
+     "Mandrake",
+     "Mandrake(?)"
+    ],
+    "text": "+5 Mana whenever you Gather Reagents",
+    "src": [
+     "FBG:ei0a3274"
+    ],
+    "status": "production-confirmed (4th reagent partly cut)"
+   },
+   {
+    "name": "Energy Circle",
+    "copy": 1,
+    "latin": "Navitas Circulus",
+    "school": "Conjuring",
+    "cost_mana": 5,
+    "duration": "ongoing",
+    "reagents": "not visible",
+    "text": "+5 Mana when any player summons a Familiar",
+    "src": [
+     "BGGIMG:6526396"
+    ],
+    "status": "production-partial"
+   },
+   {
+    "name": "Master Alchemist",
+    "copy": 1,
+    "latin": "Dominus Alchemist",
+    "school": "Alchemy",
+    "cost_mana": 5,
+    "duration": "ongoing",
+    "reagents": [
+     "Eye of Newt",
+     "Horn"
+    ],
+    "text": "+1 VP/ 2 Gold",
+    "src": [
+     "FBG:ei0a3268"
+    ],
+    "status": "production-confirmed (reagent row may be cut off)",
+    "ruling": "Publisher (BGG thread 2770719): end-game scoring, +1 VP per 2 Gold, on top of gold's normal VP"
+   },
+   {
+    "name": "Trap!",
+    "copy": 1,
+    "bgg_quoted_text": {
+     "text": "Trap!/ Captionem: Add a Trap Card to the Dungeon. Traps cause 2 Hits. (x1) cost SSM",
+     "src": "BGGF:2781232 quoting KS update #4; marked Thaumaturgy on cards"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   },
+   {
+    "name": "Trap!",
+    "copy": 2,
+    "bgg_quoted_text": {
+     "text": "Trap!/ Captionem: Add a Trap Card to the Dungeon. Traps cause 2 Hits. (x1) cost SSM",
+     "src": "BGGF:2781232 quoting KS update #4; marked Thaumaturgy on cards"
+    },
+    "status": "production text quoted on BGG (no school/cost unless noted)"
+   }
+  ],
+  "status_counts": {
+   "production text quoted on BGG (no school/cost unless noted)": 22,
+   "pre-production appendix only (production values may differ)": 22,
+   "production-confirmed": 10,
+   "name only": 4,
+   "production-partial": 3,
+   "production-confirmed text": 1,
+   "production-confirmed (reagents partial)": 1,
+   "production-confirmed (4th reagent partly cut)": 1,
+   "production-confirmed (reagent row may be cut off)": 1
+  }
+ },
+ "reagent_gathering": {
+  "deck_size": 56,
+  "layout": "Top 'Gather Reagents' (take 3 of those shown) / bottom 'Increase Value' (+1 track value per icon)",
+  "cards": [
+   {
+    "id": "RG-01",
+    "gather": [
+     "Horn",
+     "Nightshade",
+     "Foxglove"
+    ],
+    "increase_value": [
+     "Foxglove",
+     "Sulphur",
+     "Horn"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-02",
+    "gather": [
+     "Eye of Newt",
+     "Mandrake",
+     "Sulphur"
+    ],
+    "increase_value": [
+     "Sulphur",
+     "Foxglove",
+     "Toadstool"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-03",
+    "gather": [
+     "Eye of Newt",
+     "Toadstool",
+     "Horn"
+    ],
+    "increase_value": [
+     "Nightshade",
+     "Eye of Newt",
+     "Foxglove"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-04",
+    "gather": [
+     "Toadstool",
+     "Mandrake",
+     "Nightshade"
+    ],
+    "increase_value": [
+     "Eye of Newt",
+     "Foxglove",
+     "Horn"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-05",
+    "gather": [
+     "Foxglove",
+     "Eye of Newt",
+     "Nightshade",
+     "Sulphur"
+    ],
+    "increase_value": [
+     "Eye of Newt",
+     "Horn",
+     "Eye of Newt",
+     "Nightshade"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-06",
+    "gather": [
+     "Toadstool",
+     "Foxglove",
+     "Toadstool",
+     "Horn"
+    ],
+    "increase_value": [
+     "Horn",
+     "Nightshade",
+     "Toadstool",
+     "Mandrake"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-07",
+    "gather": [
+     "Toadstool",
+     "Toadstool",
+     "Mandrake",
+     "Toadstool",
+     "Eye of Newt"
+    ],
+    "increase_value": [
+     "Mandrake",
+     "Eye of Newt",
+     "Mandrake",
+     "Horn"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-08",
+    "gather": [
+     "Foxglove",
+     "Foxglove",
+     "Eye of Newt",
+     "Sulphur"
+    ],
+    "increase_value": [
+     "Mandrake",
+     "Foxglove",
+     "Toadstool",
+     "Eye of Newt"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-09",
+    "gather": [
+     "Foxglove",
+     "Mandrake",
+     "Nightshade",
+     "Toadstool"
+    ],
+    "increase_value": [
+     "Horn",
+     "Horn",
+     "Toadstool",
+     "Mandrake"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-10",
+    "gather": [
+     "Toadstool",
+     "Foxglove",
+     "Horn",
+     "Sulphur"
+    ],
+    "increase_value": [
+     "Nightshade",
+     "Horn",
+     "Nightshade",
+     "Eye of Newt"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-11",
+    "gather": [
+     "Foxglove",
+     "Foxglove",
+     "Toadstool",
+     "Foxglove",
+     "Nightshade"
+    ],
+    "increase_value": [
+     "Sulphur",
+     "Eye of Newt",
+     "Horn",
+     "Nightshade"
+    ],
+    "src": [
+     "CDM: cdm_dungeon_and_reagents.png"
+    ],
+    "note": "icon read from photo; order as printed left-to-right/top-to-bottom"
+   },
+   {
+    "id": "RG-12",
+    "gather": [
+     "Nightshade",
+     "Toadstool",
+     "Horn"
+    ],
+    "increase_value": [
+     "Sulphur",
+     "Sulphur",
+     "Foxglove"
+    ],
+    "src": [
+     "BGGIMG:6713936"
+    ],
+    "note": "read from thumbnail; verify"
+   },
+   {
+    "id": "RG-13",
+    "gather": [
+     "Sulphur",
+     "Toadstool",
+     "Horn"
+    ],
+    "increase_value": [
+     "Nightshade",
+     "Mandrake",
+     "Sulphur"
+    ],
+    "src": [
+     "MM:Lizard-Wizard-4"
+    ],
+    "note": "read from photo; verify"
+   }
+  ],
+  "coverage": "13 of 56 transcribed; no complete list found. Pre-prod rulebook said 54 cards."
+ },
+ "dungeon": {
+  "deck_size": 53,
+  "composition": {
+   "Monster": 20,
+   "Gold Treasure": 21,
+   "Item Treasure": 10,
+   "Trap!": 2
+  },
+  "setup": "Trap! cards set aside at setup; added only by the Trap! spell (shuffled in - BGG 2803932).",
+  "monster_types": [
+   "Goblinoid",
+   "Undead",
+   "Giant",
+   "Dungeon Denizen"
+  ],
+  "trap": {
+   "name": "It's a Trap!",
+   "text": "x2 Hits",
+   "copies": 2,
+   "src": [
+    "CDM"
+   ]
+  },
+  "monsters_seen_production": [
+   {
+    "name": "Manticore",
+    "type": "Dungeon Denizen"
+   },
+   {
+    "name": "Kobold",
+    "type": "Goblinoid"
+   },
+   {
+    "name": "Orc",
+    "type": "Goblinoid"
+   },
+   {
+    "name": "Hydra",
+    "type": "Dungeon Denizen"
+   },
+   {
+    "name": "Giant",
+    "type": "Giant"
+   },
+   {
+    "name": "Floating Eye",
+    "type": "Dungeon Denizen"
+   },
+   {
+    "name": "Gargoyle",
+    "type": "Dungeon Denizen"
+   },
+   {
+    "name": "Zombie",
+    "type": "(type text cut off; presumably Undead)"
+   }
+  ],
+  "monsters_seen_prototype": [
+   {
+    "name": "Bugbear",
+    "type": "Goblinoid"
+   },
+   {
+    "name": "Lich",
+    "type": "Undead"
+   }
+  ],
+  "items_seen_production": [
+   "Rubies",
+   "Idol",
+   "Mask",
+   "Necklace",
+   "Sword",
+   "green gem 'E...' (name cut off)"
+  ],
+  "items_seen_prototype": [
+   "Ring",
+   "Diamonds"
+  ],
+  "gold_treasure_seen": [
+   "Collect 1 Gold",
+   "Collect 2 Gold"
+  ],
+  "unknown": "Full monster list (20) incl. per-type counts, all 10 item names, and gold value distribution of the 21 gold cards (BGG thread 3663271 asks this).",
+  "ks_exclusive_magical_forest": "KS-exclusive 'Magical Forest' monster cards + instruction card: 'After each trip to the Dungeon is complete, add one Forest card to the Dungeon deck, and shuffle.' (BGG 2773915, KS update 19)",
+  "src": [
+   "CDM",
+   "FBG:ei0a3276",
+   "GD",
+   "RB"
+  ]
+ },
+ "achievements": {
+  "count": 20,
+  "in_game": "4 drawn at random; claim on your turn if you meet the condition; 10 VP each (RB)",
+  "tiles": [
+   {
+    "text": "5 Alchemy cards",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "5 Enchantment cards",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "5 Sorcery cards",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "5 Conjuring cards",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "5 Necromancy cards",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "5 Thaumaturgy cards",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "5 Druidry cards",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "5 Wizards",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "x7 Eye of Newt",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "x7 Horn",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "x7 Nightshade",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "x7 Sulphur",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "x7 Toadstool",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "x7 Foxglove",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "x7 Mandrake",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "7 Spells",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "7 Towers",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "7 Familiars",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "10 Gold",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   },
+   {
+    "text": "100 Mana",
+    "src": [
+     "UG appendix p.19",
+     "CDM achievement photo",
+     "BGGIMG:5555853"
+    ]
+   }
+  ],
+  "rulings": [
+   "Uncast spells do not count toward achievements (publisher, KS comments quoted in BGG thread 2735192)",
+   "Solo: claimed tile removed from board (BGG 3067655)"
+  ],
+  "coverage": "complete (20/20)"
+ },
+ "solo": {
+  "rulebook_ai_paragraph": "RB p.7: AI starts 30 Mana + 1 random Wizard, no reagent limit, gathers all reagents on card, converts the most-Mana reagent, follows a two-sided 'AI Flow-Chart'.",
+  "flowchart_status": "NOT PUBLISHED. Solo designer David Digby (BGG 3338169): 'There isn't a flowchart... The solo mode you referenced is not the same as the published version.' The paragraph is a leftover from an abandoned concept.",
+  "published_solo": "Lizard Wizard: Mechanica Magus (solo design David Digby, original concepts David Turczi): 9 Action cards + 9 Dungeon Delve cards + 8-page rules. Rules PDF is on BGG files for thing 373930 (login required); card proxies in BGG thread 3293703 (images not retrievable without login).",
+  "known_text": [
+   "Dungeon Delve card: 'If bot has at least one treasure, then stop. Otherwise delve deeper' (BGGIMG:7074979)",
+   "Action cards show e.g. 'Recruit Wizard', 'Priority Action' (BGGIMG:7074979)",
+   "Rules p.1 General Notes: Mechanica Magus does not receive Reagent cards, or gain or spend any Mana tokens; ignores Mana costs, instead taking the indicated card for free; ignores all Spell effects except those which grant VP at end of game; you follow normal two-player rules (BGGIMG:7074979)"
+  ]
+ }
+}

@@ -1,0 +1,398 @@
+{
+ "source": "built from cards/dungeon_cards.json by tools/build_engine_assets.py",
+ "count": 53,
+ "cards": [
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Item",
+   "name": "Dagger",
+   "photo": "Dungeon_Dagger.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Item",
+   "name": "Diamonds",
+   "photo": "Dungeon_Diamonds.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Item",
+   "name": "Emeralds",
+   "photo": "Dungeon_Emeralds.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_a.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_b.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_c.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_d.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_e.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_f.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_g.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_h.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_i.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_j.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_k.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_l.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 1 Gold",
+   "gold": 1,
+   "photo": "Dungeon_Gold1_m.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 2 Gold",
+   "gold": 2,
+   "photo": "Dungeon_Gold2_a.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 2 Gold",
+   "gold": 2,
+   "photo": "Dungeon_Gold2_b.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 2 Gold",
+   "gold": 2,
+   "photo": "Dungeon_Gold2_c.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 2 Gold",
+   "gold": 2,
+   "photo": "Dungeon_Gold2_d.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 2 Gold",
+   "gold": 2,
+   "photo": "Dungeon_Gold2_e.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 2 Gold",
+   "gold": 2,
+   "photo": "Dungeon_Gold2_f.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 2 Gold",
+   "gold": 2,
+   "photo": "Dungeon_Gold2_g.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Gold",
+   "text": "Collect 2 Gold",
+   "gold": 2,
+   "photo": "Dungeon_Gold2_h.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Item",
+   "name": "Helm",
+   "photo": "Dungeon_Helm.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Item",
+   "name": "Idol",
+   "photo": "Dungeon_Idol.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Item",
+   "name": "Mask",
+   "photo": "Dungeon_Mask.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Bugbear",
+   "monster_type": "Goblinoid",
+   "photo": "Dungeon_Monster_Bugbear.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Floating Eye",
+   "monster_type": "Dungeon Denizen",
+   "photo": "Dungeon_Monster_Floating_Eye.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Gargoyle",
+   "monster_type": "Dungeon Denizen",
+   "photo": "Dungeon_Monster_Gargoyle.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Ghoul",
+   "monster_type": "Undead",
+   "photo": "Dungeon_Monster_Ghoul.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Giant",
+   "monster_type": "Giant",
+   "photo": "Dungeon_Monster_Giant.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Goblin",
+   "monster_type": "Goblinoid",
+   "photo": "Dungeon_Monster_Goblin.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Golem",
+   "monster_type": "Giant",
+   "photo": "Dungeon_Monster_Golem.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Great Dragon",
+   "monster_type": "Giant",
+   "photo": "Dungeon_Monster_Great_Dragon.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Hobgoblin",
+   "monster_type": "Goblinoid",
+   "photo": "Dungeon_Monster_Hobgoblin.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Hydra",
+   "monster_type": "Dungeon Denizen",
+   "photo": "Dungeon_Monster_Hydra.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Kobold",
+   "monster_type": "Goblinoid",
+   "photo": "Dungeon_Monster_Kobold.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Lich",
+   "monster_type": "Undead",
+   "photo": "Dungeon_Monster_Lich.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Manticore",
+   "monster_type": "Dungeon Denizen",
+   "photo": "Dungeon_Monster_Manticore.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Medusa",
+   "monster_type": "Dungeon Denizen",
+   "photo": "Dungeon_Monster_Medusa.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Ogre",
+   "monster_type": "Giant",
+   "photo": "Dungeon_Monster_Ogre.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Orc",
+   "monster_type": "Goblinoid",
+   "photo": "Dungeon_Monster_Orc.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Skeleton",
+   "monster_type": "Undead",
+   "photo": "Dungeon_Monster_Skeleton.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Troll",
+   "monster_type": "Giant",
+   "photo": "Dungeon_Monster_Troll.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Vampire",
+   "monster_type": "Undead",
+   "photo": "Dungeon_Monster_Vampire.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Monster",
+   "name": "Zombie",
+   "monster_type": "Undead",
+   "photo": "Dungeon_Monster_Zombie.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Item",
+   "name": "Necklace",
+   "photo": "Dungeon_Necklace.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Item",
+   "name": "Ring",
+   "photo": "Dungeon_Ring.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Item",
+   "name": "Rubies",
+   "photo": "Dungeon_Rubies.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Treasure",
+   "subtype": "Item",
+   "name": "Sword",
+   "photo": "Dungeon_Sword.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Trap",
+   "name": "It's a Trap!",
+   "hits": 2,
+   "photo": "Dungeon_Trap_a.jpg"
+  },
+  {
+   "deck": "Dungeon",
+   "type": "Trap",
+   "name": "It's a Trap!",
+   "hits": 2,
+   "photo": "Dungeon_Trap_b.jpg"
+  }
+ ]
+}
