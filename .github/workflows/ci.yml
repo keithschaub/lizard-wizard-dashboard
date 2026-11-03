@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  python-tests:
+    name: Python engine tests (original 75 + web glue)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Engine files are byte-identical to the delivered originals
+        run: cd engine && sha256sum -c --quiet ORIGINAL_SHA256SUMS && echo "engine unchanged"
+      - name: Recreate the engine's workstation layout (assets from art/, /workspace/lizard-wizard, fonts)
+        run: tools/setup_python_test_env.sh
+      - name: Original engine test suite (scripts/test_turn_process.py, unchanged)
+        run: python3 /workspace/lizard-wizard/scripts/test_turn_process.py
+      - name: Web glue tests (engine/web/test_lw_web.py)
+        run: python3 engine/web/test_lw_web.py
+      - name: Engine files still unchanged after the tests
+        run: cd engine && sha256sum -c --quiet ORIGINAL_SHA256SUMS
+
+  e2e:
+    name: Playwright (Chromium, 390x844)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Vendor the Pyodide runtime
+        run: npm run vendor
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Playwright tests
+        run: npx playwright test
+        env:
+          CI: 'true'
+      - name: Load time
+        if: always()
+        run: cat test-results/load-time.json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-results
+          path: |
+            playwright-report/
+            test-results/
+            docs/screenshots/
+          retention-days: 14

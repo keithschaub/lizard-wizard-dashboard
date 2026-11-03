@@ -1,0 +1,685 @@
+{
+ "source": "Keith's photos assets/dungeon_photos/batch01-14.jpg -> crops assets/Dungeon_*.jpg; base list assets/dungeon_from_photos.json",
+ "count": 53,
+ "layout": "Header title top (monster name / TREASURE / It's a Trap!), central art fading into dark, bottom line (monster type / item name / Collect N Gold / x2 Hits). Monster+trap: cobweb corners, scroll ornament bottom. Treasure: diamond corners, crown top, padlock bottom.",
+ "composition": {
+  "monster": 20,
+  "gold": 21,
+  "item": 10,
+  "trap": 2
+ },
+ "cards": [
+  {
+   "file": "Dungeon_Dagger.jpg",
+   "id": "Dagger",
+   "kind": "item",
+   "title": "Treasure",
+   "bottom_text": "Dagger",
+   "item": "Dagger",
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo",
+   "notes": [
+    "No point value or rules text printed on item cards (only TREASURE header + item name); scoring per rulebook."
+   ]
+  },
+  {
+   "file": "Dungeon_Diamonds.jpg",
+   "id": "Diamonds",
+   "kind": "item",
+   "title": "Treasure",
+   "bottom_text": "Diamonds",
+   "item": "Diamonds",
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo",
+   "notes": [
+    "No point value or rules text printed on item cards (only TREASURE header + item name); scoring per rulebook."
+   ]
+  },
+  {
+   "file": "Dungeon_Emeralds.jpg",
+   "id": "Emeralds",
+   "kind": "item",
+   "title": "Treasure",
+   "bottom_text": "Emeralds",
+   "item": "Emeralds",
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo",
+   "notes": [
+    "No point value or rules text printed on item cards (only TREASURE header + item name); scoring per rulebook."
+   ]
+  },
+  {
+   "file": "Dungeon_Gold1_a.jpg",
+   "id": "Gold1_a",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_b.jpg",
+   "id": "Gold1_b",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_c.jpg",
+   "id": "Gold1_c",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_d.jpg",
+   "id": "Gold1_d",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_e.jpg",
+   "id": "Gold1_e",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_f.jpg",
+   "id": "Gold1_f",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_g.jpg",
+   "id": "Gold1_g",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_h.jpg",
+   "id": "Gold1_h",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_i.jpg",
+   "id": "Gold1_i",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_j.jpg",
+   "id": "Gold1_j",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_k.jpg",
+   "id": "Gold1_k",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_l.jpg",
+   "id": "Gold1_l",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold1_m.jpg",
+   "id": "Gold1_m",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 1 Gold",
+   "gold": 1,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold2_a.jpg",
+   "id": "Gold2_a",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 2 Gold",
+   "gold": 2,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold2_b.jpg",
+   "id": "Gold2_b",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 2 Gold",
+   "gold": 2,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold2_c.jpg",
+   "id": "Gold2_c",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 2 Gold",
+   "gold": 2,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold2_d.jpg",
+   "id": "Gold2_d",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 2 Gold",
+   "gold": 2,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold2_e.jpg",
+   "id": "Gold2_e",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 2 Gold",
+   "gold": 2,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold2_f.jpg",
+   "id": "Gold2_f",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 2 Gold",
+   "gold": 2,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold2_g.jpg",
+   "id": "Gold2_g",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 2 Gold",
+   "gold": 2,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Gold2_h.jpg",
+   "id": "Gold2_h",
+   "kind": "gold",
+   "title": "Treasure",
+   "bottom_text": "Collect 2 Gold",
+   "gold": 2,
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo"
+  },
+  {
+   "file": "Dungeon_Helm.jpg",
+   "id": "Helm",
+   "kind": "item",
+   "title": "Treasure",
+   "bottom_text": "Helm",
+   "item": "Helm",
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo",
+   "notes": [
+    "No point value or rules text printed on item cards (only TREASURE header + item name); scoring per rulebook."
+   ]
+  },
+  {
+   "file": "Dungeon_Idol.jpg",
+   "id": "Idol",
+   "kind": "item",
+   "title": "Treasure",
+   "bottom_text": "Idol",
+   "item": "Idol",
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo",
+   "notes": [
+    "No point value or rules text printed on item cards (only TREASURE header + item name); scoring per rulebook."
+   ]
+  },
+  {
+   "file": "Dungeon_Mask.jpg",
+   "id": "Mask",
+   "kind": "item",
+   "title": "Treasure",
+   "bottom_text": "Mask",
+   "item": "Mask",
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo",
+   "notes": [
+    "No point value or rules text printed on item cards (only TREASURE header + item name); scoring per rulebook."
+   ]
+  },
+  {
+   "file": "Dungeon_Monster_Bugbear.jpg",
+   "id": "Monster_Bugbear",
+   "kind": "monster",
+   "title": "Bugbear",
+   "bottom_text": "Goblinoid",
+   "monster_type": "Goblinoid",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Floating_Eye.jpg",
+   "id": "Monster_Floating_Eye",
+   "kind": "monster",
+   "title": "Floating Eye",
+   "bottom_text": "Dungeon Denizen",
+   "monster_type": "Dungeon Denizen",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Gargoyle.jpg",
+   "id": "Monster_Gargoyle",
+   "kind": "monster",
+   "title": "Gargoyle",
+   "bottom_text": "Dungeon Denizen",
+   "monster_type": "Dungeon Denizen",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Ghoul.jpg",
+   "id": "Monster_Ghoul",
+   "kind": "monster",
+   "title": "Ghoul",
+   "bottom_text": "Undead",
+   "monster_type": "Undead",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Giant.jpg",
+   "id": "Monster_Giant",
+   "kind": "monster",
+   "title": "Giant",
+   "bottom_text": "Giant",
+   "monster_type": "Giant",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Goblin.jpg",
+   "id": "Monster_Goblin",
+   "kind": "monster",
+   "title": "Goblin",
+   "bottom_text": "Goblinoid",
+   "monster_type": "Goblinoid",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Golem.jpg",
+   "id": "Monster_Golem",
+   "kind": "monster",
+   "title": "Golem",
+   "bottom_text": "Giant",
+   "monster_type": "Giant",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Great_Dragon.jpg",
+   "id": "Monster_Great_Dragon",
+   "kind": "monster",
+   "title": "Great Dragon",
+   "bottom_text": "Giant",
+   "monster_type": "Giant",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Hobgoblin.jpg",
+   "id": "Monster_Hobgoblin",
+   "kind": "monster",
+   "title": "Hobgoblin",
+   "bottom_text": "Goblinoid",
+   "monster_type": "Goblinoid",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Hydra.jpg",
+   "id": "Monster_Hydra",
+   "kind": "monster",
+   "title": "Hydra",
+   "bottom_text": "Dungeon Denizen",
+   "monster_type": "Dungeon Denizen",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Kobold.jpg",
+   "id": "Monster_Kobold",
+   "kind": "monster",
+   "title": "Kobold",
+   "bottom_text": "Goblinoid",
+   "monster_type": "Goblinoid",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Lich.jpg",
+   "id": "Monster_Lich",
+   "kind": "monster",
+   "title": "Lich",
+   "bottom_text": "Undead",
+   "monster_type": "Undead",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Manticore.jpg",
+   "id": "Monster_Manticore",
+   "kind": "monster",
+   "title": "Manticore",
+   "bottom_text": "Dungeon Denizen",
+   "monster_type": "Dungeon Denizen",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Medusa.jpg",
+   "id": "Monster_Medusa",
+   "kind": "monster",
+   "title": "Medusa",
+   "bottom_text": "Dungeon Denizen",
+   "monster_type": "Dungeon Denizen",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Ogre.jpg",
+   "id": "Monster_Ogre",
+   "kind": "monster",
+   "title": "Ogre",
+   "bottom_text": "Giant",
+   "monster_type": "Giant",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Orc.jpg",
+   "id": "Monster_Orc",
+   "kind": "monster",
+   "title": "Orc",
+   "bottom_text": "Goblinoid",
+   "monster_type": "Goblinoid",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Skeleton.jpg",
+   "id": "Monster_Skeleton",
+   "kind": "monster",
+   "title": "Skeleton",
+   "bottom_text": "Undead",
+   "monster_type": "Undead",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Troll.jpg",
+   "id": "Monster_Troll",
+   "kind": "monster",
+   "title": "Troll",
+   "bottom_text": "Giant",
+   "monster_type": "Giant",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Vampire.jpg",
+   "id": "Monster_Vampire",
+   "kind": "monster",
+   "title": "Vampire",
+   "bottom_text": "Undead",
+   "monster_type": "Undead",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Monster_Zombie.jpg",
+   "id": "Monster_Zombie",
+   "kind": "monster",
+   "title": "Zombie",
+   "bottom_text": "Undead",
+   "monster_type": "Undead",
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo (title + type line)"
+  },
+  {
+   "file": "Dungeon_Necklace.jpg",
+   "id": "Necklace",
+   "kind": "item",
+   "title": "Treasure",
+   "bottom_text": "Necklace",
+   "item": "Necklace",
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo",
+   "notes": [
+    "No point value or rules text printed on item cards (only TREASURE header + item name); scoring per rulebook."
+   ]
+  },
+  {
+   "file": "Dungeon_Ring.jpg",
+   "id": "Ring",
+   "kind": "item",
+   "title": "Treasure",
+   "bottom_text": "Ring",
+   "item": "Ring",
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo",
+   "notes": [
+    "No point value or rules text printed on item cards (only TREASURE header + item name); scoring per rulebook."
+   ]
+  },
+  {
+   "file": "Dungeon_Rubies.jpg",
+   "id": "Rubies",
+   "kind": "item",
+   "title": "Treasure",
+   "bottom_text": "Rubies",
+   "item": "Rubies",
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo",
+   "notes": [
+    "No point value or rules text printed on item cards (only TREASURE header + item name); scoring per rulebook."
+   ]
+  },
+  {
+   "file": "Dungeon_Sword.jpg",
+   "id": "Sword",
+   "kind": "item",
+   "title": "Treasure",
+   "bottom_text": "Sword",
+   "item": "Sword",
+   "corner": "diamond",
+   "bottom_emblem": "padlock",
+   "top_emblem": "crown",
+   "status": "read from photo",
+   "notes": [
+    "No point value or rules text printed on item cards (only TREASURE header + item name); scoring per rulebook."
+   ]
+  },
+  {
+   "file": "Dungeon_Trap_a.jpg",
+   "id": "Trap_a",
+   "kind": "trap",
+   "title": "It's a Trap!",
+   "bottom_text": "x2 Hits",
+   "hits": 2,
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo",
+   "notes": [
+    "Set aside at setup; only enters via the Trap! spell."
+   ]
+  },
+  {
+   "file": "Dungeon_Trap_b.jpg",
+   "id": "Trap_b",
+   "kind": "trap",
+   "title": "It's a Trap!",
+   "bottom_text": "x2 Hits",
+   "hits": 2,
+   "corner": "cobweb",
+   "bottom_emblem": "scroll",
+   "top_emblem": null,
+   "status": "read from photo",
+   "notes": [
+    "Set aside at setup; only enters via the Trap! spell."
+   ]
+  }
+ ]
+}

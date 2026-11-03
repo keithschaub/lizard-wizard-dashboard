@@ -1,0 +1,11 @@
+node_modules/
+vendor/
+test-results/
+playwright-report/
+__pycache__/
+*.pyc
+engine/assets/*
+!engine/assets/dungeon_from_photos.json
+engine/game/*_coaching.md
+engine/game/coaching_log_*.md
+_site/

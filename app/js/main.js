@@ -1,0 +1,213 @@
+import { Engine } from './engine.js';
+import { Board } from './board.js';
+import { h, art, reagentIcon, nice, counts, sleep } from './dom.js';
+import * as UI from './ui.js';
+import * as Audio from './audio.js';
+import * as Store from './store.js';
+
+const T_START = performance.now();
+const ME = 'Keith';
+const MUTE_ON = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const MUTE_OFF = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+class Game {
+  constructor() {
+    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.settling = false; this.busy = false;
+    this.engine = new Engine((t) => { document.getElementById('loader-status').textContent = t; });
+    this.board = new Board(document.getElementById('stage'), document.getElementById('board'), (el) => this.onBoardTap(el));
+    this.dock = document.getElementById('dock');
+    document.getElementById('btn-log').onclick = () => { this.sfx('tap'); UI.openLog(this); };
+    document.getElementById('btn-menu').onclick = () => { this.sfx('tap'); UI.menu(this); };
+    const mute = document.getElementById('btn-mute');
+    const paintMute = () => { mute.innerHTML = Audio.isMuted() ? MUTE_ON : MUTE_OFF; mute.setAttribute('aria-pressed', Audio.isMuted() ? 'true' : 'false'); };
+    mute.onclick = () => { Audio.setMuted(!Audio.isMuted()); paintMute(); this.sfx('select'); };
+    paintMute();
+    window.addEventListener('pointerdown', () => { Audio.unlock(); if (this.aiRunning) this.skip = true; }, { capture: true });
+    window.lwDebug = { view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning };
+  }
+
+  me_() { return this.v.players.find((p) => p.name === this.me); }
+  sfx(n) { Audio.play(n); }
+  toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+  call(fn, args) { return this.engine.call(fn, args); }
+
+  async boot() {
+    try {
+      await this.engine.init();
+      this.cards = (await this.call('card_db')).result;
+      let text = Store.loadLocal(); let r = null;
+      if (text) { r = await this.call('load', { text }); if (!r.ok) { console.warn('saved game unreadable, starting g8:', r.error); text = null; } }
+      if (!text) {
+        const resp = await fetch('engine/game/g8_state.json');
+        text = await resp.text();
+        r = await this.call('load', { text });
+        if (!r.ok) throw new Error(r.error);
+        Store.saveLocal(text);
+      }
+      this.setView(r.result);
+      this.loadMs = Math.round(performance.now() - T_START);
+      document.getElementById('loader').classList.add('done');
+      document.body.dataset.ready = '1';
+      this.ready = true;
+      this.settle();
+    } catch (e) {
+      document.getElementById('loader-status').textContent = `Could not start: ${e.message || e}`;
+      throw e;
+    }
+  }
+
+  async act(fn, args, { sound = null } = {}) {
+    const r = await this.call(fn, args);
+    if (!r.ok) { this.sfx('error'); this.toast(r.error); return null; }
+    if (sound) this.sfx(sound);
+    if (r.view) this.setView(r.view);
+    await this.autosave();
+    return r;
+  }
+  async autosave() { const d = await this.call('dump'); if (d.ok) Store.saveLocal(d.result); }
+
+  afterAction() { this.settle(); }
+
+  setView(v) {
+    const prev = this.v; this.v = v;
+    this.board.render(v);
+    this.renderDock(prev);
+    this.renderTop();
+  }
+
+  renderTop() {
+    const v = this.v;
+    document.querySelector('[data-testid=round]').textContent = v.game_over ? 'Game over' : `Round ${v.round}`;
+    const t = document.querySelector('[data-testid=turn]');
+    let txt; let you = false;
+    if (v.game_over) txt = 'Final scores';
+    else if (v.auction) txt = v.auction.waiting === this.me ? 'Your bid' : `Auction · ${v.auction.waiting || ''}`;
+    else if (v.next === this.me) { txt = v.bonus || v.again ? 'Your turn · bonus action' : 'Your turn'; you = true; }
+    else txt = `${v.next}'s turn`;
+    t.textContent = txt; t.classList.toggle('you', you);
+  }
+
+  renderDock(prev) {
+    const v = this.v; const p = this.me_(); const L = v.legal || {};
+    const prevHand = prev ? prev.players.find((q) => q.name === this.me).hand : p.hand;
+    const tok = counts(p.tok);
+    const status = v.game_over ? 'Game over' : (v.next === this.me && !v.auction ? (v.pending ? 'Finish your move' : 'Your move') : (this.aiRunning ? `${v.next} is playing…` : `${v.next}'s turn`));
+    this.dock.innerHTML = '';
+    this.dock.dataset.mana = p.mana; this.dock.dataset.gold = p.gold; this.dock.dataset.tokens = p.tok.length; this.dock.dataset.vp = p.vp;
+    this.dock.append(
+      h('div', { class: 'dock-stats' },
+        h('span', { class: 'stat mana', 'data-testid': 'my-mana', title: 'Mana' }, h('span', { class: 'orb' }), p.mana),
+        h('span', { class: 'stat gold', 'data-testid': 'my-gold', title: 'Gold' }, h('span', { class: 'orb' }), p.gold),
+        h('span', { class: 'stat vp', 'data-testid': 'my-vp' }, `${p.vp} VP`),
+        h('span', { class: `stat store ${p.tok.length > p.cap ? 'full' : ''}`, 'data-testid': 'my-storage' }, `${p.tok.length}/${p.cap}`),
+        h('span', { class: `dock-status ${v.next === this.me && !v.game_over ? 'you' : ''}`, 'data-testid': 'dock-status' }, status)),
+      h('div', { class: 'dock-main' },
+        h('div', { class: 'tokens', 'data-testid': 'tokens' }, tok.size ? [...tok].map(([r, n]) => {
+          const legal = !!(L.convert || {})[r];
+          const el = h('button', { class: `tokchip ${legal ? 'legal' : ''}`, 'data-testid': `token-${r}`, 'aria-label': `${n} ${nice(r)}` }, h('img', { src: reagentIcon(r), alt: '' }), `×${n}`);
+          el.onclick = () => { this.sfx('tap'); if (legal) UI.convertSheet(this, r); else this.toast(`${nice(r)}: track value ${v.board.tracks[r]}`); };
+          return el;
+        }) : h('div', { class: 'empty-note' }, 'No reagent tokens')),
+        h('div', { class: 'hand', 'data-testid': 'hand' }, p.hand.map((k, i) => {
+          const legal = !!(L.gather || {})[k];
+          const el = h('div', { class: `hcard ${legal ? 'legal' : ''} ${prevHand && !prevHand.includes(k) ? 'deal' : ''}`, 'data-testid': `hand-${i}`, 'data-key': k, style: p.hand.length > 3 ? { width: `${Math.floor(330 / p.hand.length) - 8}px`, height: `${Math.floor((330 / p.hand.length - 8) * 1.39)}px` } : null },
+            h('img', { src: art(k), alt: k, draggable: 'false' }));
+          el.onclick = () => { this.sfx('tap'); if (legal && !this.busyFlow()) UI.gatherFlow(this, k); else UI.expandCard(this, k); };
+          return el;
+        }))));
+  }
+
+  busyFlow() { return !!document.querySelector('#overlays .overlay:not(.out)'); }
+
+  onBoardTap(el) {
+    if (this.aiRunning) return;
+    if (!el) { this.sfx('tap'); UI.openMats(this); return; }
+    const v = this.v; const L = v.legal || {};
+    const slot = el.dataset.slot; const key = el.dataset.key;
+    this.sfx('tap');
+    if (el.dataset.tap === 'ach') { UI.expandCard(this, key); return; }
+    if (el.dataset.tap === 'deck') {
+      if (slot === 'dungeon_deck' && L.divination) { UI.divinationFlow(this); return; }
+      UI.openMats(this); return;
+    }
+    if (slot === 'tower_face' && L.build) return UI.buildFlow(this);
+    if (slot?.startsWith('wiz_') && (L.recruit || []).includes(key)) return UI.arena(this, { mode: 'open', wizard: key }).then(() => this.settle());
+    if (slot?.startsWith('fam_') && (L.summon || {})[key]) return UI.summonFlow(this, key);
+    if (slot?.startsWith('spell_') && (L.research || {})[key]) return UI.researchFlow(this, key);
+    UI.expandCard(this, key);
+  }
+
+  async settle() {
+    if (this.settling) return;
+    this.settling = true;
+    try {
+      for (let guard = 0; guard < 200; guard++) {
+        const v = this.v;
+        if (v.game_over) { UI.gameOver(this); return; }
+        if (v.pending) {
+          if (v.pending.type === 'dungeon') await UI.dungeonFlow(this);
+          else if (v.pending.type === 'new_research') await UI.newResearchChooser(this);
+          else await UI.effectChooser(this);
+          continue;
+        }
+        if (v.auction && v.auction.waiting === this.me) { await UI.arena(this, { mode: 'respond' }); continue; }
+        if (v.next !== this.me) { if (!(await this.aiStep())) return; continue; }
+        if (this.lastTurnRound !== `${v.round}:${v.log_len}`) { this.lastTurnRound = `${v.round}:${v.log_len}`; this.sfx('turn'); }
+        return;
+      }
+    } finally { this.settling = false; this.renderDock(this.v); }
+  }
+
+  async aiStep() {
+    this.aiRunning = true; this.renderDock(this.v);
+    try {
+      const r = await this.call('ai_step');
+      if (!r.ok) { this.toast(r.error); return false; }
+      const res = r.result;
+      for (const e of res.entries) {
+        if (e.act === 'turn' || e.act === 'reshuffle_reagents') continue;
+        const slot = this.slotFor(e);
+        if (slot && !this.skip) this.board.flash(slot);
+        if (!this.skip) this.sfx(e.cast ? 'cast' : e.act === 'build' ? 'build' : e.act === 'dungeon' ? 'flip' : e.act === 'gather' ? 'gather' : 'tap');
+        await UI.banner(this, e);
+      }
+      const vr = await this.call('view');
+      this.setView(vr.result);
+      await this.autosave();
+      if (this.v.next === this.me || this.v.auction || this.v.game_over) this.skip = false;
+      return res.status !== 'human' && res.status !== 'over';
+    } finally { this.aiRunning = false; }
+  }
+
+  slotFor(e) {
+    const b = this.v.board;
+    if (e.act === 'build') return 'tower_face';
+    const find = (arr, prefix, k) => { const i = arr.indexOf(k); return i >= 0 ? `${prefix}_${i}` : null; };
+    if (e.act === 'research') return find(b.spell_face, 'spell', (e.cards || [])[0]);
+    if (e.act === 'summon') return find(b.fam_face, 'fam', (e.cards || [])[0]);
+    if (e.act === 'auction') return find(b.wiz_face, 'wiz', (e.cards || [])[0]);
+    if (e.act === 'dungeon') return 'dungeon_deck';
+    return null;
+  }
+
+  savedNote() { const at = Store.savedAt(); return at ? `Autosaved ${new Date(at).toLocaleString()}` : 'Not saved yet'; }
+  async exportSave() { const d = await this.call('dump'); if (d.ok) Store.exportFile(d.result, this.v.round); }
+  async importSave() {
+    const text = await Store.pickFile(); if (!text) return;
+    const r = await this.call('load', { text });
+    if (!r.ok) { this.toast(`Not a valid save: ${r.error}`); return; }
+    Store.saveLocal(text); UI.closeAll(); this.setView(r.result); this.toast('Save loaded'); this.settle();
+  }
+  async restart() {
+    const text = await (await fetch('engine/game/g8_state.json')).text();
+    const r = await this.call('load', { text });
+    if (r.ok) { Store.saveLocal(text); UI.closeAll(); this.setView(r.result); this.toast('Game g8 restored'); this.settle(); }
+  }
+}
+
+const game = new Game();
+game.boot();

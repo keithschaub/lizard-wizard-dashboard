@@ -1,106 +1,47 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lizard Wizard Dashboard</title>
-
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="styles.css" />
-
-  <!-- Firebase + script references -->
-  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
-  <script src="firebase-init.js" defer></script>
-  <script src="script.js" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="theme-color" content="#070a18">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Lizard Wizard</title>
+  <link rel="icon" href="app/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="art/board/game_board_clean.webp" as="image">
+  <link rel="stylesheet" href="app/css/app.css">
 </head>
-
 <body>
-  <h1>Lizard Wizard Dashboard</h1>
-
-  <!-- Dashboard Container -->
-  <div id="dashboard" class="grid-container"></div>
-
- 
-  <!-- Delete Mode Indicator (optional) -->
-  <div id="delete-mode-indicator" class="hidden">
-    <p>Delete Mode Active: Click a card to delete it.</p>
-  </div>
-
-  <!-- Category Selection Popup -->
-  <div id="card-selection" class="card-selection-modal">
-    <h3>Select Card Type</h3>
-    <div class="card-options">
-      <div onclick="selectCard('Wizard')">
-        <img src="assets/wizardIcon.png" alt="Wizard Icon">
-        <span>Wizard</span>
+  <div id="app" data-testid="app">
+    <header id="topbar">
+      <div class="tb-left">
+        <span class="tb-round" data-testid="round">Round –</span>
+        <span class="tb-turn" data-testid="turn"></span>
       </div>
-      <div onclick="selectCard('Tower')">
-        <img src="assets/towerIcon.png" alt="Tower Icon">
-        <span>Tower</span>
+      <div class="tb-right">
+        <button class="tb-btn" id="btn-log" data-testid="btn-log" aria-label="Game log"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+        <button class="tb-btn" id="btn-mute" data-testid="btn-mute" aria-label="Sound"></button>
+        <button class="tb-btn" id="btn-menu" data-testid="btn-menu" aria-label="Game menu"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="19" r="1.8" fill="currentColor"/></svg></button>
       </div>
-      <div onclick="selectCard('Familiar')">
-        <img src="assets/familiarIcon.png" alt="Familiar Icon">
-        <span>Familiar</span>
-      </div>
-      <div onclick="selectCard('Spell')">
-        <img src="assets/spellIcon.png" alt="Spell Icon">
-        <span>Spell</span>
+    </header>
+    <main id="stage" data-testid="stage">
+      <div id="board" data-testid="board"></div>
+      <button id="btn-reset-zoom" class="hidden" data-testid="reset-zoom" aria-label="Reset zoom"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </main>
+    <footer id="dock" data-testid="dock"></footer>
+    <div id="banner-layer"></div>
+    <div id="overlays"></div>
+    <div id="toast" role="status"></div>
+    <div id="loader" data-testid="loader">
+      <div class="loader-inner">
+        <div class="loader-title">Lizard Wizard</div>
+        <div class="loader-orb"></div>
+        <div class="loader-status" id="loader-status">Opening the spellbook…</div>
       </div>
     </div>
-    <button onclick="closeCardSelection()">Close</button>
   </div>
-
-  <!-- School Selection (Wizard/Tower/Familiar) -->
-  <div id="school-selection" class="card-selection-modal">
-    <h3>Select School of Magic</h3>
-    <div class="card-options">
-      <div onclick="selectSchool('Druidry')">
-        <img src="assets/greenDruidry.webp" alt="Druidry Icon">
-        <span>Druidry</span>
-      </div>
-      <div onclick="selectSchool('Sorcery')">
-        <img src="assets/blueSorcery.webp" alt="Sorcery Icon">
-        <span>Sorcery</span>
-      </div>
-      <div onclick="selectSchool('Thaumaturgy')">
-        <img src="assets/goldThaumaturgy.webp" alt="Thaumaturgy Icon">
-        <span>Thaumaturgy</span>
-      </div>
-      <div onclick="selectSchool('Alchemy')">
-        <img src="assets/purpleAlchemy.webp" alt="Alchemy Icon">
-        <span>Alchemy</span>
-      </div>
-      <div onclick="selectSchool('Enchantment')">
-        <img src="assets/whiteEnchantment.webp" alt="Enchantment Icon">
-        <span>Enchantment</span>
-      </div>
-      <div onclick="selectSchool('Necromancy')">
-        <img src="assets/blackNecromancy.webp" alt="Necromancy Icon">
-        <span>Necromancy</span>
-      </div>
-      <div onclick="selectSchool('Conjuring')">
-        <img src="assets/redConjuring.webp" alt="Conjuring Icon">
-        <span>Conjuring</span>
-      </div>
-    </div>
-    <button onclick="closeSchoolSelection()">Close</button>
-  </div>
-
-  <!-- Spell Selection Popup (list from spell_cards.json) -->
-  <div id="spell-selection" class="card-selection-modal">
-    <h3>Select Spell</h3>
-    <div id="spell-list" class="spell-list">
-      <!-- script.js populates this using ALL_SPELLS -->
-    </div>
-    <button onclick="closeSpellListPopup()">Close</button>
-  </div>
-
-<div id="spell-card-modal" class="modal">
-  <span class="close-modal">&times;</span>
-  <img class="modal-image" alt="Spell Card">
-</div>
-
+  <script type="module" src="app/js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,2062 @@
+{
+ "source": "Keith PC: LizardWizard_Cards/Reagent_Cards (Cards = 56 crops from 10 Raw_Scans dated 2025-01-12); icons mapped with Icon_Templates",
+ "count": 56,
+ "distinct_card_faces": 56,
+ "rules_summary_from_rulebook": "Play 1 card from hand (hand max 3). Take THREE tokens of your choice from those shown in 'Gather Reagents' (cards showing 4-5 icons force a choice; each icon = one token available of that type). Then for EACH icon in 'Increase Value', raise that reagent's Mana value by 1 on the track (two of the same icon = +2). Discard face up, draw back to hand max. Wizard Card reagent symbols add extra gathered tokens. You may then cast ONE spell if you have the reagents (this is part of every Gather action, not printed on the cards).",
+ "cast_spell_symbol_note": "No spell-cast symbol, numbers, or other text appears on any of the 56 cards; all were checked edge to edge. The only things printed on them are the two headers and the reagent icons.",
+ "icon_legend": {
+  "Mandrake": "orange carrot-like root",
+  "Sulphur": "yellow pile (template file named Sulfur)",
+  "Toadstool": "red white-spotted mushroom",
+  "Horn": "white/cream curved horn",
+  "Nightshade": "dark-blue berries with green leaves",
+  "Foxglove": "pink bell flowers on a stem",
+  "Eye of Newt": "gold oval slit eye"
+ },
+ "layout_distribution_gather_x_increase": {
+  "3x3": 21,
+  "4x3": 13,
+  "4x4": 15,
+  "5x4": 7
+ },
+ "duplicate_groups": [],
+ "cards": [
+  {
+   "id": "Reagent_01",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_224840_Card_1.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_224840.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Horn",
+    "Nightshade",
+    "Foxglove"
+   ],
+   "gather_counts": {
+    "Horn": 1,
+    "Nightshade": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Foxglove",
+    "Sulphur",
+    "Horn"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Horn": 1,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_01.jpg"
+  },
+  {
+   "id": "Reagent_02",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_224840_Card_2.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_224840.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Nightshade",
+    "Nightshade",
+    "Mandrake",
+    "Foxglove"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Nightshade": 2,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Toadstool",
+    "Mandrake",
+    "Eye of Newt",
+    "Sulphur"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_02.jpg"
+  },
+  {
+   "id": "Reagent_03",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_224840_Card_3.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_224840.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Nightshade",
+    "Sulphur",
+    "Eye of Newt",
+    "Horn"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Horn": 1,
+    "Nightshade": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Foxglove",
+    "Foxglove",
+    "Horn",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Horn": 1,
+    "Nightshade": 1,
+    "Foxglove": 2
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_03.jpg"
+  },
+  {
+   "id": "Reagent_04",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_224840_Card_4.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_224840.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Eye of Newt",
+    "Eye of Newt",
+    "Toadstool",
+    "Mandrake"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Eye of Newt": 2
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Eye of Newt",
+    "Toadstool",
+    "Sulphur"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_04.jpg"
+  },
+  {
+   "id": "Reagent_05",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_224840_Card_5.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_224840.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Toadstool",
+    "Mandrake",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Nightshade": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Eye of Newt",
+    "Foxglove",
+    "Horn"
+   ],
+   "increase_counts": {
+    "Horn": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_05.jpg"
+  },
+  {
+   "id": "Reagent_06",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_224840_Card_6.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_224840.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Nightshade",
+    "Foxglove",
+    "Eye of Newt"
+   ],
+   "gather_counts": {
+    "Nightshade": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Sulphur",
+    "Eye of Newt",
+    "Horn"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Horn": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_06.jpg"
+  },
+  {
+   "id": "Reagent_07",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233307_Card_1.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233307.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Nightshade",
+    "Eye of Newt",
+    "Foxglove"
+   ],
+   "gather_counts": {
+    "Nightshade": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Sulphur",
+    "Toadstool",
+    "Eye of Newt"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_07.jpg"
+  },
+  {
+   "id": "Reagent_08",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233307_Card_2.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233307.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Foxglove",
+    "Mandrake",
+    "Toadstool",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Nightshade": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Horn",
+    "Horn",
+    "Toadstool",
+    "Mandrake"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Horn": 2
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_08.jpg"
+  },
+  {
+   "id": "Reagent_09",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233307_Card_3.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233307.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Eye of Newt",
+    "Horn",
+    "Sulphur",
+    "Foxglove"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Horn": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Nightshade",
+    "Nightshade",
+    "Horn"
+   ],
+   "increase_counts": {
+    "Horn": 1,
+    "Nightshade": 2
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_09.jpg"
+  },
+  {
+   "id": "Reagent_10",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233307_Card_4.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233307.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Sulphur",
+    "Nightshade",
+    "Foxglove"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Nightshade": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Horn",
+    "Nightshade",
+    "Toadstool"
+   ],
+   "increase_counts": {
+    "Toadstool": 1,
+    "Horn": 1,
+    "Nightshade": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_10.jpg"
+  },
+  {
+   "id": "Reagent_11",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233307_Card_5.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233307.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Foxglove",
+    "Sulphur",
+    "Toadstool"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Horn",
+    "Eye of Newt",
+    "Mandrake"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Horn": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_11.jpg"
+  },
+  {
+   "id": "Reagent_12",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233307_Card_6.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233307.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Foxglove",
+    "Foxglove",
+    "Foxglove",
+    "Toadstool",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Toadstool": 1,
+    "Nightshade": 1,
+    "Foxglove": 3
+   },
+   "gather_icon_total": 5,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Sulphur",
+    "Eye of Newt",
+    "Horn",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Horn": 1,
+    "Nightshade": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_12.jpg"
+  },
+  {
+   "id": "Reagent_13",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233548_Card_1.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233548.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Eye of Newt",
+    "Horn",
+    "Eye of Newt",
+    "Eye of Newt",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Horn": 1,
+    "Nightshade": 1,
+    "Eye of Newt": 3
+   },
+   "gather_icon_total": 5,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Mandrake",
+    "Nightshade",
+    "Horn",
+    "Foxglove"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Horn": 1,
+    "Nightshade": 1,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_13.jpg"
+  },
+  {
+   "id": "Reagent_14",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233548_Card_2.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233548.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Mandrake",
+    "Toadstool",
+    "Eye of Newt",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Nightshade": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Horn",
+    "Nightshade",
+    "Horn",
+    "Eye of Newt"
+   ],
+   "increase_counts": {
+    "Horn": 2,
+    "Nightshade": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_14.jpg"
+  },
+  {
+   "id": "Reagent_15",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233548_Card_3.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233548.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Eye of Newt",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Sulphur",
+    "Foxglove",
+    "Toadstool"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_15.jpg"
+  },
+  {
+   "id": "Reagent_16",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233548_Card_4.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233548.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Eye of Newt",
+    "Sulphur",
+    "Eye of Newt",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Nightshade": 1,
+    "Eye of Newt": 2
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Horn",
+    "Horn",
+    "Sulphur"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Horn": 2
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_16.jpg"
+  },
+  {
+   "id": "Reagent_17",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233548_Card_5.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233548.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Mandrake",
+    "Sulphur",
+    "Toadstool"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Toadstool": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Mandrake",
+    "Nightshade",
+    "Eye of Newt"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Nightshade": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_17.jpg"
+  },
+  {
+   "id": "Reagent_18",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233548_Card_6.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233548.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Toadstool",
+    "Foxglove",
+    "Eye of Newt"
+   ],
+   "gather_counts": {
+    "Toadstool": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Sulphur",
+    "Mandrake",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Nightshade": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_18.jpg"
+  },
+  {
+   "id": "Reagent_19",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233828_Card_1.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233828.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Foxglove",
+    "Eye of Newt",
+    "Sulphur",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Nightshade": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Eye of Newt",
+    "Horn",
+    "Eye of Newt",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Horn": 1,
+    "Nightshade": 1,
+    "Eye of Newt": 2
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_19.jpg"
+  },
+  {
+   "id": "Reagent_20",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233828_Card_2.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233828.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Sulphur",
+    "Eye of Newt",
+    "Mandrake"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Foxglove",
+    "Foxglove",
+    "Horn"
+   ],
+   "increase_counts": {
+    "Horn": 1,
+    "Foxglove": 2
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_20.jpg"
+  },
+  {
+   "id": "Reagent_21",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233828_Card_3.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233828.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Horn",
+    "Sulphur",
+    "Toadstool"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Horn": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Mandrake",
+    "Mandrake",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Mandrake": 2,
+    "Nightshade": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_21.jpg"
+  },
+  {
+   "id": "Reagent_22",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233828_Card_4.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233828.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Toadstool",
+    "Toadstool",
+    "Mandrake",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Toadstool": 2,
+    "Nightshade": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Eye of Newt",
+    "Foxglove",
+    "Mandrake"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_22.jpg"
+  },
+  {
+   "id": "Reagent_23",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233828_Card_5.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233828.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Horn",
+    "Horn",
+    "Horn",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Horn": 3
+   },
+   "gather_icon_total": 5,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Eye of Newt",
+    "Foxglove",
+    "Horn",
+    "Mandrake"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Horn": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_23.jpg"
+  },
+  {
+   "id": "Reagent_24",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_233828_Card_6.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_233828.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Toadstool",
+    "Horn",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Toadstool": 1,
+    "Horn": 1,
+    "Nightshade": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Toadstool",
+    "Toadstool",
+    "Foxglove"
+   ],
+   "increase_counts": {
+    "Toadstool": 2,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_24.jpg"
+  },
+  {
+   "id": "Reagent_25",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234110_Card_1.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234110.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Nightshade",
+    "Foxglove",
+    "Mandrake",
+    "Horn"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Horn": 1,
+    "Nightshade": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Toadstool",
+    "Eye of Newt",
+    "Horn",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Toadstool": 1,
+    "Horn": 1,
+    "Nightshade": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_25.jpg"
+  },
+  {
+   "id": "Reagent_26",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234110_Card_2.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234110.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Foxglove",
+    "Horn",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Horn": 1,
+    "Nightshade": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Mandrake",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "increase_counts": {
+    "Mandrake": 2,
+    "Sulphur": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_26.jpg"
+  },
+  {
+   "id": "Reagent_27",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234110_Card_3.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234110.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Mandrake",
+    "Mandrake",
+    "Sulphur",
+    "Horn"
+   ],
+   "gather_counts": {
+    "Mandrake": 2,
+    "Sulphur": 1,
+    "Horn": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Nightshade",
+    "Sulphur",
+    "Mandrake",
+    "Toadstool"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Nightshade": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_27.jpg"
+  },
+  {
+   "id": "Reagent_28",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234110_Card_4.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234110.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Sulphur",
+    "Sulphur",
+    "Sulphur",
+    "Foxglove",
+    "Eye of Newt"
+   ],
+   "gather_counts": {
+    "Sulphur": 3,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 5,
+   "increase_value_header": "INCREASE MARKET VALUE",
+   "increase_icons_in_print_order": [
+    "Horn",
+    "Mandrake",
+    "Sulphur",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Horn": 1,
+    "Nightshade": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "Lower header reads 'INCREASE MARKET VALUE' instead of 'INCREASE VALUE' (wording variant; same function).",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_28.jpg"
+  },
+  {
+   "id": "Reagent_29",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234110_Card_5.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234110.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Horn",
+    "Horn",
+    "Eye of Newt",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Horn": 2,
+    "Nightshade": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Toadstool",
+    "Foxglove",
+    "Sulphur",
+    "Eye of Newt"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_29.jpg"
+  },
+  {
+   "id": "Reagent_30",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234110_Card_6.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234110.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Sulphur",
+    "Horn",
+    "Sulphur",
+    "Eye of Newt"
+   ],
+   "gather_counts": {
+    "Sulphur": 2,
+    "Horn": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Eye of Newt",
+    "Eye of Newt",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Nightshade": 1,
+    "Eye of Newt": 2
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_30.jpg"
+  },
+  {
+   "id": "Reagent_31",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234334_Card_1.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234334.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Toadstool",
+    "Foxglove",
+    "Toadstool",
+    "Horn"
+   ],
+   "gather_counts": {
+    "Toadstool": 2,
+    "Horn": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Horn",
+    "Nightshade",
+    "Toadstool",
+    "Mandrake"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Horn": 1,
+    "Nightshade": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_31.jpg"
+  },
+  {
+   "id": "Reagent_32",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234334_Card_2.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234334.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Foxglove",
+    "Toadstool",
+    "Horn",
+    "Mandrake"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Horn": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Horn",
+    "Toadstool",
+    "Horn",
+    "Mandrake"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Horn": 2
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_32.jpg"
+  },
+  {
+   "id": "Reagent_33",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234334_Card_3.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234334.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Foxglove",
+    "Foxglove",
+    "Mandrake",
+    "Horn"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Horn": 1,
+    "Foxglove": 2
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Nightshade",
+    "Nightshade",
+    "Foxglove"
+   ],
+   "increase_counts": {
+    "Nightshade": 2,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_33.jpg"
+  },
+  {
+   "id": "Reagent_34",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234334_Card_4.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234334.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Mandrake",
+    "Foxglove",
+    "Eye of Newt"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Sulphur",
+    "Sulphur",
+    "Mandrake"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Sulphur": 2
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_34.jpg"
+  },
+  {
+   "id": "Reagent_35",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234334_Card_5.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234334.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Mandrake",
+    "Mandrake",
+    "Mandrake",
+    "Nightshade",
+    "Foxglove"
+   ],
+   "gather_counts": {
+    "Mandrake": 3,
+    "Nightshade": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 5,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Toadstool",
+    "Foxglove",
+    "Sulphur",
+    "Eye of Newt"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_35.jpg"
+  },
+  {
+   "id": "Reagent_36",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234334_Card_6.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234334.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Nightshade",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Nightshade": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Foxglove",
+    "Mandrake",
+    "Toadstool"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_36.jpg"
+  },
+  {
+   "id": "Reagent_37",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234547_Card_1.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234547.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Mandrake",
+    "Horn",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Horn": 1,
+    "Nightshade": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE MARKET VALUE",
+   "increase_icons_in_print_order": [
+    "Toadstool",
+    "Horn",
+    "Sulphur"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Horn": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "Lower header reads 'INCREASE MARKET VALUE' instead of 'INCREASE VALUE' (wording variant; same function).",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_37.jpg"
+  },
+  {
+   "id": "Reagent_38",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234547_Card_2.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234547.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Nightshade",
+    "Toadstool",
+    "Horn"
+   ],
+   "gather_counts": {
+    "Toadstool": 1,
+    "Horn": 1,
+    "Nightshade": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Sulphur",
+    "Sulphur",
+    "Foxglove"
+   ],
+   "increase_counts": {
+    "Sulphur": 2,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_38.jpg"
+  },
+  {
+   "id": "Reagent_39",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234547_Card_3.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234547.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Sulphur",
+    "Foxglove",
+    "Mandrake",
+    "Horn"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Horn": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Sulphur",
+    "Sulphur",
+    "Foxglove"
+   ],
+   "increase_counts": {
+    "Sulphur": 2,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_39.jpg"
+  },
+  {
+   "id": "Reagent_40",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234547_Card_4.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234547.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Toadstool",
+    "Sulphur",
+    "Eye of Newt",
+    "Nightshade"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Nightshade": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Horn",
+    "Sulphur",
+    "Foxglove"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Horn": 1,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_40.jpg"
+  },
+  {
+   "id": "Reagent_41",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234547_Card_5.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234547.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Nightshade",
+    "Nightshade",
+    "Toadstool",
+    "Nightshade",
+    "Sulphur"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Nightshade": 3
+   },
+   "gather_icon_total": 5,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Nightshade",
+    "Foxglove",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Nightshade": 1,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_41.jpg"
+  },
+  {
+   "id": "Reagent_42",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234547_Card_6.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234547.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Toadstool",
+    "Toadstool",
+    "Mandrake",
+    "Toadstool",
+    "Eye of Newt"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Toadstool": 3,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 5,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Mandrake",
+    "Eye of Newt",
+    "Mandrake",
+    "Horn"
+   ],
+   "increase_counts": {
+    "Mandrake": 2,
+    "Horn": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_42.jpg"
+  },
+  {
+   "id": "Reagent_43",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234818_Card_1.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234818.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Sulphur",
+    "Nightshade",
+    "Toadstool",
+    "Mandrake"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Nightshade": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Toadstool",
+    "Eye of Newt",
+    "Toadstool",
+    "Foxglove"
+   ],
+   "increase_counts": {
+    "Toadstool": 2,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_43.jpg"
+  },
+  {
+   "id": "Reagent_44",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234818_Card_2.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234818.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Nightshade",
+    "Toadstool",
+    "Horn",
+    "Eye of Newt"
+   ],
+   "gather_counts": {
+    "Toadstool": 1,
+    "Horn": 1,
+    "Nightshade": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Toadstool",
+    "Sulphur",
+    "Mandrake",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Nightshade": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_44.jpg"
+  },
+  {
+   "id": "Reagent_45",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234818_Card_3.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234818.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Mandrake",
+    "Mandrake",
+    "Toadstool",
+    "Foxglove"
+   ],
+   "gather_counts": {
+    "Mandrake": 2,
+    "Toadstool": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Eye of Newt",
+    "Eye of Newt",
+    "Toadstool"
+   ],
+   "increase_counts": {
+    "Toadstool": 1,
+    "Eye of Newt": 2
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_45.jpg"
+  },
+  {
+   "id": "Reagent_46",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234818_Card_4.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234818.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Mandrake",
+    "Sulphur",
+    "Eye of Newt",
+    "Horn"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Horn": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Foxglove",
+    "Foxglove",
+    "Eye of Newt"
+   ],
+   "increase_counts": {
+    "Foxglove": 2,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_46.jpg"
+  },
+  {
+   "id": "Reagent_47",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234818_Card_5.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234818.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Sulphur",
+    "Toadstool",
+    "Horn"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Horn": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Nightshade",
+    "Mandrake",
+    "Sulphur"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Nightshade": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_47.jpg"
+  },
+  {
+   "id": "Reagent_48",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_234818_Card_6.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_234818.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Horn",
+    "Sulphur",
+    "Horn",
+    "Foxglove"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Horn": 2,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Nightshade",
+    "Nightshade",
+    "Eye of Newt"
+   ],
+   "increase_counts": {
+    "Nightshade": 2,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_48.jpg"
+  },
+  {
+   "id": "Reagent_49",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_235008_Card_1.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_235008.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Horn",
+    "Eye of Newt",
+    "Mandrake"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Horn": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Foxglove",
+    "Eye of Newt",
+    "Toadstool"
+   ],
+   "increase_counts": {
+    "Toadstool": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_49.jpg"
+  },
+  {
+   "id": "Reagent_50",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_235008_Card_2.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_235008.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Nightshade",
+    "Eye of Newt",
+    "Nightshade",
+    "Toadstool"
+   ],
+   "gather_counts": {
+    "Toadstool": 1,
+    "Nightshade": 2,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Toadstool",
+    "Toadstool",
+    "Sulphur"
+   ],
+   "increase_counts": {
+    "Sulphur": 1,
+    "Toadstool": 2
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_50.jpg"
+  },
+  {
+   "id": "Reagent_51",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_235008_Card_3.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_235008.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Foxglove",
+    "Eye of Newt",
+    "Mandrake"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Foxglove",
+    "Toadstool",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Toadstool": 1,
+    "Nightshade": 1,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_51.jpg"
+  },
+  {
+   "id": "Reagent_52",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_235008_Card_4.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_235008.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Toadstool",
+    "Foxglove",
+    "Horn",
+    "Sulphur"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Horn": 1,
+    "Foxglove": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Nightshade",
+    "Horn",
+    "Nightshade",
+    "Eye of Newt"
+   ],
+   "increase_counts": {
+    "Horn": 1,
+    "Nightshade": 2,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_52.jpg"
+  },
+  {
+   "id": "Reagent_53",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_235008_Card_5.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_235008.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Eye of Newt",
+    "Toadstool",
+    "Horn"
+   ],
+   "gather_counts": {
+    "Toadstool": 1,
+    "Horn": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 3,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Nightshade",
+    "Eye of Newt",
+    "Foxglove"
+   ],
+   "increase_counts": {
+    "Nightshade": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_53.jpg"
+  },
+  {
+   "id": "Reagent_54",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_235008_Card_6.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_235008.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Sulphur",
+    "Nightshade",
+    "Sulphur",
+    "Toadstool"
+   ],
+   "gather_counts": {
+    "Sulphur": 2,
+    "Toadstool": 1,
+    "Nightshade": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Mandrake",
+    "Sulphur",
+    "Toadstool",
+    "Horn"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Sulphur": 1,
+    "Toadstool": 1,
+    "Horn": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_54.jpg"
+  },
+  {
+   "id": "Reagent_55",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_235123_Card_1.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_235123.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Mandrake",
+    "Foxglove",
+    "Eye of Newt",
+    "Toadstool"
+   ],
+   "gather_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Foxglove",
+    "Toadstool",
+    "Nightshade"
+   ],
+   "increase_counts": {
+    "Toadstool": 1,
+    "Nightshade": 1,
+    "Foxglove": 1
+   },
+   "increase_icon_total": 3,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_55.jpg"
+  },
+  {
+   "id": "Reagent_56",
+   "deck": "Reagent Gathering",
+   "source_file": "Reagent_Cards/Cards/Scan2025-01-12_235123_Card_2.jpg",
+   "raw_scan": "Reagent_Cards/Raw_Scans/Scan2025-01-12_235123.jpg",
+   "gather_reagents_header": "GATHER REAGENTS",
+   "gather_icons_in_print_order": [
+    "Foxglove",
+    "Foxglove",
+    "Eye of Newt",
+    "Sulphur"
+   ],
+   "gather_counts": {
+    "Sulphur": 1,
+    "Foxglove": 2,
+    "Eye of Newt": 1
+   },
+   "gather_icon_total": 4,
+   "increase_value_header": "INCREASE VALUE",
+   "increase_icons_in_print_order": [
+    "Mandrake",
+    "Toadstool",
+    "Foxglove",
+    "Eye of Newt"
+   ],
+   "increase_counts": {
+    "Mandrake": 1,
+    "Toadstool": 1,
+    "Foxglove": 1,
+    "Eye of Newt": 1
+   },
+   "increase_icon_total": 4,
+   "cast_spell_symbol": null,
+   "other_symbols_or_text": "none",
+   "transcription_status": "full",
+   "identical_copies_in_deck": 1,
+   "asset_image": "assets/Reagent_56.jpg"
+  }
+ ]
+}
