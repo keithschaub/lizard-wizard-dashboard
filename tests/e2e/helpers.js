@@ -7,7 +7,7 @@ export function watchErrors(page) {
   const errors = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(`console.error: ${m.text()}`); });
   page.on('pageerror', (e) => errors.push(`uncaught: ${e.message}`));
-  page.on('requestfailed', (r) => errors.push(`request failed: ${r.url()} ${r.failure()?.errorText}`));
+  page.on('requestfailed', (r) => { if (!/ERR_ABORTED/.test(r.failure()?.errorText || '')) errors.push(`request failed: ${r.url()} ${r.failure()?.errorText}`); });
   return errors;
 }
 

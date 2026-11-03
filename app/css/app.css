@@ -131,7 +131,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .banner .btext b { color: var(--gold-hi); }
 .banner .bcards { display: flex; gap: 4px; flex: none; }
 .banner .bcards img { width: 44px; height: 61px; border-radius: 4px; object-fit: cover; box-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
-.banner .skip { font-size: 11px; color: var(--muted); position: absolute; right: 12px; bottom: -18px; }
+.banner .skiphint { font-size: 11px; color: #6f7ca5; margin-top: 3px; }
 
 .avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 15px; color: #fff;
   border: 2px solid rgba(255, 255, 255, .6); box-shadow: 0 2px 8px rgba(0, 0, 0, .5); }
@@ -335,8 +335,18 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 @keyframes orb { 50% { transform: scale(1.12); box-shadow: 0 0 70px rgba(111, 240, 208, .9); } }
 .loader-status { color: var(--muted); font-size: 15px; min-height: 20px; }
 
-@media (min-width: 900px) {
-  :root { --dock: 236px; }
-  .hcard { width: 96px; height: 133px; }
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  #app { display: grid; grid-template-columns: 1fr 380px; grid-template-rows: calc(var(--topbar) + var(--safe-t)) 1fr; }
+  #topbar { grid-column: 1 / -1; }
+  #stage { grid-column: 1; grid-row: 2; }
+  #dock { grid-column: 2; grid-row: 2; height: auto; border-top: none; border-left: 1px solid rgba(214, 180, 90, .3); padding: 16px; gap: 14px; }
+  .dock-stats { flex-wrap: wrap; height: auto; }
+  .dock-status { max-width: none; width: 100%; margin-left: 0; text-align: left; font-size: 15px; }
+  .dock-main { gap: 14px; }
+  .tokens { flex-wrap: wrap; height: auto; justify-content: flex-start; }
+  .hand { flex-wrap: wrap; justify-content: flex-start; gap: 10px; }
+  .hcard { width: 108px; height: 150px; }
+  #banner-layer { bottom: 24px; right: 380px; }
+  #toast { bottom: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }

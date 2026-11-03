@@ -661,7 +661,7 @@ export async function banner(g, e) {
   const imgs = (e.cast ? [e.cast] : (e.cards || [])).filter((k) => g.cards[k]).slice(0, 4);
   const extra = e.cast && g.cards[e.cast] ? h('div', { style: { fontSize: '12.5px', color: '#d8ccff', marginTop: '3px' } }, `“${g.cards[e.cast].effect}”`) : null;
   const el = h('div', { class: 'banner', 'data-testid': 'ai-banner' }, avatar(e.who || '?'),
-    h('div', { class: 'btext' }, h('div', {}, e.text), extra), imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null);
+    h('div', { class: 'btext' }, h('div', {}, e.text), extra, h('div', { class: 'skiphint' }, 'tap to skip')), imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null);
   layer.innerHTML = ''; layer.append(el);
   const dur = 1500;
   const t0 = Date.now();
