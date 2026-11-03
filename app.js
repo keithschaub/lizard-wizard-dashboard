@@ -86,6 +86,7 @@ sys.path.insert(0, '/home/pyodide')
 # Setup minimal environment
 import os
 os.chdir('/home/pyodide')
+os.environ['PYODIDE_ENV'] = '1'
 
 # Patch os.path.exists to check Pyodide FS
 _pyodide_fs = sys.modules.get('pyodide_ffi', None)

@@ -23,6 +23,9 @@ _DB = None
 SCHOOLS = ['Alchemy', 'Conjuring', 'Druidry', 'Enchantment', 'Necromancy', 'Sorcery', 'Thaumaturgy']
 
 def _stale():
+    # In browser/Pyodide: carddb.json is pre-built, never rebuild
+    if os.environ.get('PYODIDE_ENV'):
+        return False
     if not os.path.exists(PATH): return True
     t = os.path.getmtime(PATH)
     return any(os.path.getmtime(os.path.join(_R, _CARDS_DIR, f)) > t for f in _SRC if os.path.exists(os.path.join(_R, _CARDS_DIR, f)))
