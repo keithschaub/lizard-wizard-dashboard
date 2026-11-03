@@ -38,7 +38,9 @@ Each wizard provides +1 bonus reagent of their school's associated reagent type 
 
 **Base storage capacity:** 10 + 1 per Tower owned
 
-**No spells directly modify storage.** Only towers increase storage capacity.
+**Spell modifier:**
+- **Root Cellar (Druidry):** "Store +10 Reagents" - adds +10 to storage capacity when cast
+- **Calculation:** 10 (base) + towers + (10 * Root Cellar casts)
 
 **Over-storage handling:** When gathering would put the player over storage:
 1. First, check if a castable spell can be cast (its cost is deducted BEFORE storage check)
@@ -60,11 +62,17 @@ Each wizard provides +1 bonus reagent of their school's associated reagent type 
 - **Red half (top):** "GATHER REAGENTS" - icons show which tokens to collect
 - **Blue half (bottom):** "INCREASE VALUE" - icons show which tracks to raise by +1 (cap 12)
 
-**Important:** No spells or wizards flip between halves or affect which half is used. The player always uses BOTH:
+**Normal behavior:** The player uses BOTH halves in sequence:
 1. Gather phase: Take 3 (or keep count) tokens from the Gather icons
 2. After gathering: Raise tracks shown in Increase Value icons by +1 each (automatic)
 
-The card backs use both halves in sequence as part of the core gathering action.
+### ⚠️ MIRACLE SPELL EXCEPTION
+
+**Miracle (Thaumaturgy):**
+- **Effect:** "Reverse the Reagents on the Gather and Increase Value sides of your Gather Reagent Card that you play if you choose to"
+- **When cast:** Player chooses whether to reverse the halves
+- **If reversed:** Gather icons come from the bottom half, Increase Value icons from the top half
+- **Implementation:** Before showing gather UI, check if player has cast Miracle and wants to reverse
 
 ## 6. Castable Spells During Gathering
 
@@ -108,6 +116,66 @@ The card backs use both halves in sequence as part of the core gathering action.
 
 ---
 
+## 9. Complete Verification Against carddb.json
+
+**Verification Date:** Nov 3, 2026 4:23 PM UTC  
+**Method:** Checked every card's effect text in public/cards/carddb.json
+
+### Wizards Verified (7 total)
+All 7 wizards checked, each has `gather_bonus` field and effect text "+1 [Reagent] whenever you Gather":
+
+1. **Anguis Magicus** (Sorcery): gather_bonus="Foxglove", effect="+1 Foxglove whenever you Gather"
+2. **Bufonem Creaturae** (Conjuring): gather_bonus="Horn", effect="+1 Horn whenever you Gather"
+3. **Draco Mortemus** (Necromancy): gather_bonus="Nightshade", effect="+1 Nightshade whenever you Gather"
+4. **Ignus Fulgorus** (Enchantment): gather_bonus="Mandrake", effect="+1 Mandrake whenever you Gather"
+5. **Lacerta Arborus** (Druidry): gather_bonus="Toadstool", effect="+1 Toadstool whenever you Gather"
+6. **Reptilius Venenum** (Alchemy): gather_bonus="Eye_of_Newt", effect="+1 Eye of Newt whenever you Gather"
+7. **Serpentium Machinus** (Thaumaturgy): gather_bonus="Sulphur", effect="+1 Sulphur whenever you Gather"
+
+### Spells Affecting Gathering (5 total)
+
+1. **Maximum Gather** (Druidry): "Gather all Reagents shown on the top half of the Gather Reagents Card"
+   - Effect: Take all 4-5 icons instead of choosing 3
+
+2. **Bloom** (Druidry): "+1 any Reagent when Gathering"
+   - Effect: Player chooses which reagent type for +1 bonus
+
+3. **Mana Garden** (Druidry): "+5 Mana whenever you Gather Reagents"
+   - Effect: Automatic +5 mana on every gather action
+
+4. **Miracle** (Thaumaturgy): "Reverse the Reagents on the Gather and Increase Value sides of your Gather Reagent Card that you play if you choose to"
+   - Effect: Optional reversal of card halves (gather from bottom, increase from top)
+
+5. **Root Cellar** (Druidry): "Store +10 Reagents"
+   - Effect: +10 storage capacity (affects over-storage check)
+
+### Other Reagent-Related Spells (not affecting gathering directly)
+
+- **Adept Conversion** (Druidry): "May convert 2 types of Reagents" (affects conversion, not gathering)
+- **Energize** (Druidry): "Increase the mana value of a Reagent by 3 before converting" (affects conversion)
+- **Perfect Reagent** (Thaumaturgy): "Build Towers for 1 fewer Reagent" (affects building)
+- **Transform** (Alchemy): "Transform any Reagent to another Reagent at 2:1 ratio before Converting to Mana"
+- **Transmute** (Alchemy): "Transmute any number of Reagents to Gold at a 2:1 ratio"
+- **Scry Dungeon** (Sorcery): "Look at the top 10 cards in the Dungeon deck, and keep all Treasure Cards" (dungeon only)
+
+### Towers
+All towers add +1 storage. No towers modify gathering mechanics directly.
+
+### Familiars
+No familiars modify keep count or gathering mechanics. Some familiars have a "gather" use option (collect reagents from their card).
+
+### Summary of Keep Count Modifiers
+- **Base:** 3 reagents (from 3-5 icons on card)
+- **With Maximum Gather cast:** All icons (4-5) taken, no selection needed
+- **No other spells or cards change the keep count**
+
+### Summary of Half-Switching Modifiers
+- **Base:** Use top half (Gather) for collection, bottom half (Increase Value) for tracks
+- **With Miracle cast (if player chooses):** Reversed - bottom for collection, top for tracks
+- **No other spells or cards reverse or switch halves**
+
+---
+
 **Generated:** Nov 3, 2026  
-**Source:** Python engine analysis + carddb.json  
-**Status:** Complete for Milestone 1
+**Source:** Python engine analysis + carddb.json verification  
+**Status:** Complete and verified for Milestone 1-4 implementation
