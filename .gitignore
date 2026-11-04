@@ -9,3 +9,6 @@ engine/assets/*
 engine/game/*_coaching.md
 engine/game/coaching_log_*.md
 _site/
+docs/screenshots/00-loaded-board.png
+docs/screenshots/webkit-iphone-*
+!docs/screenshots/webkit-iphone-00-loaded-board.png

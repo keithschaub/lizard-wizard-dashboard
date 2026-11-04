@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -9,14 +9,20 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:4173',
-    viewport: { width: 390, height: 844 },
-    deviceScaleFactor: 2,
-    isMobile: true,
-    hasTouch: true,
-    browserName: 'chromium',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
+  projects: [
+    {
+      name: 'chromium',
+      use: { browserName: 'chromium', viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+    },
+    {
+      // Playwright WebKit with the iPhone 13 descriptor (390x844, iPhone Safari user agent, touch).
+      name: 'webkit-iphone',
+      use: { ...devices['iPhone 13'] },
+    },
+  ],
   webServer: process.env.BASE_URL ? undefined : {
     command: 'node tools/serve.mjs 4173',
     url: 'http://localhost:4173/',

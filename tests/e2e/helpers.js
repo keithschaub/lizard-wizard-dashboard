@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import fs from 'fs';
 
 export const SHOTS = 'docs/screenshots';
@@ -22,10 +22,13 @@ export const view = (page) => page.evaluate(() => window.lwDebug.view());
 export const cards = (page) => page.evaluate(() => window.lwDebug.cards());
 export const me = (v) => v.players.find((p) => p.you);
 
+// Chromium screenshots keep their plain names; other projects are prefixed (e.g. webkit-iphone-01-board.png).
+export const projectName = () => test.info().project.name;
+export const shotPath = (name) => `${SHOTS}/${projectName() === 'chromium' ? '' : projectName() + '-'}${name}.png`;
 export async function shot(page, name) {
   fs.mkdirSync(SHOTS, { recursive: true });
   await page.waitForTimeout(450);
-  await page.screenshot({ path: `${SHOTS}/${name}.png` });
+  await page.screenshot({ path: shotPath(name) });
 }
 
 export async function openOverlays(page) {
