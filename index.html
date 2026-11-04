@@ -38,7 +38,13 @@
       <div class="loader-inner">
         <div class="loader-title">Lizard Wizard</div>
         <div class="loader-orb"></div>
-        <div class="loader-status" id="loader-status">Opening the spellbook…</div>
+        <div class="loader-status" id="loader-status" data-testid="loader-status">Opening the spellbook…</div>
+        <div class="loader-error hidden" id="loader-error" data-testid="loader-error">
+          <div class="loader-error-text" id="loader-error-text" data-testid="loader-error-text"></div>
+          <div class="loader-hint" id="loader-hint"></div>
+          <button class="act hidden" id="loader-retry" data-testid="loader-retry">Retry</button>
+          <div class="loader-details" id="loader-details"></div>
+        </div>
       </div>
     </div>
   </div>

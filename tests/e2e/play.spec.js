@@ -2,7 +2,7 @@
 // The page state is READ through window.lwDebug (to choose taps and to assert); every move is made by tapping.
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
-import { watchErrors, boot, view, cards, me, shot, tapEmptyBoard, untilMyAction, waitOverlayGone, tapPutbacks, gatherPhase } from './helpers.js';
+import { watchErrors, boot, view, cards, me, shot, shotPath, projectName, tapEmptyBoard, untilMyAction, waitOverlayGone, tapPutbacks, gatherPhase } from './helpers.js';
 
 const cnt = (list) => list.reduce((m, x) => ((m[x] = (m[x] || 0) + 1), m), {});
 const covers = (have, need) => Object.entries(cnt(need)).every(([r, n]) => (have[r] || 0) >= n);
@@ -29,8 +29,9 @@ test('cold load at 390x844: g8 renders real cards, no console errors, playable i
   expect(hidden, 'AI mana and reagent hands are not sent to the page').toBe(true);
   await page.waitForTimeout(1500);
   fs.mkdirSync('test-results', { recursive: true });
-  fs.writeFileSync('test-results/load-time.json', JSON.stringify({ cold_load_to_playable_ms: ms, app_reported_ms: await page.evaluate(() => window.lwDebug.loadMs()) }));
-  console.log(`COLD LOAD TO PLAYABLE: ${ms} ms`);
+  fs.writeFileSync(`test-results/load-time-${projectName()}.json`, JSON.stringify({ project: projectName(), cold_load_to_playable_ms: ms, app_reported_ms: await page.evaluate(() => window.lwDebug.loadMs()), userAgent: await page.evaluate(() => navigator.userAgent) }));
+  console.log(`COLD LOAD TO PLAYABLE (${projectName()}): ${ms} ms`);
+  await shot(page, '00-loaded-board');
   expect(errors, errors.join('\n')).toEqual([]);
   expect(ms).toBeLessThan(20_000);
 });
@@ -123,7 +124,7 @@ test('plays 3+ full rounds of g8 by taps: research, summon, build, gather+cast+p
       await page.getByTestId(`slot-spell_${slot}`).tap();
       await expect(page.getByTestId('expanded')).toBeVisible();
       await expect(page.getByTestId('card-text')).toContainText(db[sk].effect);
-      if (!fs.existsSync('docs/screenshots/02-expanded-card.png')) await shot(page, '02-expanded-card');
+      if (!fs.existsSync(shotPath('02-expanded-card'))) await shot(page, '02-expanded-card');
       await page.getByTestId('research-only').tap();
       const after = me(await until(page, (x) => me(x).spells.length > before.spells, 'research'));
       expect(after.spells.length).toBe(before.spells + 1);
@@ -264,6 +265,6 @@ test('plays 3+ full rounds of g8 by taps: research, summon, build, gather+cast+p
   expect(items).toBeGreaterThan(10);
   await shot(page, '08-log-drawer');
   await page.getByTestId('log-close').tap();
-  fs.writeFileSync('test-results/play-summary.json', JSON.stringify({ startRound, endRound: v.round, goals, logEntries: lg.length, keith: me(v) }, null, 1));
+  fs.writeFileSync(`test-results/play-summary-${projectName()}.json`, JSON.stringify({ startRound, endRound: v.round, goals, logEntries: lg.length, keith: me(v) }, null, 1));
   expect(errors, errors.join('\n')).toEqual([]);
 });

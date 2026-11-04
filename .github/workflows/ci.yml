@@ -26,8 +26,16 @@ jobs:
         run: cd engine && sha256sum -c --quiet ORIGINAL_SHA256SUMS
 
   e2e:
-    name: Playwright (Chromium, 390x844)
+    name: Playwright (${{ matrix.project }})
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: chromium
+            browser: chromium
+          - project: webkit-iphone
+            browser: webkit
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,19 +45,19 @@ jobs:
       - run: npm ci
       - name: Vendor the Pyodide runtime
         run: npm run vendor
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Playwright tests
-        run: npx playwright test
+      - name: Install ${{ matrix.browser }}
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Playwright tests (load gate, loading failures, 3-round tap playthrough)
+        run: npx playwright test --project=${{ matrix.project }}
         env:
           CI: 'true'
       - name: Load time
         if: always()
-        run: cat test-results/load-time.json || true
+        run: cat test-results/load-time-${{ matrix.project }}.json || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-results
+          name: playwright-${{ matrix.project }}
           path: |
             playwright-report/
             test-results/
