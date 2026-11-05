@@ -25,7 +25,8 @@ function scrollHint(el) {
   document.getElementById('overlays').appendChild(hint);
   const update = () => {
     if (!el.isConnected || el.classList.contains('out')) { hint.remove(); mo.disconnect(); return; }
-    hint.classList.toggle('off', el.scrollTop > 40 || el.scrollTop + el.clientHeight >= el.scrollHeight - 24);
+    const spacer = parseFloat(getComputedStyle(el, '::after').height) || 0;   // the bottom clearance is not content
+    hint.classList.toggle('off', el.scrollTop > 40 || el.scrollTop + el.clientHeight >= el.scrollHeight - spacer - 24);
   };
   const mo = new MutationObserver(() => requestAnimationFrame(update));
   mo.observe(el, { childList: true, subtree: true });
@@ -81,7 +82,9 @@ export function cardInfo(g, key) {
 export function expandCard(g, key, { actions = [], extra = null } = {}) {
   const ov = openOverlay('expand', { onScrim: (o) => o.close(), testid: 'expanded' });
   const isAch = key.startsWith('Achievement:');
-  const img = isAch ? null : h('img', { class: 'big', src: art(key), alt: key, 'data-testid': 'expanded-img', onclick: () => ov.close() });
+  // The scans are trimmed right at the medallion/title, so the card sits in a dark frame that gives its top edge room.
+  const img = isAch ? null : h('div', { class: 'big-frame', 'data-testid': 'expanded-card', onclick: () => ov.close() },
+    h('img', { class: 'big', src: art(key), alt: key, 'data-testid': 'expanded-img' }));
   ov.el.append(closeBtn(() => ov.close()), img, cardInfo(g, key));
   if (extra) ov.el.append(extra);
   if (actions.length) {

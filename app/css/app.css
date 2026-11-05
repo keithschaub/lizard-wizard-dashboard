@@ -176,7 +176,10 @@ img { -webkit-user-drag: none; user-select: none; }
 
 /* expanded card */
 .expand { justify-content: flex-start; padding: calc(8px + var(--safe-t)) 14px 14px; gap: 12px; }
-.expand .big { width: min(78vw, calc((100vh - var(--safe-t) - var(--clear-b) - 270px) / 1.52), 420px); width: min(78vw, calc((100dvh - var(--safe-t) - var(--clear-b) - 270px) / 1.52), 420px); min-width: 200px; border-radius: 14px; box-shadow: 0 20px 70px rgba(0, 0, 0, .8), 0 0 0 1px rgba(255, 255, 255, .1); animation: zoomIn .28s cubic-bezier(.2, .9, .3, 1.2) both; flex: none; }
+.expand .big-frame { width: min(78vw, calc((100vh - var(--safe-t) - var(--clear-b) - 270px) / 1.62), 420px); width: min(78vw, calc((100dvh - var(--safe-t) - var(--clear-b) - 270px) / 1.62), 420px);
+  min-width: 200px; flex: none; padding: 6% 3% 3%; border-radius: 16px; background: #110d0c;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, .8), 0 0 0 1px rgba(214, 180, 90, .35); animation: zoomIn .28s cubic-bezier(.2, .9, .3, 1.2) both; }
+.expand .big { display: block; width: 100%; height: auto; border-radius: 6px; }
 @keyframes zoomIn { from { transform: scale(.6); opacity: 0; } }
 .cardinfo { width: min(92vw, 460px); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
 .cardinfo .ci-name { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--gold-hi); }

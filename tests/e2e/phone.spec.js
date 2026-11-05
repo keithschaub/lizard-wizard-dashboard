@@ -5,7 +5,7 @@ import { test, expect } from './fixtures.js';
 import fs from 'fs';
 import { watchErrors, view, shot, me } from './helpers.js';
 
-const INSET = { top: 47, bottom: 34, chrome: 84 };
+const INSET = { top: 59, bottom: 34, chrome: 84 };          // Dynamic Island status bar (iPhone 14 Pro and later), home indicator, Safari bar
 const G8 = JSON.parse(fs.readFileSync('engine/game/g8_state.json', 'utf8'));
 const P = (s, n) => s.players.find((p) => p.name === n);
 const ACH_FILE = 'engine/cards/cards.json';                 // the achievement pool scripts/deal4.py draws 4 tiles from
@@ -49,24 +49,48 @@ test('Scribe picker: all 5 spell cards reachable above the browser bar; picking 
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
-test('card detail: the whole card is visible under the status bar; close button never covers it', async ({ page }) => {
-  await open(page);
-  await page.getByTestId('slot-tower_face').tap();
-  const ov = page.getByTestId('expanded');
-  await expect(ov).toBeVisible();
-  await page.waitForTimeout(500);
-  await scrollOverlay(page, 'expanded', 'top');
-  const L = await limits(page);
-  const img = await box(page.getByTestId('expanded-img'));
-  const close = await box(ov.getByTestId('ov-close'));
-  expect(img.top, 'card top below the status bar').toBeGreaterThanOrEqual(L.top);
-  expect(close.bottom, 'close button sits above the card, not on it').toBeLessThanOrEqual(img.top + 1);
-  expect(close.top).toBeGreaterThanOrEqual(L.top);
-  await shot(page, '10-card-detail');
-  await scrollOverlay(page, 'expanded', 'bottom');
-  const btn = await box(page.getByTestId('build-reagent'));
-  expect(btn.bottom, 'action button clears the bottom bar').toBeLessThanOrEqual(L.bottom);
-});
+for (const [name, tower] of [['Obelisk of Puzzles', 'Tower_T1_Obelisk_of_Puzzles'], ['Obsidian Fortress', 'Tower_T1_Obsidian_Fortress']]) {
+  test(`card detail (${name}): the card's top edge and title sit fully below the status bar and close row, uncropped`, async ({ page }) => {
+    await open(page, (s) => {
+      const t = `assets/${tower}.jpg`;
+      if (s.tower_face !== t) { s.tow_list = s.tow_list.filter((x) => x !== t); s.tow_list.unshift(s.tower_face); s.tower_face = t; }
+    });
+    await page.getByTestId('slot-tower_face').tap();
+    const ov = page.getByTestId('expanded');
+    await expect(ov).toBeVisible();
+    await expect(page.getByTestId('expanded-img')).toHaveAttribute('src', new RegExp(tower));
+    await page.getByTestId('expanded-img').evaluate((i) => i.decode());
+    await page.waitForTimeout(500);                                   // zoom-in animation
+    await scrollOverlay(page, 'expanded', 'top');
+    const L = await limits(page);
+    const m = await page.getByTestId('expanded-card').evaluate((frame) => {
+      const img = frame.querySelector('img'); const f = frame.getBoundingClientRect(); const r = img.getBoundingClientRect();
+      const close = frame.closest('.overlay').querySelector('[data-testid=ov-close]').getBoundingClientRect();
+      let clipped = null;
+      for (let a = img.parentElement; a && !a.classList.contains('overlay'); a = a.parentElement) {
+        const st = getComputedStyle(a);
+        if (st.overflow === 'visible') continue;
+        const ar = a.getBoundingClientRect();
+        if (r.top < ar.top - 0.5 || r.bottom > ar.bottom + 0.5) clipped = a.className;
+      }
+      const probe = document.elementFromPoint(r.left + r.width / 2, r.top + r.height * 0.03);   // the title band
+      return { f: { top: f.top, bottom: f.bottom }, r: { top: r.top, bottom: r.bottom, w: r.width, h: r.height }, close: close.bottom, closeTop: close.top,
+        art: img.naturalHeight / img.naturalWidth, clipped, titleOnTop: probe === img };
+    });
+    expect(m.closeTop, 'close button below the status bar').toBeGreaterThanOrEqual(L.top);
+    expect(m.f.top, 'card frame below the close row').toBeGreaterThanOrEqual(m.close);
+    expect(m.f.top, 'card frame below the status bar').toBeGreaterThanOrEqual(L.top);
+    expect(m.r.top - m.f.top, 'a frame margin above the card art (the scans are trimmed at the title)').toBeGreaterThanOrEqual(m.r.w * 0.05);
+    expect(Math.abs(m.r.h / m.r.w / m.art - 1), 'card art shown whole (not cropped by CSS)').toBeLessThan(0.01);
+    expect(m.clipped, `card art clipped by .${m.clipped}`).toBeNull();
+    expect(m.titleOnTop, 'nothing covers the card title').toBe(true);
+    expect(m.f.bottom, 'the whole card fits above the Safari bar').toBeLessThanOrEqual(L.bottom);
+    await shot(page, `10-card-detail-${tower.split('_').slice(2).join('-').toLowerCase()}`);
+    await scrollOverlay(page, 'expanded', 'bottom');
+    const btn = await box(page.getByTestId('build-reagent'));
+    expect(btn.bottom, 'action button clears the bottom bar').toBeLessThanOrEqual(L.bottom);
+  });
+}
 
 test('mats: no card is cropped, overlapped or clipped; every card scrolls fully clear of the status bar and Safari bar', async ({ page }) => {
   // Keith's playtest mat: Obelisk of Puzzles (the narrowest tower scan) under an empty wizard slot; Newt's wizard further down.
