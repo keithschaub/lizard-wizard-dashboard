@@ -748,14 +748,81 @@ def ai_step():
     return dict(status='paused' if r == 'paused' else 'done', who=n, entries=entries)
 
 
+# ------------------------------------------------------------------ new game (rulebook setup through scripts/deal4.py)
+WORKSTATION = '/workspace/lizard-wizard/'          # deal4.py's hardcoded engine root (the worker mounts the engine here)
+NEW_GAME = dict(players=['Keith', 'Newt', 'LizWiz'], humans=['Keith'], profiles={'Newt': 'spellslinger', 'LizWiz': 'delver'})
+NEW_STATE = '/tmp/lw_web_new_game.json'
+
+
+def _deal4(argv):
+    """Run the engine's setup script scripts/deal4.py exactly as the CLI does (it reads LW_STATE and sys.argv)."""
+    import runpy, io, contextlib
+    if not os.path.isdir(WORKSTATION + 'cards'): raise Refused(f'new games need the engine at {WORKSTATION}')
+    os.makedirs(WORKSTATION + 'assets', exist_ok=True)
+    for c in json.load(open(WORKSTATION + 'cards/spells_from_pc.json'))['cards']:   # deal4 only checks these exist
+        f = WORKSTATION + 'assets/Spell_' + c['id'] + '.jpg'
+        if not os.path.exists(f): open(f, 'wb').close()
+    old_argv, old_env = sys.argv, os.environ.get('LW_STATE')
+    sys.argv = ['deal4.py'] + [str(a) for a in argv]; os.environ['LW_STATE'] = NEW_STATE
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            runpy.run_path(os.path.join(ENGINE, 'scripts', 'deal4.py'), run_name='__main__')
+    except SystemExit as e:
+        if e.code not in (None, 0): raise Refused(str(e.code))
+    finally:
+        sys.argv = old_argv
+        if old_env is None: os.environ.pop('LW_STATE', None)
+        else: os.environ['LW_STATE'] = old_env
+
+
+def new_game_preview(seed=None, ai_seed=None):
+    """Setup A-D (deal4 hands): deal 3 reagent cards each, AI seats pick their 2 tokens in secret. Nothing replaces the
+    current game until new_game_start. Returns only the human's own hand."""
+    rng = random.SystemRandom()
+    seed = int(seed) if seed is not None else rng.randrange(10 ** 6)
+    ai_seed = int(ai_seed) if ai_seed is not None else rng.randrange(10 ** 6)
+    if os.path.exists(NEW_STATE): os.remove(NEW_STATE)
+    _deal4(['hands', '--seed', seed, '--ai-seed', ai_seed, '--players', ','.join(NEW_GAME['players']), '--humans', ','.join(NEW_GAME['humans']),
+            '--coach', 'game/coaching_log_web.md', '--force'])
+    s = json.load(open(NEW_STATE)); m = s['meta']
+    ais = [n for n in NEW_GAME['players'] if n not in NEW_GAME['humans']]
+    # the same meta scripts/new_game.py writes, plus g8's house rule of public Gold
+    m['humans'] = list(NEW_GAME['humans']); m['ai_levels'] = {n: 'normal' for n in ais}
+    m['ai_profiles'] = {n: NEW_GAME['profiles'].get(n, 'balanced') for n in ais}
+    m['ai_seed'] = ai_seed; m['ai_random'] = True; m['private_mats'] = True; m['show_gold'] = True
+    m['mode'] = 'free-for-all (each AI plays only for itself; humans play for themselves)'
+    G['setup'] = s
+    p = P(s, me())
+    return dict(hand=[key(c) for c in p['hand']], reagents=list(REAGENTS), players=list(NEW_GAME['players']))
+
+
+def new_game_start(picks, seed=None):
+    """Setup C for the human (2 different starting reagents), then deal4 board (E-J) and the dungeon, as turn.py does."""
+    s = G.get('setup')
+    if not s: raise Refused('start a new game first')
+    picks = [A.norm(r) for r in picks]
+    if len(picks) != 2 or len(set(picks)) != 2 or any(r not in REAGENTS for r in picks): raise Refused('pick 2 different reagents')
+    json.dump(s, open(NEW_STATE, 'w'))
+    board_seed = int(seed) if seed is not None else random.SystemRandom().randrange(10 ** 6)
+    _deal4(['board', '--pick', f"{me()}={picks[0]},{picks[1]}", '--seed', board_seed])
+    s = json.load(open(NEW_STATE))
+    A.ensure_dungeon(s); s['next'] = s['meta']['seat_order'][0]; s['turn'] = 0
+    A.log(s, {'r': 1, 'act': 'turn', 'seat': s['next']})
+    A.log(s, {'r': 0, 'act': 'setup_picks', 'picks': {q['name']: list(q['tok']) for q in s['players']}})
+    s['meta']['web_pending'] = None
+    G['s'] = s; G.pop('setup', None)
+    return 'started'
+
+
 # ------------------------------------------------------------------ JSON entry point for the worker
 API = dict(load=load, view=lambda: view(), dump=lambda: dump(), card_db=lambda: card_db(), full_log=lambda: full_log(),
            gather_preview=gather_preview, act_gather=act_gather, act_convert=act_convert, act_convert1=act_convert1,
            act_build=act_build, act_recruit=act_recruit, act_bid=act_bid, act_pass=act_pass, act_research=act_research,
            summon_gather_preview=summon_gather_preview, act_summon=act_summon, act_divination=act_divination,
            choose_new_research=choose_new_research, dungeon_flip=dungeon_flip, dungeon_stop=dungeon_stop,
-           dungeon_cancel=dungeon_cancel, resolve_effect=resolve_effect, ai_step=ai_step)
-MUTATING = {k for k in API if k.startswith(('act_', 'choose_', 'dungeon_', 'resolve_'))}
+           dungeon_cancel=dungeon_cancel, resolve_effect=resolve_effect, ai_step=ai_step,
+           new_game_preview=new_game_preview, new_game_start=new_game_start)
+MUTATING = {k for k in API if k.startswith(('act_', 'choose_', 'dungeon_', 'resolve_'))} | {'new_game_start'}
 
 
 def call(fn, args_json='{}'):
