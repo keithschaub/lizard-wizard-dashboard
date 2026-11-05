@@ -12,7 +12,7 @@ const MUTE_OFF = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill=
 
 class Game {
   constructor() {
-    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.settling = false; this.busy = false;
+    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.moveQueue = []; this.settling = false; this.busy = false;
     this.engine = null;
     this.board = new Board(document.getElementById('stage'), document.getElementById('board'), (el) => this.onBoardTap(el));
     this.dock = document.getElementById('dock');
@@ -122,8 +122,16 @@ class Game {
     if (!r.ok) { this.sfx('error'); this.toast(r.error); return null; }
     if (sound) this.sfx(sound);
     if (r.view) this.setView(r.view);
+    this.queueMoves(r.entries);
     await this.autosave();
     return r;
+  }
+
+  // AI moves the engine made inside one of Keith's calls (after an auction it plays the AI turns that follow).
+  // They are announced by settle() before anything else; auction results are shown by the arena itself.
+  queueMoves(entries) {
+    const shown = new Set(['turn', 'reshuffle_reagents', 'auction', 'auction_nobid', 'game_over']);
+    this.moveQueue.push(...(entries || []).filter((e) => e.who && e.who !== this.me && !shown.has(e.act)));
   }
   async autosave() { const d = await this.call('dump'); if (d.ok) Store.saveLocal(d.result); }
 
@@ -204,6 +212,7 @@ class Game {
     this.settling = true;
     try {
       for (let guard = 0; guard < 200; guard++) {
+        if (this.moveQueue.length) { await this.playMoves(this.moveQueue.splice(0)); continue; }
         const v = this.v;
         if (v.game_over) {
           const k = `${v.round}:${JSON.stringify(v.final)}`;
@@ -230,14 +239,7 @@ class Game {
       const r = await this.call('ai_step');
       if (!r.ok) { this.toast(r.error); return false; }
       const res = r.result;
-      const moves = res.entries.filter((e) => e.act !== 'turn' && e.act !== 'reshuffle_reagents');
-      for (const [i, e] of moves.entries()) {
-        const slot = this.slotFor(e);
-        if (slot && !this.skip) this.board.focus(slot);
-        if (!this.skip) this.sfx(e.cast ? 'cast' : e.act === 'build' ? 'build' : e.act === 'dungeon' ? 'flip' : e.act === 'gather' ? 'gather' : 'tap');
-        await UI.banner(this, e, i, moves.length);
-        this.board.focus(null);
-      }
+      await this.showMoves(res.entries.filter((e) => e.act !== 'turn' && e.act !== 'reshuffle_reagents'));
       const vr = await this.call('view');
       this.setView(vr.result);
       await UI.bannerDone(this);
@@ -245,6 +247,23 @@ class Game {
       if (this.v.next === this.me || this.v.auction || this.v.game_over) this.skip = false;
       return res.status !== 'human' && res.status !== 'over';
     } finally { this.aiRunning = false; }
+  }
+
+  async showMoves(moves) {
+    for (const [i, e] of moves.entries()) {
+      const slot = this.slotFor(e);
+      if (slot && !this.skip) this.board.focus(slot);
+      if (!this.skip) this.sfx(e.cast ? 'cast' : e.act === 'build' ? 'build' : e.act === 'dungeon' ? 'flip' : e.act === 'gather' ? 'gather' : 'tap');
+      const run = moves.filter((x) => x.who === e.who);
+      await UI.banner(this, e, run.indexOf(e), run.length);
+      this.board.focus(null);
+    }
+  }
+
+  async playMoves(moves) {
+    this.aiRunning = true; this.renderDock(this.v);
+    try { await this.showMoves(moves); await UI.bannerDone(this); }
+    finally { this.aiRunning = false; if (this.v.next === this.me || this.v.auction) this.skip = false; }
   }
 
   slotFor(e) {

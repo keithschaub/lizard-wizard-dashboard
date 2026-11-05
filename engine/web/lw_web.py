@@ -826,13 +826,18 @@ MUTATING = {k for k in API if k.startswith(('act_', 'choose_', 'dungeon_', 'reso
 
 
 def call(fn, args_json='{}'):
-    """Single entry point: returns JSON {ok, result|error, view?}. Mutating calls also return the fresh view."""
+    """Single entry point: returns JSON {ok, result|error, view?, entries?}. Mutating calls also return the fresh view and the
+    public log entries they added."""
     args = json.loads(args_json or '{}')
     try:
         if fn not in API: raise Refused(f'unknown call {fn}')
+        n0 = len(st()['meta'].get('log', [])) if fn in MUTATING and G.get('s') else None
         res = API[fn](**args)
         out = dict(ok=True, result=res)
-        if fn in MUTATING: out['view'] = view()
+        if fn in MUTATING:
+            out['view'] = view()
+            # moves the engine made inside this call (e.g. AI turns after an auction), so the UI can announce them
+            out['entries'] = public_log(st(), me())[n0:] if n0 is not None and fn != 'new_game_start' else []
     except Refused as e:
         out = dict(ok=False, error=str(e))
     except (ValueError, AssertionError, KeyError, IndexError, TypeError) as e:
