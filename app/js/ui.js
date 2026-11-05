@@ -135,7 +135,7 @@ export function openMats(g) {
       p.you ? h('div', { class: 'mat-row' }, p.hand.map((k) => mini(g, k))) : null,
       h('div', { class: 'mat-label' }, `Wizards & Towers (${p.wizards.length}/${p.towers.length})`),
       h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m]) => h('div', { class: `pair ${m ? 'match' : ''}` },
-        h('span', { class: 'pts' }, m ? '+10' : (w && t ? '+5' : '+1')), w ? mini(g, w) : h('div', { class: 'mcard', style: { opacity: 0.15, border: '1px dashed #888' } }), t ? mini(g, t) : h('div', { class: 'mcard', style: { opacity: 0.15, border: '1px dashed #888' } })))
+        h('span', { class: 'pts' }, m ? '+10' : (w && t ? '+5' : '+1')), w ? mini(g, w) : h('div', { class: 'mcard empty' }), t ? mini(g, t) : h('div', { class: 'mcard empty' })))
         : h('span', { class: 'none' }, 'None yet')),
       h('div', { class: 'mat-label' }, `Spells & Familiars (${p.spells.length + p.familiars.length})`),
       h('div', { class: 'mat-row' }, (p.spells.length + p.familiars.length) ? [

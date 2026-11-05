@@ -204,8 +204,11 @@ img { -webkit-user-drag: none; user-select: none; }
 .mat-vp { margin-left: auto; }
 .mat-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
 .mat-label { width: 100%; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
-.mcard { position: relative; width: 52px; height: 72px; border-radius: 5px; flex: none; }
-.mcard img { width: 100%; height: 100%; border-radius: 5px; object-fit: cover; box-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
+/* Mat cards keep each card's own proportions (scans vary from 0.63 to 0.83 wide/high), so no title or border is cropped. */
+.mcard { position: relative; width: 52px; border-radius: 5px; flex: none; }
+.mcard img { display: block; width: 100%; height: auto; border-radius: 5px; box-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
+.mcard.back, .mcard.empty { aspect-ratio: 666 / 1008; }
+.mcard.empty { opacity: .15; border: 1px dashed #888; }
 .mcard.uncast img { filter: saturate(.35) brightness(.7); }
 .mcard .badge { position: absolute; left: 2px; right: 2px; bottom: 2px; font-size: 9px; text-align: center; background: rgba(0, 0, 0, .7); border-radius: 3px; color: #ddd; }
 .mcard.back { background: linear-gradient(135deg, #42205e, #26113b); border: 1px solid rgba(214, 180, 90, .6); display: grid; place-items: center; font-family: var(--display); color: var(--gold-hi); font-size: 12px; }

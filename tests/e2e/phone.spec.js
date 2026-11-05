@@ -68,40 +68,84 @@ test('card detail: the whole card is visible under the status bar; close button 
   expect(btn.bottom, 'action button clears the bottom bar').toBeLessThanOrEqual(L.bottom);
 });
 
-test('mats overlay scrolls as a whole: every card, including the last mat, clears the browser bar', async ({ page }) => {
+test('mats: no card is cropped, overlapped or clipped; every card scrolls fully clear of the status bar and Safari bar', async ({ page }) => {
+  // Keith's playtest mat: Obelisk of Puzzles (the narrowest tower scan) under an empty wizard slot; Newt's wizard further down.
   await open(page, (s) => {
-    P(s, 'Keith').towers = ['assets/Tower_T1_Keep_of_Elixers.jpg'];
-    s.tow_list = s.tow_list.filter((t) => !t.includes('T1_Keep_of_Elixers')); s.tower_deck = s.tow_list.length;
+    P(s, 'Keith').towers = ['assets/Tower_T1_Obelisk_of_Puzzles.jpg'];
+    s.tow_list = s.tow_list.filter((t) => !t.includes('T1_Obelisk_of_Puzzles'));
+    if (s.tower_face?.includes('Obelisk_of_Puzzles')) s.tower_face = s.tow_list.shift();
+    s.tower_deck = s.tow_list.length;
   });
   const b = await page.getByTestId('board').boundingBox();
   await page.touchscreen.tap(b.x + b.width * 0.52, b.y + b.height * 0.486);
   const ov = page.getByTestId('mats');
   await expect(ov).toBeVisible();
   await page.waitForTimeout(500);
+  await ov.evaluate((el) => Promise.all([...el.querySelectorAll('.mcard img')].map((i) => i.decode().catch(() => {}))));
   const L = await limits(page);
-  const scrollable = await ov.evaluate((el) => el.scrollHeight > el.clientHeight);
-  expect(scrollable, 'three mats do not fit one phone screen: the overlay must scroll').toBe(true);
-  await expect(page.getByTestId('scroll-hint')).toBeVisible();
+  expect(await ov.evaluate((el) => el.scrollHeight > el.clientHeight), 'three mats do not fit one phone screen: the overlay must scroll').toBe(true);
+
+  // Every card image shows whole: its box has the card's own proportions (no object-fit crop of title or border).
+  const crops = await ov.evaluate((el) => [...el.querySelectorAll('.mcard img')].map((i) => {
+    const r = i.getBoundingClientRect();
+    return { src: i.getAttribute('src'), loaded: i.complete && i.naturalWidth > 0, box: r.height / r.width, art: i.naturalHeight / i.naturalWidth };
+  }));
+  expect(crops.length).toBeGreaterThanOrEqual(6);
+  for (const c of crops) {
+    expect(c.loaded, `${c.src} loaded`).toBe(true);
+    expect(Math.abs(c.box / c.art - 1), `${c.src} is shown whole (box ${c.box.toFixed(3)} vs art ${c.art.toFixed(3)})`).toBeLessThan(0.02);
+  }
+  const obelisk = crops.find((c) => c.src.includes('Obelisk_of_Puzzles'));
+  expect(obelisk, "Keith's Obelisk of Puzzles is on his mat").toBeTruthy();
+
+  // No card overlaps another card or the empty wizard slot above it.
+  const overlaps = await ov.evaluate((el) => {
+    const rs = [...el.querySelectorAll('.mcard')].map((c) => ({ r: c.getBoundingClientRect(), k: c.querySelector('img')?.getAttribute('src') || c.className }));
+    const out = [];
+    for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) {
+      const a = rs[i].r, b = rs[j].r;
+      if (a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5) out.push(`${rs[i].k} x ${rs[j].k}`);
+    }
+    return out;
+  });
+  expect(overlaps, overlaps.join('\n')).toEqual([]);
+
+  // Each card can be scrolled to sit fully between the status bar and the Safari bar, and no box inside the overlay clips it.
   const cards = ov.locator('.mcard');
   const n = await cards.count();
-  expect(n).toBeGreaterThanOrEqual(6);
   for (let i = 0; i < n; i++) {
-    await cards.nth(i).evaluate((c, top) => { const o = c.closest('.overlay'); o.scrollTop += c.getBoundingClientRect().top - top - 8; }, L.top);
-    const r = await box(cards.nth(i));
-    expect(r.top, `card ${i} top`).toBeGreaterThanOrEqual(L.top);
-    expect(r.bottom, `card ${i} bottom`).toBeLessThanOrEqual(L.bottom);
+    const r = await cards.nth(i).evaluate((c, top) => {
+      const o = c.closest('.overlay'); o.scrollTop += c.getBoundingClientRect().top - top - 8;
+      const cr = c.getBoundingClientRect(); let clipped = null;
+      for (let a = c.parentElement; a && a !== o; a = a.parentElement) {
+        const st = getComputedStyle(a);
+        if (st.overflow === 'visible' && st.overflowX === 'visible' && st.overflowY === 'visible') continue;
+        const ar = a.getBoundingClientRect();
+        if (cr.top < ar.top - 0.5 || cr.bottom > ar.bottom + 0.5 || cr.left < ar.left - 0.5 || cr.right > ar.right + 0.5) clipped = a.className;
+      }
+      return { top: cr.top, bottom: cr.bottom, clipped, k: c.querySelector('img')?.getAttribute('src') || c.className };
+    }, L.top);
+    expect(r.clipped, `${r.k} clipped by .${r.clipped}`).toBeNull();
+    expect(r.top, `${r.k} top clears the status bar`).toBeGreaterThanOrEqual(L.top);
+    expect(r.bottom, `${r.k} bottom clears the Safari bar`).toBeLessThanOrEqual(L.bottom);
   }
+
+  // From the top, the "more below" button scrolls the mats; at the end, the last mat clears the bar.
+  await scrollOverlay(page, 'mats', 'top');
+  await shot(page, '16-mats-obelisk-whole');
+  const y0 = await ov.evaluate((el) => el.scrollTop);
+  const hb = await page.getByTestId('scroll-hint').boundingBox();       // it bobs, so tap its centre directly
+  await page.touchscreen.tap(hb.x + hb.width / 2, hb.y + hb.height / 2);
+  await expect.poll(() => ov.evaluate((el) => el.scrollTop)).toBeGreaterThan(y0 + 100);
   await scrollOverlay(page, 'mats', 'bottom');
   const lastMat = await box(ov.locator('.mat').last());
   expect(lastMat.bottom, 'last mat clears the bottom bar').toBeLessThanOrEqual(L.bottom);
   await expect(page.getByTestId('scroll-hint')).toHaveClass(/off/);
+  const newtWizard = await page.getByTestId('mat-Newt').locator('.mcard').first().evaluate((c, top) => {
+    const o = c.closest('.overlay'); o.scrollTop += c.getBoundingClientRect().top - top - 8; return c.getBoundingClientRect().bottom;
+  }, L.top);
+  expect(newtWizard, "Newt's wizard scrolls fully above the Safari bar").toBeLessThanOrEqual(L.bottom);
   await shot(page, '11-mats-scrolled-to-end');
-  const newtWizard = await box(page.getByTestId('mat-Newt').locator('.mcard').first());
-  await scrollOverlay(page, 'mats', 'top');
-  await page.getByTestId('mat-Newt').locator('.mcard').first().evaluate((c) => c.scrollIntoView({ block: 'center' }));
-  const nw = await box(page.getByTestId('mat-Newt').locator('.mcard').first());
-  expect(nw.bottom).toBeLessThanOrEqual(L.bottom);
-  expect(newtWizard).toBeTruthy();
 });
 
 test('game end: scores stay reachable after dismissing, and Play again deals a fresh 3-player game', async ({ page }) => {
