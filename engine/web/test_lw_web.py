@@ -307,5 +307,35 @@ call('act_gather', card=k['hand'][0].split('/')[-1][:-4], keep=W.view()['legal']
 ai_until_keith()
 check(W.st()['meta']['round'] == 2 and W.st()['next'] == 'Keith', 'the new game plays: Keith gathers, both AIs take round 1 turns')
 
+print('\n=== 14. Auctions: mana only moves when Keith wins; back-to-back auctions in one call; calls report their log entries ===')
+B2B = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tests', 'e2e', 'fixtures', 'back-to-back-auctions.json')).read()
+W.load(B2B)
+a = W.view()['auction']; k0 = A.P(W.st(), 'Keith')['mana']
+check(a and a['waiting'] == 'Keith' and a['card'] == 'Wizard_Reptilius_Venenum', 'fixture: LizWiz auctions Reptilius Venenum and waits on Keith')
+for _ in range(3):
+    r = call('act_bid', n=W.view()['auction']['high'] + 1)
+    check(r['ok'] and A.P(W.st(), 'Keith')['mana'] == k0 and r['view']['auction']['high'] > r['view']['auction']['tail'][-2][1] - 1, f"raise to {r['view']['auction']['tail'][-3][1] if len(r['view']['auction']['tail']) > 2 else '?'}: AIs answer, Keith's mana unchanged ({k0})")
+r = call('act_pass')
+a2 = r['view']['auction']
+check(r['ok'] and a2 and a2['card'] == 'Wizard_Lacerta_Arborus' and a2['high'] == 1 and a2['waiting'] == 'Keith', 'after Keith passes, the auction resolves and LizWiz starts the next one in the same call')
+e0 = r['entries'][0] if r['entries'] else {}
+check(e0.get('act') == 'auction' and e0.get('who') == 'Newt' and e0.get('price') == 13, f"the call reports the resolved auction in its entries (Newt for 13; LizWiz, the starter, lost and so auctions again): {e0.get('text')}")
+check(A.P(W.st(), 'Keith')['mana'] == k0, 'losing an auction costs Keith nothing')
+r = call('act_pass')
+check(r['ok'] and not r['view']['auction'] and A.P(W.st(), 'Keith')['mana'] == k0, 'second auction passed: no auction left, mana still unchanged')
+check(any(e['who'] not in ('Keith', None) and e['act'] not in ('turn', 'auction', 'auction_nobid') for e in r['entries']) or r['view']['next'] == 'Keith',
+      "AI moves played inside Keith's call are reported for the UI to announce")
+def m14(s):
+    A.P(s, 'Keith')['mana'] = 89; A.P(s, 'Newt')['mana'] = 120; A.P(s, 'LizWiz')['mana'] = 120
+setup(m14)
+wiz = W.view()['board']['wiz_face'][0]
+r = call('act_recruit', wizard=wiz, opening=1)
+while r['ok'] and r['view']['auction']:
+    check(A.P(W.st(), 'Keith')['mana'] == 89, 'bidding does not reserve mana') if r['view']['auction']['high'] < 3 else None
+    r = call('act_bid', n=r['view']['auction']['high'] + 1)
+won = [e for e in W.public_log(W.st(), 'Keith') if e['act'] == 'auction'][-1]
+check(won['who'] == 'Keith' and A.P(W.st(), 'Keith')['mana'] == 89 - won['price'] and W.key(A.P(W.st(), 'Keith')['wizards'][-1]) == wiz,
+      f"Keith wins at {won['price']}: charged once (89 -> {A.P(W.st(), 'Keith')['mana']}) and takes the wizard")
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)
