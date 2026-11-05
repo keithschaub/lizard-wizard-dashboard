@@ -337,5 +337,53 @@ won = [e for e in W.public_log(W.st(), 'Keith') if e['act'] == 'auction'][-1]
 check(won['who'] == 'Keith' and A.P(W.st(), 'Keith')['mana'] == 89 - won['price'] and W.key(A.P(W.st(), 'Keith')['wizards'][-1]) == wiz,
       f"Keith wins at {won['price']}: charged once (89 -> {A.P(W.st(), 'Keith')['mana']}) and takes the wizard")
 
+print('\n=== 15. Wizards are conserved: 3 copies of each in a 3-player deal; a mat only changes by logged events ===')
+import collections
+def wizard_census(s):
+    allw = list(s['wiz_face']) + list(s['wiz_list']) + [w for q in s['players'] for w in q['wizards']] + [c for c in s.get('out_of_play', []) if 'Wizard_' in c]
+    return collections.Counter(w.split('/')[-1] for w in allw if w)
+def expected_delta(entries, name):
+    d = 0
+    for e in entries:
+        a = e.get('act')
+        if a == 'auction' and e.get('won') == name: d += 1
+        if a == 'charm' and e.get('who') == name: d += 1
+        if a == 'charm' and e.get('target') == name: d -= 1
+        if a == 'creation' and e.get('who') == name and e.get('kind') == 'wizards': d += 1
+        if a == 'scry_wizards' and e.get('who') == name and e.get('took'): d += 1        # Scry Wizard: take one of the top wizards
+        if a == 'flame_bolt' and e.get('target') == name and e.get('kind') == 'wizards': d -= 1
+    return d
+bad = []; calls = 0; keith_wins = 0
+for seed in (2, 5, 11, 23):
+    W.new_game_preview(seed=seed, ai_seed=seed); W.new_game_start(['Horn', 'Mandrake'], seed=seed)
+    for step in range(260):
+        s0 = W.st(); n0 = len(s0['meta']['log']); before = {q['name']: len(q['wizards']) for q in s0['players']}
+        v = W.view()
+        if v['game_over'] or v['pending']: break
+        a = v['auction']
+        if a and a['waiting'] == 'Keith':
+            r = call('act_bid', n=a['high'] + 1) if a['high'] + 1 <= A.P(s0, 'Keith')['mana'] else call('act_pass')
+        elif v['next'] != 'Keith': r = call('ai_step')
+        else:
+            g = v['legal'].get('gather') or {}
+            if not g: break
+            c = next(iter(g)); args = {'card': c}
+            if g[c].get('keeps'): args['keep'] = g[c]['keeps'][0]
+            r = call('act_gather', **args)
+            for nd in range(1, 8):
+                if r['ok']: break
+                r = call('act_gather', **dict(args, discard=A.P(W.st(), 'Keith')['tok'][:nd]))
+        if not r['ok']: bad.append(f'seed {seed} step {step}: {r["error"]}'); break
+        calls += 1; s1 = W.st(); new = s1['meta']['log'][n0:]
+        keith_wins += sum(1 for e in new if e.get('act') == 'auction' and e.get('won') == 'Keith')
+        cen = wizard_census(s1)
+        if set(cen.values()) != {3} or len(cen) != 7: bad.append(f'seed {seed} step {step}: census {dict(cen)}')
+        for q in s1['players']:
+            if len(q['wizards']) - before[q['name']] != expected_delta(new, q['name']):
+                bad.append(f"seed {seed} step {step}: {q['name']} wizards {before[q['name']]} -> {len(q['wizards'])}, logged events say {expected_delta(new, q['name']):+d}")
+        if bad: break
+check(not bad, f'{calls} engine calls over 4 new games (Keith bids on every auction he can afford, won {keith_wins}): every wizard school always has exactly 3 copies, and every mat changed only by logged auction wins, Charm, Creation, Scry Wizard or Flame Bolt (swaps keep counts)' + (f': {bad[:3]}' if bad else ''))
+check(keith_wins >= 2, f'the simulation covers Keith winning auctions ({keith_wins})')
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)

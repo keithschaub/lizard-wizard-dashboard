@@ -129,3 +129,92 @@ test('winning an auction charges the winning bid exactly once', async ({ page })
   expect(me(v).wizards).toContain(wiz);
   expect(me(v).mana, `paid ${won.price} once`).toBe(89 - won.price);
 });
+
+// Records every "You win …" / "X wins …" message the arena shows.
+async function recordWins(page) {
+  await page.evaluate(() => {
+    window.__wins = [];
+    new MutationObserver(() => {
+      const m = document.querySelector('[data-testid=arena-winner]');
+      if (m && m.textContent && window.__wins[window.__wins.length - 1] !== m.textContent) window.__wins.push(m.textContent);
+    }).observe(document.getElementById('overlays'), { subtree: true, childList: true, characterData: true, attributes: true });
+  });
+}
+
+async function untilKeithsTurn(page) {
+  await page.waitForFunction(() => { const v = window.lwDebug.view(); return !v.auction && v.next === 'Keith' && !window.lwDebug.aiRunning() && !document.querySelector('#overlays .overlay:not(.out)'); }, null, { timeout: 180_000 });
+}
+
+// Keith's mat must draw exactly the engine's wizards: each once, one per pair column, no overlaps, and the card list agrees.
+async function checkMat(page, screenshot = null) {
+  const b = await page.getByTestId('board').boundingBox();
+  await page.touchscreen.tap(b.x + b.width * 0.52, b.y + b.height * 0.486);
+  await expect(page.getByTestId('mats')).toBeVisible();
+  await page.waitForTimeout(400);
+  const m = await page.getByTestId('mat-Keith').evaluate((mat) => {
+    const k = window.lwDebug.view().players.find((p) => p.name === 'Keith');
+    const pairs = [...mat.querySelectorAll('.pair')].map((p) => [...p.querySelectorAll('.mcard img')].map((i) => i.getAttribute('src').replace(/^art\/cards\/|\.webp$/g, '')));
+    const rs = [...mat.querySelectorAll('.mcard')].map((c) => c.getBoundingClientRect());
+    let overlaps = 0;
+    for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) {
+      const a = rs[i], c = rs[j];
+      if (a.left < c.right - 0.5 && c.left < a.right - 0.5 && a.top < c.bottom - 0.5 && c.top < a.bottom - 0.5) overlaps++;
+    }
+    const list = mat.querySelector('[data-testid=mat-cards-Keith]');
+    return { engine: k.wizards, towers: k.towers, pairs, overlaps, listed: list.dataset.wizards ? list.dataset.wizards.split(',') : [], text: list.textContent };
+  });
+  const drawnWizards = m.pairs.map((p) => p.filter((x) => x.startsWith('Wizard_'))).flat();
+  expect(m.pairs.every((p) => p.filter((x) => x.startsWith('Wizard_')).length <= 1), 'one wizard per pair column').toBe(true);
+  expect([...drawnWizards].sort(), 'the mat draws exactly the engine\'s wizards').toEqual([...m.engine].sort());
+  expect(m.pairs.flat().filter((x) => x.startsWith('Tower_')).sort()).toEqual([...m.towers].sort());
+  expect(m.listed, 'debug card list = engine wizards').toEqual(m.engine);
+  expect(m.overlaps, 'no card overlaps another or an empty slot').toBe(0);
+  if (screenshot) { await page.getByTestId('mat-cards-Keith').scrollIntoViewIfNeeded(); await shot(page, screenshot); }
+  await page.getByTestId('mats').getByTestId('ov-close').tap();
+  return m;
+}
+
+test('Keith wins one multi-raise auction: his mat gains exactly that wizard, drawn once', async ({ page }) => {
+  await open(page, B2B);
+  await expect(page.getByTestId('arena')).toBeVisible({ timeout: 60_000 });
+  await recordWins(page);
+  const before = me(await view(page)).wizards.length;
+  while (await nextPanel(page)) {
+    await page.waitForTimeout(250);
+    const st = await checkPanel(page);
+    await answer(page, st.a.card === 'Wizard_Reptilius_Venenum' && st.go ? 'bid-go' : 'bid-pass');
+  }
+  await untilKeithsTurn(page);
+  const v = await view(page);
+  expect(me(v).wizards.length, 'exactly one wizard more').toBe(before + 1);
+  expect(me(v).wizards).toEqual(['Wizard_Reptilius_Venenum']);
+  const wins = await page.evaluate(() => window.__wins);
+  expect(wins.filter((w) => w.startsWith('You win')), 'Keith is told what he won').toEqual([expect.stringContaining('Reptilius Venenum')]);
+  const m = await checkMat(page);
+  expect(m.text).toContain('Wizards: Reptilius Venenum');
+});
+
+test("Keith's playtest: bidding in every back-to-back auction wins only the wizards shown, each named in its win message", async ({ page }) => {
+  const s = JSON.parse(B2B); P(s, 'Keith').mana = 60;
+  await open(page, JSON.stringify(s));
+  await expect(page.getByTestId('arena')).toBeVisible({ timeout: 60_000 });
+  await recordWins(page);
+  const cards = [];
+  while (await nextPanel(page)) {
+    await page.waitForTimeout(250);
+    const st = await checkPanel(page);                                // the arena card is always the auction being bid on
+    if (!cards.includes(st.a.card)) cards.push(st.a.card);
+    await answer(page, st.go ? 'bid-go' : 'bid-pass');
+  }
+  await untilKeithsTurn(page);
+  const v = await view(page);
+  const log = await page.evaluate(() => window.lwDebug.log());
+  const keithWon = log.filter((e) => e.act === 'auction' && e.who === 'Keith').map((e) => e.cards[0]);
+  expect(cards.length, 'several auctions in a row').toBeGreaterThanOrEqual(3);
+  expect(keithWon.length, 'Keith won more than one').toBeGreaterThanOrEqual(2);
+  expect([...me(v).wizards].sort(), 'Keith holds exactly the wizards he won').toEqual([...keithWon].sort());
+  const told = (await page.evaluate(() => window.__wins)).filter((w) => w.startsWith('You win'));
+  expect(told.length).toBe(keithWon.length);
+  keithWon.forEach((k, i) => expect(told[i], 'each win message names the wizard actually won').toContain(k.replace('Wizard_', '').replaceAll('_', ' ')));
+  await checkMat(page, '18-mat-after-back-to-back-auctions');
+});
