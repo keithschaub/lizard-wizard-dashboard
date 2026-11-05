@@ -20,7 +20,7 @@ export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const art = (key) => `art/cards/${key}.webp`;
-export const reagentIcon = (r) => `art/icons/reagents/${r}.png`;
+export const reagentIcon = (r) => `art/icons/reagents/${String(r).replaceAll(' ', '_')}.png`;
 export const schoolIcon = (sc) => `art/icons/schools/${sc}.png`;
 export const nice = (r) => String(r ?? '').replaceAll('_', ' ');
 export const REAGENTS = ['Mandrake', 'Eye_of_Newt', 'Nightshade', 'Sulphur', 'Foxglove', 'Toadstool', 'Horn'];
