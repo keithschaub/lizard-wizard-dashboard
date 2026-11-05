@@ -676,16 +676,39 @@ export async function arena(g, { mode, wizard = null }) {
 }
 
 // ------------------------------------------------------------------ AI move banners
-export async function banner(g, e) {
+// One banner per AI turn stays up and steps through that AI's moves, each long enough to read.
+// A tap anywhere jumps to the next move; "Skip" finishes the AI turns at once (g.skip).
+export const AI_MOVE_MS = 2200;
+export const AI_CAST_MS = 2500;
+export const aiMoveMs = (e) => (e.cast ? AI_CAST_MS : AI_MOVE_MS);
+
+export async function banner(g, e, i = 0, n = 1) {
+  if (g.skip) return;
   const layer = document.getElementById('banner-layer');
   const imgs = (e.cast ? [e.cast] : (e.cards || [])).filter((k) => g.cards[k]).slice(0, 4);
   const extra = e.cast && g.cards[e.cast] ? h('div', { style: { fontSize: '12.5px', color: '#d8ccff', marginTop: '3px' } }, `“${g.cards[e.cast].effect}”`) : null;
-  const el = h('div', { class: 'banner', 'data-testid': 'ai-banner' }, avatar(e.who || '?'),
-    h('div', { class: 'btext' }, h('div', {}, e.text), extra, h('div', { class: 'skiphint' }, 'tap to skip')), imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null);
-  layer.innerHTML = ''; layer.append(el);
-  const dur = 1500;
+  const dur = aiMoveMs(e);
+  let el = layer.querySelector('.banner:not(.out)');
+  if (!el) { el = h('div', { class: 'banner', 'data-testid': 'ai-banner' }); layer.replaceChildren(el); }
+  else { el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap'); }
+  el.dataset.move = `${i + 1}/${n}`;
+  el.replaceChildren(avatar(e.who || '?'),
+    h('div', { class: 'btext' },
+      h('div', { class: 'bhead' }, `${e.who || 'AI'}'s turn${n > 1 ? ` · move ${i + 1} of ${n}` : ''}`),
+      h('div', { 'data-testid': 'ai-banner-text' }, e.text), extra,
+      h('div', { class: 'bfoot' }, h('span', { class: 'skiphint' }, i + 1 < n ? 'tap anywhere: next move' : 'tap anywhere to continue'),
+        h('button', { class: 'bskip', 'data-testid': 'ai-skip', onclick: () => { g.skip = true; } }, 'Skip ⏭'))),
+    imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null,
+    h('div', { class: 'bprog', style: { animationDuration: `${dur}ms` } }));
+  g.skipMove = false;
   const t0 = Date.now();
-  while (Date.now() - t0 < dur && !g.skip) await sleep(50);
+  while (Date.now() - t0 < dur && !g.skip && !g.skipMove) await sleep(50);
+  g.skipMove = false;
+}
+
+export async function bannerDone(g) {
+  const el = document.querySelector('#banner-layer .banner:not(.out)');
+  if (!el) return;
   el.classList.add('out'); await sleep(g.skip ? 60 : 220); el.remove();
 }
 

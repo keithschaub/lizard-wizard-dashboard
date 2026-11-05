@@ -22,7 +22,7 @@ class Game {
     const paintMute = () => { mute.innerHTML = Audio.isMuted() ? MUTE_ON : MUTE_OFF; mute.setAttribute('aria-pressed', Audio.isMuted() ? 'true' : 'false'); };
     mute.onclick = () => { Audio.setMuted(!Audio.isMuted()); paintMute(); this.sfx('select'); };
     paintMute();
-    window.addEventListener('pointerdown', () => { Audio.unlock(); if (this.aiRunning) this.skip = true; }, { capture: true });
+    window.addEventListener('pointerdown', () => { Audio.unlock(); if (this.aiRunning) this.skipMove = true; }, { capture: true });
     window.lwDebug = { view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning };
   }
 
@@ -230,15 +230,17 @@ class Game {
       const r = await this.call('ai_step');
       if (!r.ok) { this.toast(r.error); return false; }
       const res = r.result;
-      for (const e of res.entries) {
-        if (e.act === 'turn' || e.act === 'reshuffle_reagents') continue;
+      const moves = res.entries.filter((e) => e.act !== 'turn' && e.act !== 'reshuffle_reagents');
+      for (const [i, e] of moves.entries()) {
         const slot = this.slotFor(e);
-        if (slot && !this.skip) this.board.flash(slot);
+        if (slot && !this.skip) this.board.focus(slot);
         if (!this.skip) this.sfx(e.cast ? 'cast' : e.act === 'build' ? 'build' : e.act === 'dungeon' ? 'flip' : e.act === 'gather' ? 'gather' : 'tap');
-        await UI.banner(this, e);
+        await UI.banner(this, e, i, moves.length);
+        this.board.focus(null);
       }
       const vr = await this.call('view');
       this.setView(vr.result);
+      await UI.bannerDone(this);
       await this.autosave();
       if (this.v.next === this.me || this.v.auction || this.v.game_over) this.skip = false;
       return res.status !== 'human' && res.status !== 'over';
