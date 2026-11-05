@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${1:-_site}"
 [ -f "$ROOT/vendor/pyodide/pyodide.mjs" ] || { echo "vendor/pyodide missing: run npm run vendor" >&2; exit 1; }
 rm -rf "$OUT" && mkdir -p "$OUT/engine/assets"
-cp "$ROOT/index.html" "$ROOT/robots.txt" "$OUT/"
+cp "$ROOT/index.html" "$ROOT/robots.txt" "$ROOT/manifest.webmanifest" "$OUT/"
 touch "$OUT/.nojekyll"
 cp -r "$ROOT/app" "$ROOT/art" "$ROOT/fonts" "$OUT/"
 mkdir -p "$OUT/vendor" && cp -r "$ROOT/vendor/pyodide" "$OUT/vendor/"

@@ -15,7 +15,25 @@ export function openOverlay(cls, { onScrim = null, testid = null } = {}) {
   };
   if (onScrim) el.addEventListener('click', (e) => { if (e.target === el) onScrim(ov); });
   root.appendChild(el);
+  scrollHint(el);
   return ov;
+}
+
+// "More below" pill whenever an overlay's content runs past the visible area; tapping it scrolls down.
+function scrollHint(el) {
+  const hint = h('button', { class: 'scroll-hint off', 'data-testid': 'scroll-hint', 'aria-label': 'More below', onclick: (e) => { e.stopPropagation(); el.scrollBy({ top: el.clientHeight * 0.7, behavior: 'smooth' }); } }, '⌄');
+  document.getElementById('overlays').appendChild(hint);
+  const update = () => {
+    if (!el.isConnected || el.classList.contains('out')) { hint.remove(); mo.disconnect(); return; }
+    hint.classList.toggle('off', el.scrollTop > 40 || el.scrollTop + el.clientHeight >= el.scrollHeight - 24);
+  };
+  const mo = new MutationObserver(() => requestAnimationFrame(update));
+  mo.observe(el, { childList: true, subtree: true });
+  new MutationObserver(update).observe(document.getElementById('overlays'), { childList: true });
+  el.addEventListener('scroll', update, { passive: true });
+  el.addEventListener('load', update, true);
+  window.addEventListener('resize', update);
+  requestAnimationFrame(update);
 }
 export function closeAll() { document.querySelectorAll('#overlays .overlay').forEach((o) => o.remove()); }
 
@@ -437,7 +455,8 @@ export async function effectChooser(g) {
   const pd = g.v.pending; const k = pd.spell; const info = g.cards[k] || {};
   const ov = openOverlay('gather', { testid: 'effect' });
   const [p, done] = wait();
-  ov.el.append(h('img', { class: 'mini-card', src: art(k), alt: k }), h('div', { class: 'phase-title' }, info.display), h('div', { class: 'ov-sub' }, info.effect));
+  ov.el.append(h('div', { class: 'chooser-head' }, h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }),
+    h('div', {}, h('div', { class: 'phase-title' }, info.display), h('div', { class: 'ov-sub' }, info.effect))));
   const opts = pd.options;
   const grid = h('div', { class: 'opt-grid', 'data-testid': 'effect-options' });
   const pick = (choice) => () => { g.sfx('select'); done(choice); };
@@ -482,7 +501,8 @@ export async function newResearchChooser(g) {
   const pd = g.v.pending;
   const ov = openOverlay('gather', { testid: 'new-research' });
   const [p, done] = wait();
-  ov.el.append(h('img', { class: 'mini-card', src: art(pd.familiar), alt: '' }), h('div', { class: 'phase-title' }, 'New Research — take one spell'));
+  ov.el.append(h('div', { class: 'chooser-head' }, h('img', { src: art(pd.familiar), alt: '' }),
+    h('div', {}, h('div', { class: 'phase-title' }, 'New Research'), h('div', { class: 'ov-sub' }, 'Take one of the four new spells'))));
   ov.el.append(h('div', { class: 'opt-grid' }, pd.four.map((k) => h('button', { class: 'opt-card wide', 'data-testid': `nr-${k}`, onclick: () => done(k) },
     h('img', { src: art(k), alt: k }), h('span', { class: 'oc-text' }, g.cards[k]?.display), h('span', { class: 'oc-label' }, g.cards[k]?.effect)))));
   const k = await p;
@@ -656,35 +676,111 @@ export async function arena(g, { mode, wizard = null }) {
 }
 
 // ------------------------------------------------------------------ AI move banners
-export async function banner(g, e) {
+// One banner per AI turn stays up and steps through that AI's moves, each long enough to read.
+// A tap anywhere jumps to the next move; "Skip" finishes the AI turns at once (g.skip).
+export const AI_MOVE_MS = 2200;
+export const AI_CAST_MS = 2500;
+export const aiMoveMs = (e) => (e.cast ? AI_CAST_MS : AI_MOVE_MS);
+
+export async function banner(g, e, i = 0, n = 1) {
+  if (g.skip) return;
   const layer = document.getElementById('banner-layer');
   const imgs = (e.cast ? [e.cast] : (e.cards || [])).filter((k) => g.cards[k]).slice(0, 4);
   const extra = e.cast && g.cards[e.cast] ? h('div', { style: { fontSize: '12.5px', color: '#d8ccff', marginTop: '3px' } }, `“${g.cards[e.cast].effect}”`) : null;
-  const el = h('div', { class: 'banner', 'data-testid': 'ai-banner' }, avatar(e.who || '?'),
-    h('div', { class: 'btext' }, h('div', {}, e.text), extra, h('div', { class: 'skiphint' }, 'tap to skip')), imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null);
-  layer.innerHTML = ''; layer.append(el);
-  const dur = 1500;
+  const dur = aiMoveMs(e);
+  let el = layer.querySelector('.banner:not(.out)');
+  if (!el) { el = h('div', { class: 'banner', 'data-testid': 'ai-banner' }); layer.replaceChildren(el); }
+  else { el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap'); }
+  el.dataset.move = `${i + 1}/${n}`;
+  el.replaceChildren(avatar(e.who || '?'),
+    h('div', { class: 'btext' },
+      h('div', { class: 'bhead' }, `${e.who || 'AI'}'s turn${n > 1 ? ` · move ${i + 1} of ${n}` : ''}`),
+      h('div', { 'data-testid': 'ai-banner-text' }, e.text), extra,
+      h('div', { class: 'bfoot' }, h('span', { class: 'skiphint' }, i + 1 < n ? 'tap anywhere: next move' : 'tap anywhere to continue'),
+        h('button', { class: 'bskip', 'data-testid': 'ai-skip', onclick: () => { g.skip = true; } }, 'Skip ⏭'))),
+    imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null,
+    h('div', { class: 'bprog', style: { animationDuration: `${dur}ms` } }));
+  g.skipMove = false;
   const t0 = Date.now();
-  while (Date.now() - t0 < dur && !g.skip) await sleep(50);
+  while (Date.now() - t0 < dur && !g.skip && !g.skipMove) await sleep(50);
+  g.skipMove = false;
+}
+
+export async function bannerDone(g) {
+  const el = document.querySelector('#banner-layer .banner:not(.out)');
+  if (!el) return;
   el.classList.add('out'); await sleep(g.skip ? 60 : 220); el.remove();
 }
 
 // ------------------------------------------------------------------ game over + menu
+export function ranking(v) {
+  const ranks = Object.entries(v.final || {}).sort((x, y) => y[1] - x[1]);
+  const top = ranks.length ? ranks[0][1] : 0;
+  const winners = ranks.filter(([, pts]) => pts === top).map(([n]) => n);
+  return { ranks, winners, text: winners.length > 1 ? `Tie: ${winners.join(' & ')}` : `${winners[0]} wins` };
+}
+
+function rankRows(v, cls = 'rank') {
+  const { ranks, winners } = ranking(v);
+  return ranks.map(([n, pts]) => h('div', { class: `${cls} ${winners.includes(n) ? 'first' : ''}`, 'data-testid': `final-${n}` }, avatar(n, 30), h('span', {}, n), h('span', { class: 'pts' }, `${pts} VP`)));
+}
+
 export function gameOver(g) {
   const v = g.v; const ov = openOverlay('final', { testid: 'game-over' });
-  const ranks = Object.entries(v.final).sort((a, b) => b[1] - a[1]);
-  ov.el.append(h('div', { class: 'ov-title' }, 'Game Over'),
-    ...ranks.map(([n, pts], i) => h('div', { class: `rank ${i === 0 ? 'first' : ''}` }, avatar(n, 32), h('span', {}, n), h('span', { class: 'pts' }, `${pts} VP`))),
-    h('div', { class: 'actions' }, h('button', { class: 'act secondary', onclick: () => { ov.close(); openMats(g); } }, 'View mats'), h('button', { class: 'act secondary', onclick: () => ov.close() }, 'Close')));
+  ov.el.append(h('div', { class: 'ov-title' }, 'Game Over'), h('div', { class: 'winner', 'data-testid': 'winner' }, ranking(v).text), ...rankRows(v),
+    h('div', { class: 'actions' },
+      h('button', { class: 'act', 'data-testid': 'go-new-game', onclick: () => { ov.close(); newGame(g); } }, 'Play again'),
+      h('button', { class: 'act secondary', 'data-testid': 'go-mats', onclick: () => { ov.close(); openMats(g); } }, 'View mats'),
+      h('button', { class: 'act secondary', 'data-testid': 'go-close', onclick: () => ov.close() }, 'Close')));
   g.sfx('win');
 }
 
 export function menu(g) {
+  const v = g.v;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'menu' });
-  ov.el.append(h('div', { class: 'sheet-panel' }, h('div', { class: 'phase-title' }, 'Game'),
+  const scores = v.game_over ? [h('div', { class: 'phase-title', 'data-testid': 'menu-winner' }, `Final scores · ${ranking(v).text}`), h('div', { class: 'menu-scores', 'data-testid': 'menu-scores' }, rankRows(v))] : [];
+  ov.el.append(h('div', { class: 'sheet-panel' }, ...(scores.length ? scores : [h('div', { class: 'phase-title' }, 'Game')]),
     h('div', { class: 'actions' },
+      h('button', { class: v.game_over ? 'act' : 'act secondary', 'data-testid': 'menu-new-game', onclick: () => { ov.close(); newGame(g); } }, v.game_over ? 'Play again (new game)' : 'New game'),
+      v.game_over ? h('button', { class: 'act secondary', 'data-testid': 'menu-final-scores', onclick: () => { ov.close(); gameOver(g); } }, 'Final scores') : null,
       h('button', { class: 'act secondary', 'data-testid': 'menu-export', onclick: () => { ov.close(); g.exportSave(); } }, 'Export save file'),
       h('button', { class: 'act secondary', 'data-testid': 'menu-import', onclick: () => { ov.close(); g.importSave(); } }, 'Import save file'),
-      h('button', { class: 'act danger', 'data-testid': 'menu-restart', onclick: () => { ov.close(); g.restart(); } }, 'Restart from game g8')),
+      h('button', { class: 'act danger', 'data-testid': 'menu-restart', onclick: () => { ov.close(); g.restart(); } }, 'Load the paused game g8')),
     h('div', { class: 'ov-sub' }, g.savedNote())));
+}
+
+// New game: Keith, Newt (AI) and LizWiz (AI), dealt by the engine's setup script; Keith picks 2 starting reagents.
+export async function newGame(g) {
+  const ov = openOverlay('gather newgame', { testid: 'new-game' });
+  ov.el.append(closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'), h('div', { class: 'ov-sub' }, 'Dealing…'));
+  const pr = await g.call('new_game_preview', {});
+  if (ov.closed) return;
+  if (!pr.ok) { g.toast(pr.error); ov.close(); return; }
+  const { hand, reagents, players } = pr.result;
+  const picks = [];
+  const start = h('button', { class: 'act', disabled: true, 'data-testid': 'new-game-start' }, 'Start game');
+  const chips = reagents.map((r) => {
+    const c = h('button', { class: 'chip', 'data-testid': `pick-${r}` }, h('img', { src: reagentIcon(r), alt: '' }), nice(r));
+    c.onclick = () => {
+      const i = picks.indexOf(r);
+      if (i >= 0) { picks.splice(i, 1); c.classList.remove('on'); g.sfx('unselect'); }
+      else if (picks.length < 2) { picks.push(r); c.classList.add('on'); g.sfx('select'); }
+      start.disabled = picks.length !== 2;
+    };
+    return c;
+  });
+  ov.el.innerHTML = '';
+  ov.el.append(closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'),
+    h('div', { class: 'ov-sub' }, `${players.join(', ')} · you start. This replaces the current game (export it first to keep it).`),
+    h('div', { class: 'phase-title', style: { fontSize: '15px' } }, 'Your reagent cards'),
+    h('div', { class: 'hand-preview', 'data-testid': 'new-game-hand' }, hand.map((k) => h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }))),
+    h('div', { class: 'phase-title', style: { fontSize: '15px' } }, 'Pick 2 different starting reagents'),
+    h('div', { class: 'chips' }, chips), h('div', { class: 'actions' }, start));
+  start.onclick = async () => {
+    start.disabled = true;
+    const r = await g.call('new_game_start', { picks });
+    if (!r.ok) { g.toast(r.error); start.disabled = false; return; }
+    closeAll();
+    g.startedNewGame(r.view);
+  };
 }

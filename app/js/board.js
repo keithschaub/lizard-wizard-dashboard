@@ -100,12 +100,13 @@ export class Board {
     }
   }
 
-  flash(slotName) {
-    const n = this.slots[slotName]?.firstChild;
-    if (!n) return;
-    n.classList.remove('flash'); void n.offsetWidth; n.classList.add('flash');
-    setTimeout(() => n.classList.remove('flash'), 1300);
+  // Highlight the slot an AI is acting on for as long as its move is on screen.
+  focus(slotName) {
+    this.focused?.classList.remove('ai-focus');
+    this.focused = slotName ? this.slots[slotName]?.firstChild || null : null;
+    this.focused?.classList.add('ai-focus');
   }
+
 }
 
 // A board tap opens overlays on pointerup; the browser's follow-up click would land on whatever the overlay put under

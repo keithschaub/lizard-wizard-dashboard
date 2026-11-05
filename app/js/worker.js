@@ -10,12 +10,14 @@
 const PYODIDE_VERSION = '314.0.7';
 const ENGINE_FILES = [
   'scripts/actions.py', 'scripts/ai_policy.py', 'scripts/ai_sim.py', 'scripts/build_carddb.py', 'scripts/carddb.py',
-  'scripts/scoring.py', 'scripts/spell_effects.py', 'scripts/turn.py', 'scripts/turn_package.py',
+  'scripts/deal4.py', 'scripts/scoring.py', 'scripts/spell_effects.py', 'scripts/turn.py', 'scripts/turn_package.py',
   'cards/cards.json', 'cards/dungeon_cards.json', 'cards/other_cards_from_pc.json', 'cards/reagent_cards.json',
   'cards/spells_from_pc.json', 'cards/carddb.json', 'assets/dungeon_from_photos.json', 'web/lw_web.py',
 ];
 const BIG_FILES = { 'pyodide.asm.wasm': 'Python runtime', 'python_stdlib.zip': 'Python library' };
 const STALL_MS = 20000;
+// The engine's setup script (scripts/deal4.py) hardcodes this root, so the engine lives there in Pyodide's file system.
+const ENGINE_ROOT = '/workspace/lizard-wizard/';
 const TRIES = 3;
 const ROOT = new URL('../../', import.meta.url);
 let api = null;
@@ -140,7 +142,7 @@ async function init(env) {
   status('Loading the rules engine…', { stage: 'engine' });
   const files = await engineFiles;
   for (const [f, data] of files) {
-    const path = '/lw/engine/' + f;
+    const path = ENGINE_ROOT + f;
     py.FS.mkdirTree(path.slice(0, path.lastIndexOf('/')));
     py.FS.writeFile(path, data);
   }
@@ -148,10 +150,10 @@ async function init(env) {
   py.runPython(`
 import os, time, sys
 _t = time.time()
-for _d, _, _fs in os.walk('/lw/engine'):
+for _d, _, _fs in os.walk('/workspace/lizard-wizard'):
     for _f in _fs: os.utime(os.path.join(_d, _f), (_t - 60, _t - 60))
-os.utime('/lw/engine/cards/carddb.json', (_t, _t))
-sys.path.insert(0, '/lw/engine/web')
+os.utime('/workspace/lizard-wizard/cards/carddb.json', (_t, _t))
+sys.path.insert(0, '/workspace/lizard-wizard/web')
 import lw_web
 `);
   api = py.pyimport('lw_web').call;

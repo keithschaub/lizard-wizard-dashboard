@@ -22,7 +22,7 @@ class Game {
     const paintMute = () => { mute.innerHTML = Audio.isMuted() ? MUTE_ON : MUTE_OFF; mute.setAttribute('aria-pressed', Audio.isMuted() ? 'true' : 'false'); };
     mute.onclick = () => { Audio.setMuted(!Audio.isMuted()); paintMute(); this.sfx('select'); };
     paintMute();
-    window.addEventListener('pointerdown', () => { Audio.unlock(); if (this.aiRunning) this.skip = true; }, { capture: true });
+    window.addEventListener('pointerdown', () => { Audio.unlock(); if (this.aiRunning) this.skipMove = true; }, { capture: true });
     window.lwDebug = { view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning };
   }
 
@@ -141,7 +141,7 @@ class Game {
     document.querySelector('[data-testid=round]').textContent = v.game_over ? 'Game over' : `Round ${v.round}`;
     const t = document.querySelector('[data-testid=turn]');
     let txt; let you = false;
-    if (v.game_over) txt = 'Final scores';
+    if (v.game_over) txt = UI.ranking(v).text;
     else if (v.auction) txt = v.auction.waiting === this.me ? 'Your bid' : `Auction · ${v.auction.waiting || ''}`;
     else if (v.next === this.me) { txt = v.bonus || v.again ? 'Your turn · bonus action' : 'Your turn'; you = true; }
     else txt = `${v.next}'s turn`;
@@ -152,7 +152,7 @@ class Game {
     const v = this.v; const p = this.me_(); const L = v.legal || {};
     const prevHand = prev ? prev.players.find((q) => q.name === this.me).hand : p.hand;
     const tok = counts(p.tok);
-    const status = v.game_over ? 'Game over' : (v.next === this.me && !v.auction ? (v.pending ? 'Finish your move' : 'Your move') : (this.aiRunning ? `${v.next} is playing…` : `${v.next}'s turn`));
+    const status = v.game_over ? `Game over · ${UI.ranking(v).text}` : (v.next === this.me && !v.auction ? (v.pending ? 'Finish your move' : 'Your move') : (this.aiRunning ? `${v.next} is playing…` : `${v.next}'s turn`));
     this.dock.innerHTML = '';
     this.dock.dataset.mana = p.mana; this.dock.dataset.gold = p.gold; this.dock.dataset.tokens = p.tok.length; this.dock.dataset.vp = p.vp;
     this.dock.append(
@@ -161,6 +161,7 @@ class Game {
         h('span', { class: 'stat gold', 'data-testid': 'my-gold', title: 'Gold' }, h('span', { class: 'orb' }), p.gold),
         h('span', { class: 'stat vp', 'data-testid': 'my-vp' }, `${p.vp} VP`),
         h('span', { class: `stat store ${p.tok.length > p.cap ? 'full' : ''}`, 'data-testid': 'my-storage' }, `${p.tok.length}/${p.cap}`),
+        v.game_over ? h('button', { class: 'dock-btn', 'data-testid': 'dock-scores', onclick: () => { this.sfx('tap'); UI.gameOver(this); } }, 'Scores') : null,
         h('span', { class: `dock-status ${v.next === this.me && !v.game_over ? 'you' : ''}`, 'data-testid': 'dock-status' }, status)),
       h('div', { class: 'dock-main' },
         h('div', { class: 'tokens', 'data-testid': 'tokens' }, tok.size ? [...tok].map(([r, n]) => {
@@ -204,7 +205,11 @@ class Game {
     try {
       for (let guard = 0; guard < 200; guard++) {
         const v = this.v;
-        if (v.game_over) { UI.gameOver(this); return; }
+        if (v.game_over) {
+          const k = `${v.round}:${JSON.stringify(v.final)}`;
+          if (this.overShown !== k) { this.overShown = k; UI.gameOver(this); }
+          return;
+        }
         if (v.pending) {
           if (v.pending.type === 'dungeon') await UI.dungeonFlow(this);
           else if (v.pending.type === 'new_research') await UI.newResearchChooser(this);
@@ -225,15 +230,17 @@ class Game {
       const r = await this.call('ai_step');
       if (!r.ok) { this.toast(r.error); return false; }
       const res = r.result;
-      for (const e of res.entries) {
-        if (e.act === 'turn' || e.act === 'reshuffle_reagents') continue;
+      const moves = res.entries.filter((e) => e.act !== 'turn' && e.act !== 'reshuffle_reagents');
+      for (const [i, e] of moves.entries()) {
         const slot = this.slotFor(e);
-        if (slot && !this.skip) this.board.flash(slot);
+        if (slot && !this.skip) this.board.focus(slot);
         if (!this.skip) this.sfx(e.cast ? 'cast' : e.act === 'build' ? 'build' : e.act === 'dungeon' ? 'flip' : e.act === 'gather' ? 'gather' : 'tap');
-        await UI.banner(this, e);
+        await UI.banner(this, e, i, moves.length);
+        this.board.focus(null);
       }
       const vr = await this.call('view');
       this.setView(vr.result);
+      await UI.bannerDone(this);
       await this.autosave();
       if (this.v.next === this.me || this.v.auction || this.v.game_over) this.skip = false;
       return res.status !== 'human' && res.status !== 'over';
@@ -259,12 +266,26 @@ class Game {
     if (!r.ok) { this.toast(`Not a valid save: ${r.error}`); return; }
     Store.saveLocal(text); UI.closeAll(); this.setView(r.result); this.toast('Save loaded'); this.settle();
   }
+  async startedNewGame(view) {
+    this.overShown = null; this.lastTurnRound = null;
+    this.setView(view);
+    await this.autosave();
+    this.toast('New game: round 1, your move');
+    this.settle();
+  }
+
   async restart() {
     const text = await (await fetch('engine/game/g8_state.json')).text();
     const r = await this.call('load', { text });
-    if (r.ok) { Store.saveLocal(text); UI.closeAll(); this.setView(r.result); this.toast('Game g8 restored'); this.settle(); }
+    if (r.ok) { this.overShown = null; Store.saveLocal(text); UI.closeAll(); this.setView(r.result); this.toast('Game g8 restored'); this.settle(); }
   }
 }
+
+// The tab title is always the app's own name (another app on the same github.io host must not rename it).
+const TITLE = 'Lizard Wizard';
+document.title = TITLE;
+new MutationObserver(() => { if (document.title !== TITLE) document.title = TITLE; })
+  .observe(document.querySelector('title'), { childList: true, characterData: true, subtree: true });
 
 const game = new Game();
 document.getElementById('loader-retry').addEventListener('click', () => game.retry());

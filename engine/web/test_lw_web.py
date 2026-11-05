@@ -279,5 +279,33 @@ for seed in range(4):
     check(not A.audit_tracks(W.st()) and not A.audit(W.st()), f'game {seed}: tracks/convert audit clean after {steps} steps (round {W.st()["meta"]["round"]}, over={W.st()["meta"].get("game_over")})')
 check(not bad, f'{games} random games, every glue call accepted, no legal action missing {bad[:3]}')
 
+print('\n=== 13. Game over keeps the final scores; a new game is dealt by scripts/deal4.py ===')
+def m13(s):
+    s['tow_list'] = []; s['tower_deck'] = 0          # the face-up T1 tower is the last one
+setup(m13)
+r = call('act_build', pay='reagent')
+check(r['ok'] and r['view']['end_triggered'] and not r['view']['game_over'], 'building the last tower triggers the end; the round still finishes')
+ai_until_keith()
+v = W.view()
+check(v['game_over'] and set(v['final']) == {'Keith', 'Newt', 'LizWiz'} and v['legal'] is None, f"game over after Newt and LizWiz finish the round; final scores {v['final']}")
+check(all(p['mana'] is not None for p in v['players']), 'at game over every mat is revealed (mana included)')
+before = W.dump()
+pv = call('new_game_preview', seed=1234, ai_seed=77)
+check(pv['ok'] and len(pv['result']['hand']) == 3 and pv['result']['reagents'] == W.REAGENTS and W.dump() == before, 'new game preview: 3 cards for Keith, all 7 reagents to pick from; current game untouched')
+check('Newt' not in json.dumps(pv['result']['hand']) and W.G['setup']['meta']['phase'] == 'picks', 'AI picks stay secret until the board is dealt')
+r = call('new_game_start', picks=['Horn', 'Horn'])
+check(not r['ok'], 'two identical starting reagents are refused')
+r = call('new_game_start', picks=['Horn', 'Mandrake'], seed=99)
+v = r['view'] if r['ok'] else {}
+k = A.P(W.st(), 'Keith')
+check(r['ok'] and v['round'] == 1 and v['next'] == 'Keith' and not v['game_over'] and v['legal'], 'new game: round 1, Keith to act, legal targets listed')
+check(sorted(k['tok']) == ['Horn', 'Mandrake'] and k['mana'] == 20 and all(len(A.P(W.st(), n)['tok']) == 2 for n in ('Newt', 'LizWiz')), 'starting reagents placed; 20 mana; AIs hold their 2 picks')
+s = W.st()
+check(s['tower_face'] and len(s['wiz_face']) == 2 and len([x for x in s['spell_face'] if x]) == 4 and len(s['ach']) == 4 and len(s['dungeon_list']) == 51, 'board dealt by deal4 (tower, 2 wizards, 2 familiars, 4 spells, 4 achievements, 51 dungeon cards)')
+check(s['meta']['ai_profiles'] == {'Newt': 'spellslinger', 'LizWiz': 'delver'} and s['meta'].get('show_gold'), 'same seats and AI profiles as g8, Gold public')
+call('act_gather', card=k['hand'][0].split('/')[-1][:-4], keep=W.view()['legal']['gather'][W.key(k['hand'][0])]['keeps'][0])
+ai_until_keith()
+check(W.st()['meta']['round'] == 2 and W.st()['next'] == 'Keith', 'the new game plays: Keith gathers, both AIs take round 1 turns')
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)

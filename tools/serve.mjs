@@ -6,7 +6,7 @@ const root = path.resolve(process.env.SITE_ROOT || path.join(path.dirname(new UR
 const port = Number(process.env.PORT || process.argv[2] || 4173);
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
   '.wasm': 'application/wasm', '.zip': 'application/zip', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml',
-  '.ttf': 'font/ttf', '.py': 'text/x-python', '.txt': 'text/plain' };
+  '.ttf': 'font/ttf', '.py': 'text/x-python', '.txt': 'text/plain', '.webmanifest': 'application/manifest+json' };
 http.createServer((req, res) => {
   let url;
   try { url = decodeURIComponent(req.url.split('?')[0]); } catch { res.writeHead(400).end(); return; }
