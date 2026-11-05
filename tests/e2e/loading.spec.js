@@ -1,5 +1,5 @@
 // The splash must never spin forever: runtime failures are shown with a Retry button that recovers.
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.js';
 import fs from 'fs';
 
 const WASM = fs.readFileSync('vendor/pyodide/pyodide.asm.wasm');

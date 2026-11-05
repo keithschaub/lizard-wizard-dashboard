@@ -1,6 +1,6 @@
 // Plays game g8 at 390x844 with real taps only (touch taps on the board, hand, tokens and overlay buttons).
 // The page state is READ through window.lwDebug (to choose taps and to assert); every move is made by tapping.
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures.js';
 import fs from 'fs';
 import { watchErrors, boot, view, cards, me, shot, shotPath, projectName, tapEmptyBoard, untilMyAction, waitOverlayGone, tapPutbacks, gatherPhase } from './helpers.js';
 
