@@ -116,11 +116,19 @@ function mini(g, key, { cls = '', badge = null, testid = null } = {}) {
     h('img', { src: art(key), alt: key }), badge ? h('div', { class: 'badge' }, badge) : null);
 }
 
+// "Anguis Magicus ×3, Draco Mortemus": the exact cards on a mat, so a screenshot shows what the engine holds.
+function cardList(g, keys) {
+  if (!keys.length) return 'none';
+  const n = new Map(); keys.forEach((k) => n.set(k, (n.get(k) || 0) + 1));
+  return [...n].map(([k, c]) => `${g.cards[k]?.name || k}${c > 1 ? ` ×${c}` : ''}`).join(', ');
+}
+
 export function openMats(g) {
   const ov = openOverlay('mats', { onScrim: (o) => o.close(), testid: 'mats' });
   ov.el.append(closeBtn(() => ov.close()));
   const v = g.v;
   const order = [...v.players].sort((a, b) => (b.you - a.you) || v.seat_order.indexOf(a.name) - v.seat_order.indexOf(b.name));
+  console.info('[mats]', order.map((p) => `${p.name}: wizards [${p.wizards.join(', ')}] towers [${p.towers.join(', ')}]`).join(' | '));
   for (const p of order) {
     const tag = p.you ? 'You' : (p.human ? 'Human' : `AI ${p.level ? p.level[0].toUpperCase() + p.level.slice(1) : ''}${p.profile ? ' · ' + p.profile : ''}`);
     const tok = counts(p.tok);
@@ -138,8 +146,10 @@ export function openMats(g) {
       p.you ? h('div', { class: 'mat-row' }, p.hand.map((k) => mini(g, k))) : null,
       h('div', { class: 'mat-label' }, `Wizards & Towers (${p.wizards.length}/${p.towers.length})`),
       h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m]) => h('div', { class: `pair ${m ? 'match' : ''}` },
-        h('span', { class: 'pts' }, m ? '+10' : (w && t ? '+5' : '+1')), w ? mini(g, w) : h('div', { class: 'mcard empty' }), t ? mini(g, t) : h('div', { class: 'mcard empty' })))
+        h('span', { class: 'pts' }, m ? '+10' : (w && t ? '+5' : '+1')), w ? mini(g, w) : h('div', { class: 'mcard empty' }, 'no wizard'), t ? mini(g, t) : h('div', { class: 'mcard empty' }, 'no tower')))
         : h('span', { class: 'none' }, 'None yet')),
+      h('div', { class: 'mat-cardlist', 'data-testid': `mat-cards-${p.name}`, 'data-wizards': p.wizards.join(','), 'data-towers': p.towers.join(',') },
+        `Wizards: ${cardList(g, p.wizards)} · Towers: ${cardList(g, p.towers)}`),
       h('div', { class: 'mat-label' }, `Spells & Familiars (${p.spells.length + p.familiars.length})`),
       h('div', { class: 'mat-row' }, (p.spells.length + p.familiars.length) ? [
         ...p.spells.map((s) => s.key ? mini(g, s.key, { cls: s.cast ? '' : 'uncast', badge: s.cast ? null : 'uncast' }) : mini(g, null)),
@@ -648,7 +658,7 @@ export async function arena(g, { mode, wizard = null }) {
   const finish = async () => {
     bar.innerHTML = '';
     const lg = await g.call('full_log');
-    const e = [...(lg.result || [])].reverse().find((x) => x.act === 'auction' || x.act === 'auction_nobid');
+    const e = [...(lg.result || [])].reverse().find((x) => (x.act === 'auction' || x.act === 'auction_nobid') && (x.cards || []).includes(card));
     if (e && e.bids) await playTail(e.bids);
     if (e && e.act === 'auction') {
       const w = e.who;

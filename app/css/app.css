@@ -211,7 +211,8 @@ img { -webkit-user-drag: none; user-select: none; }
 .mcard { position: relative; width: 52px; border-radius: 5px; flex: none; }
 .mcard img { display: block; width: 100%; height: auto; border-radius: 5px; box-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
 .mcard.back, .mcard.empty { aspect-ratio: 666 / 1008; }
-.mcard.empty { opacity: .15; border: 1px dashed #888; }
+.mcard.empty { border: 1px dashed rgba(255, 255, 255, .22); display: grid; place-items: center; font-size: 9.5px; color: rgba(200, 210, 240, .45); text-align: center; }
+.mat-cardlist { width: 100%; font-size: 11.5px; line-height: 1.35; color: var(--muted); margin-top: 6px; }
 .mcard.uncast img { filter: saturate(.35) brightness(.7); }
 .mcard .badge { position: absolute; left: 2px; right: 2px; bottom: 2px; font-size: 9px; text-align: center; background: rgba(0, 0, 0, .7); border-radius: 3px; color: #ddd; }
 .mcard.back { background: linear-gradient(135deg, #42205e, #26113b); border: 1px solid rgba(214, 180, 90, .6); display: grid; place-items: center; font-family: var(--display); color: var(--gold-hi); font-size: 12px; }
