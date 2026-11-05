@@ -1,4 +1,4 @@
-// AI turns are paced so each move can be read: one banner per AI turn, each move on screen for ~2.2 s (2.5 s for a cast).
+// AI turns are paced so each move can be read: one banner per AI turn, each move on screen for ~4.4 s (5.0 s for a cast).
 // A tap anywhere jumps to the next move; Skip finishes the AI turns. Timing is UI only: skipping ends in the same state.
 // g8, after Keith builds: Newt makes 1 move, LizWiz makes 2 (summon, then the dungeon).
 import { test, expect } from './fixtures.js';
@@ -56,8 +56,8 @@ test('AI moves are paced and readable; tap = next move; Skip finishes the AI tur
   expect(shown[2].cur).toContain('LizWiz entered the Dungeon');
   const durations = shown.map((x) => log[log.indexOf(x) + 1].t - x.t);
   for (const d of durations) {
-    expect(d, `each AI move is on screen ~2.2 s (got ${Math.round(d)} ms)`).toBeGreaterThanOrEqual(2000);
-    expect(d).toBeLessThan(4000);
+    expect(d, `each AI move is on screen ~4.4 s (got ${Math.round(d)} ms)`).toBeGreaterThanOrEqual(4000);
+    expect(d).toBeLessThan(7000);
   }
   expect(log[log.indexOf(shown[1]) + 1], 'LizWiz banner stays up between her two moves').toBe(shown[2]);
   expect(shown[1].focus, 'the slot LizWiz summoned from is highlighted during the move').toBe(1);

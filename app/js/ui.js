@@ -678,8 +678,8 @@ export async function arena(g, { mode, wizard = null }) {
 // ------------------------------------------------------------------ AI move banners
 // One banner per AI turn stays up and steps through that AI's moves, each long enough to read.
 // A tap anywhere jumps to the next move; "Skip" finishes the AI turns at once (g.skip).
-export const AI_MOVE_MS = 2200;
-export const AI_CAST_MS = 2500;
+export const AI_MOVE_MS = 4400;
+export const AI_CAST_MS = 5000;
 export const aiMoveMs = (e) => (e.cast ? AI_CAST_MS : AI_MOVE_MS);
 
 export async function banner(g, e, i = 0, n = 1) {
