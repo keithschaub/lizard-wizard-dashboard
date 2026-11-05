@@ -312,9 +312,15 @@ img { -webkit-user-drag: none; user-select: none; }
 
 /* arena */
 .arena { justify-content: flex-start; gap: 4px; background: radial-gradient(70% 50% at 50% 45%, rgba(60, 70, 160, .5), rgba(3, 5, 14, .95)); }
-.arena-ring { position: relative; width: min(96vw, 520px); height: min(62vh, 470px); margin-top: 8px; }
-.arena-center { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.arena-center img { width: 128px; border-radius: 10px; box-shadow: 0 0 40px rgba(120, 150, 255, .55), 0 16px 40px rgba(0, 0, 0, .8); animation: zoomIn .4s both; }
+.arena { --ring-h: clamp(290px, calc(100vh - var(--safe-t) - var(--clear-b) - 300px), 470px); }
+@supports (height: 100dvh) { .arena { --ring-h: clamp(290px, calc(100dvh - var(--safe-t) - var(--clear-b) - 300px), 470px); } }
+/* The ring is sized from the visible height so the bid panel's Pass / Bid stay above Safari's bottom bar. */
+.arena-ring { position: relative; width: min(96vw, 520px); height: var(--ring-h); margin-top: 8px; }
+/* The card column starts under the top seat (which sits at max(48px, 12%)), so they never overlap. */
+.arena-center { position: absolute; left: 50%; top: calc(max(48px, 12%) + 52px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arena-center .card-frame { width: clamp(84px, calc(var(--ring-h) * .29), 136px); padding: 6% 3% 3%; border-radius: 12px; background: #110d0c; box-shadow: 0 0 40px rgba(120, 150, 255, .55), 0 16px 40px rgba(0, 0, 0, .8), 0 0 0 1px rgba(214, 180, 90, .35); animation: zoomIn .4s both; }
+.arena-center .card-frame img { display: block; width: 100%; height: auto; border-radius: 5px; }
+.bid-mana { text-align: center; font-size: 13px; color: var(--muted); margin-top: -4px; }
 .arena-center .high { font-family: var(--display); font-size: 15px; color: var(--gold-hi); text-align: center; }
 .seat { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 96px; transform: translate(-50%, -50%); transition: transform .3s; }
 .seat .sname { font-weight: 700; font-size: 14px; }
@@ -326,6 +332,9 @@ img { -webkit-user-drag: none; user-select: none; }
 .seat.leader .bid { background: linear-gradient(180deg, #f2d98e, #c99b3a); color: #1d1406; }
 .seat.winner .avatar { box-shadow: 0 0 0 4px var(--teal), 0 0 30px rgba(111, 240, 208, .9); }
 .bidbar { width: min(94vw, 460px); display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); margin-bottom: 10px; }
+/* On short screens the bid controls stay on screen above the browser bar; the ring scrolls behind them. */
+.arena .bidbar { position: sticky; bottom: calc(var(--clear-b) + 6px); z-index: 3; background: var(--panel-solid); box-shadow: 0 -8px 30px rgba(0, 0, 0, .55); }
+.arena .bidbar:empty { display: none; }
 .bidval { text-align: center; font-family: var(--sans); font-weight: 700; font-size: 30px; color: var(--gold-hi); }
 .bidval small { font-family: var(--sans); font-size: 14px; color: var(--muted); }
 input[type=range].slider { width: 100%; height: 34px; -webkit-appearance: none; appearance: none; background: transparent; }

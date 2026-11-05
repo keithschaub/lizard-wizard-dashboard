@@ -588,12 +588,12 @@ export async function arena(g, { mode, wizard = null }) {
   const seats = {}; const bids = {};
   const ringEl = h('div', { class: 'arena-ring' });
   const high = h('div', { class: 'high', 'data-testid': 'arena-high' }, '');
-  ringEl.append(h('div', { class: 'arena-center' }, h('img', { src: art(card), alt: card, onclick: () => expandCard(g, card) }),
+  ringEl.append(h('div', { class: 'arena-center' }, h('div', { class: 'card-frame', 'data-testid': 'arena-card' }, h('img', { src: art(card), alt: card, onclick: () => expandCard(g, card) })),
     h('div', { class: 'ov-sub', style: { margin: 0, fontSize: '13px' } }, g.cards[card]?.display), high));
   ring.forEach((n, i) => {
     const [x, y] = seatPos(i, ring.length);
     const b = h('div', { class: 'bid', 'data-testid': `bid-${n}` }, '–');
-    const s = h('div', { class: 'seat', 'data-testid': `seat-${n}`, style: { left: `${x}%`, top: `${y}%` } }, avatar(n, 44), h('div', { class: 'sname' }, n), b);
+    const s = h('div', { class: 'seat', 'data-testid': `seat-${n}`, style: { left: `${x}%`, top: y < 50 ? `max(48px, ${y}%)` : `${y}%` } }, avatar(n, 44), h('div', { class: 'sname' }, n), b);
     seats[n] = s; bids[n] = b; ringEl.append(s);
   });
   const bar = h('div', { class: 'bidbar', 'data-testid': 'bidbar' });
@@ -615,7 +615,7 @@ export async function arena(g, { mode, wizard = null }) {
   };
   const playTail = async (tail, fast = false) => { for (; shown < tail.length; shown++) await showBid(tail[shown][0], tail[shown][1], fast || g.skip); };
 
-  const controls = (min, max, opening) => {
+  const controls = (min, max, opening, lead = null) => {
     const [p, resolve] = wait();
     const done = (x) => { bar.querySelectorAll('button, input').forEach((b) => { b.disabled = true; }); resolve(x); };
     bar.innerHTML = '';
@@ -624,13 +624,22 @@ export async function arena(g, { mode, wizard = null }) {
       return p;
     }
     let val = min;
-    const out = h('div', { class: 'bidval', 'data-testid': 'bid-value' }, String(val), h('small', {}, ` / ${max} mana`));
-    const sl = h('input', { type: 'range', class: 'slider', min, max, value: val, step: 1, 'data-testid': 'bid-slider' });
-    sl.oninput = () => { val = +sl.value; out.firstChild.textContent = String(val); };
-    const bidBtn = h('button', { class: 'act', 'data-testid': 'bid-go', onclick: () => done({ bid: val }) }, opening ? 'Open bid' : 'Bid');
+    const clamp = (x) => Math.min(max, Math.max(min, Math.round(+x) || min));
+    const out = h('div', { class: 'bidval', 'data-testid': 'bid-value', 'data-min': min, 'data-max': max }, String(val), h('small', {}, ` / ${max} mana`));
+    const bidBtn = h('button', { class: 'act', 'data-testid': 'bid-go', onclick: () => { val = clamp(val); done({ bid: val }); } }, opening ? 'Open bid' : 'Bid');
     const passBtn = h('button', { class: 'act secondary', 'data-testid': opening ? 'bid-cancel' : 'bid-pass', onclick: () => done(opening ? { cancel: true } : { pass: true }) }, opening ? 'Cancel' : 'Pass');
-    const step = (d) => () => { val = Math.min(max, Math.max(min, val + d)); sl.value = val; out.firstChild.textContent = String(val); g.sfx('tap'); };
-    bar.append(out, h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+    const mana = h('div', { class: 'bid-mana', 'data-testid': 'bid-mana' }, `Your mana: ${max}`, opening ? '' : ` · high bid ${min - 1}${lead ? ` (${lead})` : ''}`);
+    if (min === max) {
+      // A range input with min == max is degenerate (iOS Safari lets the thumb report values outside it): offer the one bid.
+      out.firstChild.textContent = String(val);
+      bar.append(out, mana, h('div', { class: 'ov-sub', style: { margin: 0 } }, `${val} is all your mana`), h('div', { class: 'bidbtns' }, passBtn, bidBtn));
+      return p;
+    }
+    const sl = h('input', { type: 'range', class: 'slider', min, max, value: val, step: 1, 'data-testid': 'bid-slider' });
+    const show = () => { sl.value = val; out.firstChild.textContent = String(val); };
+    sl.oninput = () => { val = clamp(sl.value); show(); };
+    const step = (d) => () => { val = clamp(val + d); show(); g.sfx('tap'); };
+    bar.append(out, mana, h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
       h('button', { class: 'tb-btn', 'data-testid': 'bid-minus', onclick: step(-1) }, '−'), sl, h('button', { class: 'tb-btn', 'data-testid': 'bid-plus', onclick: step(1) }, '+')),
       h('div', { class: 'bidbtns' }, passBtn, bidBtn));
     return p;
@@ -663,14 +672,22 @@ export async function arena(g, { mode, wizard = null }) {
       const r = await g.act('act_recruit', { wizard: card, opening: c.bid }, { sound: 'bid' });
       if (!r) { ov.close(); return null; }
     }
+    // This arena shows one auction. The engine can resolve it and start another one (e.g. the AI that lost takes another
+    // action) inside the same call; then this arena shows the result and settle() opens a fresh arena for the new auction.
+    let ident = null; let lastTail = [];
     for (;;) {
       const a = g.v.auction;
       if (!a) { await finish(); break; }
+      const sig = `${a.card}|${a.starter}|${JSON.stringify(a.tail[0])}`;
+      const extends_ = lastTail.every((x, i) => JSON.stringify(a.tail[i]) === JSON.stringify(x));
+      if (ident === null && a.card === card) ident = sig;
+      if (sig !== ident || !extends_) { await finish(); break; }
+      lastTail = a.tail.map((x) => [...x]);
       await playTail(a.tail, mode === 'respond' && shown === 0 && a.tail.length > 4);
       if (a.waiting !== me) { await sleep(300); continue; }
       Object.values(seats).forEach((s) => s.classList.remove('active'));
       seats[me].classList.add('active');
-      const c = await controls(a.high + 1, g.me_().mana, false);
+      const c = await controls(a.high + 1, g.me_().mana, false, a.who);
       const r = c.pass ? await g.act('act_pass', {}) : await g.act('act_bid', { n: c.bid });
       if (!r) { const vr = await g.call('view'); if (vr.ok) g.setView(vr.result); }
     }
