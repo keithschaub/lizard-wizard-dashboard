@@ -1,9 +1,35 @@
 // Bug reporting: capture game state, screenshots, and submit to relay
 import { h } from './dom.js';
 
-// Configuration - can be overridden before deployment
-export const RELAY_URL = process.env.RELAY_URL || 'https://lw-bug-relay.keithschaub.workers.dev/report';
-export const COMMIT_SHA = process.env.COMMIT_SHA || 'dev';
+// Configuration — set on `window` at deploy time (see index.html / server); no `process` in the browser
+export const RELAY_URL = window.LW_RELAY_URL || '';
+export const COMMIT_SHA = window.LW_COMMIT_SHA || 'dev';
+
+const HTML2CANVAS_SRC = 'app/vendor/html2canvas.min.js';
+let html2canvasLoadPromise = null;
+
+/** Lazy-load vendored html2canvas (UMD exposes global `html2canvas`) */
+function ensureHtml2canvas() {
+  if (window.html2canvas) return Promise.resolve();
+  if (!html2canvasLoadPromise) {
+    html2canvasLoadPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[data-lw-html2canvas="1"]`);
+      if (existing) {
+        existing.addEventListener('load', () => resolve(), { once: true });
+        existing.addEventListener('error', () => reject(new Error('html2canvas script failed')), { once: true });
+        return;
+      }
+      const s = document.createElement('script');
+      s.src = HTML2CANVAS_SRC;
+      s.async = true;
+      s.dataset.lwHtml2canvas = '1';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load html2canvas'));
+      document.head.append(s);
+    });
+  }
+  return html2canvasLoadPromise;
+}
 
 const QUEUE_KEY = 'lw.bug-reports.queue';
 const MAX_REPORT_SIZE = 25 * 1024 * 1024; // 25MB total (images + state)
@@ -32,6 +58,11 @@ async function captureElementScreenshot(element, label) {
   if (!element) return null;
   
   try {
+    try {
+      await ensureHtml2canvas();
+    } catch (e) {
+      console.warn('[bug-report] html2canvas unavailable:', e);
+    }
     // Use html2canvas if available, otherwise fall back to basic capture
     if (window.html2canvas) {
       const canvas = await window.html2canvas(element, {
@@ -210,38 +241,27 @@ async function submitReport(reportPackage) {
 /**
  * Queue report for later submission
  */
-function queueReport(reportPackage) {
-  try {
-    const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
-    
-    // Convert blobs to base64 for storage
-    const storable = {
-      ...reportPackage,
-      images: reportPackage.images.map(img => ({
-        name: img.name,
-        data: null, // Will be set below
-        type: img.blob.type,
-      })),
+async function queueReport(reportPackage) {
+  const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+  const storable = {
+    ...reportPackage,
+    images: reportPackage.images.map((img) => ({
+      name: img.name,
+      data: null,
+      type: img.blob.type,
+    })),
+  };
+  await Promise.all(reportPackage.images.map((img, i) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      storable.images[i].data = reader.result;
+      resolve();
     };
-    
-    // Read blobs as base64 (simplified - in production, might want IndexedDB for large files)
-    Promise.all(reportPackage.images.map((img, i) => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          storable.images[i].data = reader.result;
-          resolve();
-        };
-        reader.readAsDataURL(img.blob);
-      });
-    })).then(() => {
-      queue.push({ ...storable, queuedAt: Date.now() });
-      localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-    });
-    
-  } catch (err) {
-    console.error('[bug-report] Failed to queue report:', err);
-  }
+    reader.onerror = () => reject(reader.error || new Error('FileReader failed'));
+    reader.readAsDataURL(img.blob);
+  })));
+  queue.push({ ...storable, queuedAt: Date.now() });
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
 }
 
 /**
@@ -418,17 +438,23 @@ export function openBugReportDialog(game) {
           overlay.remove();
         } catch (err) {
           console.error('[bug-report] Submit failed:', err);
-          const isRelayUnavailable = err.message.includes('not configured') || err.message.includes('unreachable');
-          
-          if (isRelayUnavailable) {
-            // Relay not available - offer download instead
-            queueReport(reportPackage);
+          const relayNotConfigured = err.message.includes('not configured');
+          try {
+            await queueReport(reportPackage);
+          } catch (qerr) {
+            console.error('[bug-report] Failed to queue report:', qerr);
+            showToast('Could not save report locally. Try Download Report.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit';
+            return;
+          }
+          if (relayNotConfigured) {
+            // No relay URL in deploy config — keep dialog open; user can Download Report
             showToast('Relay unavailable. Report queued locally. Use "Download Report" to save now.', 5000);
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit';
           } else {
-            // Other error - still queue for retry
-            queueReport(reportPackage);
+            // Network / HTTP errors from relay — queue and close (matches offline E2E)
             showToast('Report queued (offline). Will retry when online.');
             overlay.remove();
           }
@@ -485,6 +511,7 @@ export function openBugReportDialog(game) {
         'data-testid': 'bug-attach-btn',
         onclick: () => fileInput.click(),
       }, '📎 Choose Images'),
+      fileInput,
       selectedFiles,
       h('div', { class: 'bug-info' }, 
         'Game state and screenshots will be captured automatically')),

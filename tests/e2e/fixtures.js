@@ -7,6 +7,10 @@ export const test = base.extend({
     await use(context);
   },
   page: async ({ page }, use) => {
+    await page.addInitScript(() => {
+      window.LW_RELAY_URL = 'https://lw-bug-relay.test/report';
+      window.LW_COMMIT_SHA = window.LW_COMMIT_SHA || 'dev';
+    });
     await use(page);
     // Cleanup: terminate any web workers to prevent hanging
     await page.evaluate(() => {
