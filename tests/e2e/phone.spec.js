@@ -238,6 +238,48 @@ test('every achievement tile a new deal can draw renders its icons (no missing a
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
+test('hand with 5 cards (Crystal Ball) fits without overlap on iPhone width', async ({ page }) => {
+  const errors = watchErrors(page);
+  
+  await open(page, (s) => {
+    const keith = s.players.find(p => p.name === 'Keith');
+    // Give Keith 5 distinct reagent cards to simulate Crystal Ball effect
+    keith.hand = [
+      s.reag_list[0] || 'Reagent_01',
+      s.reag_list[1] || 'Reagent_02', 
+      s.reag_list[2] || 'Reagent_03',
+      s.reag_list[3] || 'Reagent_04',
+      s.reag_list[4] || 'Reagent_05'
+    ];
+  });
+  
+  // Check that all 5 cards are visible
+  const handCards = page.getByTestId('hand').locator('.hcard');
+  await expect(handCards).toHaveCount(5);
+  
+  // Check that cards don't overlap by comparing their bounding boxes
+  const boxes = await handCards.evaluateAll((cards) => 
+    cards.map(c => c.getBoundingClientRect())
+  );
+  
+  // Verify no horizontal overlap (each card's right edge is left of next card's left edge, with gap)
+  for (let i = 0; i < boxes.length - 1; i++) {
+    const gap = boxes[i + 1].left - boxes[i].right;
+    expect(gap, `gap between card ${i} and ${i + 1}`).toBeGreaterThanOrEqual(4); // At least 4px gap (should be 8px)
+  }
+  
+  // Check that the rightmost card fits within the viewport (with padding)
+  const lastCard = boxes[boxes.length - 1];
+  const viewportWidth = await page.evaluate(() => window.innerWidth);
+  expect(lastCard.right).toBeLessThanOrEqual(viewportWidth - 5); // 5px margin
+  
+  // Check that cards are tappable (not too small)
+  const firstCardWidth = boxes[0].width;
+  expect(firstCardWidth).toBeGreaterThanOrEqual(50); // At least 50px wide
+  
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('branding is Lizard Wizard only; noindex kept; GoatCounter loads (no other tracker)', async ({ page }) => {
   const scripts = [];
   page.on('request', (r) => { if (r.resourceType() === 'script') scripts.push(r.url()); });

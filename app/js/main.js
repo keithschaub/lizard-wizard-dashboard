@@ -180,7 +180,16 @@ class Game {
         }) : h('div', { class: 'empty-note' }, 'No reagent tokens')),
         h('div', { class: 'hand', 'data-testid': 'hand' }, p.hand.map((k, i) => {
           const legal = !!(L.gather || {})[k];
-          const el = h('div', { class: `hcard ${legal ? 'legal' : ''} ${prevHand && !prevHand.includes(k) ? 'deal' : ''}`, 'data-testid': `hand-${i}`, 'data-key': k, style: p.hand.length > 3 ? { width: `${Math.floor(330 / p.hand.length) - 8}px`, height: `${Math.floor((330 / p.hand.length - 8) * 1.39)}px` } : null },
+          let cardStyle = null;
+          if (p.hand.length > 3) {
+            const availWidth = 370;
+            const gap = 8;
+            const totalGaps = (p.hand.length - 1) * gap;
+            const cardWidth = Math.floor((availWidth - totalGaps) / p.hand.length);
+            const cardHeight = Math.floor(cardWidth * 1.39);
+            cardStyle = { width: `${cardWidth}px`, height: `${cardHeight}px` };
+          }
+          const el = h('div', { class: `hcard ${legal ? 'legal' : ''} ${prevHand && !prevHand.includes(k) ? 'deal' : ''}`, 'data-testid': `hand-${i}`, 'data-key': k, style: cardStyle },
             h('img', { src: art(k), alt: k, draggable: 'false' }));
           el.onclick = () => { this.sfx('tap'); if (legal && !this.busyFlow()) UI.gatherFlow(this, k); else UI.expandCard(this, k); };
           return el;
