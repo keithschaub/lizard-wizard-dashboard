@@ -46,6 +46,22 @@ def key(path):
 def jpg(k): return k if k.endswith('.jpg') else k + '.jpg'
 
 
+def _crystal_ball_refill(s, name):
+    """If Crystal Ball was just cast, immediately draw cards up to hand size 5."""
+    p = A.P(s, name)
+    if not SE.has_cast(p, 'Crystal_Ball'): return
+    drawn = []
+    while len(p['hand']) < 5:
+        if not s['reag_list']: A.reshuffle_reagents(s)
+        if not s['reag_list']: break
+        card = s['reag_list'].pop(0)
+        p['hand'].append(card)
+        drawn.append(card)
+    s['reag_deck'] = len(s['reag_list'])
+    if drawn:
+        A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'crystal_ball_refill', 'drawn': len(drawn)})
+
+
 def spell_key_of(x):
     """Spell key from any engine spelling ('Spell_Charm.jpg', 'Spell_Charm', 'Spell_Shield_A' as the AI writes it)."""
     k = key(x) if str(x).endswith('.jpg') else b(str(x))
@@ -395,6 +411,7 @@ def act_gather(card, keep=None, bloom=None, miracle=False, cast=None, x=None, ta
             if inv: SE.invisibility_potion(s, n, target, int(x))
             else:
                 A.cast_spell(s, n, cast, spend); queue.append(cast)
+            _crystal_ball_refill(s, n)
         return _after_action(s, n, queue)
     return _commit(run)
 
@@ -451,10 +468,12 @@ def act_research(spell, cast=False, x=None, target=None):
             if not x or int(x) < 1 or not target: raise Refused('Invisibility Potion needs X >= 1 and a target')
             A.research(s, n, spell)
             SE.invisibility_potion(s, n, target, int(x))
+            _crystal_ball_refill(s, n)
         elif cast:
             c = spell_cost(spell)
             if not can_pay(p['tok'], c): raise Refused('missing reagents to cast it')
             A.research(s, n, spell, cast_cost=c); queue.append(spell)
+            _crystal_ball_refill(s, n)
         else: A.research(s, n, spell)
         return _after_action(s, n, queue)
     return _commit(run)
@@ -488,6 +507,7 @@ def act_summon(familiar, use, casts=(), discard=None):
             for k, _c in cl:
                 if is_variable(k): raise Refused('variable-cost spells are cast through Research or Gather')
             A.summon_familiar(s, n, fam, 'gather', cast=cl, discard=discard, after_collect=lambda: T.auto_claim(s, n))
+            _crystal_ball_refill(s, n)
             return _after_action(s, n, list(casts))
         if use == 'dungeon':
             if not TP.treasure_left(s): raise Refused('no treasure left in the Dungeon')
@@ -760,6 +780,7 @@ def rise_use(use, casts=(), discard=None):
             T.auto_claim(s, n)
             for k, cost in [(k, spell_cost(k)) for k in casts]:
                 A.cast_spell(s, n, k, cost); casted.append(k)
+            _crystal_ball_refill(s, n)
             over = len(p['tok']) - A.capacity(p)
             if over > 0:
                 if not discard or len(discard) < over: raise Refused(f'over storage by {over}; pass discard')

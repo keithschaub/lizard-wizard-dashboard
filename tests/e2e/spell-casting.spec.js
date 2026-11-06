@@ -72,3 +72,19 @@ test('Spell effects: Evolve, Rise, Energize not in NOT_AUTOMATED list', async ({
   
   expect(errors).toEqual([]);
 });
+
+test('Crystal Ball: card data and max hand size effect', async ({ page }) => {
+  const errors = watchErrors(page);
+  await boot(page);
+  
+  // Verify Crystal Ball exists in card database with correct effect
+  const cards = await page.evaluate(() => window.lwDebug.cards());
+  expect(cards['Spell_Crystal_Ball']).toBeTruthy();
+  expect(cards['Spell_Crystal_Ball'].effect).toContain('Max Hand Size');
+  expect(cards['Spell_Crystal_Ball'].effect).toContain('5');
+  
+  // Python tests verify the actual hand refill behavior (see test_lw_web.py)
+  // "Crystal Ball refills hand to 5 immediately after cast"
+  
+  expect(errors).toEqual([]);
+});

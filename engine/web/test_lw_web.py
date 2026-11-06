@@ -172,6 +172,7 @@ pv = call('summon_gather_preview', familiar='Familiar_5_Bufonem', casts=['Spell_
 check([c['key'] for c in pv['castable']] == ['Spell_Spell_Shield_A'], 'after choosing Crystal Ball (3 Eyes), Spell Shield (2 Eyes) is still castable')
 r = call('act_summon', familiar='Familiar_5_Bufonem', use='gather', casts=['Spell_Crystal_Ball', 'Spell_Spell_Shield_A'])
 check(r['ok'] and all(x['cast'] for x in P('Keith')['spells']) and P('Keith')['tok'] == [], 'familiar gather casts BOTH spells (rulebook: as many as you want), costs paid')
+check(len(P('Keith')['hand']) == 5, 'Crystal Ball refills hand to 5 immediately after cast')
 
 print('\n=== 9. Auction: Keith opens, AIs bid, Keith answers one step at a time ===')
 setup(lambda s: None)
