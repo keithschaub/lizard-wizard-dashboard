@@ -33,6 +33,8 @@ function scrollHint(el) {
   new MutationObserver(update).observe(document.getElementById('overlays'), { childList: true });
   el.addEventListener('scroll', update, { passive: true });
   el.addEventListener('load', update, true);
+  el.addEventListener('animationend', update, true);           // entrance animations inflate scrollHeight while they run
+  el.addEventListener('transitionend', update, true);
   window.addEventListener('resize', update);
   requestAnimationFrame(update);
 }
@@ -769,7 +771,8 @@ export function menu(g) {
   const v = g.v;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'menu' });
   const scores = v.game_over ? [h('div', { class: 'phase-title', 'data-testid': 'menu-winner' }, `Final scores · ${ranking(v).text}`), h('div', { class: 'menu-scores', 'data-testid': 'menu-scores' }, rankRows(v))] : [];
-  ov.el.append(h('div', { class: 'sheet-panel' }, ...(scores.length ? scores : [h('div', { class: 'phase-title' }, 'Game')]),
+  ov.el.append(h('div', { class: 'sheet-panel' }, h('button', { class: 'sheet-close', 'aria-label': 'Close', 'data-testid': 'menu-close', onclick: () => ov.close() }, '×'),
+    ...(scores.length ? scores : [h('div', { class: 'phase-title' }, 'Game')]),
     h('div', { class: 'actions' },
       h('button', { class: v.game_over ? 'act' : 'act secondary', 'data-testid': 'menu-new-game', onclick: () => { ov.close(); newGame(g); } }, v.game_over ? 'Play again (new game)' : 'New game'),
       v.game_over ? h('button', { class: 'act secondary', 'data-testid': 'menu-final-scores', onclick: () => { ov.close(); gameOver(g); } }, 'Final scores') : null,
@@ -783,7 +786,8 @@ export function menu(g) {
 export async function newGame(g) {
   const ov = openOverlay('gather newgame', { testid: 'new-game' });
   ov.el.append(closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'), h('div', { class: 'ov-sub' }, 'Dealing…'));
-  const pr = await g.call('new_game_preview', {});
+  const seeds = g.nextGameSeeds || {};          // tests seed the deal for reproducible playthroughs
+  const pr = await g.call('new_game_preview', { seed: seeds.seed, ai_seed: seeds.ai_seed });
   if (ov.closed) return;
   if (!pr.ok) { g.toast(pr.error); ov.close(); return; }
   const { hand, reagents, players } = pr.result;
@@ -808,7 +812,7 @@ export async function newGame(g) {
     h('div', { class: 'chips' }, chips), h('div', { class: 'actions' }, start));
   start.onclick = async () => {
     start.disabled = true;
-    const r = await g.call('new_game_start', { picks });
+    const r = await g.call('new_game_start', { picks, seed: seeds.board_seed });
     if (!r.ok) { g.toast(r.error); start.disabled = false; return; }
     closeAll();
     g.startedNewGame(r.view);
