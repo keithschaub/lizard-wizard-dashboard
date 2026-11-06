@@ -222,6 +222,7 @@ class Game {
         if (v.pending) {
           if (v.pending.type === 'dungeon') await UI.dungeonFlow(this);
           else if (v.pending.type === 'new_research') await UI.newResearchChooser(this);
+          else if (v.pending.type === 'rise') await UI.riseUseChooser(this);
           else await UI.effectChooser(this);
           continue;
         }

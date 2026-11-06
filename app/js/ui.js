@@ -528,6 +528,84 @@ export async function newResearchChooser(g) {
   return r;
 }
 
+export async function riseUseChooser(g) {
+  const pd = g.v.pending;
+  const ov = openOverlay('gather', { testid: 'rise-use' });
+  const [p, done] = wait();
+  ov.el.append(h('div', { class: 'chooser-head' }, h('img', { src: art(pd.familiar), alt: '' }),
+    h('div', {}, h('div', { class: 'phase-title' }, 'Rise'), h('div', { class: 'ov-sub' }, 'Use this familiar'))));
+  const uses = [
+    { use: 'score', label: `Score: +${pd.score_gold} Gold`, testid: 'rise-score' },
+    { use: 'gather', label: `Gather: ${pd.collect} ${nice(pd.reagent)}`, testid: 'rise-gather' },
+    { use: 'dungeon', label: 'Enter the Dungeon', testid: 'rise-dungeon' },
+    { use: 'research', label: 'New Research', testid: 'rise-research' }
+  ];
+  ov.el.append(h('div', { class: 'opt-grid' }, uses.map((u) => h('button', { class: 'chip', 'data-testid': u.testid, onclick: () => done(u.use) }, u.label))));
+  const use = await p;
+  ov.close();
+  if (use === 'score') {
+    const r = await g.act('rise_use', { use }, { sound: 'coin' });
+    return r;
+  } else if (use === 'gather') {
+    return riseGather(g, pd);
+  } else if (use === 'dungeon') {
+    const r = await g.act('rise_use', { use: 'dungeon' });
+    if (r) await dungeonFlow(g);
+    return r;
+  } else if (use === 'research') {
+    const r = await g.act('rise_use', { use: 'research' });
+    if (r) await newResearchChooser(g);
+    return r;
+  }
+}
+
+async function riseGather(g, pd) {
+  const me = g.me_();
+  const holdings = me.tok.concat(Array(pd.collect).fill(pd.reagent));
+  const castable = [];
+  for (const o of g.v.legal.research) {
+    if (!o.castable || o.x) continue;
+    const c = g.cards[o.key];
+    const cost = Object.entries(c?.cost?.reagents || {}).flatMap(([r, n]) => Array.from({ length: Number(n) || 0 }, () => r));
+    const covers = (have, need) => {
+      const cnt = (list) => list.reduce((m, x) => ((m[x] = (m[x] || 0) + 1), m), {});
+      return Object.entries(cnt(need)).every(([r, n]) => (have[r] || 0) >= n);
+    };
+    if (covers(holdings, cost)) castable.push({ key: o.key, cost });
+  }
+  const casts = [];
+  const ov = openOverlay('gather', { testid: 'rise-gather-cast' });
+  const [p, done] = wait();
+  ov.el.append(h('div', { class: 'phase-title' }, 'Cast spells (optional)'));
+  const grid = h('div', { class: 'opt-grid' });
+  const go = h('button', { class: 'act', 'data-testid': 'rise-gather-done' }, 'Done');
+  go.onclick = () => done();
+  castable.forEach((o) => {
+    const b = h('button', { class: 'opt-card wide', 'data-testid': `cast-${o.key}` },
+      h('img', { src: art(o.key), alt: o.key }), h('span', { class: 'oc-text' }, g.cards[o.key]?.display));
+    b.onclick = () => { casts.push(o.key); b.disabled = true; };
+    grid.append(b);
+  });
+  ov.el.append(grid, h('div', { class: 'actions' }, go));
+  await p;
+  ov.close();
+  const newHoldings = holdings.slice();
+  for (const k of casts) {
+    const o = castable.find((x) => x.key === k);
+    for (const r of o.cost) {
+      const i = newHoldings.indexOf(r);
+      if (i >= 0) newHoldings.splice(i, 1);
+    }
+  }
+  const over = Math.max(0, newHoldings.length - me.cap);
+  let discard = null;
+  if (over > 0) {
+    discard = await pickPutbacks(g, newHoldings, over);
+  }
+  const r = await g.act('rise_use', { use: 'gather', casts, discard }, { sound: 'coin' });
+  return r;
+}
+
 export async function dungeonFlow(g) {
   const ov = openOverlay('dungeon', { testid: 'dungeon' });
   let shown = 0;

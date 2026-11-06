@@ -714,13 +714,73 @@ def resolve_effect(choice):
             elif kind == 'evolve':
                 fam = [f for f in P(s, n).get('familiars', []) if key(f) == ch.get('familiar')]
                 if not fam: raise Refused('pick one of your familiars')
-                SE.evolve(s, n, fam[0])
+                familiar_img = fam[0]
+                p = P(s, n)
+                sch = CD.school(familiar_img)
+                if not sch: raise Refused('cannot determine school of familiar')
+                wizards = [c for c in CD.cards('Wizard') if CD.school(c['key']) == sch]
+                if not wizards: raise Refused(f'no wizard for school {sch}')
+                wizard_img = 'assets/' + wizards[0]['key']
+                p['familiars'].remove(familiar_img)
+                p.setdefault('wizards', []).append(wizard_img)
+                A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'evolve', 'familiar': b(familiar_img), 'wizard': b(wizard_img), 'school': sch})
             elif kind == 'rise':
                 fam = [f for f in P(s, n).get('familiars', []) if key(f) == ch.get('familiar')]
                 if not fam: raise Refused('pick one of your familiars')
-                SE.rise_score(s, n, fam[0])
+                familiar_img = fam[0]; c = CD.get(familiar_img)
+                s['meta']['web_pending'] = dict(type='rise', familiar=familiar_img, school=CD.school(familiar_img),
+                                                reagent=A.norm(c['reagent']), collect=c['collect'],
+                                                score_gold=1 + SE.school_count(P(s, n), c['school']))
+                return 'pending'
         s['meta']['web_pending'] = None
         return _after_action(s, n, wp.get('queue', []))
+    return _commit(run)
+
+
+def rise_use(use, casts=(), discard=None):
+    """Execute the Rise use after familiar and use type are picked."""
+    def run(s):
+        wp = pend(s); n = me()
+        if not wp or wp['type'] != 'rise': raise Refused('no Rise pending')
+        familiar_img = wp['familiar']
+        p = P(s, n)
+        if familiar_img not in p.get('familiars', []): raise Refused('familiar not in collection')
+        c = CD.get(familiar_img)
+        if use == 'score':
+            from scoring import school
+            sc = c['school']
+            gold_count = sum(1 for card in p.get('wizards', []) + p.get('towers', []) + p.get('familiars', []) if school(card) == sc)
+            gold_count += sum(1 for x in p.get('spells', []) if school(x['img']) == sc)
+            p['gold'] = p.get('gold', 0) + gold_count
+            A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'score', 'gold': gold_count})
+            s['meta']['web_pending'] = None
+            return _after_action(s, n, [])
+        elif use == 'gather':
+            r = A.norm(c['reagent']); p['tok'] += [r] * int(c['collect']); casted = []
+            T.auto_claim(s, n)
+            for k, cost in [(k, spell_cost(k)) for k in casts]:
+                A.cast_spell(s, n, k, cost); casted.append(k)
+            over = len(p['tok']) - A.capacity(p)
+            if over > 0:
+                if not discard or len(discard) < over: raise Refused(f'over storage by {over}; pass discard')
+                for d in discard: p['tok'].remove(d)
+            A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'gather', 'got': [r] * int(c['collect']), 'cast': casted})
+            s['meta']['web_pending'] = None
+            return _after_action(s, n, list(casts))
+        elif use == 'dungeon':
+            if not TP.treasure_left(s): raise Refused('no treasure left in the Dungeon')
+            A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'dungeon'})
+            s['meta']['web_pending'] = dict(type='dungeon', via=key(familiar_img), draws=0)
+            return 'pending'
+        elif use == 'research':
+            t = copy.deepcopy(s)
+            old = [x for x in t['spell_face'] if x]; t['spell_list'] += old
+            t['spell_face'] = [t['spell_list'].pop(0) if t['spell_list'] else None for _ in range(4)]
+            four = [key(x) for x in t['spell_face'] if x]
+            A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'research'})
+            s['meta']['web_pending'] = dict(type='new_research', familiar=familiar_img, four=four)
+            return 'pending'
+        else: raise Refused('use must be score, gather, dungeon, or research')
     return _commit(run)
 
 
@@ -728,7 +788,10 @@ def pending_view(s):
     wp = pend(s)
     if not wp: return None
     out = dict(type=wp['type'])
-    if wp['type'] == 'dungeon':
+    if wp['type'] == 'rise':
+        out.update(familiar=key(wp['familiar']), school=wp['school'], reagent=wp['reagent'], 
+                   collect=wp['collect'], score_gold=wp['score_gold'])
+    elif wp['type'] == 'dungeon':
         o = _dungeon_peek(s, wp)
         out.update(via=wp['via'], draws=wp['draws'], limit=dungeon_limit(s), done=bool(wp.get('done')), deck=len(s.get('dungeon_list') or []),
                    drawn=[dungeon_key(c) for c in (o['drawn'] if o else [])], drawn_cards=(o['drawn'] if o else []),
@@ -832,9 +895,9 @@ API = dict(load=load, view=lambda: view(), dump=lambda: dump(), card_db=lambda: 
            act_build=act_build, act_recruit=act_recruit, act_bid=act_bid, act_pass=act_pass, act_research=act_research,
            summon_gather_preview=summon_gather_preview, act_summon=act_summon, act_divination=act_divination,
            choose_new_research=choose_new_research, dungeon_flip=dungeon_flip, dungeon_stop=dungeon_stop,
-           dungeon_cancel=dungeon_cancel, resolve_effect=resolve_effect, ai_step=ai_step,
+           dungeon_cancel=dungeon_cancel, resolve_effect=resolve_effect, rise_use=rise_use, ai_step=ai_step,
            new_game_preview=new_game_preview, new_game_start=new_game_start)
-MUTATING = {k for k in API if k.startswith(('act_', 'choose_', 'dungeon_', 'resolve_'))} | {'new_game_start'}
+MUTATING = {k for k in API if k.startswith(('act_', 'choose_', 'dungeon_', 'resolve_', 'rise_'))} | {'new_game_start'}
 
 
 def call(fn, args_json='{}'):
