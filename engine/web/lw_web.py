@@ -766,7 +766,7 @@ def rise_use(use, casts=(), discard=None):
                 for d in discard: p['tok'].remove(d)
             A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'gather', 'got': [r] * int(c['collect']), 'cast': casted})
             s['meta']['web_pending'] = None
-            return _after_action(s, n, list(casts))
+            return _after_action(s, n, [])
         elif use == 'dungeon':
             if not TP.treasure_left(s): raise Refused('no treasure left in the Dungeon')
             A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'dungeon'})
