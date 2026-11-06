@@ -104,12 +104,12 @@ test('Bug report submits successfully with mock relay', async ({ page }) => {
 });
 
 test('Bug report captures game state in background', async ({ page }) => {
-  let capturedFormData = null;
+  let capturedPostData = null;
   
   await page.route('**/report', async route => {
     // Capture the form data
     const request = route.request();
-    capturedFormData = request.postDataJSON?.() || 'multipart';
+    capturedPostData = request.postData();
     
     await route.fulfill({
       status: 200,
@@ -130,8 +130,9 @@ test('Bug report captures game state in background', async ({ page }) => {
   // Wait for submission
   await expect(page.getByTestId('bug-toast')).toBeVisible({ timeout: 5000 });
   
-  // Verify form data was sent (multipart, so we just check it was called)
-  expect(capturedFormData).not.toBeNull();
+  // Multipart submission: Playwright exposes raw post body, not JSON
+  expect(capturedPostData).toBeTruthy();
+  expect(capturedPostData).toContain('Content-Disposition: form-data; name="gameState"');
 });
 
 test('Bug report queues offline and shows retry message', async ({ page }) => {
