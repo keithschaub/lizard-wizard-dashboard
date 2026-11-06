@@ -229,10 +229,15 @@ def recruit(s,name,wiz_img,price,starter=None,bids=None):
     p=P(s,name); assert price<=p['mana'],'bid exceeds mana'
     slot=[w for w in s['wiz_face'] if w.endswith(wiz_img.split('/')[-1])]; assert slot,'wizard not on offer'
     w=slot[0]; i=s['wiz_face'].index(w)
+    # Wizard conservation check before mutation
+    _wiz_before = sum(len([x for x in q.get('wizards', [])]) for q in s['players']) + len([x for x in s['wiz_face'] if x]) + len(s.get('wiz_list', []))
     p['mana']-=price; p['wizards'].append(w)
     if s['wiz_list']: s['wiz_face'][i]=s['wiz_list'].pop(0)
     else: s['wiz_face'].pop(i)
     s['wiz_deck']=len(s['wiz_list'])
+    # Wizard conservation check after mutation
+    _wiz_after = sum(len([x for x in q.get('wizards', [])]) for q in s['players']) + len([x for x in s['wiz_face'] if x]) + len(s.get('wiz_list', []))
+    assert _wiz_before == _wiz_after, f'WIZARD CONSERVATION VIOLATED: {_wiz_before} wizards before auction, {_wiz_after} after (won by {name}: {w})'
     import spell_effects as _SE; _SE.mana_triggers(s,'Mana_Leak',name)    # Mana Leak: "+5 Mana when any player recruits a Wizard"
     log(s,{'r':s['meta'].get('round'),'act':'auction','won':name,'item':w.split('/')[-1][7:-4],'price':price,'starter':starter,'bids_tail':bids})
     return w

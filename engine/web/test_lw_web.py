@@ -317,15 +317,16 @@ for _ in range(3):
     r = call('act_bid', n=W.view()['auction']['high'] + 1)
     check(r['ok'] and A.P(W.st(), 'Keith')['mana'] == k0 and r['view']['auction']['high'] > r['view']['auction']['tail'][-2][1] - 1, f"raise to {r['view']['auction']['tail'][-3][1] if len(r['view']['auction']['tail']) > 2 else '?'}: AIs answer, Keith's mana unchanged ({k0})")
 r = call('act_pass')
-a2 = r['view']['auction']
-check(r['ok'] and a2 and a2['card'] == 'Wizard_Lacerta_Arborus' and a2['high'] == 1 and a2['waiting'] == 'Keith', 'after Keith passes, the auction resolves and LizWiz starts the next one in the same call')
-e0 = r['entries'][0] if r['entries'] else {}
-check(e0.get('act') == 'auction' and e0.get('who') == 'Newt' and e0.get('price') == 13, f"the call reports the resolved auction in its entries (Newt for 13; LizWiz, the starter, lost and so auctions again): {e0.get('text')}")
+# BUG FIX: After Keith passes, LizWiz's turn ends (they lost the auction they started).
+# The old behavior was to start another auction, which was the round-27 four-auctions bug.
+# Now: AI's turn ends after a single auction when a human participated.
+check(r['ok'] and not r['view'].get('auction'), 'after Keith passes, the auction resolves and LizWiz\'s turn ends (no second auction)')
+entries = r.get('entries', [])
+auctions = [e for e in entries if e.get('act') == 'auction']
+check(len(auctions) == 1 and auctions[0].get('who') == 'Newt' and auctions[0].get('price') == 13, f"the call reports the resolved auction in entries (Newt won at 13)")
 check(A.P(W.st(), 'Keith')['mana'] == k0, 'losing an auction costs Keith nothing')
-r = call('act_pass')
-check(r['ok'] and not r['view']['auction'] and A.P(W.st(), 'Keith')['mana'] == k0, 'second auction passed: no auction left, mana still unchanged')
-check(any(e['who'] not in ('Keith', None) and e['act'] not in ('turn', 'auction', 'auction_nobid') for e in r['entries']) or r['view']['next'] == 'Keith',
-      "AI moves played inside Keith's call are reported for the UI to announce")
+# LizWiz's turn ended, next player is Newt or Keith
+check(r['view']['next'] != 'LizWiz', 'LizWiz\'s turn ended (no multiple auctions per turn)')
 def m14(s):
     A.P(s, 'Keith')['mana'] = 89; A.P(s, 'Newt')['mana'] = 120; A.P(s, 'LizWiz')['mana'] = 120
 setup(m14)
@@ -385,6 +386,28 @@ for seed in (2, 5, 11, 23):
         if bad: break
 check(not bad, f'{calls} engine calls over 4 new games (Keith bids on every auction he can afford, won {keith_wins}): every wizard school always has exactly 3 copies, and every mat changed only by logged auction wins, Charm, Creation, Scry Wizard or Flame Bolt (swaps keep counts)' + (f': {bad[:3]}' if bad else ''))
 check(keith_wins >= 2, f'the simulation covers Keith winning auctions ({keith_wins})')
+
+print('\n=== 16. Duplicate wizards on offer: exactly one recruited, census conserved ===')
+def m16(s):
+    k = A.P(s, 'Keith')
+    k['mana'] = 50
+    s['wiz_face'] = ['assets/Wizard_Reptilius_Venenum.jpg', 'assets/Wizard_Anguis_Magicus.jpg', 'assets/Wizard_Reptilius_Venenum.jpg']
+    s['wiz_list'] = ['assets/Wizard_Draco_Mortemus.jpg']
+setup(m16)
+before_census = wizard_census(W.st())
+before_keith_wiz = len(P('Keith')['wizards'])
+r = call('act_recruit', wizard='Wizard_Reptilius_Venenum', opening=1)
+check(r['ok'], 'Keith starts auction for Reptilius Venenum (duplicate on offer)')
+r = call('act_bid', n=10)
+while not r['ok'] or r.get('result') == 'paused':
+    r = call('act_bid', n=20)
+after_census = wizard_census(W.st())
+after_keith_wiz = len(P('Keith')['wizards'])
+check(after_census == before_census, f'wizard census conserved: {dict(before_census)} == {dict(after_census)}')
+check(after_keith_wiz == before_keith_wiz + 1, f'Keith gained exactly 1 wizard: {before_keith_wiz} -> {after_keith_wiz}')
+wiz_face = [w for w in W.st()['wiz_face'] if w]
+check(len([w for w in wiz_face if 'Reptilius_Venenum' in w]) == 1, f'exactly 1 Reptilius Venenum left on offer: {[os.path.basename(w) for w in wiz_face]}')
+check(P('Keith')['wizards'].count('assets/Wizard_Reptilius_Venenum.jpg') == 1, 'Keith has exactly 1 Reptilius Venenum')
 
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)
