@@ -39,7 +39,7 @@ test('Bug report dialog opens from menu', async ({ page }) => {
   await open(page, JSON.stringify(G8));
   
   // Open menu
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await expect(page.getByTestId('menu')).toBeVisible();
   
   // Click Report Bug
@@ -62,7 +62,7 @@ test('Bug report requires description', async ({ page }) => {
   await setupMockRelay(page);
   await open(page, JSON.stringify(G8));
   
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
@@ -81,7 +81,7 @@ test('Bug report submits successfully with mock relay', async ({ page }) => {
   await setupMockRelay(page);
   await open(page, JSON.stringify(G8));
   
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
@@ -120,7 +120,7 @@ test('Bug report captures game state in background', async ({ page }) => {
   
   await open(page, JSON.stringify(G8));
   
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
@@ -138,7 +138,7 @@ test('Bug report queues offline and shows retry message', async ({ page }) => {
   await setupOfflineRelay(page);
   await open(page, JSON.stringify(G8));
   
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
@@ -166,7 +166,7 @@ test('Bug report allows image attachments', async ({ page }) => {
   await setupMockRelay(page);
   await open(page, JSON.stringify(G8));
   
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
@@ -187,7 +187,7 @@ test('Bug report allows image attachments', async ({ page }) => {
 test('Bug report download fallback works', async ({ page }) => {
   await open(page, JSON.stringify(G8));
   
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
@@ -212,7 +212,7 @@ test('Bug report does not disrupt view during capture', async ({ page }) => {
   const boardBefore = await page.locator('#board').screenshot();
   
   // Open and submit bug report
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
@@ -236,7 +236,7 @@ test('Bug report does not disrupt view during capture', async ({ page }) => {
 test('Bug report close button works', async ({ page }) => {
   await open(page, JSON.stringify(G8));
   
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
@@ -248,7 +248,7 @@ test('Bug report close button works', async ({ page }) => {
 test('Bug report close on scrim click works', async ({ page }) => {
   await open(page, JSON.stringify(G8));
   
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
@@ -261,7 +261,7 @@ test('Bug report fits on mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 }); // iPhone 14
   await open(page, JSON.stringify(G8));
   
-  await page.getByTestId('topbar-menu').click();
+  await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
