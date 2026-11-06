@@ -6,13 +6,13 @@ import fs from 'fs';
 import { watchErrors, view, shot, me } from './helpers.js';
 
 const INSET = { top: 59, bottom: 34, chrome: 84 };          // Dynamic Island status bar (iPhone 14 Pro and later), home indicator, Safari bar
-const G8 = JSON.parse(fs.readFileSync('engine/game/g8_state.json', 'utf8'));
+const G8_AUTO = JSON.parse(fs.readFileSync('engine/game/g8_auto_advanced.json', 'utf8'));
 const P = (s, n) => s.players.find((p) => p.name === n);
 const ACH_FILE = 'engine/cards/cards.json';                 // the achievement pool scripts/deal4.py draws 4 tiles from
 
 async function open(page, mutate = null) {
   if (mutate) {
-    const s = structuredClone(G8); mutate(s);
+    const s = structuredClone(G8_AUTO); mutate(s);
     await page.addInitScript((t) => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('lw.save.v1', t); sessionStorage.setItem('seeded', '1'); } }, JSON.stringify(s));
   }
   await page.goto('/');
@@ -227,7 +227,7 @@ test('every achievement tile a new deal can draw renders its icons (no missing a
   expect(tiles.length).toBeGreaterThanOrEqual(16);
   await open(page);
   for (let i = 0; i < tiles.length; i += 4) {
-    const s = structuredClone(G8); s.ach = tiles.slice(i, i + 4);
+    const s = structuredClone(G8_AUTO); s.ach = tiles.slice(i, i + 4);
     await page.evaluate((t) => localStorage.setItem('lw.save.v1', t), JSON.stringify(s));
     await page.reload();
     await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 60_000 });

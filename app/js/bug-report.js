@@ -167,9 +167,14 @@ async function createReportPackage(game, description, userImages) {
 }
 
 /**
- * Submit report to relay
+ * Submit report to relay (falls back to queue if relay unavailable)
  */
 async function submitReport(reportPackage) {
+  // If no relay URL configured, skip submission attempt
+  if (!RELAY_URL || RELAY_URL === 'undefined') {
+    throw new Error('Relay not configured');
+  }
+  
   const formData = new FormData();
   formData.append('description', reportPackage.description);
   formData.append('metadata', JSON.stringify(reportPackage.metadata));
@@ -179,18 +184,27 @@ async function submitReport(reportPackage) {
     formData.append(`image_${i}`, img.blob, img.name);
   });
   
-  const response = await fetch(RELAY_URL, {
-    method: 'POST',
-    body: formData,
-    // Don't set Content-Type, let browser set it with boundary for FormData
-  });
-  
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Relay returned ${response.status}: ${text}`);
+  try {
+    const response = await fetch(RELAY_URL, {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(10000), // 10 second timeout
+      // Don't set Content-Type, let browser set it with boundary for FormData
+    });
+    
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Relay returned ${response.status}: ${text}`);
+    }
+    
+    return await response.json();
+  } catch (err) {
+    // Network error or timeout - treat as relay unavailable
+    if (err.name === 'AbortError' || err.name === 'TypeError') {
+      throw new Error('Relay unreachable');
+    }
+    throw err;
   }
-  
-  return await response.json();
 }
 
 /**
@@ -404,10 +418,20 @@ export function openBugReportDialog(game) {
           overlay.remove();
         } catch (err) {
           console.error('[bug-report] Submit failed:', err);
-          // Queue for retry
-          queueReport(reportPackage);
-          showToast('Report queued (offline). Will retry when online.');
-          overlay.remove();
+          const isRelayUnavailable = err.message.includes('not configured') || err.message.includes('unreachable');
+          
+          if (isRelayUnavailable) {
+            // Relay not available - offer download instead
+            queueReport(reportPackage);
+            showToast('Relay unavailable. Report queued locally. Use "Download Report" to save now.', 5000);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit';
+          } else {
+            // Other error - still queue for retry
+            queueReport(reportPackage);
+            showToast('Report queued (offline). Will retry when online.');
+            overlay.remove();
+          }
         }
       } catch (err) {
         console.error('[bug-report] Failed to create report:', err);

@@ -2,7 +2,7 @@ import { test, expect } from './fixtures.js';
 import { view, me, shot } from './helpers.js';
 import fs from 'fs';
 
-const G8 = JSON.parse(fs.readFileSync('engine/game/g8_state.json', 'utf8'));
+const G8_AUTO = JSON.parse(fs.readFileSync('engine/game/g8_auto_advanced.json', 'utf8'));
 const INSET = { top: 59, bottom: 34, chrome: 84 };
 
 async function open(page, text) {
@@ -36,7 +36,7 @@ async function setupOfflineRelay(page) {
 }
 
 test('Bug report dialog opens from menu', async ({ page }) => {
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   // Open menu
   await page.getByTestId('btn-menu').click();
@@ -60,7 +60,7 @@ test('Bug report dialog opens from menu', async ({ page }) => {
 
 test('Bug report requires description', async ({ page }) => {
   await setupMockRelay(page);
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -79,7 +79,7 @@ test('Bug report requires description', async ({ page }) => {
 
 test('Bug report submits successfully with mock relay', async ({ page }) => {
   await setupMockRelay(page);
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -118,7 +118,7 @@ test('Bug report captures game state in background', async ({ page }) => {
     });
   });
   
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -136,7 +136,7 @@ test('Bug report captures game state in background', async ({ page }) => {
 
 test('Bug report queues offline and shows retry message', async ({ page }) => {
   await setupOfflineRelay(page);
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -164,7 +164,7 @@ test('Bug report queues offline and shows retry message', async ({ page }) => {
 
 test('Bug report allows image attachments', async ({ page }) => {
   await setupMockRelay(page);
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -185,7 +185,7 @@ test('Bug report allows image attachments', async ({ page }) => {
 });
 
 test('Bug report download fallback works', async ({ page }) => {
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -205,7 +205,7 @@ test('Bug report download fallback works', async ({ page }) => {
 
 test('Bug report does not disrupt view during capture', async ({ page }) => {
   await setupMockRelay(page);
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   // Take screenshot of board before
   await expect(page.locator('#board')).toBeVisible();
@@ -234,7 +234,7 @@ test('Bug report does not disrupt view during capture', async ({ page }) => {
 });
 
 test('Bug report close button works', async ({ page }) => {
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -246,7 +246,7 @@ test('Bug report close button works', async ({ page }) => {
 });
 
 test('Bug report close on scrim click works', async ({ page }) => {
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -259,7 +259,7 @@ test('Bug report close on scrim click works', async ({ page }) => {
 
 test('Bug report fits on mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 }); // iPhone 14
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();

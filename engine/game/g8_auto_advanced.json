@@ -1,0 +1,339 @@
+{
+  "viewer": "Keith",
+  "round": 2,
+  "next": "Keith",
+  "seat_order": [
+    "Keith",
+    "Newt",
+    "LizWiz"
+  ],
+  "start": "Keith",
+  "humans": [
+    "Keith"
+  ],
+  "game_over": false,
+  "end_triggered": false,
+  "again": false,
+  "bonus": false,
+  "waiting": "action",
+  "waiting_on": "Keith",
+  "board": {
+    "tower_face": "Tower_T1_Obelisk_of_Puzzles",
+    "tower_deck": 20,
+    "wiz_face": [
+      "Wizard_Draco_Mortemus",
+      "Wizard_Bufonem_Creaturae"
+    ],
+    "wiz_deck": 18,
+    "fam_face": [
+      "Familiar_5_Imp",
+      "Familiar_5_Bufonem"
+    ],
+    "fam_deck": 25,
+    "spell_face": [
+      "Spell_Scry_Tower",
+      "Spell_Haste",
+      "Spell_Spell_Shield_T",
+      "Spell_Scribe"
+    ],
+    "spell_deck": 61,
+    "dungeon_deck": 48,
+    "dungeon_treasure": true,
+    "reag_deck": 46,
+    "reag_discard": "Reagent_36",
+    "ach": [
+      "5 Necromancy cards",
+      "10 Gold",
+      "5 Wizards",
+      "5 Druidry cards"
+    ],
+    "tracks": {
+      "Mandrake": 2,
+      "Eye_of_Newt": 1,
+      "Nightshade": 1,
+      "Sulphur": 1,
+      "Foxglove": 2,
+      "Toadstool": 2,
+      "Horn": 1
+    },
+    "out_of_play": 0
+  },
+  "players": [
+    {
+      "name": "Keith",
+      "human": true,
+      "you": true,
+      "profile": null,
+      "level": null,
+      "mana": 20,
+      "gold": 0,
+      "tok": [
+        "Toadstool",
+        "Horn",
+        "Nightshade",
+        "Mandrake",
+        "Sulphur"
+      ],
+      "cap": 10,
+      "hand": [
+        "Reagent_51",
+        "Reagent_14",
+        "Reagent_15"
+      ],
+      "hand_count": 3,
+      "wizards": [],
+      "towers": [],
+      "spells": [],
+      "familiars": [],
+      "treasures": [],
+      "achievements": [],
+      "undead_kept": 0,
+      "bonus": [],
+      "vp": 0
+    },
+    {
+      "name": "Newt",
+      "human": false,
+      "you": false,
+      "profile": "spellslinger",
+      "level": "normal",
+      "mana": null,
+      "gold": 0,
+      "tok": [
+        "Foxglove",
+        "Nightshade"
+      ],
+      "cap": 10,
+      "hand": null,
+      "hand_count": 3,
+      "wizards": [
+        "Wizard_Serpentium_Machinus"
+      ],
+      "towers": [],
+      "spells": [],
+      "familiars": [],
+      "treasures": [],
+      "achievements": [],
+      "undead_kept": 0,
+      "bonus": [
+        "Sulphur"
+      ],
+      "vp": 1
+    },
+    {
+      "name": "LizWiz",
+      "human": false,
+      "you": false,
+      "profile": "delver",
+      "level": "normal",
+      "mana": null,
+      "gold": 4,
+      "tok": [
+        "Foxglove",
+        "Horn"
+      ],
+      "cap": 10,
+      "hand": null,
+      "hand_count": 3,
+      "wizards": [],
+      "towers": [],
+      "spells": [],
+      "familiars": [
+        "Familiar_5_Troglodytam"
+      ],
+      "treasures": [],
+      "achievements": [],
+      "undead_kept": 0,
+      "bonus": [],
+      "vp": 4
+    }
+  ],
+  "auction": null,
+  "pending": null,
+  "legal": {
+    "gather": {
+      "Reagent_51": {
+        "offers": [
+          "Foxglove",
+          "Eye_of_Newt",
+          "Mandrake"
+        ],
+        "raises": [
+          "Foxglove",
+          "Toadstool",
+          "Nightshade"
+        ],
+        "keep": 3,
+        "keeps": [
+          [
+            "Foxglove",
+            "Eye_of_Newt",
+            "Mandrake"
+          ]
+        ],
+        "bonus": [],
+        "bloom": false,
+        "maxgather": false,
+        "miracle": false,
+        "reversed_keep": null,
+        "listed": true
+      },
+      "Reagent_14": {
+        "offers": [
+          "Mandrake",
+          "Toadstool",
+          "Eye_of_Newt",
+          "Nightshade"
+        ],
+        "raises": [
+          "Horn",
+          "Nightshade",
+          "Horn",
+          "Eye_of_Newt"
+        ],
+        "keep": 3,
+        "keeps": [
+          [
+            "Eye_of_Newt",
+            "Mandrake",
+            "Nightshade"
+          ],
+          [
+            "Eye_of_Newt",
+            "Mandrake",
+            "Toadstool"
+          ],
+          [
+            "Eye_of_Newt",
+            "Nightshade",
+            "Toadstool"
+          ],
+          [
+            "Mandrake",
+            "Nightshade",
+            "Toadstool"
+          ]
+        ],
+        "bonus": [],
+        "bloom": false,
+        "maxgather": false,
+        "miracle": false,
+        "reversed_keep": null,
+        "listed": true
+      },
+      "Reagent_15": {
+        "offers": [
+          "Eye_of_Newt",
+          "Mandrake",
+          "Sulphur"
+        ],
+        "raises": [
+          "Sulphur",
+          "Foxglove",
+          "Toadstool"
+        ],
+        "keep": 3,
+        "keeps": [
+          [
+            "Eye_of_Newt",
+            "Mandrake",
+            "Sulphur"
+          ]
+        ],
+        "bonus": [],
+        "bloom": false,
+        "maxgather": false,
+        "miracle": false,
+        "reversed_keep": null,
+        "listed": true
+      }
+    },
+    "convert": {
+      "Toadstool": {
+        "n": 1,
+        "value": 2
+      },
+      "Mandrake": {
+        "n": 1,
+        "value": 2
+      },
+      "Horn": {
+        "n": 1,
+        "value": 1
+      },
+      "Nightshade": {
+        "n": 1,
+        "value": 1
+      },
+      "Sulphur": {
+        "n": 1,
+        "value": 1
+      }
+    },
+    "convert1": true,
+    "energize": false,
+    "build": {
+      "tower": "Tower_T1_Obelisk_of_Puzzles",
+      "reagent": {
+        "n": 1,
+        "reagent": "Sulphur"
+      },
+      "gold": null
+    },
+    "recruit": [
+      "Wizard_Draco_Mortemus",
+      "Wizard_Bufonem_Creaturae"
+    ],
+    "research": {
+      "Spell_Scry_Tower": {
+        "mana": 5,
+        "castable": false,
+        "x": false
+      },
+      "Spell_Haste": {
+        "mana": 5,
+        "castable": false,
+        "x": false
+      },
+      "Spell_Spell_Shield_T": {
+        "mana": 5,
+        "castable": false,
+        "x": false
+      },
+      "Spell_Scribe": {
+        "mana": 5,
+        "castable": false,
+        "x": false
+      }
+    },
+    "summon": {
+      "Familiar_5_Imp": {
+        "cost": 5,
+        "uses": [
+          "score",
+          "gather",
+          "dungeon",
+          "research"
+        ],
+        "collect": 3,
+        "reagent": "Foxglove",
+        "score_gold": 1
+      },
+      "Familiar_5_Bufonem": {
+        "cost": 5,
+        "uses": [
+          "score",
+          "gather",
+          "dungeon",
+          "research"
+        ],
+        "collect": 3,
+        "reagent": "Eye_of_Newt",
+        "score_gold": 1
+      }
+    },
+    "divination": false,
+    "unavailable": []
+  },
+  "log_len": 9
+}

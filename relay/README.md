@@ -14,8 +14,14 @@ This Cloudflare Worker receives bug reports from the Lizard Wizard web app and a
 
 ### Prerequisites
 
-- Cloudflare account (free tier works)
-- GitHub personal access token with `repo` scope
+- **Cloudflare account** (free tier works) - Sign up at https://dash.cloudflare.com/sign-up
+- **GitHub fine-grained personal access token** with permissions:
+  - **Repository**: `keithschaub/lizard-wizard-dashboard`
+  - **Repository permissions**:
+    - **Issues**: Read and write
+    - **Contents**: Read and write
+  - Create at: https://github.com/settings/personal-access-tokens/new
+  - ⚠️ **Do NOT use classic tokens with full `repo` scope** - use fine-grained tokens with minimal permissions
 - Node.js and npm installed
 
 ### 1. Install Wrangler CLI
@@ -43,11 +49,21 @@ id = "YOUR_KV_ID_HERE"  # Replace this
 
 #### GitHub Token
 
-Create a personal access token at https://github.com/settings/tokens with `repo` scope:
+Create a fine-grained personal access token at https://github.com/settings/personal-access-tokens/new:
+
+1. **Token name**: `lizard-wizard-bug-relay`
+2. **Expiration**: Choose your preference (90 days recommended)
+3. **Repository access**: Only select repositories → `keithschaub/lizard-wizard-dashboard`
+4. **Repository permissions**:
+   - Issues: **Read and write**
+   - Contents: **Read and write**
+5. Click "Generate token" and copy it
+
+Then set the secret:
 
 ```bash
 wrangler secret put GITHUB_TOKEN
-# Paste your token when prompted
+# Paste your fine-grained token when prompted
 ```
 
 #### Optional: Relay Secret
@@ -120,8 +136,12 @@ curl -X POST http://localhost:8787/report \
 ### "Failed to create GitHub issue"
 
 - Check that GITHUB_TOKEN is set: `wrangler secret list`
-- Verify token has `repo` scope
+- Verify token is a **fine-grained token** with:
+  - Repository access to `keithschaub/lizard-wizard-dashboard`
+  - **Issues** permission: Read and write
+  - **Contents** permission: Read and write
 - Check token hasn't expired
+- Verify repository name matches exactly
 
 ### "Rate limit exceeded"
 

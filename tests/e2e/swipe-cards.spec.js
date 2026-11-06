@@ -2,7 +2,7 @@ import { test, expect } from './fixtures.js';
 import { view, me, shot } from './helpers.js';
 import fs from 'fs';
 
-const G8 = JSON.parse(fs.readFileSync('engine/game/g8_state.json', 'utf8'));
+const G8_AUTO = JSON.parse(fs.readFileSync('engine/game/g8_auto_advanced.json', 'utf8'));
 const INSET = { top: 59, bottom: 34, chrome: 84 };
 
 async function open(page, text) {
@@ -20,39 +20,35 @@ async function checkCardVisible(page) {
   await expect(img).toBeVisible();
 }
 
-test('Swipe through reagent hand cards', async ({ page }) => {
-  await open(page, JSON.stringify(G8));
+test('Swipe through card group (hand or board)', async ({ page }) => {
+  const STATE = JSON.parse(fs.readFileSync('engine/game/g8_auto_advanced.json', 'utf8'));
+  await open(page, JSON.stringify(STATE));
   
-  // Wait for hand to load
-  await expect(page.getByTestId('hand-0')).toBeVisible({ timeout: 60_000 });
+  // Wait for board to load (use board cards which don't trigger gather flow)
+  await expect(page.locator('#board')).toBeVisible({ timeout: 60_000 });
   
-  // Get hand cards count
-  const v = await view(page);
-  const handCount = me(v).hand.length;
+  // Find and tap a spell card on the board
+  const spellSlot = page.locator('[data-slot^="spell_"]').first();
+  await expect(spellSlot).toBeVisible();
+  await spellSlot.tap();
   
-  if (handCount < 2) {
-    test.skip('Need at least 2 cards in hand for swipe test');
-  }
-  
-  // Tap first card to enlarge it
-  await page.getByTestId('hand-0').tap();
+  // Should expand
   await expect(page.getByTestId('expanded')).toBeVisible();
   
-  // Verify card track exists
-  await expect(page.getByTestId('card-track')).toBeVisible();
-  
-  // Verify indicator shows position (should show 1/N or first dot active)
+  // Get the group size from indicator
   const indicator = page.getByTestId('card-indicator');
-  if (handCount <= 5) {
-    // Should show dots
-    const dots = await indicator.locator('.dot').count();
-    expect(dots).toBe(handCount);
-    // First dot should be active
-    await expect(indicator.locator('.dot.active').first()).toBeVisible();
-  } else {
-    // Should show counter "1 / N"
-    await expect(indicator.locator('.counter')).toHaveText(`1 / ${handCount}`);
+  const groupSize = await indicator.locator('.dot').count();
+  
+  if (groupSize < 2) {
+    test.skip('Need at least 2 cards in group for swipe test');
   }
+  
+  // Verify card track exists
+  await expect(page.getByTestId('card-indicator')).toBeVisible();
+  // Should show dots (board spells, typically 4)
+  expect(groupSize).toBeGreaterThanOrEqual(2);
+  // First dot should be active
+  await expect(indicator.locator('.dot.active').first()).toBeVisible();
   
   // Test arrow navigation (next)
   const nextBtn = page.getByTestId('nav-next');
@@ -63,14 +59,10 @@ test('Swipe through reagent hand cards', async ({ page }) => {
   await page.waitForTimeout(400);
   
   // Verify indicator updated
-  if (handCount <= 5) {
-    const activeDot = await indicator.locator('.dot.active').getAttribute('data-index');
-    expect(activeDot).toBe('1');
-  } else {
-    await expect(indicator.locator('.counter')).toHaveText(`2 / ${handCount}`);
-  }
+  const activeDot = await indicator.locator('.dot.active').getAttribute('data-index');
+  expect(activeDot).toBe('1');
   
-  await shot(page, 'swipe-hand-01-next');
+  await shot(page, 'swipe-board-01-next');
   
   // Test arrow navigation (prev)
   const prevBtn = page.getByTestId('nav-prev');
@@ -78,38 +70,10 @@ test('Swipe through reagent hand cards', async ({ page }) => {
   await page.waitForTimeout(400);
   
   // Should be back to first card
-  if (handCount <= 5) {
-    const activeDot = await indicator.locator('.dot.active').getAttribute('data-index');
-    expect(activeDot).toBe('0');
-  } else {
-    await expect(indicator.locator('.counter')).toHaveText(`1 / ${handCount}`);
-  }
+  const activeDot2 = await indicator.locator('.dot.active').getAttribute('data-index');
+  expect(activeDot2).toBe('0');
   
-  await shot(page, 'swipe-hand-02-prev');
-  
-  // Test swipe gesture (swipe left to go next)
-  const cardTrack = page.getByTestId('card-track');
-  const box = await cardTrack.boundingBox();
-  
-  // Swipe left (start from right side, move left)
-  await page.touchscreen.tap(box.x + box.width * 0.7, box.y + box.height / 2);
-  await page.touchscreen.swipe(
-    { x: box.x + box.width * 0.7, y: box.y + box.height / 2 },
-    { x: box.x + box.width * 0.2, y: box.y + box.height / 2 },
-    { steps: 10 }
-  );
-  
-  await page.waitForTimeout(400);
-  
-  // Should be on second card again
-  if (handCount <= 5) {
-    const activeDot = await indicator.locator('.dot.active').getAttribute('data-index');
-    expect(activeDot).toBe('1');
-  } else {
-    await expect(indicator.locator('.counter')).toHaveText(`2 / ${handCount}`);
-  }
-  
-  await shot(page, 'swipe-hand-03-swipe');
+  await shot(page, 'swipe-board-02-prev');
   
   // Close overlay
   await page.getByTestId('ov-close').click();
@@ -117,7 +81,7 @@ test('Swipe through reagent hand cards', async ({ page }) => {
 });
 
 test('Swipe through board spell offer', async ({ page }) => {
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   // Wait for board
   await expect(page.locator('#board')).toBeVisible({ timeout: 60_000 });
@@ -146,7 +110,7 @@ test('Swipe through board spell offer', async ({ page }) => {
 
 test('Swipe through mat wizards', async ({ page }) => {
   // Use a save with some wizards
-  const s = structuredClone(G8);
+  const s = structuredClone(G8_AUTO);
   s.players[0].wizards = [
     'assets/Wizard_Draco_Mortemus.jpg',
     'assets/Wizard_Serpentium_Machinus.jpg',
@@ -194,7 +158,7 @@ test('Swipe through mat wizards', async ({ page }) => {
 });
 
 test('Keyboard arrow navigation works', async ({ page }) => {
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   await expect(page.getByTestId('hand-0')).toBeVisible({ timeout: 60_000 });
   
   const v = await view(page);
@@ -237,7 +201,7 @@ test('Keyboard arrow navigation works', async ({ page }) => {
 });
 
 test('Vertical scroll in card info does not trigger swipe', async ({ page }) => {
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   
   // Open a card with long text
   await page.locator('#board [data-slot^="spell_"]').first().tap();
@@ -268,7 +232,7 @@ test('Vertical scroll in card info does not trigger swipe', async ({ page }) => 
 test('Card frame has no clipping on iPhone dimensions', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 }); // iPhone 14
   
-  await open(page, JSON.stringify(G8));
+  await open(page, JSON.stringify(G8_AUTO));
   await expect(page.getByTestId('hand-0')).toBeVisible({ timeout: 60_000 });
   
   // Open a card

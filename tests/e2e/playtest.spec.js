@@ -9,7 +9,7 @@ import fs from 'fs';
 import { watchErrors, view, cards, me, projectName, gatherPhase, tapPutbacks } from './helpers.js';
 
 const INSET = { top: 59, bottom: 34, chrome: 84 };
-const G8 = fs.readFileSync('engine/game/g8_state.json', 'utf8');
+const G8_AUTO = fs.readFileSync('engine/game/g8_auto_advanced.json', 'utf8');
 const RUNS = [
   { id: 'run1-g8', from: 'g8' },
   { id: 'run2-new-seed-7', from: 'new', seeds: { seed: 7, ai_seed: 7, board_seed: 7 } },
@@ -552,7 +552,7 @@ for (const run of RUNS) {
     if (process.env.PLAYTEST_DEBUG) page.on('console', (m) => { if (m.type() !== 'info' && m.type() !== 'log') console.log('PAGE', m.type(), m.text().slice(0, 400)); });
     if (process.env.PLAYTEST_DEBUG) page.on('pageerror', (e) => console.log('PAGEERROR', e.message));
     if (run === RUNS[0]) fs.rmSync(`docs/screenshots/playtest/${projectName()}`, { recursive: true, force: true });
-    await page.addInitScript((t) => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('lw.save.v1', t); sessionStorage.setItem('seeded', '1'); } }, G8);
+    await page.addInitScript((t) => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('lw.save.v1', t); sessionStorage.setItem('seeded', '1'); } }, G8_AUTO);
     await page.addInitScript(() => {
       window.__bannerLog = []; let last = null;
       setInterval(() => {
