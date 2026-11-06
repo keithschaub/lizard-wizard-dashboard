@@ -196,6 +196,7 @@ test('game end: scores stay reachable after dismissing, and Play again deals a f
   await page.getByTestId('menu-final-scores').tap();
   await expect(page.getByTestId('game-over')).toBeVisible();
   await page.getByTestId('go-close').tap();
+  await expect(page.getByTestId('game-over')).toHaveCount(0);
   await page.getByTestId('dock-scores').tap();
   await expect(page.getByTestId('game-over')).toBeVisible();
   await page.getByTestId('go-new-game').tap();
