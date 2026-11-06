@@ -429,7 +429,8 @@ export function divinationFlow(g) {
 
 export function convertSheet(g, reagent) {
   const L = g.v.legal;
-  const c = L.convert[reagent]; let n = c.n; let energize = false;
+  const c = L.convert[reagent]; let n = c.n;
+  const energize = L.energize;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'convert' });
   const val = h('span', { class: 'val', 'data-testid': 'convert-n' }, String(n));
   const gain = h('div', { class: 'gain' });
@@ -444,7 +445,6 @@ export function convertSheet(g, reagent) {
     h('div', { class: 'stepper' }, h('button', { 'data-testid': 'convert-minus', onclick: () => { n = Math.max(1, n - 1); upd(); g.sfx('tap'); } }, '−'), val,
       h('button', { 'data-testid': 'convert-plus', onclick: () => { n = Math.min(c.n, n + 1); upd(); g.sfx('tap'); } }, '+')),
     gain,
-    L.energize ? h('label', { class: 'toggle' }, h('input', { type: 'checkbox', onchange: (e) => { energize = e.target.checked; upd(); } }), 'Energize (+3 value first)') : null,
     h('div', { class: 'actions' }, h('button', { class: 'act', 'data-testid': 'convert-go', onclick: async () => {
       const r = await g.act('act_convert', { reagent, n, energize }, { sound: 'coin' }); ov.close(); if (r) g.afterAction();
     } }, 'Convert')),
@@ -504,6 +504,8 @@ export async function effectChooser(g) {
     grid.append(...tok.map((r, i) => { const b = h('button', { class: 'tokbtn', 'data-testid': `transmute-${i}` }, h('img', { src: reagentIcon(r), alt: '' })); b.onclick = () => { if (sel.has(i)) { sel.delete(i); b.classList.remove('on'); } else { sel.add(i); b.classList.add('on'); } go.disabled = sel.size < 2 || sel.size % 2; go.textContent = `Transmute ${sel.size} → ${Math.floor(sel.size / 2)} Gold`; }; return b; }));
     grid.append(h('div', { class: 'actions' }, go));
     go.onclick = () => done({ reagents: [...sel].map((i) => tok[i]) });
+  } else if (kind === 'evolve' || kind === 'rise') {
+    grid.append(...opts.map((o) => h('button', { class: 'opt-card', 'data-testid': `${kind}-${o.familiar}`, onclick: pick(o) }, h('img', { src: art(o.familiar), alt: o.familiar }), h('span', { class: 'oc-label' }, o.school))));
   }
   ov.el.append(grid);
   const choice = await p;

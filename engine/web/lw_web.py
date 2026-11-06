@@ -580,7 +580,7 @@ def dungeon_cancel():
 TARGETED = ('Spell_Flame_Bolt', 'Spell_Disintegrate', 'Spell_Earthquake', 'Spell_Charm', 'Spell_Mana_Drain', 'Spell_Swapo')
 SCRY = {'Spell_Scry_Wizard': 'wizards', 'Spell_Scry_Tower': 'towers', 'Spell_Scry_Familiar': 'familiars', 'Spell_Scribe': 'spells'}
 DECKS = {'wizards': 'wiz_list', 'towers': 'tow_list', 'familiars': 'fam_list', 'spells': 'spell_list'}
-NOT_AUTOMATED = ('Spell_Evolve', 'Spell_Rise', 'Spell_Demonic_Possession', 'Spell_Trap', 'Spell_Obscure')
+NOT_AUTOMATED = ('Spell_Demonic_Possession', 'Spell_Trap', 'Spell_Obscure')
 
 
 def _effect_kind(k):
@@ -589,7 +589,7 @@ def _effect_kind(k):
     if k in SCRY: return 'scry'
     return {'Spell_Creation': 'creation', 'Spell_Wand_Tax': 'wand_tax', 'Spell_Time_Shift': 'time_shift',
             'Spell_Transmute': 'transmute', 'Spell_Scry_Dungeon': 'auto', 'Spell_Energy_Pulse': 'auto',
-            'Spell_Haste': 'haste'}.get(k)
+            'Spell_Haste': 'haste', 'Spell_Evolve': 'evolve', 'Spell_Rise': 'rise'}.get(k)
 
 
 def effect_options(s, k):
@@ -612,6 +612,10 @@ def effect_options(s, k):
     if kind == 'transmute': return [dict(tok=list(p['tok']))] if len(p['tok']) >= 2 else []
     if kind == 'scry':
         deck = SCRY[k]; return [dict(deck=deck, card=key(c)) for c in s[DECKS[deck]][:5]]
+    if kind == 'evolve':
+        return [dict(familiar=key(f), school=CD.school(f)) for f in p.get('familiars', [])]
+    if kind == 'rise':
+        return [dict(familiar=key(f), school=CD.school(f)) for f in p.get('familiars', [])]
     return []
 
 
@@ -707,6 +711,14 @@ def resolve_effect(choice):
             elif kind == 'creation': A.creation(s, n, o['card'], o['kind'])
             elif kind == 'wand_tax': SE.wand_tax(s, n, o['school'])
             elif kind == 'time_shift': SE.time_shift(s, n, o['deck'])
+            elif kind == 'evolve':
+                fam = [f for f in P(s, n).get('familiars', []) if key(f) == ch.get('familiar')]
+                if not fam: raise Refused('pick one of your familiars')
+                SE.evolve(s, n, fam[0])
+            elif kind == 'rise':
+                fam = [f for f in P(s, n).get('familiars', []) if key(f) == ch.get('familiar')]
+                if not fam: raise Refused('pick one of your familiars')
+                SE.rise_score(s, n, fam[0])
         s['meta']['web_pending'] = None
         return _after_action(s, n, wp.get('queue', []))
     return _commit(run)
