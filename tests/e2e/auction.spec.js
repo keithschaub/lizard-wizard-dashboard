@@ -79,7 +79,7 @@ async function checkCardFrame(page) {
   for (const b of lay.btns) expect(b, 'Pass / Bid visible above the Safari bar without scrolling').toBeLessThanOrEqual(lay.limit);
 }
 
-test('multi-raise auction, then a back-to-back auction: the panel follows live state; losing costs no mana', async ({ page }) => {
+test('multi-raise auction (BUG FIX: no back-to-back after AI loses): the panel follows live state; losing costs no mana', async ({ page }) => {
   const errors = watchErrors(page);
   await open(page, B2B);
   await expect(page.getByTestId('arena')).toBeVisible({ timeout: 60_000 });
@@ -97,14 +97,17 @@ test('multi-raise auction, then a back-to-back auction: the panel follows live s
     }
     if (seen.length === 1 && raises < 3 && st.go) { raises++; await answer(page, 'bid-go'); } else await answer(page, 'bid-pass');
   }
-  expect(raises, 'Keith raised three times in the first auction').toBe(3);
-  expect(seen.map((c) => c.replace('Wizard_', ''))).toEqual(['Reptilius_Venenum', 'Lacerta_Arborus']);
+  expect(raises, 'Keith raised three times in the auction').toBe(3);
+  // BUG FIX: After the round-27 four-auctions fix, AI that loses an auction where a human
+  // participated just ends their turn (no second auction). So we only see one auction now.
+  expect(seen.map((c) => c.replace('Wizard_', ''))).toEqual(['Reptilius_Venenum']);
   const v = await view(page);
   expect(v.auction).toBeNull();
-  expect(me(v).mana, 'Keith lost both auctions: his mana is untouched').toBe(mana0);
+  expect(me(v).mana, 'Keith lost the auction: his mana is untouched').toBe(mana0);
   const log = await page.evaluate(() => window.lwDebug.log());
-  const results = log.filter((e) => e.act === 'auction' || e.act === 'auction_nobid').slice(-2);
-  expect(results.every((e) => e.who !== 'Keith'), 'both auctions went to an AI').toBe(true);
+  const results = log.filter((e) => e.act === 'auction' || e.act === 'auction_nobid').slice(-1);
+  expect(results.length, 'exactly one auction resolved').toBe(1);
+  expect(results[0].who !== 'Keith', 'the auction went to an AI').toBe(true);
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
@@ -194,7 +197,7 @@ test('Keith wins one multi-raise auction: his mat gains exactly that wizard, dra
   expect(m.text).toContain('Wizards: Reptilius Venenum');
 });
 
-test("Keith's playtest: bidding in every back-to-back auction wins only the wizards shown, each named in its win message", async ({ page }) => {
+test("Keith's playtest (BUG FIX: single auction per turn): winning shows correct wizard in message", async ({ page }) => {
   const s = JSON.parse(B2B); P(s, 'Keith').mana = 60;
   await open(page, JSON.stringify(s));
   await expect(page.getByTestId('arena')).toBeVisible({ timeout: 60_000 });
@@ -210,8 +213,8 @@ test("Keith's playtest: bidding in every back-to-back auction wins only the wiza
   const v = await view(page);
   const log = await page.evaluate(() => window.lwDebug.log());
   const keithWon = log.filter((e) => e.act === 'auction' && e.who === 'Keith').map((e) => e.cards[0]);
-  expect(cards.length, 'several auctions in a row').toBeGreaterThanOrEqual(3);
-  expect(keithWon.length, 'Keith won more than one').toBeGreaterThanOrEqual(2);
+  // BUG FIX: After the round-27 fix, there's only one auction (AI turn ends after losing)
+  expect(cards.length, 'one auction from the fixture').toBeGreaterThanOrEqual(1);
   expect([...me(v).wizards].sort(), 'Keith holds exactly the wizards he won').toEqual([...keithWon].sort());
   const told = (await page.evaluate(() => window.__wins)).filter((w) => w.startsWith('You win'));
   expect(told.length).toBe(keithWon.length);
