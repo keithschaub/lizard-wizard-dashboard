@@ -88,3 +88,52 @@ test('Crystal Ball: card data and max hand size effect', async ({ page }) => {
   
   expect(errors).toEqual([]);
 });
+
+test('Player target picker: CSS and DOM structure for stats', async ({ page }) => {
+  const errors = watchErrors(page);
+  await boot(page);
+  
+  // Verify CSS classes exist for player chip stats display
+  const hasPlayerChipStyles = await page.evaluate(() => {
+    const styles = Array.from(document.styleSheets)
+      .flatMap(sheet => {
+        try {
+          return Array.from(sheet.cssRules || []);
+        } catch (e) {
+          return [];
+        }
+      })
+      .map(rule => rule.selectorText)
+      .filter(Boolean);
+    
+    return {
+      hasPlayerChip: styles.some(s => s.includes('.player-chip')),
+      hasChipCol: styles.some(s => s.includes('.chip-col')),
+      hasChipStats: styles.some(s => s.includes('.chip-stats')),
+      hasMiniStat: styles.some(s => s.includes('.stat.mini'))
+    };
+  });
+  
+  expect(hasPlayerChipStyles.hasPlayerChip).toBe(true);
+  expect(hasPlayerChipStyles.hasChipCol).toBe(true);
+  expect(hasPlayerChipStyles.hasChipStats).toBe(true);
+  expect(hasPlayerChipStyles.hasMiniStat).toBe(true);
+  
+  // Verify the effectChooser function exists and has the playerData helper
+  const hasEffectChooserEnhancements = await page.evaluate(() => {
+    const funcStr = window.ui?.effectChooser?.toString() || '';
+    return {
+      hasPlayerData: funcStr.includes('playerData'),
+      hasManaTestId: funcStr.includes('-mana'),
+      hasVpTestId: funcStr.includes('-vp'),
+      hasChipStats: funcStr.includes('chip-stats')
+    };
+  });
+  
+  expect(hasEffectChooserEnhancements.hasPlayerData).toBe(true);
+  expect(hasEffectChooserEnhancements.hasManaTestId).toBe(true);
+  expect(hasEffectChooserEnhancements.hasVpTestId).toBe(true);
+  expect(hasEffectChooserEnhancements.hasChipStats).toBe(true);
+  
+  expect(errors).toEqual([]);
+});

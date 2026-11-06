@@ -24,6 +24,7 @@ class Game {
     paintMute();
     window.addEventListener('pointerdown', () => { Audio.unlock(); if (this.aiRunning) this.skipMove = true; }, { capture: true });
     window.lwDebug = { seedNextGame: (seeds) => { this.nextGameSeeds = seeds; }, view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning };
+    window.ui = UI;
   }
 
   me_() { return this.v.players.find((p) => p.name === this.me); }

@@ -712,15 +712,27 @@ export async function effectChooser(g) {
   const grid = h('div', { class: 'opt-grid', 'data-testid': 'effect-options' });
   const pick = (choice) => () => { g.sfx('select'); done(choice); };
   const kind = pd.kind;
+  const playerData = (name) => g.v.players.find((p) => p.name === name);
   if (['flame_bolt', 'disintegrate', 'earthquake', 'charm', 'creation'].includes(kind)) {
     const byP = {};
     for (const o of opts) (byP[o.player || 'Available'] ||= []).push(o);
     for (const [pl, os] of Object.entries(byP)) {
-      grid.append(h('div', { class: 'group-label' }, pl));
+      const pData = pl !== 'Available' ? playerData(pl) : null;
+      const labelContent = pData ? [pl, ' ', h('span', { class: 'stat mana mini', 'data-testid': `${pl}-mana` }, h('span', { class: 'orb' }), pData.mana === null ? '?' : pData.mana), h('span', { class: 'stat vp mini', 'data-testid': `${pl}-vp` }, `${pData.vp} VP`)] : pl;
+      grid.append(h('div', { class: 'group-label' }, labelContent));
       os.forEach((o, i) => grid.append(h('button', { class: 'opt-card', 'data-testid': `target-${pl}-${o.card}`, onclick: pick(o) }, h('img', { src: art(o.card), alt: o.card }), h('span', { class: 'oc-label' }, nice(o.kind)))));
     }
   } else if (kind === 'mana_drain') {
-    grid.append(...opts.map((o) => h('button', { class: 'chip', 'data-testid': `target-${o.player}`, onclick: pick(o) }, avatar(o.player, 30), o.player)));
+    grid.append(...opts.map((o) => {
+      const pData = playerData(o.player);
+      return h('button', { class: 'chip player-chip', 'data-testid': `target-${o.player}`, onclick: pick(o) },
+        avatar(o.player, 30),
+        h('div', { class: 'chip-col' },
+          h('div', { class: 'chip-name' }, o.player),
+          h('div', { class: 'chip-stats' },
+            h('span', { class: 'stat mana mini', 'data-testid': `${o.player}-mana` }, h('span', { class: 'orb' }), pData?.mana === null ? '?' : pData?.mana ?? '?'),
+            h('span', { class: 'stat vp mini', 'data-testid': `${o.player}-vp` }, `${pData?.vp ?? '?'} VP`))));
+    }));
   } else if (kind === 'wand_tax') {
     grid.append(...opts.map((o) => h('button', { class: 'chip', 'data-testid': `school-${o.school}`, onclick: pick(o) }, h('img', { src: schoolIcon(o.school), alt: '' }), `${o.school} · +${o.gold} Gold`)));
   } else if (kind === 'time_shift') {
