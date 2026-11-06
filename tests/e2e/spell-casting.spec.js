@@ -89,51 +89,67 @@ test('Crystal Ball: card data and max hand size effect', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('Player target picker: CSS and DOM structure for stats', async ({ page }) => {
+test('Player target picker: shows actual mana and VP from game state', async ({ page }) => {
   const errors = watchErrors(page);
   await boot(page);
   
-  // Verify CSS classes exist for player chip stats display
-  const hasPlayerChipStyles = await page.evaluate(() => {
-    const styles = Array.from(document.styleSheets)
-      .flatMap(sheet => {
-        try {
-          return Array.from(sheet.cssRules || []);
-        } catch (e) {
-          return [];
-        }
-      })
-      .map(rule => rule.selectorText)
-      .filter(Boolean);
+  // Construct a mock view with known player mana and VP, then trigger effectChooser
+  const displayed = await page.evaluate(() => {
+    const g = window.lwDebug._g;
     
-    return {
-      hasPlayerChip: styles.some(s => s.includes('.player-chip')),
-      hasChipCol: styles.some(s => s.includes('.chip-col')),
-      hasChipStats: styles.some(s => s.includes('.chip-stats')),
-      hasMiniStat: styles.some(s => s.includes('.stat.mini'))
+    // Mock the view with known player stats
+    g.v = {
+      ...g.v,
+      pending: {
+        type: 'effect',
+        spell: 'Spell_Mana_Drain',
+        kind: 'mana_drain',
+        options: [
+          { player: 'Newt' },
+          { player: 'LizWiz' }
+        ]
+      },
+      players: [
+        { name: 'Keith', mana: 50, vp: 10, you: true },
+        { name: 'Newt', mana: 42, vp: 18, you: false },
+        { name: 'LizWiz', mana: 28, vp: 7, you: false }
+      ]
     };
+    
+    // Trigger the effect chooser
+    window.ui.effectChooser(g);
+    
+    // Give the UI a moment to render
+    return new Promise(resolve => setTimeout(() => {
+      // Extract the displayed values
+      const newtMana = document.querySelector('[data-testid="Newt-mana"]')?.textContent || '';
+      const newtVp = document.querySelector('[data-testid="Newt-vp"]')?.textContent || '';
+      const lizwizMana = document.querySelector('[data-testid="LizWiz-mana"]')?.textContent || '';
+      const lizwizVp = document.querySelector('[data-testid="LizWiz-vp"]')?.textContent || '';
+      
+      resolve({
+        newtMana,
+        newtVp,
+        lizwizMana,
+        lizwizVp
+      });
+    }, 100));
   });
   
-  expect(hasPlayerChipStyles.hasPlayerChip).toBe(true);
-  expect(hasPlayerChipStyles.hasChipCol).toBe(true);
-  expect(hasPlayerChipStyles.hasChipStats).toBe(true);
-  expect(hasPlayerChipStyles.hasMiniStat).toBe(true);
+  // Verify the correct values are displayed
+  expect(displayed.newtMana).toContain('42');
+  expect(displayed.newtVp).toContain('18');
+  expect(displayed.newtVp).toContain('VP');
   
-  // Verify the effectChooser function exists and has the playerData helper
-  const hasEffectChooserEnhancements = await page.evaluate(() => {
-    const funcStr = window.ui?.effectChooser?.toString() || '';
-    return {
-      hasPlayerData: funcStr.includes('playerData'),
-      hasManaTestId: funcStr.includes('-mana'),
-      hasVpTestId: funcStr.includes('-vp'),
-      hasChipStats: funcStr.includes('chip-stats')
-    };
-  });
+  expect(displayed.lizwizMana).toContain('28');
+  expect(displayed.lizwizVp).toContain('7');
+  expect(displayed.lizwizVp).toContain('VP');
   
-  expect(hasEffectChooserEnhancements.hasPlayerData).toBe(true);
-  expect(hasEffectChooserEnhancements.hasManaTestId).toBe(true);
-  expect(hasEffectChooserEnhancements.hasVpTestId).toBe(true);
-  expect(hasEffectChooserEnhancements.hasChipStats).toBe(true);
+  // Also verify the elements are visible in the DOM
+  await expect(page.locator('[data-testid="Newt-mana"]')).toBeVisible();
+  await expect(page.locator('[data-testid="Newt-vp"]')).toBeVisible();
+  await expect(page.locator('[data-testid="LizWiz-mana"]')).toBeVisible();
+  await expect(page.locator('[data-testid="LizWiz-vp"]')).toBeVisible();
   
   expect(errors).toEqual([]);
 });
