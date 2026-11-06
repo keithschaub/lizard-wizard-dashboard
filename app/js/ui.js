@@ -81,20 +81,234 @@ export function cardInfo(g, key) {
     text ? h('div', { class: 'ci-text', 'data-testid': 'card-text' }, text) : null);
 }
 
-export function expandCard(g, key, { actions = [], extra = null } = {}) {
+export function expandCard(g, key, { actions = [], extra = null, group = null, groupIndex = 0 } = {}) {
+  // group: array of card keys for swipeable navigation, groupIndex: current card index in group
+  const cards = group || [key];
+  let currentIndex = Math.max(0, Math.min(groupIndex, cards.length - 1));
+  
   const ov = openOverlay('expand', { onScrim: (o) => o.close(), testid: 'expanded' });
-  const isAch = key.startsWith('Achievement:');
-  // The scans are trimmed right at the medallion/title, so the card sits in a dark frame that gives its top edge room.
-  const img = isAch ? null : h('div', { class: 'big-frame', 'data-testid': 'expanded-card', onclick: () => ov.close() },
-    h('img', { class: 'big', src: art(key), alt: key, 'data-testid': 'expanded-img' }));
-  ov.el.append(closeBtn(() => ov.close()), img, cardInfo(g, key));
-  if (extra) ov.el.append(extra);
-  if (actions.length) {
-    ov.el.append(h('div', { class: 'actions' }, actions.map((a) => h('button', {
-      class: `act ${a.cls || ''}`, disabled: a.disabled || null, 'data-testid': a.testid,
-      onclick: async (e) => { e.stopPropagation(); g.sfx('tap'); const keep = await a.onClick(ov); if (!keep) ov.close(); },
-    }, h('span', {}, a.label), a.sub ? h('span', { class: 'sub' }, a.sub) : null))));
+  
+  // Container for all card frames (for swipe animation)
+  const cardTrack = h('div', { class: 'card-track', 'data-testid': 'card-track' });
+  const cardinfoContainer = h('div', { class: 'cardinfo-container', 'data-testid': 'cardinfo-container' });
+  const actionsContainer = h('div', { class: 'actions-container' });
+  
+  // Position indicator (dots or "2 / 4")
+  const indicator = cards.length > 1 ? h('div', { class: 'card-indicator', 'data-testid': 'card-indicator' }, 
+    cards.length <= 5 
+      ? cards.map((_, i) => h('span', { class: i === currentIndex ? 'dot active' : 'dot', 'data-index': i }))
+      : h('span', { class: 'counter' }, `${currentIndex + 1} / ${cards.length}`)
+  ) : null;
+  
+  // Arrow buttons for desktop (only if multiple cards)
+  const prevBtn = cards.length > 1 ? h('button', { 
+    class: 'nav-arrow prev', 
+    'aria-label': 'Previous card', 
+    'data-testid': 'nav-prev',
+    onclick: (e) => { e.stopPropagation(); if (currentIndex > 0) navigateTo(currentIndex - 1); }
+  }, '‹') : null;
+  
+  const nextBtn = cards.length > 1 ? h('button', { 
+    class: 'nav-arrow next', 
+    'aria-label': 'Next card', 
+    'data-testid': 'nav-next',
+    onclick: (e) => { e.stopPropagation(); if (currentIndex < cards.length - 1) navigateTo(currentIndex + 1); }
+  }, '›') : null;
+  
+  function renderCard(idx) {
+    const k = cards[idx];
+    const isAch = k.startsWith('Achievement:');
+    return isAch ? null : h('div', { 
+      class: 'big-frame', 
+      'data-testid': `expanded-card-${idx}`, 
+      'data-index': idx
+    }, h('img', { class: 'big', src: art(k), alt: k, 'data-testid': 'expanded-img' }));
   }
+  
+  function updateContent(idx, animate = true) {
+    const k = cards[idx];
+    
+    // Update card track
+    cardTrack.innerHTML = '';
+    // Render current card and neighbors for smooth transitions
+    const start = Math.max(0, idx - 1);
+    const end = Math.min(cards.length, idx + 2);
+    for (let i = start; i < end; i++) {
+      const frame = renderCard(i);
+      if (frame) {
+        frame.style.transform = `translateX(${(i - idx) * 100}%)`;
+        frame.style.transition = animate ? 'transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)' : 'none';
+        cardTrack.appendChild(frame);
+      }
+    }
+    
+    // Update info
+    cardinfoContainer.innerHTML = '';
+    cardinfoContainer.appendChild(cardInfo(g, k));
+    
+    // Update actions
+    if (typeof actions === 'function') {
+      const acts = actions(k, idx);
+      actionsContainer.innerHTML = '';
+      if (acts && acts.length) {
+        actionsContainer.appendChild(h('div', { class: 'actions' }, acts.map((a) => h('button', {
+          class: `act ${a.cls || ''}`, disabled: a.disabled || null, 'data-testid': a.testid,
+          onclick: async (e) => { e.stopPropagation(); g.sfx('tap'); const keep = await a.onClick(ov); if (!keep) ov.close(); },
+        }, h('span', {}, a.label), a.sub ? h('span', { class: 'sub' }, a.sub) : null))));
+      }
+    } else if (actions.length) {
+      actionsContainer.innerHTML = '';
+      actionsContainer.appendChild(h('div', { class: 'actions' }, actions.map((a) => h('button', {
+        class: `act ${a.cls || ''}`, disabled: a.disabled || null, 'data-testid': a.testid,
+        onclick: async (e) => { e.stopPropagation(); g.sfx('tap'); const keep = await a.onClick(ov); if (!keep) ov.close(); },
+      }, h('span', {}, a.label), a.sub ? h('span', { class: 'sub' }, a.sub) : null))));
+    }
+    
+    // Update indicator
+    if (indicator) {
+      if (cards.length <= 5) {
+        indicator.querySelectorAll('.dot').forEach((dot, i) => {
+          dot.classList.toggle('active', i === idx);
+        });
+      } else {
+        indicator.querySelector('.counter').textContent = `${idx + 1} / ${cards.length}`;
+      }
+    }
+    
+    // Update arrow visibility
+    if (prevBtn) prevBtn.style.opacity = idx > 0 ? '1' : '0.3';
+    if (nextBtn) nextBtn.style.opacity = idx < cards.length - 1 ? '1' : '0.3';
+  }
+  
+  function navigateTo(newIndex, animate = true) {
+    if (newIndex < 0 || newIndex >= cards.length || newIndex === currentIndex) return;
+    g.sfx('tap');
+    currentIndex = newIndex;
+    updateContent(currentIndex, animate);
+  }
+  
+  // Swipe gesture handling
+  if (cards.length > 1) {
+    let startX = 0, startY = 0, currentX = 0, currentY = 0, isDragging = false, hasMoved = false;
+    const threshold = 50; // minimum swipe distance
+    const verticalThreshold = 30; // max vertical movement to still count as horizontal swipe
+    
+    const onStart = (x, y) => {
+      startX = x; startY = y; currentX = x; isDragging = true; hasMoved = false;
+    };
+    
+    const onMove = (x, y) => {
+      if (!isDragging) return;
+      const deltaX = x - startX;
+      const deltaY = y - startY;
+      
+      // Check if this is a vertical scroll (let it through)
+      if (!hasMoved && Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 10) {
+        isDragging = false;
+        return;
+      }
+      
+      hasMoved = true;
+      currentX = x;
+      currentY = y;
+      
+      // Apply transform to current card frame with rubber-band at edges
+      const frames = cardTrack.querySelectorAll('.big-frame');
+      const activeFrame = Array.from(frames).find(f => parseInt(f.dataset.index) === currentIndex);
+      if (activeFrame) {
+        let translateX = deltaX;
+        // Rubber-band effect at edges
+        if ((currentIndex === 0 && deltaX > 0) || (currentIndex === cards.length - 1 && deltaX < 0)) {
+          translateX = deltaX * 0.3; // reduced movement at bounds
+        }
+        activeFrame.style.transition = 'none';
+        activeFrame.style.transform = `translateX(${translateX}px)`;
+      }
+    };
+    
+    const onEnd = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      
+      const deltaX = currentX - startX;
+      const deltaY = Math.abs(currentY - startY);
+      
+      // Only swipe if horizontal movement dominates and exceeds threshold
+      if (hasMoved && Math.abs(deltaX) > threshold && Math.abs(deltaX) > deltaY) {
+        if (deltaX > 0 && currentIndex > 0) {
+          navigateTo(currentIndex - 1); // swipe right = previous
+        } else if (deltaX < 0 && currentIndex < cards.length - 1) {
+          navigateTo(currentIndex + 1); // swipe left = next
+        } else {
+          updateContent(currentIndex); // snap back
+        }
+      } else {
+        updateContent(currentIndex); // snap back
+      }
+    };
+    
+    // Touch events
+    cardTrack.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      onStart(touch.clientX, touch.clientY);
+    }, { passive: true });
+    
+    cardTrack.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        const touch = e.touches[0];
+        onMove(touch.clientX, touch.clientY);
+      }
+    }, { passive: true });
+    
+    cardTrack.addEventListener('touchend', onEnd, { passive: true });
+    cardTrack.addEventListener('touchcancel', onEnd, { passive: true });
+    
+    // Mouse events for desktop
+    cardTrack.addEventListener('mousedown', (e) => {
+      onStart(e.clientX, e.clientY);
+      e.preventDefault();
+    });
+    
+    cardTrack.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        onMove(e.clientX, e.clientY);
+        e.preventDefault();
+      }
+    });
+    
+    cardTrack.addEventListener('mouseup', onEnd);
+    cardTrack.addEventListener('mouseleave', onEnd);
+    
+    // Keyboard navigation
+    const keyHandler = (e) => {
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault();
+        navigateTo(currentIndex - 1);
+      } else if (e.key === 'ArrowRight' && currentIndex < cards.length - 1) {
+        e.preventDefault();
+        navigateTo(currentIndex + 1);
+      }
+    };
+    ov.el.addEventListener('keydown', keyHandler);
+    ov.el.tabIndex = 0;
+    ov.el.focus();
+  }
+  
+  // Initial render
+  updateContent(currentIndex, false);
+  
+  ov.el.append(
+    closeBtn(() => ov.close()), 
+    prevBtn,
+    nextBtn,
+    cardTrack,
+    indicator,
+    cardinfoContainer,
+    actionsContainer
+  );
+  
+  if (extra) ov.el.append(extra);
+  
   return ov;
 }
 
@@ -112,9 +326,13 @@ function pairUp(g, wizards, towers) {
   return cols;
 }
 
-function mini(g, key, { cls = '', badge = null, testid = null } = {}) {
+function mini(g, key, { cls = '', badge = null, testid = null, group = null, groupIndex = 0 } = {}) {
   if (!key) return h('div', { class: 'mcard back', 'data-testid': testid }, 'LW');
-  return h('div', { class: `mcard ${cls}`, 'data-testid': testid, onclick: (e) => { e.stopPropagation(); g.sfx('tap'); expandCard(g, key); } },
+  return h('div', { class: `mcard ${cls}`, 'data-testid': testid, onclick: (e) => { 
+    e.stopPropagation(); 
+    g.sfx('tap'); 
+    expandCard(g, key, { group, groupIndex }); 
+  } },
     h('img', { src: art(key), alt: key }), badge ? h('div', { class: 'badge' }, badge) : null);
 }
 
@@ -145,18 +363,36 @@ export function openMats(g) {
         h('span', { class: 'stat store' }, `Gather 3${p.bonus.length ? ' +' + p.bonus.length : ''}`, ...p.bonus.map((r) => h('img', { src: reagentIcon(r), alt: '', style: { width: '18px' } })))),
       h('div', { class: 'mat-row' }, tok.size ? [...tok].map(([r, n]) => tokenChip(r, n)) : h('span', { class: 'none' }, 'No reagent tokens')),
       h('div', { class: 'mat-label' }, p.you ? 'Reagent cards in hand' : `Reagent cards in hand: ${p.hand_count}`),
-      p.you ? h('div', { class: 'mat-row' }, p.hand.map((k) => mini(g, k))) : null,
+      p.you ? h('div', { class: 'mat-row' }, p.hand.map((k, i) => mini(g, k, { group: p.hand, groupIndex: i }))) : null,
       h('div', { class: 'mat-label' }, `Wizards & Towers (${p.wizards.length}/${p.towers.length})`),
-      h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m]) => h('div', { class: `pair ${m ? 'match' : ''}` },
-        h('span', { class: 'pts' }, m ? '+10' : (w && t ? '+5' : '+1')), w ? mini(g, w) : h('div', { class: 'mcard empty' }, 'no wizard'), t ? mini(g, t) : h('div', { class: 'mcard empty' }, 'no tower')))
-        : h('span', { class: 'none' }, 'None yet')),
+      h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m], i) => {
+        // Create combined group of all wizards and towers for this mat
+        const wizardsGroup = p.wizards.filter(k => k);
+        const towersGroup = p.towers.filter(k => k);
+        return h('div', { class: `pair ${m ? 'match' : ''}` },
+          h('span', { class: 'pts' }, m ? '+10' : (w && t ? '+5' : '+1')), 
+          w ? mini(g, w, { group: wizardsGroup, groupIndex: wizardsGroup.indexOf(w) }) : h('div', { class: 'mcard empty' }, 'no wizard'), 
+          t ? mini(g, t, { group: towersGroup, groupIndex: towersGroup.indexOf(t) }) : h('div', { class: 'mcard empty' }, 'no tower'));
+      }) : h('span', { class: 'none' }, 'None yet')),
       h('div', { class: 'mat-cardlist', 'data-testid': `mat-cards-${p.name}`, 'data-wizards': p.wizards.join(','), 'data-towers': p.towers.join(',') },
         `Wizards: ${cardList(g, p.wizards)} · Towers: ${cardList(g, p.towers)}`),
       h('div', { class: 'mat-label' }, `Spells & Familiars (${p.spells.length + p.familiars.length})`),
-      h('div', { class: 'mat-row' }, (p.spells.length + p.familiars.length) ? [
-        ...p.spells.map((s) => s.key ? mini(g, s.key, { cls: s.cast ? '' : 'uncast', badge: s.cast ? null : 'uncast' }) : mini(g, null)),
-        ...p.familiars.map((f) => mini(g, f)),
-      ] : h('span', { class: 'none' }, 'None yet')),
+      h('div', { class: 'mat-row' }, (p.spells.length + p.familiars.length) ? (() => {
+        // Create combined group of all spells and familiars
+        const spellsAndFams = [...p.spells.filter(s => s.key).map(s => s.key), ...p.familiars.filter(f => f)];
+        return [
+          ...p.spells.map((s, i) => s.key ? mini(g, s.key, { 
+            cls: s.cast ? '' : 'uncast', 
+            badge: s.cast ? null : 'uncast',
+            group: spellsAndFams,
+            groupIndex: spellsAndFams.indexOf(s.key)
+          }) : mini(g, null)),
+          ...p.familiars.map((f, i) => mini(g, f, {
+            group: spellsAndFams,
+            groupIndex: spellsAndFams.indexOf(f)
+          })),
+        ];
+      })() : h('span', { class: 'none' }, 'None yet')),
       (p.treasures.length || p.achievements.length) ? h('div', { class: 'mat-label' }, 'Items & Achievements') : null,
       (p.treasures.length || p.achievements.length) ? h('div', { class: 'mat-row' },
         ...p.treasures.map((t) => mini(g, t.key)), ...p.achievements.map((a) => h('span', { class: 'chip static' }, `🏆 ${a}`))) : null,

@@ -191,7 +191,11 @@ class Game {
           }
           const el = h('div', { class: `hcard ${legal ? 'legal' : ''} ${prevHand && !prevHand.includes(k) ? 'deal' : ''}`, 'data-testid': `hand-${i}`, 'data-key': k, style: cardStyle },
             h('img', { src: art(k), alt: k, draggable: 'false' }));
-          el.onclick = () => { this.sfx('tap'); if (legal && !this.busyFlow()) UI.gatherFlow(this, k); else UI.expandCard(this, k); };
+          el.onclick = () => { 
+            this.sfx('tap'); 
+            if (legal && !this.busyFlow()) UI.gatherFlow(this, k); 
+            else UI.expandCard(this, k, { group: hand, groupIndex: i }); 
+          };
           return el;
         }))));
   }
@@ -213,7 +217,24 @@ class Game {
     if (slot?.startsWith('wiz_') && (L.recruit || []).includes(key)) return UI.arena(this, { mode: 'open', wizard: key }).then(() => this.settle());
     if (slot?.startsWith('fam_') && (L.summon || {})[key]) return UI.summonFlow(this, key);
     if (slot?.startsWith('spell_') && (L.research || {})[key]) return UI.researchFlow(this, key);
-    UI.expandCard(this, key);
+    
+    // Determine card group for swipeable navigation
+    let group = null, groupIndex = 0;
+    if (slot?.startsWith('wiz_')) {
+      group = v.board.wiz_face.filter(k => k);
+      groupIndex = group.indexOf(key);
+    } else if (slot?.startsWith('fam_')) {
+      group = v.board.fam_face.filter(k => k);
+      groupIndex = group.indexOf(key);
+    } else if (slot?.startsWith('spell_')) {
+      group = v.board.spell_face.filter(k => k);
+      groupIndex = group.indexOf(key);
+    } else if (slot === 'tower_face') {
+      group = [v.board.tower_face];
+      groupIndex = 0;
+    }
+    
+    UI.expandCard(this, key, { group, groupIndex });
   }
 
   async settle() {

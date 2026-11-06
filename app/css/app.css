@@ -177,11 +177,40 @@ img { -webkit-user-drag: none; user-select: none; }
 .ov-sub { color: var(--muted); font-size: 14px; text-align: center; margin: 0 16px 8px; }
 
 /* expanded card */
-.expand { justify-content: flex-start; padding: calc(8px + var(--safe-t)) 14px 14px; gap: 12px; }
-.expand .big-frame { width: min(78vw, calc((100vh - var(--safe-t) - var(--clear-b) - 270px) / 1.62), 420px); width: min(78vw, calc((100dvh - var(--safe-t) - var(--clear-b) - 270px) / 1.62), 420px);
-  min-width: 200px; flex: none; padding: 6% 3% 3%; border-radius: 16px; background: #110d0c;
-  box-shadow: 0 20px 70px rgba(0, 0, 0, .8), 0 0 0 1px rgba(214, 180, 90, .35); animation: zoomIn .28s cubic-bezier(.2, .9, .3, 1.2) both; }
-.expand .big { display: block; width: 100%; height: auto; border-radius: 6px; }
+.expand { justify-content: flex-start; padding: calc(8px + var(--safe-t)) 14px 14px; gap: 12px; position: relative; }
+
+/* Card track for swipeable cards */
+.card-track { position: relative; 
+  width: min(78vw, calc((100vh - var(--safe-t) - var(--clear-b) - 270px) / 1.62), 420px); 
+  width: min(78vw, calc((100dvh - var(--safe-t) - var(--clear-b) - 270px) / 1.62), 420px);
+  /* Height to maintain aspect ratio of cards (1.62:1) */
+  aspect-ratio: 1 / 1.62;
+  min-width: 200px; flex: none; overflow: hidden; touch-action: pan-y; /* allow vertical scroll, prevent horizontal */ }
+
+.expand .big-frame { width: 100%; height: 100%; padding: 6% 3% 3%; border-radius: 16px; background: #110d0c;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, .8), 0 0 0 1px rgba(214, 180, 90, .35); 
+  animation: zoomIn .28s cubic-bezier(.2, .9, .3, 1.2) both; 
+  position: absolute; left: 0; top: 0; will-change: transform; box-sizing: border-box; }
+
+.expand .big { display: block; width: 100%; height: auto; border-radius: 6px; user-select: none; -webkit-user-select: none; pointer-events: none; }
+
+/* Navigation arrows */
+.nav-arrow { position: absolute; top: calc(var(--safe-t) + 8px + min(78vw, calc((100vh - var(--safe-t) - var(--clear-b) - 270px) / 1.62), 420px) / 2);
+  width: 44px; height: 44px; border-radius: 50%; background: rgba(17, 13, 12, 0.85); border: 1px solid rgba(214, 180, 90, .5);
+  color: var(--gold-hi); font-size: 28px; line-height: 1; display: flex; align-items: center; justify-content: center;
+  z-index: 10; transition: opacity 0.2s, background 0.2s; cursor: pointer; }
+.nav-arrow:hover { background: rgba(34, 26, 8, 0.95); }
+.nav-arrow.prev { left: 8px; }
+.nav-arrow.next { right: 8px; }
+@media (max-width: 600px) {
+  .nav-arrow { opacity: 0.4; } /* more subtle on mobile where swipe is primary */
+}
+
+/* Position indicator */
+.card-indicator { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 8px 0; }
+.card-indicator .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(214, 180, 90, .3); transition: all 0.3s; }
+.card-indicator .dot.active { background: var(--gold-hi); width: 10px; height: 10px; box-shadow: 0 0 8px rgba(214, 180, 90, .6); }
+.card-indicator .counter { font-size: 14px; color: var(--muted); font-weight: 500; }
 @keyframes zoomIn { from { transform: scale(.6); opacity: 0; } }
 .cardinfo { width: min(92vw, 460px); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
 .cardinfo .ci-name { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--gold-hi); }
