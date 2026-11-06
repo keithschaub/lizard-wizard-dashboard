@@ -20,17 +20,25 @@ async function checkCardVisible(page) {
   await expect(img).toBeVisible();
 }
 
-test('Swipe through card group (hand or board)', async ({ page }) => {
-  const STATE = JSON.parse(fs.readFileSync('engine/game/g8_auto_advanced.json', 'utf8'));
+test('Swipe through owned wizard cards in mat', async ({ page }) => {
+  // Give Keith some wizards to swipe through
+  const STATE = structuredClone(G8_AUTO);
+  STATE.players[0].wizards = [
+    'Wizard_Draco_Mortemus',
+    'Wizard_Serpentium_Machinus',
+    'Wizard_Anguis_Magicus',
+    'Wizard_Bufonem_Creaturae'
+  ];
+  
   await open(page, JSON.stringify(STATE));
   
-  // Wait for board to load (use board cards which don't trigger gather flow)
-  await expect(page.locator('#board')).toBeVisible({ timeout: 60_000 });
+  // Open mats overlay
+  await page.getByTestId('my-vp').tap();
+  await expect(page.getByTestId('mats')).toBeVisible({ timeout: 60_000 });
   
-  // Find and tap a spell card on the board
-  const spellSlot = page.locator('[data-slot^="spell_"]').first();
-  await expect(spellSlot).toBeVisible();
-  await spellSlot.tap();
+  // Tap first wizard card (owned cards don't trigger legal flows)
+  const wizardCards = page.locator('.mcard').filter({ hasText: '' });
+  await wizardCards.first().click();
   
   // Should expand
   await expect(page.getByTestId('expanded')).toBeVisible();
@@ -40,13 +48,13 @@ test('Swipe through card group (hand or board)', async ({ page }) => {
   const groupSize = await indicator.locator('.dot').count();
   
   if (groupSize < 2) {
-    test.skip('Need at least 2 cards in group for swipe test');
+    test.skip('Need at least 2 wizards for swipe test');
   }
   
   // Verify card track exists
   await expect(page.getByTestId('card-indicator')).toBeVisible();
-  // Should show dots (board spells, typically 4)
-  expect(groupSize).toBeGreaterThanOrEqual(2);
+  // Should show dots (4 wizards)
+  expect(groupSize).toBe(4);
   // First dot should be active
   await expect(indicator.locator('.dot.active').first()).toBeVisible();
   
@@ -62,7 +70,7 @@ test('Swipe through card group (hand or board)', async ({ page }) => {
   const activeDot = await indicator.locator('.dot.active').getAttribute('data-index');
   expect(activeDot).toBe('1');
   
-  await shot(page, 'swipe-board-01-next');
+  await shot(page, 'swipe-wiz-01-next');
   
   // Test arrow navigation (prev)
   const prevBtn = page.getByTestId('nav-prev');
@@ -73,7 +81,7 @@ test('Swipe through card group (hand or board)', async ({ page }) => {
   const activeDot2 = await indicator.locator('.dot.active').getAttribute('data-index');
   expect(activeDot2).toBe('0');
   
-  await shot(page, 'swipe-board-02-prev');
+  await shot(page, 'swipe-wiz-02-prev');
   
   // Close overlay
   await page.getByTestId('ov-close').click();
@@ -158,53 +166,53 @@ test('Swipe through mat wizards', async ({ page }) => {
 });
 
 test('Keyboard arrow navigation works', async ({ page }) => {
-  await open(page, JSON.stringify(G8_AUTO));
-  await expect(page.getByTestId('hand-0')).toBeVisible({ timeout: 60_000 });
+  // Use mat wizards (owned cards that expand without legal action flows)
+  const STATE = structuredClone(G8_AUTO);
+  STATE.players[0].wizards = ['Wizard_Draco_Mortemus', 'Wizard_Serpentium_Machinus', 'Wizard_Anguis_Magicus'];
   
-  const v = await view(page);
-  const handCount = me(v).hand.length;
+  await open(page, JSON.stringify(STATE));
   
-  if (handCount < 2) {
-    test.skip('Need at least 2 cards in hand');
-  }
+  // Open mats
+  await page.getByTestId('my-vp').tap();
+  await expect(page.getByTestId('mats')).toBeVisible({ timeout: 60_000 });
   
-  // Open card
-  await page.getByTestId('hand-0').tap();
+  // Open first wizard
+  const wizardCards = page.locator('.mcard').filter({ hasText: '' });
+  await wizardCards.first().click();
   await expect(page.getByTestId('expanded')).toBeVisible();
   
   // Press right arrow
   await page.keyboard.press('ArrowRight');
   await page.waitForTimeout(400);
   
-  // Should be on card 2
+  // Should be on wizard 2
   const indicator = page.getByTestId('card-indicator');
-  if (handCount <= 5) {
-    const activeDot = await indicator.locator('.dot.active').getAttribute('data-index');
-    expect(activeDot).toBe('1');
-  } else {
-    await expect(indicator.locator('.counter')).toHaveText(`2 / ${handCount}`);
-  }
+  const activeDot = await indicator.locator('.dot.active').getAttribute('data-index');
+  expect(activeDot).toBe('1');
   
   // Press left arrow
   await page.keyboard.press('ArrowLeft');
   await page.waitForTimeout(400);
   
-  // Should be back to card 1
-  if (handCount <= 5) {
-    const activeDot = await indicator.locator('.dot.active').getAttribute('data-index');
-    expect(activeDot).toBe('0');
-  } else {
-    await expect(indicator.locator('.counter')).toHaveText(`1 / ${handCount}`);
-  }
+  // Should be back to wizard 1
+  const activeDot2 = await indicator.locator('.dot.active').getAttribute('data-index');
+  expect(activeDot2).toBe('0');
   
   await page.getByTestId('ov-close').click();
 });
 
 test('Vertical scroll in card info does not trigger swipe', async ({ page }) => {
-  await open(page, JSON.stringify(G8_AUTO));
+  // Use mat wizards (owned cards)
+  const STATE = structuredClone(G8_AUTO);
+  STATE.players[0].wizards = ['Wizard_Draco_Mortemus', 'Wizard_Serpentium_Machinus'];
   
-  // Open a card with long text
-  await page.locator('#board [data-slot^="spell_"]').first().tap();
+  await open(page, JSON.stringify(STATE));
+  
+  // Open mats and then a wizard
+  await page.getByTestId('my-vp').tap();
+  await expect(page.getByTestId('mats')).toBeVisible({ timeout: 60_000 });
+  const wizardCards = page.locator('.mcard').filter({ hasText: '' });
+  await wizardCards.first().click();
   await expect(page.getByTestId('expanded')).toBeVisible();
   
   const initialIndicator = await page.getByTestId('card-indicator').textContent();
@@ -232,11 +240,17 @@ test('Vertical scroll in card info does not trigger swipe', async ({ page }) => 
 test('Card frame has no clipping on iPhone dimensions', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 }); // iPhone 14
   
-  await open(page, JSON.stringify(G8_AUTO));
-  await expect(page.getByTestId('hand-0')).toBeVisible({ timeout: 60_000 });
+  // Use mat wizard (owned card)
+  const STATE = structuredClone(G8_AUTO);
+  STATE.players[0].wizards = ['Wizard_Draco_Mortemus'];
   
-  // Open a card
-  await page.getByTestId('hand-0').tap();
+  await open(page, JSON.stringify(STATE));
+  
+  // Open mats and then a wizard
+  await page.getByTestId('my-vp').tap();
+  await expect(page.getByTestId('mats')).toBeVisible({ timeout: 60_000 });
+  const wizardCards = page.locator('.mcard').filter({ hasText: '' });
+  await wizardCards.first().click();
   await expect(page.getByTestId('expanded')).toBeVisible();
   
   // Check that card is fully visible
