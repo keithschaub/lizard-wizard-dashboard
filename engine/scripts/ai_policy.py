@@ -888,12 +888,15 @@ def _candidates(v, me):
         add(holdings(vt, me, tok, p['mana'] + gain) - tw0, 'convert', {'type': 'convert', 'reagent': r, 'n': n, 'energize': en},
             f"convert {n} {r} for {gain} mana" + (' (Energize +3)' if en else ''))
     if has_cast(p, 'Adept_Conversion') and len(types) >= 2:
+        en_adept = has_cast(p, 'Energize')
         top2 = sorted(types, key=lambda r: (-v['tracks'][r] * p['tok'].count(r), r))[:2]
-        gain = sum(v['tracks'][r] * p['tok'].count(r) for r in top2); tok = [t for t in p['tok'] if t not in top2]
-        vt = _vclone(v)
-        for r in top2: vt['tracks'][r] = max(1, vt['tracks'][r] - p['tok'].count(r))
-        add(holdings(vt, me, tok, p['mana'] + gain) - tw0, 'convert', {'type': 'convert2', 'reagents': top2},
-            f"convert {top2[0]} and {top2[1]} for {gain} mana (Adept Conversion)")
+        r1, r2 = top2; n1, n2 = p['tok'].count(r1), p['tok'].count(r2)
+        v1 = min(12, v['tracks'][r1] + 3) if en_adept else v['tracks'][r1]
+        gain = v1 * n1 + v['tracks'][r2] * n2
+        tok = [t for t in p['tok'] if t not in (r1, r2)]
+        vt = _vclone(v); vt['tracks'][r1] = max(1, v1 - n1); vt['tracks'][r2] = max(1, vt['tracks'][r2] - n2)
+        add(holdings(vt, me, tok, p['mana'] + gain) - tw0, 'convert', {'type': 'convert2', 'pairs': [(r1, n1), (r2, n2)], 'energize': en_adept},
+            f"convert {n1} {r1}" + (" (Energize +3 first)" if en_adept else "") + f" and {n2} {r2} for {gain} mana (Adept Conversion)")
     # 3) Recruit (auction). Starter who loses acts again, so open only when I expect to win.
     for wz in sorted({x for x in v.get('wiz_face', []) if x}):
         bd = _bid_breakdown(v, me, wz)

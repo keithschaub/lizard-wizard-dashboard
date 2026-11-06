@@ -94,6 +94,20 @@ img { -webkit-user-drag: none; user-select: none; }
 .ach .a-main img { width: 18px; height: 18px; }
 .ach .a-sub { font-size: 11.5px; font-weight: 700; line-height: 1; }
 
+/* Achievement zoom (expand overlay): same look as board tiles, scaled to the card frame */
+.expand .big-frame-ach { display: flex; align-items: center; justify-content: center; padding: 8% 6%; background: linear-gradient(180deg, #1a1520, #110d0c); }
+.ach-tile-zoom { position: relative; width: 92%; max-width: 280px; aspect-ratio: 112 / 64; border-radius: 8px;
+  background: linear-gradient(180deg, #efdcab, #dcc184); border: 2px solid #96702a; color: #3c1e0a;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+.ach-tile-zoom .ach-tile-h { position: absolute; top: 8%; left: 8%; font-size: 8px; letter-spacing: 1.2px; color: #6e4614; font-weight: 700; }
+.ach-tile-zoom .ach-tile-vp { position: absolute; top: 6%; right: 8%; font-size: 11px; color: #6e4614; font-weight: 700; }
+.ach-tile-zoom .ach-tile-main { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
+  font-family: var(--display); font-weight: 700; font-size: clamp(14px, 4.2vw, 20px); text-align: center; padding: 0 6px; }
+.ach-tile-zoom .ach-tile-main img { width: 22px; height: 22px; object-fit: contain; }
+.ach-tile-orb { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
+.ach-tile-orb.gold { background: radial-gradient(circle at 35% 30%, #fff1b0, #e0a92e 60%, #8a5a12); box-shadow: 0 0 6px rgba(224, 169, 46, .5); }
+.ach-tile-orb.mana { background: radial-gradient(circle at 35% 30%, #9fd0ff, #2b6ee0 60%, #173a8a); box-shadow: 0 0 6px rgba(90, 162, 255, .5); }
+
 /* ---------- dock ---------- */
 #dock { flex: none; height: calc(var(--dock) + var(--safe-b)); padding: 8px 10px calc(8px + var(--safe-b)); z-index: 4;
   background: linear-gradient(0deg, rgba(6, 8, 22, .98), rgba(10, 14, 36, .94)); border-top: 1px solid rgba(214, 180, 90, .3); display: flex; flex-direction: column; gap: 8px; }
@@ -162,6 +176,7 @@ img { -webkit-user-drag: none; user-select: none; }
   display: flex; flex-direction: column; align-items: center; animation: fadeIn .2s ease-out both;
   overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 .overlay > * { flex-shrink: 0; }
+.expand > .expand-inner { flex: 1 1 auto; min-height: 0; flex-shrink: 1; }
 .overlay::after { content: ''; display: block; flex: none; width: 1px; height: var(--clear-b); }
 .scroll-hint { position: fixed; right: 12px; bottom: calc(var(--clear-b) + 12px); z-index: 45; pointer-events: auto; width: 40px; height: 40px; padding: 0;
   border-radius: 50%; background: rgba(12, 17, 44, .92); border: 1px solid rgba(214, 180, 90, .7); color: var(--gold-hi); font-size: 20px; line-height: 1;
@@ -176,26 +191,64 @@ img { -webkit-user-drag: none; user-select: none; }
 .ov-title { font-family: var(--display); font-weight: 700; color: var(--gold-hi); font-size: 19px; margin: calc(16px + var(--safe-t)) 54px 4px; text-align: center; }
 .ov-sub { color: var(--muted); font-size: 14px; text-align: center; margin: 0 16px 8px; }
 
-/* expanded card */
-.expand { justify-content: flex-start; padding: calc(8px + var(--safe-t)) 14px 14px; gap: 12px; position: relative; }
+/* expanded card — scrollable inner so actions stay reachable on short Mobile Safari viewports */
+/* One vertical scroller (.expand-inner); fill the overlay (inset:0) so inner can shrink and scroll. */
+.overlay.expand {
+  overflow: hidden;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.expand {
+  --expand-pad-t: calc(8px + var(--safe-t));
+  /* Vertical slot for card art (short viewports shrink art so actions stay scrollable) */
+  --expand-slot: max(220px, calc(100vh - var(--expand-pad-t) - var(--clear-b) - 52px));
+  justify-content: flex-start;
+  align-items: stretch;
+  padding: var(--expand-pad-t) 10px 0;
+  gap: 0;
+  position: relative;
+  min-height: 0;
+  height: 100%;
+}
+.expand::after { display: none; /* bottom inset handled by .expand-inner */ }
+.expand-inner {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px max(calc(12px + var(--safe-b)), var(--clear-b));
+  box-sizing: border-box;
+}
 
 /* Card track for swipeable cards */
-.card-track { position: relative; 
-  width: min(78vw, calc((100vh - var(--safe-t) - var(--clear-b) - 270px) / 1.62), 420px); 
-  width: min(78vw, calc((100dvh - var(--safe-t) - var(--clear-b) - 270px) / 1.62), 420px);
-  /* Height to maintain aspect ratio of cards (1.62:1) */
+.card-track { position: relative;
+  width: min(78vw, calc(var(--expand-slot) / 1.62), 420px);
+  /* Height to maintain aspect ratio of cards (1.62 height / width) */
   aspect-ratio: 1 / 1.62;
-  min-width: 200px; flex: none; overflow: hidden; touch-action: pan-y; /* allow vertical scroll, prevent horizontal */ }
+  min-width: 160px; flex: none; overflow: hidden; touch-action: pan-y; /* allow vertical scroll, prevent horizontal */ }
+
+@supports (height: 100dvh) {
+  .expand { --expand-slot: max(220px, calc(100dvh - var(--expand-pad-t) - var(--clear-b) - 52px)); }
+}
 
 .expand .big-frame { width: 100%; height: 100%; padding: 6% 3% 3%; border-radius: 16px; background: #110d0c;
   box-shadow: 0 20px 70px rgba(0, 0, 0, .8), 0 0 0 1px rgba(214, 180, 90, .35); 
   animation: zoomIn .28s cubic-bezier(.2, .9, .3, 1.2) both; 
   position: absolute; left: 0; top: 0; will-change: transform; box-sizing: border-box; }
 
-.expand .big { display: block; width: 100%; height: auto; border-radius: 6px; user-select: none; -webkit-user-select: none; pointer-events: none; }
+.expand .big { display: block; width: 100%; height: auto; border-radius: 6px; user-select: none; -webkit-user-select: none;
+  pointer-events: auto; /* keep hit-testing truthful (layout tests use elementFromPoint on the title band); swipe stays on .card-track */ }
 
 /* Navigation arrows */
-.nav-arrow { position: absolute; top: calc(var(--safe-t) + 8px + min(78vw, calc((100vh - var(--safe-t) - var(--clear-b) - 270px) / 1.62), 420px) / 2);
+.nav-arrow { position: absolute; top: calc(var(--expand-pad-t) + 8px + min(78vw, calc(var(--expand-slot) / 1.62), 420px) / 2);
   width: 44px; height: 44px; border-radius: 50%; background: rgba(17, 13, 12, 0.85); border: 1px solid rgba(214, 180, 90, .5);
   color: var(--gold-hi); font-size: 28px; line-height: 1; display: flex; align-items: center; justify-content: center;
   z-index: 10; transition: opacity 0.2s, background 0.2s; cursor: pointer; }

@@ -279,6 +279,8 @@ def _apply_fallback(s, me, act, events):
         A.gather(s, me, act['card'], keep=act.get('keep'), discard=act.get('discard'))
         if act.get('cast'): c = act['cast']; A.cast_spell(s, me, c['spell'], c['cost']); resolve_effect(s, me, c['spell'])
     elif t == 'convert': A.convert(s, me, act['reagent'], act['n'])
+    elif t == 'convert2':
+        A.convert_adept(s, me, act['pairs'], energize_first=act.get('energize', False))
     elif t == 'research':
         A.research(s, me, act['spell'], cast_cost=act.get('cast'))
         if act.get('cast'): resolve_effect(s, me, act['spell'])
@@ -510,7 +512,14 @@ def describe(e, viewer='Keith'):
     if a == 'gather':
         bon = f" + wizard bonus {', '.join(nice(r) for r in e['bonus'])}" if e.get('bonus') else ''
         return f"{w} gathered with {nice(e['card'])}: {', '.join(nice(r) for r in e['got'])}{bon}; tracks up: {', '.join(nice(r) for r in e['inc'])}"
-    if a == 'convert': return f"{w} sold {e['n']} {nice(e['reagent'])} at {e['value']} each (+{e['gain']} mana); track now {e['track_after']}"
+    if a == 'convert':
+        if e.get('parts'):
+            bits = []
+            for pr in e['parts']:
+                suf = ' (Energize +3 before sale)' if pr.get('energized') else ''
+                bits.append(f"{pr['n']} {nice(pr['reagent'])} at {pr['value']} each{suf} → track {pr['track_after']}")
+            return f"{w} sold (Adept Conversion): " + '; '.join(bits) + f" (+{e['gain']} mana total)"
+        return f"{w} sold {e['n']} {nice(e['reagent'])} at {e['value']} each (+{e['gain']} mana); track now {e['track_after']}"
     if a == 'convert1': return f"{w} sold {', '.join(nice(r) for r in e['reagents'])} at 1 mana each"
     if a == 'build': return f"{w} built {disp(e['tower'])} paying {'Gold' if e['paid'] == 'gold' else ', '.join(nice(r) for r in e['paid'])}"
     if a == 'research': return f"{w} researched {disp(e['spell'])} for 5 mana" + (f" and cast it ({', '.join(nice(r) for r in e['cast_paid'])})" if e.get('cast') else ' (not cast yet)')

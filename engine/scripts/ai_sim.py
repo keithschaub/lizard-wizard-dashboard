@@ -88,8 +88,8 @@ def apply_action(s, me, act, trace, mix):
     elif t == 'convert':
         (SE.energized_convert if act.get('energize') else A.convert)(s, me, act['reagent'], act['n']); mix['convert'] += 1
     elif t == 'convert2':
-        for r in act['reagents']: A.convert(s, me, r, P(s, me)['tok'].count(r))
-        mix['convert'] += 1
+        pairs = act['pairs']
+        A.convert_adept(s, me, pairs, energize_first=act.get('energize', False)); mix['convert'] += 1
     elif t == 'research':
         if act.get('cast') and 'Invisibility' in act['spell']:
             A.research(s, me, act['spell'])

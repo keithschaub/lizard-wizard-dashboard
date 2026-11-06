@@ -224,6 +224,45 @@ for fn, kw in (('act_build', dict(pay='gold')), ('act_research', dict(spell='Spe
                ('act_convert', dict(reagent='Horn', n=5)), ('resolve_effect', dict(choice={})), ('dungeon_flip', {})):
     r = call(fn, **kw); check(not r['ok'] and W.dump() == before, f'{fn} refused, state unchanged ({r["error"][:60]})')
 
+print('\n=== 11b. Adept Conversion: two types in one convert action, one log entry, audits clean ===')
+def sync_tracks(s):
+    """Align tracks with audit_tracks replay so tests stay honest about g8 history."""
+    for r, (exp, _a) in A.audit_tracks(s).items():
+        s['tracks'][r] = exp
+def m_adept(s):
+    sync_tracks(s)
+    k = A.P(s, 'Keith'); k['tok'] = ['Toadstool'] * 2 + ['Horn'] * 2
+    add_spell(s, 'Keith', 'Adept_Conversion', cast=True)
+setup(m_adept)
+t0, h0 = W.st()['tracks']['Toadstool'], W.st()['tracks']['Horn']
+m0 = P('Keith')['mana']
+r = call('act_convert', reagent='Toadstool', n=1, reagent2='Horn', n2=1)
+check(r['ok'] and r['result'] == 'done', 'adept dual convert commits')
+check(P('Keith')['tok'].count('Toadstool') == 1 and P('Keith')['tok'].count('Horn') == 1, 'sold 1 of each type')
+check(W.st()['tracks']['Toadstool'] == max(1, t0 - 1) and W.st()['tracks']['Horn'] == max(1, h0 - 1), 'each track dropped by count sold (min 1)')
+check(P('Keith')['mana'] == m0 + t0 + h0, 'mana at each track value')
+logs = W.st()['meta']['log']
+lg = next(e for e in reversed(logs) if e.get('act') == 'convert' and e.get('who') == 'Keith' and e.get('adept'))
+check(lg.get('act') == 'convert' and lg.get('adept') and len(lg.get('parts', [])) == 2, 'one convert log with two parts')
+check(not A.audit(W.st()) and not A.audit_tracks(W.st()), 'audit_tracks and convert audit clean')
+setup(lambda s: m_adept(s) or add_spell(s, 'Keith', 'Energize', cast=True))
+t0, h0 = W.st()['tracks']['Toadstool'], W.st()['tracks']['Horn']
+v1 = min(12, t0 + 3)
+m0 = P('Keith')['mana']
+r = call('act_convert', reagent='Toadstool', n=1, reagent2='Horn', n2=1, energize=True)
+check(r['ok'], 'adept + Energize on first type')
+check(P('Keith')['mana'] == m0 + v1 + h0, 'first type at track+Energize, second at base track')
+check(W.st()['tracks']['Toadstool'] == max(1, v1 - 1) and W.st()['tracks']['Horn'] == max(1, h0 - 1), 'Energize only bumped first track')
+parts = next(e for e in reversed(W.st()['meta']['log']) if e.get('act') == 'convert' and e.get('who') == 'Keith' and e.get('parts'))['parts']
+check(parts[0].get('energized') and not parts[1].get('energized'), 'energized flag only on first part')
+check(not A.audit_tracks(W.st()), 'track audit after Energize + Adept')
+def m_no_adept(s):
+    sync_tracks(s)
+    k = A.P(s, 'Keith'); k['tok'] = ['Toadstool', 'Horn']
+setup(m_no_adept)
+before = W.dump(); r = call('act_convert', reagent='Toadstool', n=1, reagent2='Horn', n2=1)
+check(not r['ok'] and W.dump() == before, f'2-type convert refused without Adept ({r.get("error")})')
+
 print('\n=== 12. Random full games from g8 through the glue: no crash, legal list always complete ===')
 bad = []; games = 0; rounds = []
 for seed in range(4):

@@ -6,15 +6,15 @@ import fs from 'fs';
 import { watchErrors, view, shot, me } from './helpers.js';
 
 const INSET = { top: 59, bottom: 34, chrome: 84 };          // Dynamic Island status bar (iPhone 14 Pro and later), home indicator, Safari bar
-const G8_AUTO = JSON.parse(fs.readFileSync('engine/game/g8_auto_advanced.json', 'utf8'));
+/** Full engine save (same shape as `lw_web.load`); g8_auto_advanced.json is view-shaped and will not load. */
+const G8_ENGINE = JSON.parse(fs.readFileSync('engine/game/g8_state.json', 'utf8'));
 const P = (s, n) => s.players.find((p) => p.name === n);
 const ACH_FILE = 'engine/cards/cards.json';                 // the achievement pool scripts/deal4.py draws 4 tiles from
 
 async function open(page, mutate = null) {
-  if (mutate) {
-    const s = structuredClone(G8_AUTO); mutate(s);
-    await page.addInitScript((t) => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('lw.save.v1', t); sessionStorage.setItem('seeded', '1'); } }, JSON.stringify(s));
-  }
+  const s = structuredClone(G8_ENGINE);
+  if (mutate) mutate(s);
+  await page.addInitScript((t) => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('lw.save.v1', t); sessionStorage.setItem('seeded', '1'); } }, JSON.stringify(s));
   await page.goto('/');
   await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 60_000 });
   await page.addStyleTag({ content: `:root { --safe-t: ${INSET.top}px !important; --safe-b: ${INSET.bottom}px !important; --chrome-b: ${INSET.chrome}px !important; }` });
@@ -23,7 +23,12 @@ async function open(page, mutate = null) {
 const limits = (page) => page.evaluate(({ top, bottom, chrome }) => ({ top, bottom: window.innerHeight - bottom - chrome, h: window.innerHeight }), INSET);
 const box = (loc) => loc.evaluate((e) => { const r = e.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; });
 async function scrollOverlay(page, testid, to) {
-  await page.getByTestId(testid).evaluate((el, t) => { el.scrollTop = t === 'bottom' ? el.scrollHeight : 0; }, to);
+  await page.getByTestId(testid).evaluate((root, t) => {
+    const set = (el) => { if (!el) return; el.scrollTop = t === 'bottom' ? el.scrollHeight : 0; };
+    const inner = root.querySelector('.expand-inner');
+    if (inner && inner.scrollHeight > inner.clientHeight + 4) set(inner);
+    else set(root);
+  }, to);
   await page.waitForTimeout(250);
 }
 
@@ -227,7 +232,7 @@ test('every achievement tile a new deal can draw renders its icons (no missing a
   expect(tiles.length).toBeGreaterThanOrEqual(16);
   await open(page);
   for (let i = 0; i < tiles.length; i += 4) {
-    const s = structuredClone(G8_AUTO); s.ach = tiles.slice(i, i + 4);
+    const s = structuredClone(G8_ENGINE); s.ach = tiles.slice(i, i + 4);
     await page.evaluate((t) => localStorage.setItem('lw.save.v1', t), JSON.stringify(s));
     await page.reload();
     await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 60_000 });

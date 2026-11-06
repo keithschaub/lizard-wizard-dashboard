@@ -5,6 +5,34 @@ Usage: python3 scripts/actions.py STATE convert PLAYER REAGENT COUNT
 import json,sys
 def P(s,name): return [p for p in s['players'] if p['name']==name][0]
 def log(s,e): s['meta'].setdefault('log',[]).append(e)
+def convert_adept(s,name,parts,energize_first=False):
+    """Adept Conversion (ongoing): one main action, sell two different reagent types at each track value; each track drops
+    by count sold (floor 1). Optional Energize: +3 (cap 12) to the FIRST type's track only, before that part's sale."""
+    p=P(s,name);T=s['tracks']
+    from spell_effects import has_cast as _hc
+    if not _hc(p,'Adept_Conversion'): raise ValueError('Adept Conversion is not cast')
+    if len(parts)!=2: raise ValueError('Adept Conversion needs exactly two (reagent, count) pairs')
+    (ra,na),(rb,nb)=parts; ra,rb=norm(ra),norm(rb); na,nb=int(na),int(nb)
+    if ra==rb: raise ValueError('Adept Conversion requires two different reagent types')
+    if na<1 or nb<1: raise ValueError('sell at least 1 of each type')
+    if p['tok'].count(ra)<na or p['tok'].count(rb)<nb: raise ValueError(f'{name} lacks tokens for this sale')
+    if energize_first:
+        if not _hc(p,'Energize'): raise ValueError('Energize is not cast')
+        T[ra]=min(12,T[ra]+3)
+    out_parts=[]
+    total=0
+    for i,(r,n) in enumerate(((ra,na),(rb,nb))):
+        val=T[r]
+        gain=val*n
+        for _ in range(n): p['tok'].remove(r)
+        p['mana']+=gain; T[r]=max(1,val-n)
+        pr={'reagent':r,'n':n,'value':val,'gain':gain,'track_after':T[r]}
+        if energize_first and i==0: pr['energized']=True
+        out_parts.append(pr); total+=gain
+    ent={'r':s['meta'].get('round'),'who':name,'act':'convert','parts':out_parts,'gain':total,'adept':True}
+    if energize_first: ent['energized_first']=True
+    log(s,ent)
+    return total
 def convert(s,name,reagent,count):
     """Rulebook: sell ANY quantity of ONE reagent type at its track value, then the track drops by the number sold (floor 1)."""
     p=P(s,name);T=s['tracks']
@@ -27,7 +55,11 @@ def audit(s):
     """Check every logged convert obeyed the rules. Returns list of problems."""
     bad=[]
     for e in s['meta'].get('log',[]):
-        if e.get('act')=='convert' and e['track_after']!=max(1,e['value']-e['n']): bad.append(e)
+        if e.get('act')!='convert': continue
+        if e.get('parts'):
+            for pr in e['parts']:
+                if pr.get('track_after')!=max(1,pr['value']-pr['n']): bad.append(e); break
+        elif e.get('track_after')!=max(1,e['value']-e['n']): bad.append(e)
     return bad
 if __name__=='__main__':
     f,cmd,name=sys.argv[1],sys.argv[2],sys.argv[3];s=json.load(open(f))
@@ -144,9 +176,11 @@ def audit_tracks(s):
         if e.get('act')=='gather':
             for n in (e.get('inc') if e.get('inc') is not None else [norm(x) for x in R[e['card']]['increase_icons_in_print_order']]): up(norm(n))
         elif e.get('act')=='convert':
-            r=e['reagent']
-            if e.get('energized'): exp[r]=min(12,exp[r]+3)
-            exp[r]=max(1,exp[r]-e['n'])
+            prs=e.get('parts') or [{'reagent':e['reagent'],'n':e['n'],'energized':e.get('energized')}]
+            for i,pr in enumerate(prs):
+                r=pr['reagent']
+                if pr.get('energized') or (e.get('energized_first') and i==0): exp[r]=min(12,exp[r]+3)
+                exp[r]=max(1,exp[r]-pr['n'])
     return {n:(exp[n],s['tracks'][n]) for n in exp if exp[n]!=s['tracks'][n]}
 
 # ---------------- Build tower ----------------
