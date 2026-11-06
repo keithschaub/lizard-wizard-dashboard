@@ -1094,6 +1094,12 @@ export function menu(g) {
       v.game_over ? h('button', { class: 'act secondary', 'data-testid': 'menu-final-scores', onclick: () => { ov.close(); gameOver(g); } }, 'Final scores') : null,
       h('button', { class: 'act secondary', 'data-testid': 'menu-export', onclick: () => { ov.close(); g.exportSave(); } }, 'Export save file'),
       h('button', { class: 'act secondary', 'data-testid': 'menu-import', onclick: () => { ov.close(); g.importSave(); } }, 'Import save file'),
+      h('button', { class: 'act bug-report-btn', 'data-testid': 'menu-bug-report', onclick: async () => { 
+        ov.close(); 
+        // Dynamically import bug-report module
+        const BugReport = await import('./bug-report.js');
+        BugReport.openBugReportDialog(g);
+      } }, '🐛 Report Bug'),
       h('button', { class: 'act danger', 'data-testid': 'menu-restart', onclick: () => { ov.close(); g.restart(); } }, 'Load the paused game g8')),
     h('div', { class: 'ov-sub' }, g.savedNote())));
 }

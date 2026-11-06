@@ -310,6 +310,8 @@ class Game {
 
   savedNote() { const at = Store.savedAt(); return at ? `Autosaved ${new Date(at).toLocaleString()}` : 'Not saved yet'; }
   async exportSave() { const d = await this.call('dump'); if (d.ok) Store.exportFile(d.result, this.v.round); }
+  async exportState() { const d = await this.call('dump'); return d.ok ? d.result : null; }
+  st() { return this.v; }
   async importSave() {
     const text = await Store.pickFile(); if (!text) return;
     const r = await this.call('load', { text });

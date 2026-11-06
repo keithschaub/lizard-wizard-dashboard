@@ -211,6 +211,45 @@ img { -webkit-user-drag: none; user-select: none; }
 .card-indicator .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(214, 180, 90, .3); transition: all 0.3s; }
 .card-indicator .dot.active { background: var(--gold-hi); width: 10px; height: 10px; box-shadow: 0 0 8px rgba(214, 180, 90, .6); }
 .card-indicator .counter { font-size: 14px; color: var(--muted); font-weight: 500; }
+
+/* Bug report dialog */
+.bug-report { justify-content: center; align-items: center; }
+.bug-panel { width: min(92vw, 520px); max-height: 80vh; background: var(--panel); border: 1px solid var(--line); 
+  border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
+.bug-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; 
+  border-bottom: 1px solid var(--line); background: linear-gradient(180deg, rgba(40, 35, 30, 0.6), transparent); }
+.bug-title { font-family: var(--display); font-size: 20px; font-weight: 700; color: var(--gold-hi); }
+.bug-close { width: 32px; height: 32px; border-radius: 50%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(214, 180, 90, .3);
+  color: var(--gold); font-size: 24px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.bug-close:hover { background: rgba(0, 0, 0, 0.5); }
+.bug-body { padding: 20px; overflow-y: auto; flex: 1; }
+.bug-label { font-size: 14px; font-weight: 600; color: var(--gold); margin-bottom: 8px; margin-top: 16px; }
+.bug-label:first-child { margin-top: 0; }
+.bug-textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--line); 
+  background: rgba(0, 0, 0, 0.4); color: var(--text); font-family: inherit; font-size: 15px; line-height: 1.4;
+  resize: vertical; min-height: 120px; }
+.bug-textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(214, 180, 90, .2); }
+.bug-input-row { display: flex; gap: 8px; align-items: flex-start; }
+.bug-input-row .bug-textarea { flex: 1; }
+.bug-mic { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--line); 
+  background: rgba(0, 0, 0, 0.4); color: var(--text); font-size: 20px; cursor: pointer; flex: none; }
+.bug-mic:hover { background: rgba(0, 0, 0, 0.6); }
+.bug-mic.active { background: rgba(214, 90, 90, 0.3); border-color: #d65a5a; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+.bug-attach { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--line); 
+  background: rgba(0, 0, 0, 0.4); color: var(--gold); font-size: 14px; cursor: pointer; }
+.bug-attach:hover { background: rgba(0, 0, 0, 0.6); }
+.bug-files { margin-top: 8px; }
+.bug-files-label { font-size: 13px; color: var(--muted); padding: 8px 12px; background: rgba(0, 0, 0, 0.3); 
+  border-radius: 6px; }
+.bug-info { font-size: 13px; color: var(--muted); margin-top: 12px; line-height: 1.4; }
+
+/* Bug toast notification */
+.bug-toast { position: fixed; bottom: calc(var(--safe-b) + 20px); left: 50%; transform: translateX(-50%) translateY(100px);
+  background: rgba(17, 13, 12, 0.95); border: 1px solid var(--gold); border-radius: 12px; padding: 14px 20px;
+  color: var(--gold-hi); font-size: 15px; font-weight: 500; z-index: 10000; 
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
+.bug-toast.show { transform: translateX(-50%) translateY(0); }
 @keyframes zoomIn { from { transform: scale(.6); opacity: 0; } }
 .cardinfo { width: min(92vw, 460px); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
 .cardinfo .ci-name { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--gold-hi); }
