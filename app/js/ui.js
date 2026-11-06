@@ -1,4 +1,4 @@
-import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenChip, costIcons, sleep } from './dom.js';
+import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenChip, costIcons, sleep, appendNodes } from './dom.js';
 
 // ------------------------------------------------------------------ overlay plumbing
 export function openOverlay(cls, { onScrim = null, testid = null } = {}) {
@@ -48,7 +48,7 @@ export function fly(src, from, toEl, { w = 54, hgt = 76 } = {}) {
   if (!from || !toEl) return;
   const to = toEl.getBoundingClientRect();
   const img = h('img', { class: 'fly', src, alt: '', style: { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` } });
-  document.body.append(img);
+  appendNodes(document.body, img);
   requestAnimationFrame(() => requestAnimationFrame(() => Object.assign(img.style, {
     left: `${to.left + to.width / 2 - w / 2}px`, top: `${to.top + to.height / 2 - hgt / 2}px`, width: `${w}px`, height: `${hgt}px`, opacity: '0.15', transform: 'rotate(-8deg)',
   })));
@@ -61,7 +61,10 @@ const slotRectOf = (key) => { const el = document.querySelector(`#board [data-ke
 export function cardInfo(g, key) {
   const c = g.cards[key] || {};
   const meta = [];
-  if (c.school) meta.push(h('span', {}, c.school !== 'Wild' ? h('img', { src: schoolIcon(c.school), alt: '' }) : null, ` ${c.school}`));
+  if (c.deck === 'Achievement') {
+    meta.push(h('span', {}, `${c.vp ?? 10} VP when claimed`));
+    if (c.school) meta.push(h('span', {}, h('img', { src: schoolIcon(c.school), alt: '' }), ` ${c.school}`));
+  } else if (c.school) meta.push(h('span', {}, c.school !== 'Wild' ? h('img', { src: schoolIcon(c.school), alt: '' }) : null, ` ${c.school}`));
   if (c.deck === 'Spell') {
     meta.push(h('span', {}, c.duration === '1x' ? 'One-time (1x)' : 'Ongoing'));
     const rg = Object.entries(c.cost?.reagents || {});
@@ -72,7 +75,8 @@ export function cardInfo(g, key) {
     meta.push(h('span', {}, `${c.cost?.mana} mana`));
   }
   let text;
-  if (c.deck === 'Familiar' && c.effect) text = c.effect.split('||').map((part) => h('div', {}, part.trim().replace(' | ', ' · ')));
+  if (c.deck === 'Achievement') text = c.effect || '';
+  else if (c.deck === 'Familiar' && c.effect) text = c.effect.split('||').map((part) => h('div', {}, part.trim().replace(' | ', ' · ')));
   else if (c.deck === 'Reagent') text = [h('div', {}, 'Gather: ', ...costIcons(c.gather_icons || [])), h('div', {}, 'Increase Value: ', ...costIcons(c.increase_icons || []))];
   else text = c.effect || '';
   return h('div', { class: 'cardinfo', 'data-testid': 'card-info' },
@@ -83,15 +87,17 @@ export function cardInfo(g, key) {
 
 export function expandCard(g, key, { actions = [], extra = null, group = null, groupIndex = 0 } = {}) {
   // group: array of card keys for swipeable navigation, groupIndex: current card index in group
-  const cards = group || [key];
-  let currentIndex = Math.max(0, Math.min(groupIndex, cards.length - 1));
+  const cards = (group && group.length ? group : [key]).filter(Boolean);
+  const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : cards.indexOf(key);
+  let currentIndex = Math.min(Math.max(0, resolvedIdx < 0 ? 0 : resolvedIdx), cards.length - 1);
   
   const ov = openOverlay('expand', { onScrim: (o) => o.close(), testid: 'expanded' });
   
   // Container for all card frames (for swipe animation)
   const cardTrack = h('div', { class: 'card-track', 'data-testid': 'card-track' });
   const cardinfoContainer = h('div', { class: 'cardinfo-container', 'data-testid': 'cardinfo-container' });
-  const actionsContainer = h('div', { class: 'actions-container' });
+  const actionsContainer = h('div', { class: 'actions-container', 'data-testid': 'expanded-actions' });
+  const scrollInner = h('div', { class: 'expand-inner', 'data-testid': 'expand-inner' });
   
   // Position indicator (dots or "2 / 4")
   const indicator = cards.length > 1 ? h('div', { class: 'card-indicator', 'data-testid': 'card-indicator' }, 
@@ -115,13 +121,34 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
     onclick: (e) => { e.stopPropagation(); if (currentIndex < cards.length - 1) navigateTo(currentIndex + 1); }
   }, '›') : null;
   
+  function achTile(k) {
+    const c = g.cards[k] || {};
+    const vp = c.vp ?? 10;
+    const main = [];
+    if (c.tile_icon === 'Gold') main.push(h('span', { class: 'ach-tile-orb gold', 'aria-hidden': 'true' }));
+    else if (c.tile_icon === 'Mana') main.push(h('span', { class: 'ach-tile-orb mana', 'aria-hidden': 'true' }));
+    else if (c.school) main.push(h('img', { src: schoolIcon(c.school), alt: '', class: 'ach-tile-school' }));
+    main.push(h('span', { class: 'ach-tile-name' }, c.display || c.name || k.replace(/^Achievement:/, '')));
+    return h('div', { class: 'ach-tile-zoom', 'data-testid': 'achievement-tile' },
+      h('div', { class: 'ach-tile-h' }, 'ACHIEVEMENT'),
+      h('div', { class: 'ach-tile-vp' }, String(vp)),
+      h('div', { class: 'ach-tile-main' }, main));
+  }
+
   function renderCard(idx) {
     const k = cards[idx];
     const isAch = k.startsWith('Achievement:');
-    return isAch ? null : h('div', { 
-      class: 'big-frame', 
-      'data-testid': `expanded-card-${idx}`, 
-      'data-index': idx
+    if (isAch) {
+      return h('div', {
+        class: 'big-frame big-frame-ach',
+        'data-testid': 'expanded-card',
+        'data-index': idx,
+      }, achTile(k));
+    }
+    return h('div', {
+      class: 'big-frame',
+      'data-testid': 'expanded-card',
+      'data-index': idx,
     }, h('img', { class: 'big', src: art(k), alt: k, 'data-testid': 'expanded-img' }));
   }
   
@@ -294,20 +321,13 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
     ov.el.focus();
   }
   
+  appendNodes(scrollInner, cardTrack, indicator, cardinfoContainer, actionsContainer);
+  appendNodes(ov.el, closeBtn(() => ov.close()), prevBtn, nextBtn, scrollInner);
+
   // Initial render
   updateContent(currentIndex, false);
-  
-  ov.el.append(
-    closeBtn(() => ov.close()), 
-    prevBtn,
-    nextBtn,
-    cardTrack,
-    indicator,
-    cardinfoContainer,
-    actionsContainer
-  );
-  
-  if (extra) ov.el.append(extra);
+
+  if (extra) appendNodes(ov.el, extra);
   
   return ov;
 }
@@ -345,7 +365,7 @@ function cardList(g, keys) {
 
 export function openMats(g) {
   const ov = openOverlay('mats', { onScrim: (o) => o.close(), testid: 'mats' });
-  ov.el.append(closeBtn(() => ov.close()));
+  appendNodes(ov.el, closeBtn(() => ov.close()));
   const v = g.v;
   const order = [...v.players].sort((a, b) => (b.you - a.you) || v.seat_order.indexOf(a.name) - v.seat_order.indexOf(b.name));
   console.info('[mats]', order.map((p) => `${p.name}: wizards [${p.wizards.join(', ')}] towers [${p.towers.join(', ')}]`).join(' | '));
@@ -353,7 +373,7 @@ export function openMats(g) {
     const tag = p.you ? 'You' : (p.human ? 'Human' : `AI ${p.level ? p.level[0].toUpperCase() + p.level.slice(1) : ''}${p.profile ? ' · ' + p.profile : ''}`);
     const tok = counts(p.tok);
     const pairs = pairUp(g, p.wizards, p.towers);
-    ov.el.append(h('div', { class: `mat ${p.you ? 'you' : ''}`, 'data-testid': `mat-${p.name}` },
+    appendNodes(ov.el, h('div', { class: `mat ${p.you ? 'you' : ''}`, 'data-testid': `mat-${p.name}` },
       h('div', { class: 'mat-head' }, avatar(p.name, 30), h('span', { class: 'mat-name' }, p.name), h('span', { class: `mat-tag ${p.you ? 'you' : ''}` }, tag),
         h('span', { class: 'stat vp mat-vp' }, `${p.vp} VP`)),
       h('div', { class: 'mat-row' },
@@ -406,18 +426,18 @@ const DOT = { Keith: '#6ff0d0', Newt: '#c49bff', LizWiz: '#ffb46b' };
 export async function openLog(g) {
   const ov = openOverlay('drawer', { onScrim: (o) => o.close(), testid: 'log' });
   const list = h('div', { class: 'log-list', 'data-testid': 'log-list' }, h('div', { class: 'none' }, 'Reading the chronicle…'));
-  ov.el.append(h('div', { class: 'drawer-panel' }, h('div', { class: 'drawer-head' }, h('span', { class: 'ttl' }, 'Chronicle'), closeBtn(() => ov.close(), 'log-close')), list));
+  appendNodes(ov.el, h('div', { class: 'drawer-panel' }, h('div', { class: 'drawer-head' }, h('span', { class: 'ttl' }, 'Chronicle'), closeBtn(() => ov.close(), 'log-close')), list));
   const r = await g.call('full_log');
   list.innerHTML = '';
   let round = null;
   for (const e of r.result || []) {
     if (e.act === 'turn') continue;
-    if (e.r !== round) { round = e.r; list.append(h('div', { class: 'log-round' }, e.r ? `Round ${e.r}` : 'Setup')); }
+    if (e.r !== round) { round = e.r; appendNodes(list, h('div', { class: 'log-round' }, e.r ? `Round ${e.r}` : 'Setup')); }
     const thumbs = (e.cards || []).filter((k) => k && g.cards[k] && k !== e.cast);
     const castBlock = e.cast && g.cards[e.cast] ? h('div', { class: 'log-cast', 'data-testid': 'log-cast' },
       h('img', { src: art(e.cast), alt: e.cast, onclick: () => expandCard(g, e.cast) }),
       h('div', {}, h('div', { class: 'lc-name' }, g.cards[e.cast].display), h('div', { class: 'lc-text' }, g.cards[e.cast].effect))) : null;
-    list.append(h('div', { class: 'log-item', 'data-testid': 'log-item' },
+    appendNodes(list, h('div', { class: 'log-item', 'data-testid': 'log-item' },
       h('span', { class: 'dot', style: { background: DOT[e.who] || '#9aa6cc' } }),
       h('div', { style: { flex: 1 } }, h('div', {}, e.text),
         thumbs.length ? h('div', { class: 'thumbs' }, thumbs.slice(0, 8).map((k) => h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }))) : null,
@@ -441,9 +461,9 @@ function putbackPicker(g, host, pool, over) {
       counter.textContent = `${sel.size} / ${over}`;
       if (sel.size === over) setTimeout(() => done([...sel].map((j) => pool[j])), 220);
     };
-    grid.append(b);
+    appendNodes(grid, b);
   });
-  host.append(h('div', { class: 'phase-title' }, 'Storage full — put back reagents'),
+  appendNodes(host, h('div', { class: 'phase-title' }, 'Storage full — put back reagents'),
     h('div', { class: 'counter' }, 'Put back', counter), grid);
   return p;
 }
@@ -451,7 +471,7 @@ function putbackPicker(g, host, pool, over) {
 function castPicker(g, host, castable, { multi = false, title = 'Cast a spell with this gather?' } = {}) {
   const [p, done] = wait();
   const chosen = new Set();
-  host.append(h('div', { class: 'phase-title' }, title));
+  appendNodes(host, h('div', { class: 'phase-title' }, title));
   const row = h('div', { class: 'cast-row' });
   for (const c of castable) {
     const info = g.cards[c.key] || {};
@@ -463,10 +483,10 @@ function castPicker(g, host, castable, { multi = false, title = 'Cast a spell wi
       if (chosen.has(c.key)) { chosen.delete(c.key); el.classList.remove('on'); } else { chosen.add(c.key); el.classList.add('on'); }
       done({ toggle: c.key, chosen: [...chosen] });
     };
-    row.append(el);
+    appendNodes(row, el);
   }
-  host.append(row);
-  host.append(h('div', { class: 'actions' }, h('button', { class: 'act secondary', 'data-testid': 'skip-cast', onclick: () => done({ skip: true }) }, multi ? 'Done casting' : 'Skip cast')));
+  appendNodes(host, row);
+  appendNodes(host, h('div', { class: 'actions' }, h('button', { class: 'act secondary', 'data-testid': 'skip-cast', onclick: () => done({ skip: true }) }, multi ? 'Done casting' : 'Skip cast')));
   return p;
 }
 
@@ -481,7 +501,7 @@ function xTargetPicker(g, host, maxX, title = 'Invisibility Potion') {
     c.onclick = () => { target = q.name; chips.forEach((z) => z.classList.remove('on')); c.classList.add('on'); go.disabled = false; };
     return c;
   });
-  host.append(h('div', { class: 'phase-title' }, `${title}: pay X Eye of Newt`),
+  appendNodes(host, h('div', { class: 'phase-title' }, `${title}: pay X Eye of Newt`),
     h('div', { class: 'stepper' }, h('button', { onclick: () => { x = Math.max(1, x - 1); val.textContent = x; } }, '−'), val, h('button', { onclick: () => { x = Math.min(maxX, x + 1); val.textContent = x; } }, '+')),
     h('div', { class: 'chips' }, chips), h('div', { class: 'actions' }, go));
   go.onclick = () => done({ x, target });
@@ -503,7 +523,7 @@ export async function gatherFlow(g, cid) {
   const icons = (sd) => (sd === 'gather' ? L.offers : L.raises);
   const need = (sd) => (sd === 'gather' ? L.keep : L.reversed_keep);
   const body = h('div', { style: { display: 'contents' } });
-  ov.el.append(closeBtn(() => ov.close(), 'gather-cancel'), body);
+  appendNodes(ov.el, closeBtn(() => ov.close(), 'gather-cancel'), body);
 
   const renderKeep = () => {
     body.innerHTML = '';
@@ -515,19 +535,19 @@ export async function gatherFlow(g, cid) {
       ic.forEach((r, i) => {
         const [x, y] = pos[i];
         const on = side === sd && sel.has(i);
-        wrap.append(h('button', {
+        appendNodes(wrap, h('button', {
           class: `hot ${on ? 'on' : 'live'}`, 'data-testid': `hot-${sd}-${i}`, 'data-reagent': r, 'aria-label': nice(r),
           style: { left: `${x * 100}%`, top: `${(y0 + y * (y1 - y0)) * 100}%` },
           onclick: () => tapIcon(sd, i),
         }));
       });
     }
-    if (L.miracle) wrap.append(h('span', { class: 'half-tag', style: { top: '57%', background: 'rgba(90,162,255,.85)' } }, 'Miracle: may gather this side'));
-    body.append(wrap);
-    body.append(h('div', { class: 'counter' }, 'Keep', h('span', { class: 'pill', 'data-testid': 'keep-counter' }, `${sel.size} / ${need(side)}`)));
-    if (L.bonus.length) body.append(h('div', { class: 'chips' }, L.bonus.map((r) => h('span', { class: 'chip static' }, h('img', { src: reagentIcon(r), alt: '' }), '+1 wizard bonus'))));
+    if (L.miracle) appendNodes(wrap, h('span', { class: 'half-tag', style: { top: '57%', background: 'rgba(90,162,255,.85)' } }, 'Miracle: may gather this side'));
+    appendNodes(body, wrap);
+    appendNodes(body, h('div', { class: 'counter' }, 'Keep', h('span', { class: 'pill', 'data-testid': 'keep-counter' }, `${sel.size} / ${need(side)}`)));
+    if (L.bonus.length) appendNodes(body, h('div', { class: 'chips' }, L.bonus.map((r) => h('span', { class: 'chip static' }, h('img', { src: reagentIcon(r), alt: '' }), '+1 wizard bonus'))));
     if (L.bloom) {
-      body.append(h('div', { class: 'phase-title', style: { fontSize: '15px' } }, 'Bloom: +1 any reagent'),
+      appendNodes(body, h('div', { class: 'phase-title', style: { fontSize: '15px' } }, 'Bloom: +1 any reagent'),
         h('div', { class: 'chips' }, REAGENTS.map((r) => h('button', {
           class: `chip ${bloom === r ? 'on' : ''}`, 'data-testid': `bloom-${r}`,
           onclick: () => { bloom = r; g.sfx('select'); renderKeep(); maybeDone(); },
@@ -553,7 +573,7 @@ export async function gatherFlow(g, cid) {
     let pv = pr.result; let cast = null; let x = null; let target = null;
     if (pv.castable.length) {
       body.innerHTML = '';
-      body.append(h('img', { class: 'mini-card', src: art(cid), alt: '' }),
+      appendNodes(body, h('img', { class: 'mini-card', src: art(cid), alt: '' }),
         h('div', { class: 'chips' }, [...pv.got, ...pv.bonus].map((r) => h('span', { class: 'chip static glow' }, h('img', { src: reagentIcon(r), alt: '' }), nice(r)))));
       const ch = await castPicker(g, body, pv.castable);
       if (ch.cast) {
@@ -569,7 +589,7 @@ export async function gatherFlow(g, cid) {
     let discard = null;
     if (pv.over > 0) {
       body.innerHTML = '';
-      body.append(h('img', { class: 'mini-card', src: art(cid), alt: '' }));
+      appendNodes(body, h('img', { class: 'mini-card', src: art(cid), alt: '' }));
       discard = await putbackPicker(g, body, pv.pool, pv.over);
     }
     const r = await g.act('act_gather', { ...base, cast, x, target, discard }, { sound: 'gather' });
@@ -601,7 +621,7 @@ export function summonFlow(g, fk) {
 async function summonGather(g, fk) {
   const ov = openOverlay('gather', { testid: 'summon-gather-flow' });
   const body = h('div', { style: { display: 'contents' } });
-  ov.el.append(closeBtn(() => ov.close(), 'gather-cancel'), body);
+  appendNodes(ov.el, closeBtn(() => ov.close(), 'gather-cancel'), body);
   let casts = [];
   for (;;) {
     const pr = await g.call('summon_gather_preview', { familiar: fk, casts });
@@ -609,7 +629,7 @@ async function summonGather(g, fk) {
     const pv = pr.result;
     if (!pv.castable.length && !casts.length) break;
     body.innerHTML = '';
-    body.append(h('img', { class: 'mini-card', src: art(fk), alt: '' }), h('div', { class: 'chips' }, pv.got.map((r) => h('span', { class: 'chip static glow' }, h('img', { src: reagentIcon(r), alt: '' }), nice(r)))));
+    appendNodes(body, h('img', { class: 'mini-card', src: art(fk), alt: '' }), h('div', { class: 'chips' }, pv.got.map((r) => h('span', { class: 'chip static glow' }, h('img', { src: reagentIcon(r), alt: '' }), nice(r)))));
     const all = [...casts.map((k) => ({ key: k, cost: [] })), ...pv.castable];
     const pick = castPicker(g, body, all, { multi: true, title: 'Cast any of your spells' });
     body.querySelectorAll('.castopt').forEach((el, i) => { if (i < casts.length) el.classList.add('on'); });
@@ -667,25 +687,84 @@ export function convertSheet(g, reagent) {
   const L = g.v.legal;
   const c = L.convert[reagent]; let n = c.n;
   const energize = L.energize;
+  const adept = !!L.adept_conversion;
+  const otherTypes = REAGENTS.filter((r) => r !== reagent && L.convert[r]);
+  let r2 = ''; let n2 = 1;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'convert' });
   const val = h('span', { class: 'val', 'data-testid': 'convert-n' }, String(n));
+  const val2 = h('span', { class: 'val', 'data-testid': 'convert-n2' }, '1');
   const gain = h('div', { class: 'gain' });
+  const gain2 = h('div', { class: 'gain', 'data-testid': 'convert-gain2' });
+  const secondRow = h('div', { class: 'stepper adept-stepper', style: { display: 'none' }, 'data-testid': 'convert-stepper2' });
+  const trackOf = (r) => (g.v.board.tracks[r] ?? 0);
+  const rebuildSecondStepper = () => {
+    secondRow.style.display = r2 ? 'flex' : 'none';
+    secondRow.innerHTML = '';
+    if (!r2) return;
+    const c2 = L.convert[r2];
+    n2 = Math.min(c2.n, Math.max(1, n2));
+    appendNodes(secondRow, 
+      h('button', { 'data-testid': 'convert-minus2', onclick: () => { n2 = Math.max(1, n2 - 1); upd(); g.sfx('tap'); } }, '−'), val2,
+      h('button', { 'data-testid': 'convert-plus2', onclick: () => { n2 = Math.min(c2.n, n2 + 1); upd(); g.sfx('tap'); } }, '+'),
+    );
+  };
   const upd = () => {
     const v = Math.min(12, c.value + (energize ? 3 : 0));
     val.textContent = n;
-    gain.innerHTML = ''; gain.append(`${n} × ${v} = `, h('b', {}, `+${n * v} mana`), ` · track ${v} → ${Math.max(1, v - n)}`);
+    gain.innerHTML = '';
+    appendNodes(gain, `${n} × ${v} = `, h('b', {}, `+${n * v} mana`), ` · track ${v} → ${Math.max(1, v - n)}`);
+    if (energize) {
+      appendNodes(gain, h('div', { class: 'ov-sub', 'data-testid': 'convert-energize-note' }, "Energize: +3 to the first type's track before selling (cap 12). Applies only to the type above."));
+    }
+    if (adept && r2) {
+      const c2 = L.convert[r2];
+      n2 = Math.min(c2.n, Math.max(1, n2));
+      val2.textContent = String(n2);
+      const tv = trackOf(r2);
+      gain2.innerHTML = '';
+      appendNodes(gain2, `${n2} × ${tv} = `, h('b', {}, `+${n2 * tv} mana`), ` · track ${tv} → ${Math.max(1, tv - n2)}`);
+    } else {
+      gain2.innerHTML = '';
+      val2.textContent = '1';
+      n2 = 1;
+    }
+  };
+  let type2Sel = null;
+  if (adept) {
+    type2Sel = h('select', { id: 'convert-adept-type2', 'data-testid': 'convert-adept-type2' },
+      h('option', { value: '' }, '— optional —'),
+      ...otherTypes.map((r) => h('option', { value: r }, nice(r))));
+    type2Sel.onchange = () => {
+      r2 = type2Sel.value;
+      rebuildSecondStepper();
+      upd();
+      g.sfx('tap');
+    };
+  }
+  const onGo = async () => {
+    const args = adept && r2
+      ? { reagent, n, energize, reagent2: r2, n2 }
+      : { reagent, n, energize };
+    const r = await g.act('act_convert', args, { sound: 'coin' }); ov.close(); if (r) g.afterAction();
   };
   const panel = h('div', { class: 'sheet-panel' },
     h('img', { class: 'big-icon', src: reagentIcon(reagent), alt: '' }),
     h('div', { class: 'phase-title' }, `Convert ${nice(reagent)}`),
+    adept ? h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-banner' }, 'Adept Conversion: you may sell a second type in this same action (below).') : null,
     h('div', { class: 'stepper' }, h('button', { 'data-testid': 'convert-minus', onclick: () => { n = Math.max(1, n - 1); upd(); g.sfx('tap'); } }, '−'), val,
       h('button', { 'data-testid': 'convert-plus', onclick: () => { n = Math.min(c.n, n + 1); upd(); g.sfx('tap'); } }, '+')),
     gain,
-    h('div', { class: 'actions' }, h('button', { class: 'act', 'data-testid': 'convert-go', onclick: async () => {
-      const r = await g.act('act_convert', { reagent, n, energize }, { sound: 'coin' }); ov.close(); if (r) g.afterAction();
-    } }, 'Convert')),
+    adept ? h('div', { class: 'adept-second' },
+      h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-note' }, 'Adept Conversion: convert a 2nd type'),
+      h('label', { class: 'sr-only', for: 'convert-adept-type2' }, 'Second reagent type'),
+      type2Sel,
+      secondRow) : null,
+    adept ? gain2 : null,
+    h('div', { class: 'actions' }, h('button', { class: 'act', 'data-testid': 'convert-go', onclick: onGo }, 'Convert')),
     L.convert1 ? h('button', { class: 'linkish', 'data-testid': 'convert-mixed', onclick: () => { ov.close(); convertMixed(g); } }, 'Sell a mix of reagents at 1 mana each') : null);
-  ov.el.append(panel); upd();
+  appendNodes(ov.el, panel);
+  if (adept) rebuildSecondStepper();
+  upd();
 }
 
 function convertMixed(g) {
@@ -698,7 +777,7 @@ function convertMixed(g) {
     return b;
   }));
   go.onclick = async () => { const r = await g.act('act_convert1', { reagents: [...sel].map((i) => me.tok[i]) }, { sound: 'coin' }); ov.close(); if (r) g.afterAction(); };
-  ov.el.append(h('div', { class: 'sheet-panel' }, h('div', { class: 'phase-title' }, 'Sell any mix at 1 mana each'), grid, h('div', { class: 'actions' }, go)));
+  appendNodes(ov.el, h('div', { class: 'sheet-panel' }, h('div', { class: 'phase-title' }, 'Sell any mix at 1 mana each'), grid, h('div', { class: 'actions' }, go)));
 }
 
 // ------------------------------------------------------------------ pending steps: spell effects, New Research, dungeon
@@ -706,7 +785,7 @@ export async function effectChooser(g) {
   const pd = g.v.pending; const k = pd.spell; const info = g.cards[k] || {};
   const ov = openOverlay('gather', { testid: 'effect' });
   const [p, done] = wait();
-  ov.el.append(h('div', { class: 'chooser-head' }, h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }),
+  appendNodes(ov.el, h('div', { class: 'chooser-head' }, h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }),
     h('div', {}, h('div', { class: 'phase-title' }, info.display), h('div', { class: 'ov-sub' }, info.effect))));
   const opts = pd.options;
   const grid = h('div', { class: 'opt-grid', 'data-testid': 'effect-options' });
@@ -719,11 +798,11 @@ export async function effectChooser(g) {
     for (const [pl, os] of Object.entries(byP)) {
       const pData = pl !== 'Available' ? playerData(pl) : null;
       const labelContent = pData ? [pl, ' ', h('span', { class: 'stat mana mini', 'data-testid': `${pl}-mana` }, h('span', { class: 'orb' }), pData.mana === null ? '?' : pData.mana), h('span', { class: 'stat vp mini', 'data-testid': `${pl}-vp` }, `${pData.vp} VP`)] : pl;
-      grid.append(h('div', { class: 'group-label' }, labelContent));
-      os.forEach((o, i) => grid.append(h('button', { class: 'opt-card', 'data-testid': `target-${pl}-${o.card}`, onclick: pick(o) }, h('img', { src: art(o.card), alt: o.card }), h('span', { class: 'oc-label' }, nice(o.kind)))));
+      appendNodes(grid, h('div', { class: 'group-label' }, labelContent));
+      os.forEach((o, i) => appendNodes(grid, h('button', { class: 'opt-card', 'data-testid': `target-${pl}-${o.card}`, onclick: pick(o) }, h('img', { src: art(o.card), alt: o.card }), h('span', { class: 'oc-label' }, nice(o.kind)))));
     }
   } else if (kind === 'mana_drain') {
-    grid.append(...opts.map((o) => {
+    appendNodes(grid, ...opts.map((o) => {
       const pData = playerData(o.player);
       return h('button', { class: 'chip player-chip', 'data-testid': `target-${o.player}`, onclick: pick(o) },
         avatar(o.player, 30),
@@ -734,28 +813,28 @@ export async function effectChooser(g) {
             h('span', { class: 'stat vp mini', 'data-testid': `${o.player}-vp` }, `${pData?.vp ?? '?'} VP`))));
     }));
   } else if (kind === 'wand_tax') {
-    grid.append(...opts.map((o) => h('button', { class: 'chip', 'data-testid': `school-${o.school}`, onclick: pick(o) }, h('img', { src: schoolIcon(o.school), alt: '' }), `${o.school} · +${o.gold} Gold`)));
+    appendNodes(grid, ...opts.map((o) => h('button', { class: 'chip', 'data-testid': `school-${o.school}`, onclick: pick(o) }, h('img', { src: schoolIcon(o.school), alt: '' }), `${o.school} · +${o.gold} Gold`)));
   } else if (kind === 'time_shift') {
-    grid.append(...opts.map((o) => h('button', { class: 'chip', 'data-testid': `deck-${o.deck}`, onclick: pick(o) }, `${nice(o.deck)} · remove ${o.n}`)));
+    appendNodes(grid, ...opts.map((o) => h('button', { class: 'chip', 'data-testid': `deck-${o.deck}`, onclick: pick(o) }, `${nice(o.deck)} · remove ${o.n}`)));
   } else if (kind === 'scry') {
-    grid.append(...opts.map((o) => h('button', { class: 'opt-card wide', 'data-testid': `scry-${o.card}`, onclick: pick(o) }, h('img', { src: art(o.card), alt: o.card }), h('span', { class: 'oc-text' }, g.cards[o.card]?.display || o.card))));
+    appendNodes(grid, ...opts.map((o) => h('button', { class: 'opt-card wide', 'data-testid': `scry-${o.card}`, onclick: pick(o) }, h('img', { src: art(o.card), alt: o.card }), h('span', { class: 'oc-text' }, g.cards[o.card]?.display || o.card))));
   } else if (kind === 'swapo') {
     const theirs = [...new Map(opts.map((o) => [`${o.player}|${o.card}`, o])).values()];
-    grid.append(h('div', { class: 'group-label' }, 'Take one of theirs'));
-    theirs.forEach((o) => grid.append(h('button', { class: 'opt-card', 'data-testid': `swapo-their-${o.card}`, onclick: () => {
-      grid.innerHTML = ''; grid.append(h('div', { class: 'group-label' }, 'Give one of yours'));
-      opts.filter((x) => x.player === o.player && x.card === o.card).forEach((x) => grid.append(h('button', { class: 'opt-card', 'data-testid': `swapo-mine-${x.mine}`, onclick: pick(x) }, h('img', { src: art(x.mine), alt: x.mine }))));
+    appendNodes(grid, h('div', { class: 'group-label' }, 'Take one of theirs'));
+    theirs.forEach((o) => appendNodes(grid, h('button', { class: 'opt-card', 'data-testid': `swapo-their-${o.card}`, onclick: () => {
+      grid.innerHTML = ''; appendNodes(grid, h('div', { class: 'group-label' }, 'Give one of yours'));
+      opts.filter((x) => x.player === o.player && x.card === o.card).forEach((x) => appendNodes(grid, h('button', { class: 'opt-card', 'data-testid': `swapo-mine-${x.mine}`, onclick: pick(x) }, h('img', { src: art(x.mine), alt: x.mine }))));
     } }, h('img', { src: art(o.card), alt: o.card }), h('span', { class: 'oc-label' }, o.player))));
   } else if (kind === 'transmute') {
     const tok = opts[0].tok; const sel = new Set();
     const go = h('button', { class: 'act', disabled: true, 'data-testid': 'transmute-go' }, 'Transmute');
-    grid.append(...tok.map((r, i) => { const b = h('button', { class: 'tokbtn', 'data-testid': `transmute-${i}` }, h('img', { src: reagentIcon(r), alt: '' })); b.onclick = () => { if (sel.has(i)) { sel.delete(i); b.classList.remove('on'); } else { sel.add(i); b.classList.add('on'); } go.disabled = sel.size < 2 || sel.size % 2; go.textContent = `Transmute ${sel.size} → ${Math.floor(sel.size / 2)} Gold`; }; return b; }));
-    grid.append(h('div', { class: 'actions' }, go));
+    appendNodes(grid, ...tok.map((r, i) => { const b = h('button', { class: 'tokbtn', 'data-testid': `transmute-${i}` }, h('img', { src: reagentIcon(r), alt: '' })); b.onclick = () => { if (sel.has(i)) { sel.delete(i); b.classList.remove('on'); } else { sel.add(i); b.classList.add('on'); } go.disabled = sel.size < 2 || sel.size % 2; go.textContent = `Transmute ${sel.size} → ${Math.floor(sel.size / 2)} Gold`; }; return b; }));
+    appendNodes(grid, h('div', { class: 'actions' }, go));
     go.onclick = () => done({ reagents: [...sel].map((i) => tok[i]) });
   } else if (kind === 'evolve' || kind === 'rise') {
-    grid.append(...opts.map((o) => h('button', { class: 'opt-card', 'data-testid': `${kind}-${o.familiar}`, onclick: pick(o) }, h('img', { src: art(o.familiar), alt: o.familiar }), h('span', { class: 'oc-label' }, o.school))));
+    appendNodes(grid, ...opts.map((o) => h('button', { class: 'opt-card', 'data-testid': `${kind}-${o.familiar}`, onclick: pick(o) }, h('img', { src: art(o.familiar), alt: o.familiar }), h('span', { class: 'oc-label' }, o.school))));
   }
-  ov.el.append(grid);
+  appendNodes(ov.el, grid);
   const choice = await p;
   const r = await g.act('resolve_effect', { choice }, { sound: 'cast' });
   ov.close();
@@ -766,9 +845,9 @@ export async function newResearchChooser(g) {
   const pd = g.v.pending;
   const ov = openOverlay('gather', { testid: 'new-research' });
   const [p, done] = wait();
-  ov.el.append(h('div', { class: 'chooser-head' }, h('img', { src: art(pd.familiar), alt: '' }),
+  appendNodes(ov.el, h('div', { class: 'chooser-head' }, h('img', { src: art(pd.familiar), alt: '' }),
     h('div', {}, h('div', { class: 'phase-title' }, 'New Research'), h('div', { class: 'ov-sub' }, 'Take one of the four new spells'))));
-  ov.el.append(h('div', { class: 'opt-grid' }, pd.four.map((k) => h('button', { class: 'opt-card wide', 'data-testid': `nr-${k}`, onclick: () => done(k) },
+  appendNodes(ov.el, h('div', { class: 'opt-grid' }, pd.four.map((k) => h('button', { class: 'opt-card wide', 'data-testid': `nr-${k}`, onclick: () => done(k) },
     h('img', { src: art(k), alt: k }), h('span', { class: 'oc-text' }, g.cards[k]?.display), h('span', { class: 'oc-label' }, g.cards[k]?.effect)))));
   const k = await p;
   const r = await g.act('choose_new_research', { spell: k }, { sound: 'select' });
@@ -780,7 +859,7 @@ export async function riseUseChooser(g) {
   const pd = g.v.pending;
   const ov = openOverlay('gather', { testid: 'rise-use' });
   const [p, done] = wait();
-  ov.el.append(h('div', { class: 'chooser-head' }, h('img', { src: art(pd.familiar), alt: '' }),
+  appendNodes(ov.el, h('div', { class: 'chooser-head' }, h('img', { src: art(pd.familiar), alt: '' }),
     h('div', {}, h('div', { class: 'phase-title' }, 'Rise'), h('div', { class: 'ov-sub' }, 'Use this familiar'))));
   const uses = [
     { use: 'score', label: `Score: +${pd.score_gold} Gold`, testid: 'rise-score' },
@@ -788,7 +867,7 @@ export async function riseUseChooser(g) {
     { use: 'dungeon', label: 'Enter the Dungeon', testid: 'rise-dungeon' },
     { use: 'research', label: 'New Research', testid: 'rise-research' }
   ];
-  ov.el.append(h('div', { class: 'opt-grid' }, uses.map((u) => h('button', { class: 'chip', 'data-testid': u.testid, onclick: () => done(u.use) }, u.label))));
+  appendNodes(ov.el, h('div', { class: 'opt-grid' }, uses.map((u) => h('button', { class: 'chip', 'data-testid': u.testid, onclick: () => done(u.use) }, u.label))));
   const use = await p;
   ov.close();
   if (use === 'score') {
@@ -824,7 +903,7 @@ async function riseGather(g, pd) {
   const casts = [];
   const ov = openOverlay('gather', { testid: 'rise-gather-cast' });
   const [p, done] = wait();
-  ov.el.append(h('div', { class: 'phase-title' }, 'Cast spells (optional)'));
+  appendNodes(ov.el, h('div', { class: 'phase-title' }, 'Cast spells (optional)'));
   const grid = h('div', { class: 'opt-grid' });
   const go = h('button', { class: 'act', 'data-testid': 'rise-gather-done' }, 'Done');
   go.onclick = () => done();
@@ -832,9 +911,9 @@ async function riseGather(g, pd) {
     const b = h('button', { class: 'opt-card wide', 'data-testid': `cast-${o.key}` },
       h('img', { src: art(o.key), alt: o.key }), h('span', { class: 'oc-text' }, g.cards[o.key]?.display));
     b.onclick = () => { casts.push(o.key); b.disabled = true; };
-    grid.append(b);
+    appendNodes(grid, b);
   });
-  ov.el.append(grid, h('div', { class: 'actions' }, go));
+  appendNodes(ov.el, grid, h('div', { class: 'actions' }, go));
   await p;
   ov.close();
   const newHoldings = holdings.slice();
@@ -868,20 +947,20 @@ export async function dungeonFlow(g) {
     const row = h('div', { class: 'drawn', 'data-testid': 'dungeon-drawn' }, pd.drawn.map((k, i) => h('div', {
       class: `dc ${i >= shown ? 'new' : ''} ${pd.drawn_cards[i].type !== 'Treasure' ? 'monster' : ''}`, onclick: () => expandCard(g, k) }, h('img', { src: art(k), alt: k }))));
     shown = pd.drawn.length;
-    ov.el.append(h('div', { class: 'ov-title' }, 'The Dungeon'),
+    appendNodes(ov.el, h('div', { class: 'ov-title' }, 'The Dungeon'),
       h('div', { class: 'hits', 'data-testid': 'dungeon-hits' }, 'Hits', ...pips, h('span', {}, `${pd.hits} / ${pd.limit}`)),
       deck, row);
     const acts = h('div', { class: 'actions' });
     if (pd.done) {
-      ov.el.append(h('div', { class: `result ${pd.success ? 'good' : 'bad'}` }, pd.success ? 'The dungeon is exhausted' : 'Defeated! You keep nothing'));
-      acts.append(h('button', { class: 'act', 'data-testid': 'dungeon-continue', onclick: () => done('stop') }, 'Continue'));
+      appendNodes(ov.el, h('div', { class: `result ${pd.success ? 'good' : 'bad'}` }, pd.success ? 'The dungeon is exhausted' : 'Defeated! You keep nothing'));
+      appendNodes(acts, h('button', { class: 'act', 'data-testid': 'dungeon-continue', onclick: () => done('stop') }, 'Continue'));
     } else if (pd.draws >= 1) {
-      acts.append(h('button', { class: 'act', 'data-testid': 'dungeon-stop', onclick: () => done('stop') }, 'Stop & collect'));
+      appendNodes(acts, h('button', { class: 'act', 'data-testid': 'dungeon-stop', onclick: () => done('stop') }, 'Stop & collect'));
     } else {
-      acts.append(h('div', { class: 'ov-sub' }, 'Tap the deck to flip the first card'));
-      acts.append(h('button', { class: 'act secondary', 'data-testid': 'dungeon-leave', onclick: () => done('leave') }, 'Leave'));
+      appendNodes(acts, h('div', { class: 'ov-sub' }, 'Tap the deck to flip the first card'));
+      appendNodes(acts, h('button', { class: 'act secondary', 'data-testid': 'dungeon-leave', onclick: () => done('leave') }, 'Leave'));
     }
-    ov.el.append(acts);
+    appendNodes(ov.el, acts);
     const a = await p;
     if (a === 'flip') {
       g.sfx('flip');
@@ -900,7 +979,7 @@ export async function dungeonFlow(g) {
         const items = kept.filter((c) => c.subtype === 'Item').map((c) => c.name);
         ov.el.innerHTML = '';
         const loot = h('div', { class: 'drawn' }, was.kept.map((k) => h('div', { class: 'dc new' }, h('img', { src: art(k), alt: k }))));
-        ov.el.append(h('div', { class: 'ov-title' }, 'The Dungeon'), h('div', { class: 'result good', 'data-testid': 'dungeon-result' }, `Collected ${gold} Gold${items.length ? ' + ' + items.join(', ') : ''}`), loot);
+        appendNodes(ov.el, h('div', { class: 'ov-title' }, 'The Dungeon'), h('div', { class: 'result good', 'data-testid': 'dungeon-result' }, `Collected ${gold} Gold${items.length ? ' + ' + items.join(', ') : ''}`), loot);
         await sleep(700);
         const gt = document.querySelector('[data-testid=my-gold]');
         loot.querySelectorAll('img').forEach((im, i) => setTimeout(() => { fly(im.src, im.getBoundingClientRect(), gt); g.sfx('coin'); }, i * 140));
@@ -928,17 +1007,17 @@ export async function arena(g, { mode, wizard = null }) {
   const seats = {}; const bids = {};
   const ringEl = h('div', { class: 'arena-ring' });
   const high = h('div', { class: 'high', 'data-testid': 'arena-high' }, '');
-  ringEl.append(h('div', { class: 'arena-center' }, h('div', { class: 'card-frame', 'data-testid': 'arena-card' }, h('img', { src: art(card), alt: card, onclick: () => expandCard(g, card) })),
+  appendNodes(ringEl, h('div', { class: 'arena-center' }, h('div', { class: 'card-frame', 'data-testid': 'arena-card' }, h('img', { src: art(card), alt: card, onclick: () => expandCard(g, card) })),
     h('div', { class: 'ov-sub', style: { margin: 0, fontSize: '13px' } }, g.cards[card]?.display), high));
   ring.forEach((n, i) => {
     const [x, y] = seatPos(i, ring.length);
     const b = h('div', { class: 'bid', 'data-testid': `bid-${n}` }, '–');
     const s = h('div', { class: 'seat', 'data-testid': `seat-${n}`, style: { left: `${x}%`, top: y < 50 ? `max(48px, ${y}%)` : `${y}%` } }, avatar(n, 44), h('div', { class: 'sname' }, n), b);
-    seats[n] = s; bids[n] = b; ringEl.append(s);
+    seats[n] = s; bids[n] = b; appendNodes(ringEl, s);
   });
   const bar = h('div', { class: 'bidbar', 'data-testid': 'bidbar' });
   const msg = h('div', { class: 'winner-banner' });
-  ov.el.append(h('div', { class: 'ov-title' }, 'Wizard Auction'), ringEl, msg, bar);
+  appendNodes(ov.el, h('div', { class: 'ov-title' }, 'Wizard Auction'), ringEl, msg, bar);
 
   let shown = 0; let leader = null; let hi = 0;
   const showBid = async (who, val, fast) => {
@@ -960,7 +1039,7 @@ export async function arena(g, { mode, wizard = null }) {
     const done = (x) => { bar.querySelectorAll('button, input').forEach((b) => { b.disabled = true; }); resolve(x); };
     bar.innerHTML = '';
     if (max < min) {
-      bar.append(h('div', { class: 'ov-sub' }, `You have ${max} mana — you cannot beat ${min - 1}`), h('div', { class: 'bidbtns' }, h('button', { class: 'act secondary', 'data-testid': 'bid-pass', onclick: () => done({ pass: true }) }, 'Pass')));
+      appendNodes(bar, h('div', { class: 'ov-sub' }, `You have ${max} mana — you cannot beat ${min - 1}`), h('div', { class: 'bidbtns' }, h('button', { class: 'act secondary', 'data-testid': 'bid-pass', onclick: () => done({ pass: true }) }, 'Pass')));
       return p;
     }
     let val = min;
@@ -972,14 +1051,14 @@ export async function arena(g, { mode, wizard = null }) {
     if (min === max) {
       // A range input with min == max is degenerate (iOS Safari lets the thumb report values outside it): offer the one bid.
       out.firstChild.textContent = String(val);
-      bar.append(out, mana, h('div', { class: 'ov-sub', style: { margin: 0 } }, `${val} is all your mana`), h('div', { class: 'bidbtns' }, passBtn, bidBtn));
+      appendNodes(bar, out, mana, h('div', { class: 'ov-sub', style: { margin: 0 } }, `${val} is all your mana`), h('div', { class: 'bidbtns' }, passBtn, bidBtn));
       return p;
     }
     const sl = h('input', { type: 'range', class: 'slider', min, max, value: val, step: 1, 'data-testid': 'bid-slider' });
     const show = () => { sl.value = val; out.firstChild.textContent = String(val); };
     sl.oninput = () => { val = clamp(sl.value); show(); };
     const step = (d) => () => { val = clamp(val + d); show(); g.sfx('tap'); };
-    bar.append(out, mana, h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+    appendNodes(bar, out, mana, h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
       h('button', { class: 'tb-btn', 'data-testid': 'bid-minus', onclick: step(-1) }, '−'), sl, h('button', { class: 'tb-btn', 'data-testid': 'bid-plus', onclick: step(1) }, '+')),
       h('div', { class: 'bidbtns' }, passBtn, bidBtn));
     return p;
@@ -1087,7 +1166,7 @@ function rankRows(v, cls = 'rank') {
 
 export function gameOver(g) {
   const v = g.v; const ov = openOverlay('final', { testid: 'game-over' });
-  ov.el.append(h('div', { class: 'ov-title' }, 'Game Over'), h('div', { class: 'winner', 'data-testid': 'winner' }, ranking(v).text), ...rankRows(v),
+  appendNodes(ov.el, h('div', { class: 'ov-title' }, 'Game Over'), h('div', { class: 'winner', 'data-testid': 'winner' }, ranking(v).text), ...rankRows(v),
     h('div', { class: 'actions' },
       h('button', { class: 'act', 'data-testid': 'go-new-game', onclick: () => { ov.close(); newGame(g); } }, 'Play again'),
       h('button', { class: 'act secondary', 'data-testid': 'go-mats', onclick: () => { ov.close(); openMats(g); } }, 'View mats'),
@@ -1099,7 +1178,7 @@ export function menu(g) {
   const v = g.v;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'menu' });
   const scores = v.game_over ? [h('div', { class: 'phase-title', 'data-testid': 'menu-winner' }, `Final scores · ${ranking(v).text}`), h('div', { class: 'menu-scores', 'data-testid': 'menu-scores' }, rankRows(v))] : [];
-  ov.el.append(h('div', { class: 'sheet-panel' }, h('button', { class: 'sheet-close', 'aria-label': 'Close', 'data-testid': 'menu-close', onclick: () => ov.close() }, '×'),
+  appendNodes(ov.el, h('div', { class: 'sheet-panel' }, h('button', { class: 'sheet-close', 'aria-label': 'Close', 'data-testid': 'menu-close', onclick: () => ov.close() }, '×'),
     ...(scores.length ? scores : [h('div', { class: 'phase-title' }, 'Game')]),
     h('div', { class: 'actions' },
       h('button', { class: v.game_over ? 'act' : 'act secondary', 'data-testid': 'menu-new-game', onclick: () => { ov.close(); newGame(g); } }, v.game_over ? 'Play again (new game)' : 'New game'),
@@ -1123,7 +1202,7 @@ export function menu(g) {
 // New game: Keith, Newt (AI) and LizWiz (AI), dealt by the engine's setup script; Keith picks 2 starting reagents.
 export async function newGame(g) {
   const ov = openOverlay('gather newgame', { testid: 'new-game' });
-  ov.el.append(closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'), h('div', { class: 'ov-sub' }, 'Dealing…'));
+  appendNodes(ov.el, closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'), h('div', { class: 'ov-sub' }, 'Dealing…'));
   const seeds = g.nextGameSeeds || {};          // tests seed the deal for reproducible playthroughs
   const pr = await g.call('new_game_preview', { seed: seeds.seed, ai_seed: seeds.ai_seed });
   if (ov.closed) return;
@@ -1142,7 +1221,7 @@ export async function newGame(g) {
     return c;
   });
   ov.el.innerHTML = '';
-  ov.el.append(closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'),
+  appendNodes(ov.el, closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'),
     h('div', { class: 'ov-sub' }, `${players.join(', ')} · you start. This replaces the current game (export it first to keep it).`),
     h('div', { class: 'phase-title', style: { fontSize: '15px' } }, 'Your reagent cards'),
     h('div', { class: 'hand-preview', 'data-testid': 'new-game-hand' }, hand.map((k) => h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }))),

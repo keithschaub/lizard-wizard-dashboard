@@ -5,12 +5,21 @@ import fs from 'fs';
 const G8_AUTO = JSON.parse(fs.readFileSync('engine/game/g8_auto_advanced.json', 'utf8'));
 const INSET = { top: 59, bottom: 34, chrome: 84 };
 
-async function open(page, text) {
-  await page.addInitScript((t) => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('lw.save.v1', t); sessionStorage.setItem('seeded', '1'); } }, text);
+async function open(page, text, relayUrl = '') {
+  await page.addInitScript(({ save, relay }) => {
+    if (!sessionStorage.getItem('seeded')) {
+      localStorage.setItem('lw.save.v1', save);
+      sessionStorage.setItem('seeded', '1');
+    }
+    window.LW_RELAY_URL = relay;
+    window.LW_COMMIT_SHA = 'dev';
+  }, { save: text, relay: relayUrl });
   await page.goto('/');
   await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 60_000 });
   await page.addStyleTag({ content: `:root { --safe-t: ${INSET.top}px !important; --safe-b: ${INSET.bottom}px !important; --chrome-b: ${INSET.chrome}px !important; }` });
 }
+
+const RELAY_TEST = 'https://lw-bug-relay.test/report';
 
 // Mock relay for testing
 async function setupMockRelay(page) {
@@ -48,7 +57,8 @@ test('Bug report dialog opens from menu', async ({ page }) => {
   // Dialog should be visible
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   await expect(page.getByTestId('bug-description')).toBeVisible();
-  await expect(page.getByTestId('bug-submit')).toBeVisible();
+  await expect(page.getByTestId('bug-save-report')).toBeVisible();
+  await expect(page.getByTestId('bug-submit')).toHaveCount(0);
   await expect(page.getByTestId('bug-cancel')).toBeVisible();
   
   await shot(page, 'bug-report-01-dialog');
@@ -60,7 +70,7 @@ test('Bug report dialog opens from menu', async ({ page }) => {
 
 test('Bug report requires description', async ({ page }) => {
   await setupMockRelay(page);
-  await open(page, JSON.stringify(G8_AUTO));
+  await open(page, JSON.stringify(G8_AUTO), RELAY_TEST);
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -79,7 +89,7 @@ test('Bug report requires description', async ({ page }) => {
 
 test('Bug report submits successfully with mock relay', async ({ page }) => {
   await setupMockRelay(page);
-  await open(page, JSON.stringify(G8_AUTO));
+  await open(page, JSON.stringify(G8_AUTO), RELAY_TEST);
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -118,7 +128,7 @@ test('Bug report captures game state in background', async ({ page }) => {
     });
   });
   
-  await open(page, JSON.stringify(G8_AUTO));
+  await open(page, JSON.stringify(G8_AUTO), RELAY_TEST);
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -137,7 +147,7 @@ test('Bug report captures game state in background', async ({ page }) => {
 
 test('Bug report queues offline and shows retry message', async ({ page }) => {
   await setupOfflineRelay(page);
-  await open(page, JSON.stringify(G8_AUTO));
+  await open(page, JSON.stringify(G8_AUTO), RELAY_TEST);
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -165,7 +175,7 @@ test('Bug report queues offline and shows retry message', async ({ page }) => {
 
 test('Bug report allows image attachments', async ({ page }) => {
   await setupMockRelay(page);
-  await open(page, JSON.stringify(G8_AUTO));
+  await open(page, JSON.stringify(G8_AUTO), RELAY_TEST);
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -186,7 +196,7 @@ test('Bug report allows image attachments', async ({ page }) => {
 });
 
 test('Bug report download fallback works', async ({ page }) => {
-  await open(page, JSON.stringify(G8_AUTO));
+  await open(page, JSON.stringify(G8_AUTO), RELAY_TEST);
   
   await page.getByTestId('btn-menu').click();
   await page.getByTestId('menu-bug-report').click();
@@ -206,7 +216,7 @@ test('Bug report download fallback works', async ({ page }) => {
 
 test('Bug report does not disrupt view during capture', async ({ page }) => {
   await setupMockRelay(page);
-  await open(page, JSON.stringify(G8_AUTO));
+  await open(page, JSON.stringify(G8_AUTO), RELAY_TEST);
   
   // Take screenshot of board before
   await expect(page.locator('#board')).toBeVisible();

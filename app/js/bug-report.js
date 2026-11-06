@@ -416,22 +416,30 @@ export function openBugReportDialog(game) {
     }, '🎤');
   }
   
-  const submitBtn = h('button', {
+  const hasRelay = !!(RELAY_URL && RELAY_URL !== 'undefined');
+
+  async function packageFromForm() {
+    const description = textarea.value.trim();
+    if (!description) {
+      showToast('Please describe the issue', 2000);
+      return null;
+    }
+    return createReportPackage(game, description, Array.from(fileInput.files));
+  }
+
+  const submitBtn = hasRelay ? h('button', {
     class: 'act',
     'data-testid': 'bug-submit',
     onclick: async () => {
-      const description = textarea.value.trim();
-      if (!description) {
-        showToast('Please describe the issue', 2000);
-        return;
-      }
-      
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting...';
-      
+      submitBtn.textContent = 'Submitting…';
       try {
-        const reportPackage = await createReportPackage(game, description, Array.from(fileInput.files));
-        
+        const reportPackage = await packageFromForm();
+        if (!reportPackage) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Report';
+          return;
+        }
         try {
           await submitReport(reportPackage);
           showToast('✓ Report sent! Thank you.');
@@ -443,51 +451,80 @@ export function openBugReportDialog(game) {
             await queueReport(reportPackage);
           } catch (qerr) {
             console.error('[bug-report] Failed to queue report:', qerr);
-            showToast('Could not save report locally. Try Download Report.');
+            showToast('Could not save report locally. Use Save report.');
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit';
+            submitBtn.textContent = 'Submit Report';
             return;
           }
           if (relayNotConfigured) {
-            // No relay URL in deploy config — keep dialog open; user can Download Report
-            showToast('Relay unavailable. Report queued locally. Use "Download Report" to save now.', 5000);
+            showToast('Relay unavailable. Report queued locally. Use Save report to download.', 5000);
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit';
+            submitBtn.textContent = 'Submit Report';
           } else {
-            // Network / HTTP errors from relay — queue and close (matches offline E2E)
             showToast('Report queued (offline). Will retry when online.');
             overlay.remove();
           }
         }
       } catch (err) {
         console.error('[bug-report] Failed to create report:', err);
-        showToast('Failed to create report. Try downloading instead.');
+        showToast('Failed to create report. Try Save report.');
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit';
+        submitBtn.textContent = 'Submit Report';
       }
     },
-  }, 'Submit Report');
-  
-  const downloadBtn = h('button', {
+  }, 'Submit Report') : null;
+
+  const saveBtn = !hasRelay ? h('button', {
+    class: 'act',
+    'data-testid': 'bug-save-report',
+    onclick: async () => {
+      saveBtn.disabled = true;
+      const prev = saveBtn.textContent;
+      saveBtn.textContent = 'Saving…';
+      try {
+        const reportPackage = await packageFromForm();
+        if (!reportPackage) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = prev;
+          return;
+        }
+        try {
+          await queueReport(reportPackage);
+        } catch (qerr) {
+          console.warn('[bug-report] Queue while saving:', qerr);
+        }
+        downloadReport(reportPackage);
+        showToast('Report saved');
+        overlay.remove();
+      } catch (err) {
+        console.error('[bug-report] Save failed:', err);
+        showToast('Failed to save report');
+        saveBtn.disabled = false;
+        saveBtn.textContent = prev;
+      }
+    },
+  }, 'Save report') : null;
+
+  const downloadSecondary = hasRelay ? h('button', {
     class: 'act secondary',
     'data-testid': 'bug-download',
     onclick: async () => {
-      const description = textarea.value.trim();
-      if (!description) {
-        showToast('Please describe the issue', 2000);
-        return;
-      }
-      
+      downloadSecondary.disabled = true;
       try {
-        const reportPackage = await createReportPackage(game, description, Array.from(fileInput.files));
+        const reportPackage = await packageFromForm();
+        if (!reportPackage) {
+          downloadSecondary.disabled = false;
+          return;
+        }
         downloadReport(reportPackage);
         showToast('Report downloaded');
       } catch (err) {
         console.error('[bug-report] Download failed:', err);
         showToast('Failed to download report');
       }
+      downloadSecondary.disabled = false;
     },
-  }, 'Download Report');
+  }, 'Download Report') : null;
   
   const cancelBtn = h('button', {
     class: 'act secondary',
@@ -515,7 +552,7 @@ export function openBugReportDialog(game) {
       selectedFiles,
       h('div', { class: 'bug-info' }, 
         'Game state and screenshots will be captured automatically')),
-    h('div', { class: 'actions' }, submitBtn, downloadBtn, cancelBtn)));
+    h('div', { class: 'actions' }, ...[submitBtn, saveBtn, downloadSecondary, cancelBtn].filter(Boolean))));
   
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) overlay.remove();

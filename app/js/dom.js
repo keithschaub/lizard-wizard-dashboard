@@ -16,6 +16,14 @@ export function h(tag, attrs = {}, ...children) {
   return el;
 }
 
+/** Like Element.append but skips null/undefined/false (native append stringifies those as "null"). */
+export function appendNodes(parent, ...nodes) {
+  for (const x of nodes.flat(Infinity)) {
+    if (x === null || x === undefined || x === false) continue;
+    parent.appendChild(x instanceof Node ? x : document.createTextNode(String(x)));
+  }
+}
+
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

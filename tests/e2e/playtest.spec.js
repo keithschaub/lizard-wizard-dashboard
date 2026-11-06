@@ -135,22 +135,38 @@ class Playtest {
   async checkCardDetail(label) {
     const ov = this.page.getByTestId('expanded').last();
     await expect(ov).toBeVisible();
-    await ov.getByTestId('expanded-img').evaluate((i) => i.decode().catch(() => {}));
+    const imgEl = ov.getByTestId('expanded-img');
+    if (await imgEl.count()) {
+      await imgEl.evaluate((i) => i.decode().catch(() => {}));
+    }
     await this.page.waitForTimeout(450);
     await ov.evaluate((el) => { el.scrollTop = 0; });
     const L = await this.limits();
     const m = await ov.getByTestId('expanded-card').evaluate((frame) => {
-      const img = frame.querySelector('img'); const f = frame.getBoundingClientRect(); const r = img.getBoundingClientRect();
+      const img = frame.querySelector('img');
+      const f = frame.getBoundingClientRect();
       const close = frame.closest('.overlay').querySelector('[data-testid=ov-close]').getBoundingClientRect();
+      if (!img) {
+        const tile = frame.querySelector('[data-testid=achievement-tile]');
+        return { kind: 'ach', f: f.top, fb: f.bottom, close: close.bottom, closeTop: close.top, th: tile ? tile.getBoundingClientRect().height : 0 };
+      }
+      const r = img.getBoundingClientRect();
       const probe = document.elementFromPoint(r.left + r.width / 2, r.top + r.height * 0.03);
-      return { f: f.top, fb: f.bottom, r: r.top, w: r.width, ratio: r.height / r.width, art: img.naturalHeight / img.naturalWidth, close: close.bottom, closeTop: close.top, titleOnTop: probe === img };
+      return {
+        kind: 'card', f: f.top, fb: f.bottom, r: r.top, w: r.width, ratio: r.height / r.width, art: img.naturalHeight / img.naturalWidth,
+        close: close.bottom, closeTop: close.top, titleOnTop: probe === img,
+      };
     });
     expect(m.closeTop, `${label}: close button below the status bar`).toBeGreaterThanOrEqual(L.top);
-    expect(m.f, `${label}: card below the close row`).toBeGreaterThanOrEqual(m.close);
-    expect(m.r - m.f, `${label}: frame margin above the art`).toBeGreaterThanOrEqual(m.w * 0.05);
-    expect(Math.abs(m.ratio / m.art - 1), `${label}: art whole`).toBeLessThan(0.01);
-    expect(m.titleOnTop, `${label}: nothing covers the card title`).toBe(true);
-    expect(m.fb, `${label}: whole card above the Safari bar`).toBeLessThanOrEqual(L.bottom + 0.5);
+    expect(m.f, `${label}: frame below the close row`).toBeGreaterThanOrEqual(m.close);
+    if (m.kind === 'ach') {
+      expect(m.th, `${label}: achievement tile has height`).toBeGreaterThan(40);
+    } else {
+      expect(m.r - m.f, `${label}: frame margin above the art`).toBeGreaterThanOrEqual(m.w * 0.05);
+      expect(Math.abs(m.ratio / m.art - 1), `${label}: art whole`).toBeLessThan(0.01);
+      expect(m.titleOnTop, `${label}: nothing covers the card title`).toBe(true);
+    }
+    expect(m.fb, `${label}: whole frame above the Safari bar`).toBeLessThanOrEqual(L.bottom + 0.5);
     await this.shot(label);
   }
 

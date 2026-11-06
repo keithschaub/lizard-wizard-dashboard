@@ -190,6 +190,12 @@ def log_text(e):
         if a and a.startswith('scry_') and a != 'scry_dungeon':
             deck = a[5:]
             return f"{w} scried the {deck.title()} deck" + (f" and took {CD.display(e['took'])}" if e.get('took') else '')
+        if a == 'convert' and e.get('parts'):
+            bits = []
+            for pr in e['parts']:
+                suf = ' (Energize +3 before sale)' if pr.get('energized') else ''
+                bits.append(f"{pr['n']} {T.nice(pr['reagent'])} at {pr['value']} each{suf} → track {pr['track_after']}")
+            return f"{w} sold (Adept Conversion): " + '; '.join(bits) + f" (+{e['gain']} mana total)"
         if a == 'wand_tax': return f"{w} cast Wand Tax on {e['school']}: +{e['gold']} Gold"
         if a == 'transmute': return f"{w} transmuted {len(e['reagents'])} reagents into {e['gold']} Gold"
         if a == 'time_shift': return f"{w} removed the top {e['n']} cards of the {e['deck']} deck (Time Shift)"
@@ -211,6 +217,8 @@ def log_cards(e):
         v = e.get(f)
         if isinstance(v, str) and v.endswith('.jpg') and v.startswith(('Spell_', 'Tower_', 'Familiar_', 'Wizard_')): out.append(key(v))
     if a == 'auction': out.append('Wizard_' + e['item'])
+    if a == 'convert' and e.get('parts'):
+        for pr in e['parts']: out.append(pr['reagent'])
     if a in ('gather',): out.append(e['card'])
     if a in ('dungeon',):
         out += [dungeon_key(c) for c in e.get('drawn', [])]
@@ -287,7 +295,8 @@ def _keeps(icons, p):
 def legal(s, n):
     p = P(s, n)
     O, U = TP.grouped_options(s, n)
-    L = dict(gather={}, convert={}, convert1=False, energize=SE.has_cast(p, 'Energize'), build=None, recruit=[],
+    tok_types = [r for r, c in Counter(p['tok']).items() if c]
+    L = dict(gather={}, convert={}, convert1=False, energize=SE.has_cast(p, 'Energize'), adept_conversion=False, build=None, recruit=[],
              research={}, summon={}, divination=False, unavailable=list(U))
     miracle = SE.has_cast(p, 'Miracle')
     for c in p['hand']:
@@ -320,6 +329,7 @@ def legal(s, n):
     for sk, d in L['research'].items():
         if 'Invisibility_Potion' in sk and p['tok'].count('Eye_of_Newt') >= 1 and len(s['players']) > 1: d['castable'] = True; d['x'] = True
     if SE.has_cast(p, 'Divination') and TP.treasure_left(s): L['divination'] = True   # "Enter the Dungeon as an action without a Familiar"
+    if SE.has_cast(p, 'Adept_Conversion') and len(tok_types) >= 2: L['adept_conversion'] = True
     missing = TP.required_keys(s, n) - TP.emitted_keys(O)
     if missing: L['qc_missing'] = sorted(map(str, missing))
     return L
@@ -425,10 +435,19 @@ def _keith(s, argv):
     return status
 
 
-def act_convert(reagent, n, energize=False):
+def act_convert(reagent, n, energize=False, reagent2=None, n2=None):
     def run(s):
+        nm = me(); p0 = P(s, nm)
+        if reagent2 is not None or n2 is not None:
+            if reagent2 is None or n2 is None: raise Refused('pick both a second reagent type and a count (or clear the second sale)')
+            if not SE.has_cast(p0, 'Adept_Conversion'): raise Refused('Adept Conversion is not cast')
+            _start_action(s, nm)
+            na, nb = int(n), int(n2); r1, r2 = A.norm(reagent), A.norm(reagent2)
+            if r1 == r2: raise Refused('Adept Conversion needs two different reagent types')
+            if na < 1 or nb < 1: raise Refused('sell at least 1 of each type')
+            A.convert_adept(s, nm, [(r1, na), (r2, nb)], energize_first=bool(energize)); return _after_action(s, nm, [])
         if energize:
-            nm = me(); _start_action(s, nm)
+            _start_action(s, nm)
             if not SE.has_cast(P(s, nm), 'Energize'): raise Refused('Energize is not cast')
             SE.energized_convert(s, nm, A.norm(reagent), int(n)); return _after_action(s, nm, [])
         return _keith(s, ['convert', A.norm(reagent), int(n)])

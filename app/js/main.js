@@ -195,7 +195,7 @@ class Game {
           el.onclick = () => { 
             this.sfx('tap'); 
             if (legal && !this.busyFlow()) UI.gatherFlow(this, k); 
-            else UI.expandCard(this, k, { group: hand, groupIndex: i }); 
+            else UI.expandCard(this, k, { group: p.hand, groupIndex: i }); 
           };
           return el;
         }))));
@@ -209,7 +209,12 @@ class Game {
     const v = this.v; const L = v.legal || {};
     const slot = el.dataset.slot; const key = el.dataset.key;
     this.sfx('tap');
-    if (el.dataset.tap === 'ach') { UI.expandCard(this, key); return; }
+    if (el.dataset.tap === 'ach') {
+      const group = (v.board.ach || []).map((t) => `Achievement:${t}`);
+      const groupIndex = Math.max(0, group.indexOf(key));
+      UI.expandCard(this, key, { group, groupIndex });
+      return;
+    }
     if (el.dataset.tap === 'deck') {
       if (slot === 'dungeon_deck' && L.divination) { UI.divinationFlow(this); return; }
       UI.openMats(this); return;
