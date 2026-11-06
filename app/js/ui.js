@@ -25,13 +25,16 @@ function scrollHint(el) {
   document.getElementById('overlays').appendChild(hint);
   const update = () => {
     if (!el.isConnected || el.classList.contains('out')) { hint.remove(); mo.disconnect(); return; }
-    hint.classList.toggle('off', el.scrollTop > 40 || el.scrollTop + el.clientHeight >= el.scrollHeight - 24);
+    const spacer = parseFloat(getComputedStyle(el, '::after').height) || 0;   // the bottom clearance is not content
+    hint.classList.toggle('off', el.scrollTop > 40 || el.scrollTop + el.clientHeight >= el.scrollHeight - spacer - 24);
   };
   const mo = new MutationObserver(() => requestAnimationFrame(update));
   mo.observe(el, { childList: true, subtree: true });
   new MutationObserver(update).observe(document.getElementById('overlays'), { childList: true });
   el.addEventListener('scroll', update, { passive: true });
   el.addEventListener('load', update, true);
+  el.addEventListener('animationend', update, true);           // entrance animations inflate scrollHeight while they run
+  el.addEventListener('transitionend', update, true);
   window.addEventListener('resize', update);
   requestAnimationFrame(update);
 }
@@ -78,18 +81,234 @@ export function cardInfo(g, key) {
     text ? h('div', { class: 'ci-text', 'data-testid': 'card-text' }, text) : null);
 }
 
-export function expandCard(g, key, { actions = [], extra = null } = {}) {
+export function expandCard(g, key, { actions = [], extra = null, group = null, groupIndex = 0 } = {}) {
+  // group: array of card keys for swipeable navigation, groupIndex: current card index in group
+  const cards = group || [key];
+  let currentIndex = Math.max(0, Math.min(groupIndex, cards.length - 1));
+  
   const ov = openOverlay('expand', { onScrim: (o) => o.close(), testid: 'expanded' });
-  const isAch = key.startsWith('Achievement:');
-  const img = isAch ? null : h('img', { class: 'big', src: art(key), alt: key, 'data-testid': 'expanded-img', onclick: () => ov.close() });
-  ov.el.append(closeBtn(() => ov.close()), img, cardInfo(g, key));
-  if (extra) ov.el.append(extra);
-  if (actions.length) {
-    ov.el.append(h('div', { class: 'actions' }, actions.map((a) => h('button', {
-      class: `act ${a.cls || ''}`, disabled: a.disabled || null, 'data-testid': a.testid,
-      onclick: async (e) => { e.stopPropagation(); g.sfx('tap'); const keep = await a.onClick(ov); if (!keep) ov.close(); },
-    }, h('span', {}, a.label), a.sub ? h('span', { class: 'sub' }, a.sub) : null))));
+  
+  // Container for all card frames (for swipe animation)
+  const cardTrack = h('div', { class: 'card-track', 'data-testid': 'card-track' });
+  const cardinfoContainer = h('div', { class: 'cardinfo-container', 'data-testid': 'cardinfo-container' });
+  const actionsContainer = h('div', { class: 'actions-container' });
+  
+  // Position indicator (dots or "2 / 4")
+  const indicator = cards.length > 1 ? h('div', { class: 'card-indicator', 'data-testid': 'card-indicator' }, 
+    cards.length <= 5 
+      ? cards.map((_, i) => h('span', { class: i === currentIndex ? 'dot active' : 'dot', 'data-index': i }))
+      : h('span', { class: 'counter' }, `${currentIndex + 1} / ${cards.length}`)
+  ) : null;
+  
+  // Arrow buttons for desktop (only if multiple cards)
+  const prevBtn = cards.length > 1 ? h('button', { 
+    class: 'nav-arrow prev', 
+    'aria-label': 'Previous card', 
+    'data-testid': 'nav-prev',
+    onclick: (e) => { e.stopPropagation(); if (currentIndex > 0) navigateTo(currentIndex - 1); }
+  }, '‹') : null;
+  
+  const nextBtn = cards.length > 1 ? h('button', { 
+    class: 'nav-arrow next', 
+    'aria-label': 'Next card', 
+    'data-testid': 'nav-next',
+    onclick: (e) => { e.stopPropagation(); if (currentIndex < cards.length - 1) navigateTo(currentIndex + 1); }
+  }, '›') : null;
+  
+  function renderCard(idx) {
+    const k = cards[idx];
+    const isAch = k.startsWith('Achievement:');
+    return isAch ? null : h('div', { 
+      class: 'big-frame', 
+      'data-testid': `expanded-card-${idx}`, 
+      'data-index': idx
+    }, h('img', { class: 'big', src: art(k), alt: k, 'data-testid': 'expanded-img' }));
   }
+  
+  function updateContent(idx, animate = true) {
+    const k = cards[idx];
+    
+    // Update card track
+    cardTrack.innerHTML = '';
+    // Render current card and neighbors for smooth transitions
+    const start = Math.max(0, idx - 1);
+    const end = Math.min(cards.length, idx + 2);
+    for (let i = start; i < end; i++) {
+      const frame = renderCard(i);
+      if (frame) {
+        frame.style.transform = `translateX(${(i - idx) * 100}%)`;
+        frame.style.transition = animate ? 'transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)' : 'none';
+        cardTrack.appendChild(frame);
+      }
+    }
+    
+    // Update info
+    cardinfoContainer.innerHTML = '';
+    cardinfoContainer.appendChild(cardInfo(g, k));
+    
+    // Update actions
+    if (typeof actions === 'function') {
+      const acts = actions(k, idx);
+      actionsContainer.innerHTML = '';
+      if (acts && acts.length) {
+        actionsContainer.appendChild(h('div', { class: 'actions' }, acts.map((a) => h('button', {
+          class: `act ${a.cls || ''}`, disabled: a.disabled || null, 'data-testid': a.testid,
+          onclick: async (e) => { e.stopPropagation(); g.sfx('tap'); const keep = await a.onClick(ov); if (!keep) ov.close(); },
+        }, h('span', {}, a.label), a.sub ? h('span', { class: 'sub' }, a.sub) : null))));
+      }
+    } else if (actions.length) {
+      actionsContainer.innerHTML = '';
+      actionsContainer.appendChild(h('div', { class: 'actions' }, actions.map((a) => h('button', {
+        class: `act ${a.cls || ''}`, disabled: a.disabled || null, 'data-testid': a.testid,
+        onclick: async (e) => { e.stopPropagation(); g.sfx('tap'); const keep = await a.onClick(ov); if (!keep) ov.close(); },
+      }, h('span', {}, a.label), a.sub ? h('span', { class: 'sub' }, a.sub) : null))));
+    }
+    
+    // Update indicator
+    if (indicator) {
+      if (cards.length <= 5) {
+        indicator.querySelectorAll('.dot').forEach((dot, i) => {
+          dot.classList.toggle('active', i === idx);
+        });
+      } else {
+        indicator.querySelector('.counter').textContent = `${idx + 1} / ${cards.length}`;
+      }
+    }
+    
+    // Update arrow visibility
+    if (prevBtn) prevBtn.style.opacity = idx > 0 ? '1' : '0.3';
+    if (nextBtn) nextBtn.style.opacity = idx < cards.length - 1 ? '1' : '0.3';
+  }
+  
+  function navigateTo(newIndex, animate = true) {
+    if (newIndex < 0 || newIndex >= cards.length || newIndex === currentIndex) return;
+    g.sfx('tap');
+    currentIndex = newIndex;
+    updateContent(currentIndex, animate);
+  }
+  
+  // Swipe gesture handling
+  if (cards.length > 1) {
+    let startX = 0, startY = 0, currentX = 0, currentY = 0, isDragging = false, hasMoved = false;
+    const threshold = 50; // minimum swipe distance
+    const verticalThreshold = 30; // max vertical movement to still count as horizontal swipe
+    
+    const onStart = (x, y) => {
+      startX = x; startY = y; currentX = x; isDragging = true; hasMoved = false;
+    };
+    
+    const onMove = (x, y) => {
+      if (!isDragging) return;
+      const deltaX = x - startX;
+      const deltaY = y - startY;
+      
+      // Check if this is a vertical scroll (let it through)
+      if (!hasMoved && Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 10) {
+        isDragging = false;
+        return;
+      }
+      
+      hasMoved = true;
+      currentX = x;
+      currentY = y;
+      
+      // Apply transform to current card frame with rubber-band at edges
+      const frames = cardTrack.querySelectorAll('.big-frame');
+      const activeFrame = Array.from(frames).find(f => parseInt(f.dataset.index) === currentIndex);
+      if (activeFrame) {
+        let translateX = deltaX;
+        // Rubber-band effect at edges
+        if ((currentIndex === 0 && deltaX > 0) || (currentIndex === cards.length - 1 && deltaX < 0)) {
+          translateX = deltaX * 0.3; // reduced movement at bounds
+        }
+        activeFrame.style.transition = 'none';
+        activeFrame.style.transform = `translateX(${translateX}px)`;
+      }
+    };
+    
+    const onEnd = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      
+      const deltaX = currentX - startX;
+      const deltaY = Math.abs(currentY - startY);
+      
+      // Only swipe if horizontal movement dominates and exceeds threshold
+      if (hasMoved && Math.abs(deltaX) > threshold && Math.abs(deltaX) > deltaY) {
+        if (deltaX > 0 && currentIndex > 0) {
+          navigateTo(currentIndex - 1); // swipe right = previous
+        } else if (deltaX < 0 && currentIndex < cards.length - 1) {
+          navigateTo(currentIndex + 1); // swipe left = next
+        } else {
+          updateContent(currentIndex); // snap back
+        }
+      } else {
+        updateContent(currentIndex); // snap back
+      }
+    };
+    
+    // Touch events
+    cardTrack.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      onStart(touch.clientX, touch.clientY);
+    }, { passive: true });
+    
+    cardTrack.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        const touch = e.touches[0];
+        onMove(touch.clientX, touch.clientY);
+      }
+    }, { passive: true });
+    
+    cardTrack.addEventListener('touchend', onEnd, { passive: true });
+    cardTrack.addEventListener('touchcancel', onEnd, { passive: true });
+    
+    // Mouse events for desktop
+    cardTrack.addEventListener('mousedown', (e) => {
+      onStart(e.clientX, e.clientY);
+      e.preventDefault();
+    });
+    
+    cardTrack.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        onMove(e.clientX, e.clientY);
+        e.preventDefault();
+      }
+    });
+    
+    cardTrack.addEventListener('mouseup', onEnd);
+    cardTrack.addEventListener('mouseleave', onEnd);
+    
+    // Keyboard navigation
+    const keyHandler = (e) => {
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        e.preventDefault();
+        navigateTo(currentIndex - 1);
+      } else if (e.key === 'ArrowRight' && currentIndex < cards.length - 1) {
+        e.preventDefault();
+        navigateTo(currentIndex + 1);
+      }
+    };
+    ov.el.addEventListener('keydown', keyHandler);
+    ov.el.tabIndex = 0;
+    ov.el.focus();
+  }
+  
+  // Initial render
+  updateContent(currentIndex, false);
+  
+  ov.el.append(
+    closeBtn(() => ov.close()), 
+    prevBtn,
+    nextBtn,
+    cardTrack,
+    indicator,
+    cardinfoContainer,
+    actionsContainer
+  );
+  
+  if (extra) ov.el.append(extra);
+  
   return ov;
 }
 
@@ -107,10 +326,21 @@ function pairUp(g, wizards, towers) {
   return cols;
 }
 
-function mini(g, key, { cls = '', badge = null, testid = null } = {}) {
+function mini(g, key, { cls = '', badge = null, testid = null, group = null, groupIndex = 0 } = {}) {
   if (!key) return h('div', { class: 'mcard back', 'data-testid': testid }, 'LW');
-  return h('div', { class: `mcard ${cls}`, 'data-testid': testid, onclick: (e) => { e.stopPropagation(); g.sfx('tap'); expandCard(g, key); } },
+  return h('div', { class: `mcard ${cls}`, 'data-testid': testid, onclick: (e) => { 
+    e.stopPropagation(); 
+    g.sfx('tap'); 
+    expandCard(g, key, { group, groupIndex }); 
+  } },
     h('img', { src: art(key), alt: key }), badge ? h('div', { class: 'badge' }, badge) : null);
+}
+
+// "Anguis Magicus ×3, Draco Mortemus": the exact cards on a mat, so a screenshot shows what the engine holds.
+function cardList(g, keys) {
+  if (!keys.length) return 'none';
+  const n = new Map(); keys.forEach((k) => n.set(k, (n.get(k) || 0) + 1));
+  return [...n].map(([k, c]) => `${g.cards[k]?.name || k}${c > 1 ? ` ×${c}` : ''}`).join(', ');
 }
 
 export function openMats(g) {
@@ -118,6 +348,7 @@ export function openMats(g) {
   ov.el.append(closeBtn(() => ov.close()));
   const v = g.v;
   const order = [...v.players].sort((a, b) => (b.you - a.you) || v.seat_order.indexOf(a.name) - v.seat_order.indexOf(b.name));
+  console.info('[mats]', order.map((p) => `${p.name}: wizards [${p.wizards.join(', ')}] towers [${p.towers.join(', ')}]`).join(' | '));
   for (const p of order) {
     const tag = p.you ? 'You' : (p.human ? 'Human' : `AI ${p.level ? p.level[0].toUpperCase() + p.level.slice(1) : ''}${p.profile ? ' · ' + p.profile : ''}`);
     const tok = counts(p.tok);
@@ -132,16 +363,36 @@ export function openMats(g) {
         h('span', { class: 'stat store' }, `Gather 3${p.bonus.length ? ' +' + p.bonus.length : ''}`, ...p.bonus.map((r) => h('img', { src: reagentIcon(r), alt: '', style: { width: '18px' } })))),
       h('div', { class: 'mat-row' }, tok.size ? [...tok].map(([r, n]) => tokenChip(r, n)) : h('span', { class: 'none' }, 'No reagent tokens')),
       h('div', { class: 'mat-label' }, p.you ? 'Reagent cards in hand' : `Reagent cards in hand: ${p.hand_count}`),
-      p.you ? h('div', { class: 'mat-row' }, p.hand.map((k) => mini(g, k))) : null,
+      p.you ? h('div', { class: 'mat-row' }, p.hand.map((k, i) => mini(g, k, { group: p.hand, groupIndex: i }))) : null,
       h('div', { class: 'mat-label' }, `Wizards & Towers (${p.wizards.length}/${p.towers.length})`),
-      h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m]) => h('div', { class: `pair ${m ? 'match' : ''}` },
-        h('span', { class: 'pts' }, m ? '+10' : (w && t ? '+5' : '+1')), w ? mini(g, w) : h('div', { class: 'mcard', style: { opacity: 0.15, border: '1px dashed #888' } }), t ? mini(g, t) : h('div', { class: 'mcard', style: { opacity: 0.15, border: '1px dashed #888' } })))
-        : h('span', { class: 'none' }, 'None yet')),
+      h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m], i) => {
+        // Create combined group of all wizards and towers for this mat
+        const wizardsGroup = p.wizards.filter(k => k);
+        const towersGroup = p.towers.filter(k => k);
+        return h('div', { class: `pair ${m ? 'match' : ''}` },
+          h('span', { class: 'pts' }, m ? '+10' : (w && t ? '+5' : '+1')), 
+          w ? mini(g, w, { group: wizardsGroup, groupIndex: wizardsGroup.indexOf(w) }) : h('div', { class: 'mcard empty' }, 'no wizard'), 
+          t ? mini(g, t, { group: towersGroup, groupIndex: towersGroup.indexOf(t) }) : h('div', { class: 'mcard empty' }, 'no tower'));
+      }) : h('span', { class: 'none' }, 'None yet')),
+      h('div', { class: 'mat-cardlist', 'data-testid': `mat-cards-${p.name}`, 'data-wizards': p.wizards.join(','), 'data-towers': p.towers.join(',') },
+        `Wizards: ${cardList(g, p.wizards)} · Towers: ${cardList(g, p.towers)}`),
       h('div', { class: 'mat-label' }, `Spells & Familiars (${p.spells.length + p.familiars.length})`),
-      h('div', { class: 'mat-row' }, (p.spells.length + p.familiars.length) ? [
-        ...p.spells.map((s) => s.key ? mini(g, s.key, { cls: s.cast ? '' : 'uncast', badge: s.cast ? null : 'uncast' }) : mini(g, null)),
-        ...p.familiars.map((f) => mini(g, f)),
-      ] : h('span', { class: 'none' }, 'None yet')),
+      h('div', { class: 'mat-row' }, (p.spells.length + p.familiars.length) ? (() => {
+        // Create combined group of all spells and familiars
+        const spellsAndFams = [...p.spells.filter(s => s.key).map(s => s.key), ...p.familiars.filter(f => f)];
+        return [
+          ...p.spells.map((s, i) => s.key ? mini(g, s.key, { 
+            cls: s.cast ? '' : 'uncast', 
+            badge: s.cast ? null : 'uncast',
+            group: spellsAndFams,
+            groupIndex: spellsAndFams.indexOf(s.key)
+          }) : mini(g, null)),
+          ...p.familiars.map((f, i) => mini(g, f, {
+            group: spellsAndFams,
+            groupIndex: spellsAndFams.indexOf(f)
+          })),
+        ];
+      })() : h('span', { class: 'none' }, 'None yet')),
       (p.treasures.length || p.achievements.length) ? h('div', { class: 'mat-label' }, 'Items & Achievements') : null,
       (p.treasures.length || p.achievements.length) ? h('div', { class: 'mat-row' },
         ...p.treasures.map((t) => mini(g, t.key)), ...p.achievements.map((a) => h('span', { class: 'chip static' }, `🏆 ${a}`))) : null,
@@ -414,7 +665,8 @@ export function divinationFlow(g) {
 
 export function convertSheet(g, reagent) {
   const L = g.v.legal;
-  const c = L.convert[reagent]; let n = c.n; let energize = false;
+  const c = L.convert[reagent]; let n = c.n;
+  const energize = L.energize;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'convert' });
   const val = h('span', { class: 'val', 'data-testid': 'convert-n' }, String(n));
   const gain = h('div', { class: 'gain' });
@@ -429,7 +681,6 @@ export function convertSheet(g, reagent) {
     h('div', { class: 'stepper' }, h('button', { 'data-testid': 'convert-minus', onclick: () => { n = Math.max(1, n - 1); upd(); g.sfx('tap'); } }, '−'), val,
       h('button', { 'data-testid': 'convert-plus', onclick: () => { n = Math.min(c.n, n + 1); upd(); g.sfx('tap'); } }, '+')),
     gain,
-    L.energize ? h('label', { class: 'toggle' }, h('input', { type: 'checkbox', onchange: (e) => { energize = e.target.checked; upd(); } }), 'Energize (+3 value first)') : null,
     h('div', { class: 'actions' }, h('button', { class: 'act', 'data-testid': 'convert-go', onclick: async () => {
       const r = await g.act('act_convert', { reagent, n, energize }, { sound: 'coin' }); ov.close(); if (r) g.afterAction();
     } }, 'Convert')),
@@ -461,15 +712,27 @@ export async function effectChooser(g) {
   const grid = h('div', { class: 'opt-grid', 'data-testid': 'effect-options' });
   const pick = (choice) => () => { g.sfx('select'); done(choice); };
   const kind = pd.kind;
+  const playerData = (name) => g.v.players.find((p) => p.name === name);
   if (['flame_bolt', 'disintegrate', 'earthquake', 'charm', 'creation'].includes(kind)) {
     const byP = {};
     for (const o of opts) (byP[o.player || 'Available'] ||= []).push(o);
     for (const [pl, os] of Object.entries(byP)) {
-      grid.append(h('div', { class: 'group-label' }, pl));
+      const pData = pl !== 'Available' ? playerData(pl) : null;
+      const labelContent = pData ? [pl, ' ', h('span', { class: 'stat mana mini', 'data-testid': `${pl}-mana` }, h('span', { class: 'orb' }), pData.mana === null ? '?' : pData.mana), h('span', { class: 'stat vp mini', 'data-testid': `${pl}-vp` }, `${pData.vp} VP`)] : pl;
+      grid.append(h('div', { class: 'group-label' }, labelContent));
       os.forEach((o, i) => grid.append(h('button', { class: 'opt-card', 'data-testid': `target-${pl}-${o.card}`, onclick: pick(o) }, h('img', { src: art(o.card), alt: o.card }), h('span', { class: 'oc-label' }, nice(o.kind)))));
     }
   } else if (kind === 'mana_drain') {
-    grid.append(...opts.map((o) => h('button', { class: 'chip', 'data-testid': `target-${o.player}`, onclick: pick(o) }, avatar(o.player, 30), o.player)));
+    grid.append(...opts.map((o) => {
+      const pData = playerData(o.player);
+      return h('button', { class: 'chip player-chip', 'data-testid': `target-${o.player}`, onclick: pick(o) },
+        avatar(o.player, 30),
+        h('div', { class: 'chip-col' },
+          h('div', { class: 'chip-name' }, o.player),
+          h('div', { class: 'chip-stats' },
+            h('span', { class: 'stat mana mini', 'data-testid': `${o.player}-mana` }, h('span', { class: 'orb' }), pData?.mana === null ? '?' : pData?.mana ?? '?'),
+            h('span', { class: 'stat vp mini', 'data-testid': `${o.player}-vp` }, `${pData?.vp ?? '?'} VP`))));
+    }));
   } else if (kind === 'wand_tax') {
     grid.append(...opts.map((o) => h('button', { class: 'chip', 'data-testid': `school-${o.school}`, onclick: pick(o) }, h('img', { src: schoolIcon(o.school), alt: '' }), `${o.school} · +${o.gold} Gold`)));
   } else if (kind === 'time_shift') {
@@ -489,6 +752,8 @@ export async function effectChooser(g) {
     grid.append(...tok.map((r, i) => { const b = h('button', { class: 'tokbtn', 'data-testid': `transmute-${i}` }, h('img', { src: reagentIcon(r), alt: '' })); b.onclick = () => { if (sel.has(i)) { sel.delete(i); b.classList.remove('on'); } else { sel.add(i); b.classList.add('on'); } go.disabled = sel.size < 2 || sel.size % 2; go.textContent = `Transmute ${sel.size} → ${Math.floor(sel.size / 2)} Gold`; }; return b; }));
     grid.append(h('div', { class: 'actions' }, go));
     go.onclick = () => done({ reagents: [...sel].map((i) => tok[i]) });
+  } else if (kind === 'evolve' || kind === 'rise') {
+    grid.append(...opts.map((o) => h('button', { class: 'opt-card', 'data-testid': `${kind}-${o.familiar}`, onclick: pick(o) }, h('img', { src: art(o.familiar), alt: o.familiar }), h('span', { class: 'oc-label' }, o.school))));
   }
   ov.el.append(grid);
   const choice = await p;
@@ -508,6 +773,84 @@ export async function newResearchChooser(g) {
   const k = await p;
   const r = await g.act('choose_new_research', { spell: k }, { sound: 'select' });
   ov.close();
+  return r;
+}
+
+export async function riseUseChooser(g) {
+  const pd = g.v.pending;
+  const ov = openOverlay('gather', { testid: 'rise-use' });
+  const [p, done] = wait();
+  ov.el.append(h('div', { class: 'chooser-head' }, h('img', { src: art(pd.familiar), alt: '' }),
+    h('div', {}, h('div', { class: 'phase-title' }, 'Rise'), h('div', { class: 'ov-sub' }, 'Use this familiar'))));
+  const uses = [
+    { use: 'score', label: `Score: +${pd.score_gold} Gold`, testid: 'rise-score' },
+    { use: 'gather', label: `Gather: ${pd.collect} ${nice(pd.reagent)}`, testid: 'rise-gather' },
+    { use: 'dungeon', label: 'Enter the Dungeon', testid: 'rise-dungeon' },
+    { use: 'research', label: 'New Research', testid: 'rise-research' }
+  ];
+  ov.el.append(h('div', { class: 'opt-grid' }, uses.map((u) => h('button', { class: 'chip', 'data-testid': u.testid, onclick: () => done(u.use) }, u.label))));
+  const use = await p;
+  ov.close();
+  if (use === 'score') {
+    const r = await g.act('rise_use', { use }, { sound: 'coin' });
+    return r;
+  } else if (use === 'gather') {
+    return riseGather(g, pd);
+  } else if (use === 'dungeon') {
+    const r = await g.act('rise_use', { use: 'dungeon' });
+    if (r) await dungeonFlow(g);
+    return r;
+  } else if (use === 'research') {
+    const r = await g.act('rise_use', { use: 'research' });
+    if (r) await newResearchChooser(g);
+    return r;
+  }
+}
+
+async function riseGather(g, pd) {
+  const me = g.me_();
+  const holdings = me.tok.concat(Array(pd.collect).fill(pd.reagent));
+  const castable = [];
+  for (const o of g.v.legal.research) {
+    if (!o.castable || o.x) continue;
+    const c = g.cards[o.key];
+    const cost = Object.entries(c?.cost?.reagents || {}).flatMap(([r, n]) => Array.from({ length: Number(n) || 0 }, () => r));
+    const covers = (have, need) => {
+      const cnt = (list) => list.reduce((m, x) => ((m[x] = (m[x] || 0) + 1), m), {});
+      return Object.entries(cnt(need)).every(([r, n]) => (have[r] || 0) >= n);
+    };
+    if (covers(holdings, cost)) castable.push({ key: o.key, cost });
+  }
+  const casts = [];
+  const ov = openOverlay('gather', { testid: 'rise-gather-cast' });
+  const [p, done] = wait();
+  ov.el.append(h('div', { class: 'phase-title' }, 'Cast spells (optional)'));
+  const grid = h('div', { class: 'opt-grid' });
+  const go = h('button', { class: 'act', 'data-testid': 'rise-gather-done' }, 'Done');
+  go.onclick = () => done();
+  castable.forEach((o) => {
+    const b = h('button', { class: 'opt-card wide', 'data-testid': `cast-${o.key}` },
+      h('img', { src: art(o.key), alt: o.key }), h('span', { class: 'oc-text' }, g.cards[o.key]?.display));
+    b.onclick = () => { casts.push(o.key); b.disabled = true; };
+    grid.append(b);
+  });
+  ov.el.append(grid, h('div', { class: 'actions' }, go));
+  await p;
+  ov.close();
+  const newHoldings = holdings.slice();
+  for (const k of casts) {
+    const o = castable.find((x) => x.key === k);
+    for (const r of o.cost) {
+      const i = newHoldings.indexOf(r);
+      if (i >= 0) newHoldings.splice(i, 1);
+    }
+  }
+  const over = Math.max(0, newHoldings.length - me.cap);
+  let discard = null;
+  if (over > 0) {
+    discard = await pickPutbacks(g, newHoldings, over);
+  }
+  const r = await g.act('rise_use', { use: 'gather', casts, discard }, { sound: 'coin' });
   return r;
 }
 
@@ -585,12 +928,12 @@ export async function arena(g, { mode, wizard = null }) {
   const seats = {}; const bids = {};
   const ringEl = h('div', { class: 'arena-ring' });
   const high = h('div', { class: 'high', 'data-testid': 'arena-high' }, '');
-  ringEl.append(h('div', { class: 'arena-center' }, h('img', { src: art(card), alt: card, onclick: () => expandCard(g, card) }),
+  ringEl.append(h('div', { class: 'arena-center' }, h('div', { class: 'card-frame', 'data-testid': 'arena-card' }, h('img', { src: art(card), alt: card, onclick: () => expandCard(g, card) })),
     h('div', { class: 'ov-sub', style: { margin: 0, fontSize: '13px' } }, g.cards[card]?.display), high));
   ring.forEach((n, i) => {
     const [x, y] = seatPos(i, ring.length);
     const b = h('div', { class: 'bid', 'data-testid': `bid-${n}` }, '–');
-    const s = h('div', { class: 'seat', 'data-testid': `seat-${n}`, style: { left: `${x}%`, top: `${y}%` } }, avatar(n, 44), h('div', { class: 'sname' }, n), b);
+    const s = h('div', { class: 'seat', 'data-testid': `seat-${n}`, style: { left: `${x}%`, top: y < 50 ? `max(48px, ${y}%)` : `${y}%` } }, avatar(n, 44), h('div', { class: 'sname' }, n), b);
     seats[n] = s; bids[n] = b; ringEl.append(s);
   });
   const bar = h('div', { class: 'bidbar', 'data-testid': 'bidbar' });
@@ -612,7 +955,7 @@ export async function arena(g, { mode, wizard = null }) {
   };
   const playTail = async (tail, fast = false) => { for (; shown < tail.length; shown++) await showBid(tail[shown][0], tail[shown][1], fast || g.skip); };
 
-  const controls = (min, max, opening) => {
+  const controls = (min, max, opening, lead = null) => {
     const [p, resolve] = wait();
     const done = (x) => { bar.querySelectorAll('button, input').forEach((b) => { b.disabled = true; }); resolve(x); };
     bar.innerHTML = '';
@@ -621,13 +964,22 @@ export async function arena(g, { mode, wizard = null }) {
       return p;
     }
     let val = min;
-    const out = h('div', { class: 'bidval', 'data-testid': 'bid-value' }, String(val), h('small', {}, ` / ${max} mana`));
-    const sl = h('input', { type: 'range', class: 'slider', min, max, value: val, step: 1, 'data-testid': 'bid-slider' });
-    sl.oninput = () => { val = +sl.value; out.firstChild.textContent = String(val); };
-    const bidBtn = h('button', { class: 'act', 'data-testid': 'bid-go', onclick: () => done({ bid: val }) }, opening ? 'Open bid' : 'Bid');
+    const clamp = (x) => Math.min(max, Math.max(min, Math.round(+x) || min));
+    const out = h('div', { class: 'bidval', 'data-testid': 'bid-value', 'data-min': min, 'data-max': max }, String(val), h('small', {}, ` / ${max} mana`));
+    const bidBtn = h('button', { class: 'act', 'data-testid': 'bid-go', onclick: () => { val = clamp(val); done({ bid: val }); } }, opening ? 'Open bid' : 'Bid');
     const passBtn = h('button', { class: 'act secondary', 'data-testid': opening ? 'bid-cancel' : 'bid-pass', onclick: () => done(opening ? { cancel: true } : { pass: true }) }, opening ? 'Cancel' : 'Pass');
-    const step = (d) => () => { val = Math.min(max, Math.max(min, val + d)); sl.value = val; out.firstChild.textContent = String(val); g.sfx('tap'); };
-    bar.append(out, h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+    const mana = h('div', { class: 'bid-mana', 'data-testid': 'bid-mana' }, `Your mana: ${max}`, opening ? '' : ` · high bid ${min - 1}${lead ? ` (${lead})` : ''}`);
+    if (min === max) {
+      // A range input with min == max is degenerate (iOS Safari lets the thumb report values outside it): offer the one bid.
+      out.firstChild.textContent = String(val);
+      bar.append(out, mana, h('div', { class: 'ov-sub', style: { margin: 0 } }, `${val} is all your mana`), h('div', { class: 'bidbtns' }, passBtn, bidBtn));
+      return p;
+    }
+    const sl = h('input', { type: 'range', class: 'slider', min, max, value: val, step: 1, 'data-testid': 'bid-slider' });
+    const show = () => { sl.value = val; out.firstChild.textContent = String(val); };
+    sl.oninput = () => { val = clamp(sl.value); show(); };
+    const step = (d) => () => { val = clamp(val + d); show(); g.sfx('tap'); };
+    bar.append(out, mana, h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
       h('button', { class: 'tb-btn', 'data-testid': 'bid-minus', onclick: step(-1) }, '−'), sl, h('button', { class: 'tb-btn', 'data-testid': 'bid-plus', onclick: step(1) }, '+')),
       h('div', { class: 'bidbtns' }, passBtn, bidBtn));
     return p;
@@ -636,7 +988,7 @@ export async function arena(g, { mode, wizard = null }) {
   const finish = async () => {
     bar.innerHTML = '';
     const lg = await g.call('full_log');
-    const e = [...(lg.result || [])].reverse().find((x) => x.act === 'auction' || x.act === 'auction_nobid');
+    const e = [...(lg.result || [])].reverse().find((x) => (x.act === 'auction' || x.act === 'auction_nobid') && (x.cards || []).includes(card));
     if (e && e.bids) await playTail(e.bids);
     if (e && e.act === 'auction') {
       const w = e.who;
@@ -660,14 +1012,22 @@ export async function arena(g, { mode, wizard = null }) {
       const r = await g.act('act_recruit', { wizard: card, opening: c.bid }, { sound: 'bid' });
       if (!r) { ov.close(); return null; }
     }
+    // This arena shows one auction. The engine can resolve it and start another one (e.g. the AI that lost takes another
+    // action) inside the same call; then this arena shows the result and settle() opens a fresh arena for the new auction.
+    let ident = null; let lastTail = [];
     for (;;) {
       const a = g.v.auction;
       if (!a) { await finish(); break; }
+      const sig = `${a.card}|${a.starter}|${JSON.stringify(a.tail[0])}`;
+      const extends_ = lastTail.every((x, i) => JSON.stringify(a.tail[i]) === JSON.stringify(x));
+      if (ident === null && a.card === card) ident = sig;
+      if (sig !== ident || !extends_) { await finish(); break; }
+      lastTail = a.tail.map((x) => [...x]);
       await playTail(a.tail, mode === 'respond' && shown === 0 && a.tail.length > 4);
       if (a.waiting !== me) { await sleep(300); continue; }
       Object.values(seats).forEach((s) => s.classList.remove('active'));
       seats[me].classList.add('active');
-      const c = await controls(a.high + 1, g.me_().mana, false);
+      const c = await controls(a.high + 1, g.me_().mana, false, a.who);
       const r = c.pass ? await g.act('act_pass', {}) : await g.act('act_bid', { n: c.bid });
       if (!r) { const vr = await g.call('view'); if (vr.ok) g.setView(vr.result); }
     }
@@ -678,8 +1038,8 @@ export async function arena(g, { mode, wizard = null }) {
 // ------------------------------------------------------------------ AI move banners
 // One banner per AI turn stays up and steps through that AI's moves, each long enough to read.
 // A tap anywhere jumps to the next move; "Skip" finishes the AI turns at once (g.skip).
-export const AI_MOVE_MS = 2200;
-export const AI_CAST_MS = 2500;
+export const AI_MOVE_MS = 4400;
+export const AI_CAST_MS = 5000;
 export const aiMoveMs = (e) => (e.cast ? AI_CAST_MS : AI_MOVE_MS);
 
 export async function banner(g, e, i = 0, n = 1) {
@@ -739,12 +1099,19 @@ export function menu(g) {
   const v = g.v;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'menu' });
   const scores = v.game_over ? [h('div', { class: 'phase-title', 'data-testid': 'menu-winner' }, `Final scores · ${ranking(v).text}`), h('div', { class: 'menu-scores', 'data-testid': 'menu-scores' }, rankRows(v))] : [];
-  ov.el.append(h('div', { class: 'sheet-panel' }, ...(scores.length ? scores : [h('div', { class: 'phase-title' }, 'Game')]),
+  ov.el.append(h('div', { class: 'sheet-panel' }, h('button', { class: 'sheet-close', 'aria-label': 'Close', 'data-testid': 'menu-close', onclick: () => ov.close() }, '×'),
+    ...(scores.length ? scores : [h('div', { class: 'phase-title' }, 'Game')]),
     h('div', { class: 'actions' },
       h('button', { class: v.game_over ? 'act' : 'act secondary', 'data-testid': 'menu-new-game', onclick: () => { ov.close(); newGame(g); } }, v.game_over ? 'Play again (new game)' : 'New game'),
       v.game_over ? h('button', { class: 'act secondary', 'data-testid': 'menu-final-scores', onclick: () => { ov.close(); gameOver(g); } }, 'Final scores') : null,
       h('button', { class: 'act secondary', 'data-testid': 'menu-export', onclick: () => { ov.close(); g.exportSave(); } }, 'Export save file'),
       h('button', { class: 'act secondary', 'data-testid': 'menu-import', onclick: () => { ov.close(); g.importSave(); } }, 'Import save file'),
+      h('button', { class: 'act bug-report-btn', 'data-testid': 'menu-bug-report', onclick: async () => { 
+        ov.close(); 
+        // Dynamically import bug-report module
+        const BugReport = await import('./bug-report.js');
+        BugReport.openBugReportDialog(g);
+      } }, '🐛 Report Bug'),
       h('button', { class: 'act danger', 'data-testid': 'menu-restart', onclick: () => { ov.close(); g.restart(); } }, 'Load the paused game g8')),
     h('div', { class: 'ov-sub' }, g.savedNote())));
 }
@@ -753,7 +1120,8 @@ export function menu(g) {
 export async function newGame(g) {
   const ov = openOverlay('gather newgame', { testid: 'new-game' });
   ov.el.append(closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'), h('div', { class: 'ov-sub' }, 'Dealing…'));
-  const pr = await g.call('new_game_preview', {});
+  const seeds = g.nextGameSeeds || {};          // tests seed the deal for reproducible playthroughs
+  const pr = await g.call('new_game_preview', { seed: seeds.seed, ai_seed: seeds.ai_seed });
   if (ov.closed) return;
   if (!pr.ok) { g.toast(pr.error); ov.close(); return; }
   const { hand, reagents, players } = pr.result;
@@ -778,7 +1146,7 @@ export async function newGame(g) {
     h('div', { class: 'chips' }, chips), h('div', { class: 'actions' }, start));
   start.onclick = async () => {
     start.disabled = true;
-    const r = await g.call('new_game_start', { picks });
+    const r = await g.call('new_game_start', { picks, seed: seeds.board_seed });
     if (!r.ok) { g.toast(r.error); start.disabled = false; return; }
     closeAll();
     g.startedNewGame(r.view);

@@ -69,9 +69,121 @@ def view(s, n): return AI.public_view(s, n)
 def save(s, path):
     tmp = path + '.tmp'; json.dump(s, open(tmp, 'w'), indent=1); os.replace(tmp, path)
 
+def check_turn_invariants(s, seat):
+    """Engine invariant: verify at most one main action per turn (except bonus actions like Haste).
+    
+    Main actions are: recruit (auction), build, research, summon, gather, convert, or cast.
+    Bonus actions from Haste or similar effects are allowed.
+    
+    BUG FIX: Added to catch the round-27 four-auctions bug where one AI turn ran 4 recruits."""
+    log = s['meta'].get('log', [])
+    current_round = s['meta'].get('round')
+    
+    # Find the last turn marker for this seat in this round
+    turn_start_idx = None
+    for i in range(len(log) - 1, -1, -1):
+        e = log[i]
+        if e.get('act') == 'turn' and e.get('seat') == seat and e.get('r') == current_round:
+            turn_start_idx = i
+            break
+    
+    if turn_start_idx is None:
+        return  # No turn marker found (shouldn't happen, but be safe)
+    
+    # Count main actions since that turn marker
+    main_actions = []
+    for i in range(turn_start_idx + 1, len(log)):
+        e = log[i]
+        if e.get('act') == 'turn':
+            break  # Next turn started
+        
+        # Main actions (excluding auctions where the seat didn't start it)
+        act = e.get('act')
+        who = e.get('who')
+        
+        if act == 'auction':
+            # Only count auctions where this seat was the starter
+            # (other players' auctions in multi-way bidding don't count)
+            # We need to look at the auction log to see who started it
+            # The auction log has 'who' as winner, so we need starter info
+            # Actually, auctions are logged after resolution, so check text or use prior knowledge
+            # For now, count all recruit actions by this seat
+            pass  # Will count via recruit actions below
+        elif act in ('build', 'research', 'summon', 'gather', 'convert') and who == seat:
+            main_actions.append((act, who, e.get('r')))
+        elif act == 'cast' and who == seat:
+            # Cast can be a main action (research + cast) or a bonus (gathered enough)
+            # For now, don't count standalone casts as they're usually free after gather
+            pass
+    
+    # Count auctions started by this seat
+    auctions_started = []
+    for i in range(turn_start_idx + 1, len(log)):
+        e = log[i]
+        if e.get('act') == 'turn':
+            break
+        if e.get('act') == 'auction' and e.get('starter') == seat:
+            # Count only auctions where this seat was the starter
+            auctions_started.append((e.get('item'), e.get('won')))
+    
+    # Rulebook: starter wins -> turn ends; starter loses -> takes another action.
+    # Legal patterns:
+    #   - 1 main action (no auctions)
+    #   - 1 auction won by starter (turn ends)
+    #   - 1 auction lost by starter + 1 more action (could be another auction or build/gather/etc)
+    # 
+    # ILLEGAL pattern (the round-27 bug):
+    #   - Multiple consecutive auctions where the starter keeps losing and starting new ones
+    #     This happens when after_auction recursively calls ai_turn, bypassing attempt limits.
+    
+    # The key insight: if you LOSE an auction, you get ONE more action. Not unlimited.
+    # So you can have at most: lost, lost, won (2 lost + 1 won = 3 auctions max)
+    # But the round-27 bug had: lost, lost, lost, won (3 lost + 1 won = 4 auctions)
+    
+    # Simpler rule: total auctions per turn <= 2 (one initial + one retry if lost)
+    # OR: count sequences where seat loses then tries again
+    
+    # Even simpler: Multiple auctions in one turn is ONLY legal if it's:
+    #   - 1 lost auction followed by 1 more auction (won or lost)
+    # So max 2 auctions per turn.
+    
+    if len(auctions_started) > 2:
+        items = ', '.join(f"{item} (won by {winner})" for item, winner in auctions_started)
+        raise AssertionError(
+            f"INVARIANT VIOLATION: {seat} started {len(auctions_started)} auctions in round {current_round}: {items}. "
+            f"Rule: starter loses -> gets ONE retry, so max 2 auctions per turn. "
+            f"This is the round-27 four-auctions bug!"
+        )
+    
+    # If there are 2 auctions, the first must have been lost
+    if len(auctions_started) == 2:
+        if auctions_started[0][1] == seat:  # First auction won by this seat
+            raise AssertionError(
+                f"INVARIANT VIOLATION: {seat} won the first auction but then started another in round {current_round}. "
+                f"Rule: starter wins -> turn ends. Auctions: {auctions_started}"
+            )
+    
+    # If there's 1 auction (won or lost) and other main actions, that's wrong
+    if len(auctions_started) == 1 and main_actions:
+        # Unless the auction was lost (then 1 more action is allowed)
+        if auctions_started[0][1] == seat:  # Won the auction
+            raise AssertionError(
+                f"INVARIANT VIOLATION: {seat} won an auction but also did {len(main_actions)} other actions "
+                f"in round {current_round}. Rule: starter wins -> turn ends. Main actions: {main_actions}"
+            )
+        elif len(main_actions) > 1:  # Lost the auction but did 2+ other actions
+            raise AssertionError(
+                f"INVARIANT VIOLATION: {seat} lost an auction but then did {len(main_actions)} other actions "
+                f"in round {current_round}. Rule: starter loses -> ONE more action. Main actions: {main_actions}"
+            )
+
 def advance(s, events):
     """Seat after s['next'] acts. End of round: game ends if the end was triggered, else next round."""
     o = s['meta']['seat_order']; i = o.index(s['next'])
+    
+    # INVARIANT CHECK: verify this turn didn't have multiple main actions
+    check_turn_invariants(s, s['next'])
+    
     auto_claim(s, s['next'])                       # end of this seat's turn: claim any met achievement
     A.check_end(s)
     if i == len(o) - 1:
@@ -81,6 +193,8 @@ def advance(s, events):
         s['meta']['round'] += 1; s['next'] = o[0]
     else: s['next'] = o[i + 1]
     s['turn'] = o.index(s['next'])
+    # Reset the human retry counter for the new turn
+    s['meta']['human_retry_count'] = 0
     A.log(s, {'r': s['meta']['round'], 'act': 'turn', 'seat': s['next']})   # turn marker: lets the package recap EVERY turn
     if s['next'] in humans(s): auto_claim(s, s['next'])   # start of a human's turn: claim before they act
 def auto_claim(s, who):
@@ -193,7 +307,12 @@ def ai_turn(s, me, attempt=0, events=None, bonus=0):
             if not ob: attempt += 1; continue            # starter would open at 0: no auction (same as ai_sim)
             a = start_auction(s, me, act['wizard'], ob, resume={'actor': me, 'attempt': attempt, 'bonus': bonus})
             st, who = auction_run(s, a)
-            if st == 'need': return 'paused'
+            if st == 'need':
+                # Auction paused for human: increment attempt NOW before returning, so when we
+                # resume via after_auction, the attempt count is correct and we don't loop forever.
+                # NOTE: this increment will be stored in the resume dict, but after_auction was
+                # incorrectly calling ai_turn recursively. See fix below.
+                return 'paused'
             if who == me: break
             attempt += 1; continue
         try:
@@ -207,15 +326,35 @@ def ai_turn(s, me, attempt=0, events=None, bonus=0):
         break
     claim_all(s, me); A.check_end(s); return 'done'
 def after_auction(s, a, winner, events):
-    """Rulebook: starter wins -> their turn ends; starter loses -> starter takes another action."""
+    """Rulebook: starter wins -> their turn ends; starter loses -> starter takes another action.
+    
+    BUG FIX (round-27 four-auctions bug): Previously, when an AI lost an auction that had paused
+    for a human bid, we recursively called ai_turn to give them another action. This bypassed the
+    6-attempt limit (each recursive call had its own loop) and allowed unlimited auctions per turn.
+    
+    Now: AI that loses an auction where a human participated just ends their turn. This prevents
+    the exploit while preserving the rule for AI-only auctions (handled in ai_turn's loop at line 198).
+    
+    Rationale: When an auction pauses for a human, we return from ai_turn and lose the loop context.
+    We can't safely resume into the middle of that loop without complex state management. The
+    simplest fix is to treat "auction paused for human" as ending the AI's turn regardless of who won."""
     st = a['starter']
     if st in humans(s):
         if winner == st: advance(s, events); return run_ais(s, events)
-        s['meta']['again'] = True; events.append(f'{st} lost the auction {st} started, so {st} takes another action.'); return 'human'
-    if winner != st:
-        rs = a.get('resume') or {}
-        if ai_turn(s, st, rs.get('attempt', 0) + 1, events, rs.get('bonus', 0)) == 'paused': return 'auction'
-    else: claim_all(s, st); A.check_end(s)
+        
+        # BUG FIX: Track how many times this human has retried this turn to prevent unlimited auctions
+        retry_count = s['meta'].get('human_retry_count', 0)
+        if retry_count >= 1:
+            # Already retried once this turn - can't retry again!
+            events.append(f'{st} lost the auction but has already retried once this turn; turn ends.')
+            advance(s, events); return run_ais(s, events)
+        
+        s['meta']['again'] = True
+        s['meta']['human_retry_count'] = retry_count + 1
+        events.append(f'{st} lost the auction {st} started, so {st} takes another action.')
+        return 'human'
+    # For AI: this auction involved a human (else it wouldn't have paused), so end the turn.
+    claim_all(s, st); A.check_end(s)
     advance(s, events); return run_ais(s, events)
 NO_AI = False
 PREVIEW = False

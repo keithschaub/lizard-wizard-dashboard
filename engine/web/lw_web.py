@@ -46,6 +46,22 @@ def key(path):
 def jpg(k): return k if k.endswith('.jpg') else k + '.jpg'
 
 
+def _crystal_ball_refill(s, name):
+    """If Crystal Ball was just cast, immediately draw cards up to hand size 5."""
+    p = A.P(s, name)
+    if not SE.has_cast(p, 'Crystal_Ball'): return
+    drawn = []
+    while len(p['hand']) < 5:
+        if not s['reag_list']: A.reshuffle_reagents(s)
+        if not s['reag_list']: break
+        card = s['reag_list'].pop(0)
+        p['hand'].append(card)
+        drawn.append(card)
+    s['reag_deck'] = len(s['reag_list'])
+    if drawn:
+        A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'crystal_ball_refill', 'drawn': len(drawn)})
+
+
 def spell_key_of(x):
     """Spell key from any engine spelling ('Spell_Charm.jpg', 'Spell_Charm', 'Spell_Shield_A' as the AI writes it)."""
     k = key(x) if str(x).endswith('.jpg') else b(str(x))
@@ -395,6 +411,7 @@ def act_gather(card, keep=None, bloom=None, miracle=False, cast=None, x=None, ta
             if inv: SE.invisibility_potion(s, n, target, int(x))
             else:
                 A.cast_spell(s, n, cast, spend); queue.append(cast)
+            _crystal_ball_refill(s, n)
         return _after_action(s, n, queue)
     return _commit(run)
 
@@ -451,10 +468,12 @@ def act_research(spell, cast=False, x=None, target=None):
             if not x or int(x) < 1 or not target: raise Refused('Invisibility Potion needs X >= 1 and a target')
             A.research(s, n, spell)
             SE.invisibility_potion(s, n, target, int(x))
+            _crystal_ball_refill(s, n)
         elif cast:
             c = spell_cost(spell)
             if not can_pay(p['tok'], c): raise Refused('missing reagents to cast it')
             A.research(s, n, spell, cast_cost=c); queue.append(spell)
+            _crystal_ball_refill(s, n)
         else: A.research(s, n, spell)
         return _after_action(s, n, queue)
     return _commit(run)
@@ -488,6 +507,7 @@ def act_summon(familiar, use, casts=(), discard=None):
             for k, _c in cl:
                 if is_variable(k): raise Refused('variable-cost spells are cast through Research or Gather')
             A.summon_familiar(s, n, fam, 'gather', cast=cl, discard=discard, after_collect=lambda: T.auto_claim(s, n))
+            _crystal_ball_refill(s, n)
             return _after_action(s, n, list(casts))
         if use == 'dungeon':
             if not TP.treasure_left(s): raise Refused('no treasure left in the Dungeon')
@@ -580,7 +600,7 @@ def dungeon_cancel():
 TARGETED = ('Spell_Flame_Bolt', 'Spell_Disintegrate', 'Spell_Earthquake', 'Spell_Charm', 'Spell_Mana_Drain', 'Spell_Swapo')
 SCRY = {'Spell_Scry_Wizard': 'wizards', 'Spell_Scry_Tower': 'towers', 'Spell_Scry_Familiar': 'familiars', 'Spell_Scribe': 'spells'}
 DECKS = {'wizards': 'wiz_list', 'towers': 'tow_list', 'familiars': 'fam_list', 'spells': 'spell_list'}
-NOT_AUTOMATED = ('Spell_Evolve', 'Spell_Rise', 'Spell_Demonic_Possession', 'Spell_Trap', 'Spell_Obscure')
+NOT_AUTOMATED = ('Spell_Demonic_Possession', 'Spell_Trap', 'Spell_Obscure')
 
 
 def _effect_kind(k):
@@ -589,7 +609,7 @@ def _effect_kind(k):
     if k in SCRY: return 'scry'
     return {'Spell_Creation': 'creation', 'Spell_Wand_Tax': 'wand_tax', 'Spell_Time_Shift': 'time_shift',
             'Spell_Transmute': 'transmute', 'Spell_Scry_Dungeon': 'auto', 'Spell_Energy_Pulse': 'auto',
-            'Spell_Haste': 'haste'}.get(k)
+            'Spell_Haste': 'haste', 'Spell_Evolve': 'evolve', 'Spell_Rise': 'rise'}.get(k)
 
 
 def effect_options(s, k):
@@ -612,6 +632,10 @@ def effect_options(s, k):
     if kind == 'transmute': return [dict(tok=list(p['tok']))] if len(p['tok']) >= 2 else []
     if kind == 'scry':
         deck = SCRY[k]; return [dict(deck=deck, card=key(c)) for c in s[DECKS[deck]][:5]]
+    if kind == 'evolve':
+        return [dict(familiar=key(f), school=CD.school(f)) for f in p.get('familiars', [])]
+    if kind == 'rise':
+        return [dict(familiar=key(f), school=CD.school(f)) for f in p.get('familiars', [])]
     return []
 
 
@@ -707,8 +731,77 @@ def resolve_effect(choice):
             elif kind == 'creation': A.creation(s, n, o['card'], o['kind'])
             elif kind == 'wand_tax': SE.wand_tax(s, n, o['school'])
             elif kind == 'time_shift': SE.time_shift(s, n, o['deck'])
+            elif kind == 'evolve':
+                fam = [f for f in P(s, n).get('familiars', []) if key(f) == ch.get('familiar')]
+                if not fam: raise Refused('pick one of your familiars')
+                familiar_img = fam[0]
+                p = P(s, n)
+                sch = CD.school(familiar_img)
+                if not sch: raise Refused('cannot determine school of familiar')
+                wizards = [c for c in CD.cards('Wizard') if CD.school(c['key']) == sch]
+                if not wizards: raise Refused(f'no wizard for school {sch}')
+                wizard_img = 'assets/' + wizards[0]['key']
+                p['familiars'].remove(familiar_img)
+                p.setdefault('wizards', []).append(wizard_img)
+                A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'evolve', 'familiar': b(familiar_img), 'wizard': b(wizard_img), 'school': sch})
+            elif kind == 'rise':
+                fam = [f for f in P(s, n).get('familiars', []) if key(f) == ch.get('familiar')]
+                if not fam: raise Refused('pick one of your familiars')
+                familiar_img = fam[0]; c = CD.get(familiar_img)
+                s['meta']['web_pending'] = dict(type='rise', familiar=familiar_img, school=CD.school(familiar_img),
+                                                reagent=A.norm(c['reagent']), collect=c['collect'],
+                                                score_gold=1 + SE.school_count(P(s, n), c['school']))
+                return 'pending'
         s['meta']['web_pending'] = None
         return _after_action(s, n, wp.get('queue', []))
+    return _commit(run)
+
+
+def rise_use(use, casts=(), discard=None):
+    """Execute the Rise use after familiar and use type are picked."""
+    def run(s):
+        wp = pend(s); n = me()
+        if not wp or wp['type'] != 'rise': raise Refused('no Rise pending')
+        familiar_img = wp['familiar']
+        p = P(s, n)
+        if familiar_img not in p.get('familiars', []): raise Refused('familiar not in collection')
+        c = CD.get(familiar_img)
+        if use == 'score':
+            from scoring import school
+            sc = c['school']
+            gold_count = sum(1 for card in p.get('wizards', []) + p.get('towers', []) + p.get('familiars', []) if school(card) == sc)
+            gold_count += sum(1 for x in p.get('spells', []) if school(x['img']) == sc)
+            p['gold'] = p.get('gold', 0) + gold_count
+            A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'score', 'gold': gold_count})
+            s['meta']['web_pending'] = None
+            return _after_action(s, n, [])
+        elif use == 'gather':
+            r = A.norm(c['reagent']); p['tok'] += [r] * int(c['collect']); casted = []
+            T.auto_claim(s, n)
+            for k, cost in [(k, spell_cost(k)) for k in casts]:
+                A.cast_spell(s, n, k, cost); casted.append(k)
+            _crystal_ball_refill(s, n)
+            over = len(p['tok']) - A.capacity(p)
+            if over > 0:
+                if not discard or len(discard) < over: raise Refused(f'over storage by {over}; pass discard')
+                for d in discard: p['tok'].remove(d)
+            A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'gather', 'got': [r] * int(c['collect']), 'cast': casted})
+            s['meta']['web_pending'] = None
+            return _after_action(s, n, [])
+        elif use == 'dungeon':
+            if not TP.treasure_left(s): raise Refused('no treasure left in the Dungeon')
+            A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'dungeon'})
+            s['meta']['web_pending'] = dict(type='dungeon', via=key(familiar_img), draws=0)
+            return 'pending'
+        elif use == 'research':
+            t = copy.deepcopy(s)
+            old = [x for x in t['spell_face'] if x]; t['spell_list'] += old
+            t['spell_face'] = [t['spell_list'].pop(0) if t['spell_list'] else None for _ in range(4)]
+            four = [key(x) for x in t['spell_face'] if x]
+            A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'research'})
+            s['meta']['web_pending'] = dict(type='new_research', familiar=familiar_img, four=four)
+            return 'pending'
+        else: raise Refused('use must be score, gather, dungeon, or research')
     return _commit(run)
 
 
@@ -716,7 +809,10 @@ def pending_view(s):
     wp = pend(s)
     if not wp: return None
     out = dict(type=wp['type'])
-    if wp['type'] == 'dungeon':
+    if wp['type'] == 'rise':
+        out.update(familiar=key(wp['familiar']), school=wp['school'], reagent=wp['reagent'], 
+                   collect=wp['collect'], score_gold=wp['score_gold'])
+    elif wp['type'] == 'dungeon':
         o = _dungeon_peek(s, wp)
         out.update(via=wp['via'], draws=wp['draws'], limit=dungeon_limit(s), done=bool(wp.get('done')), deck=len(s.get('dungeon_list') or []),
                    drawn=[dungeon_key(c) for c in (o['drawn'] if o else [])], drawn_cards=(o['drawn'] if o else []),
@@ -820,19 +916,24 @@ API = dict(load=load, view=lambda: view(), dump=lambda: dump(), card_db=lambda: 
            act_build=act_build, act_recruit=act_recruit, act_bid=act_bid, act_pass=act_pass, act_research=act_research,
            summon_gather_preview=summon_gather_preview, act_summon=act_summon, act_divination=act_divination,
            choose_new_research=choose_new_research, dungeon_flip=dungeon_flip, dungeon_stop=dungeon_stop,
-           dungeon_cancel=dungeon_cancel, resolve_effect=resolve_effect, ai_step=ai_step,
+           dungeon_cancel=dungeon_cancel, resolve_effect=resolve_effect, rise_use=rise_use, ai_step=ai_step,
            new_game_preview=new_game_preview, new_game_start=new_game_start)
-MUTATING = {k for k in API if k.startswith(('act_', 'choose_', 'dungeon_', 'resolve_'))} | {'new_game_start'}
+MUTATING = {k for k in API if k.startswith(('act_', 'choose_', 'dungeon_', 'resolve_', 'rise_'))} | {'new_game_start'}
 
 
 def call(fn, args_json='{}'):
-    """Single entry point: returns JSON {ok, result|error, view?}. Mutating calls also return the fresh view."""
+    """Single entry point: returns JSON {ok, result|error, view?, entries?}. Mutating calls also return the fresh view and the
+    public log entries they added."""
     args = json.loads(args_json or '{}')
     try:
         if fn not in API: raise Refused(f'unknown call {fn}')
+        n0 = len(st()['meta'].get('log', [])) if fn in MUTATING and G.get('s') else None
         res = API[fn](**args)
         out = dict(ok=True, result=res)
-        if fn in MUTATING: out['view'] = view()
+        if fn in MUTATING:
+            out['view'] = view()
+            # moves the engine made inside this call (e.g. AI turns after an auction), so the UI can announce them
+            out['entries'] = public_log(st(), me())[n0:] if n0 is not None and fn != 'new_game_start' else []
     except Refused as e:
         out = dict(ok=False, error=str(e))
     except (ValueError, AssertionError, KeyError, IndexError, TypeError) as e:

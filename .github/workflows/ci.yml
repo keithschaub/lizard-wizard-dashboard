@@ -28,6 +28,7 @@ jobs:
   e2e:
     name: Playwright (${{ matrix.project }})
     runs-on: ubuntu-24.04
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -47,13 +48,16 @@ jobs:
         run: npm run vendor
       - name: Install ${{ matrix.browser }}
         run: npx playwright install --with-deps ${{ matrix.browser }}
-      - name: Playwright tests (load gate, loading failures, 3-round tap playthrough)
+      - name: Playwright tests (load gate, loading failures, phone layout, auctions, 3 full playthrough games)
         run: npx playwright test --project=${{ matrix.project }}
         env:
           CI: 'true'
       - name: Load time
         if: always()
         run: cat test-results/load-time-${{ matrix.project }}.json || true
+      - name: Playtest summary
+        if: always()
+        run: cat test-results/playtest-${{ matrix.project }}-summary.json || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:

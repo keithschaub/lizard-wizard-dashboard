@@ -12,7 +12,7 @@ const MUTE_OFF = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill=
 
 class Game {
   constructor() {
-    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.settling = false; this.busy = false;
+    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.moveQueue = []; this.settling = false; this.busy = false;
     this.engine = null;
     this.board = new Board(document.getElementById('stage'), document.getElementById('board'), (el) => this.onBoardTap(el));
     this.dock = document.getElementById('dock');
@@ -23,7 +23,8 @@ class Game {
     mute.onclick = () => { Audio.setMuted(!Audio.isMuted()); paintMute(); this.sfx('select'); };
     paintMute();
     window.addEventListener('pointerdown', () => { Audio.unlock(); if (this.aiRunning) this.skipMove = true; }, { capture: true });
-    window.lwDebug = { view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning };
+    window.lwDebug = { seedNextGame: (seeds) => { this.nextGameSeeds = seeds; }, view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning, _g: this };
+    window.ui = UI;
   }
 
   me_() { return this.v.players.find((p) => p.name === this.me); }
@@ -122,8 +123,16 @@ class Game {
     if (!r.ok) { this.sfx('error'); this.toast(r.error); return null; }
     if (sound) this.sfx(sound);
     if (r.view) this.setView(r.view);
+    this.queueMoves(r.entries);
     await this.autosave();
     return r;
+  }
+
+  // AI moves the engine made inside one of Keith's calls (after an auction it plays the AI turns that follow).
+  // They are announced by settle() before anything else; auction results are shown by the arena itself.
+  queueMoves(entries) {
+    const shown = new Set(['turn', 'reshuffle_reagents', 'auction', 'auction_nobid', 'game_over']);
+    this.moveQueue.push(...(entries || []).filter((e) => e.who && e.who !== this.me && !shown.has(e.act)));
   }
   async autosave() { const d = await this.call('dump'); if (d.ok) Store.saveLocal(d.result); }
 
@@ -172,9 +181,22 @@ class Game {
         }) : h('div', { class: 'empty-note' }, 'No reagent tokens')),
         h('div', { class: 'hand', 'data-testid': 'hand' }, p.hand.map((k, i) => {
           const legal = !!(L.gather || {})[k];
-          const el = h('div', { class: `hcard ${legal ? 'legal' : ''} ${prevHand && !prevHand.includes(k) ? 'deal' : ''}`, 'data-testid': `hand-${i}`, 'data-key': k, style: p.hand.length > 3 ? { width: `${Math.floor(330 / p.hand.length) - 8}px`, height: `${Math.floor((330 / p.hand.length - 8) * 1.39)}px` } : null },
+          let cardStyle = null;
+          if (p.hand.length > 3) {
+            const availWidth = 370;
+            const gap = 8;
+            const totalGaps = (p.hand.length - 1) * gap;
+            const cardWidth = Math.floor((availWidth - totalGaps) / p.hand.length);
+            const cardHeight = Math.floor(cardWidth * 1.39);
+            cardStyle = { width: `${cardWidth}px`, height: `${cardHeight}px` };
+          }
+          const el = h('div', { class: `hcard ${legal ? 'legal' : ''} ${prevHand && !prevHand.includes(k) ? 'deal' : ''}`, 'data-testid': `hand-${i}`, 'data-key': k, style: cardStyle },
             h('img', { src: art(k), alt: k, draggable: 'false' }));
-          el.onclick = () => { this.sfx('tap'); if (legal && !this.busyFlow()) UI.gatherFlow(this, k); else UI.expandCard(this, k); };
+          el.onclick = () => { 
+            this.sfx('tap'); 
+            if (legal && !this.busyFlow()) UI.gatherFlow(this, k); 
+            else UI.expandCard(this, k, { group: hand, groupIndex: i }); 
+          };
           return el;
         }))));
   }
@@ -196,7 +218,24 @@ class Game {
     if (slot?.startsWith('wiz_') && (L.recruit || []).includes(key)) return UI.arena(this, { mode: 'open', wizard: key }).then(() => this.settle());
     if (slot?.startsWith('fam_') && (L.summon || {})[key]) return UI.summonFlow(this, key);
     if (slot?.startsWith('spell_') && (L.research || {})[key]) return UI.researchFlow(this, key);
-    UI.expandCard(this, key);
+    
+    // Determine card group for swipeable navigation
+    let group = null, groupIndex = 0;
+    if (slot?.startsWith('wiz_')) {
+      group = v.board.wiz_face.filter(k => k);
+      groupIndex = group.indexOf(key);
+    } else if (slot?.startsWith('fam_')) {
+      group = v.board.fam_face.filter(k => k);
+      groupIndex = group.indexOf(key);
+    } else if (slot?.startsWith('spell_')) {
+      group = v.board.spell_face.filter(k => k);
+      groupIndex = group.indexOf(key);
+    } else if (slot === 'tower_face') {
+      group = [v.board.tower_face];
+      groupIndex = 0;
+    }
+    
+    UI.expandCard(this, key, { group, groupIndex });
   }
 
   async settle() {
@@ -204,6 +243,7 @@ class Game {
     this.settling = true;
     try {
       for (let guard = 0; guard < 200; guard++) {
+        if (this.moveQueue.length) { await this.playMoves(this.moveQueue.splice(0)); continue; }
         const v = this.v;
         if (v.game_over) {
           const k = `${v.round}:${JSON.stringify(v.final)}`;
@@ -213,6 +253,7 @@ class Game {
         if (v.pending) {
           if (v.pending.type === 'dungeon') await UI.dungeonFlow(this);
           else if (v.pending.type === 'new_research') await UI.newResearchChooser(this);
+          else if (v.pending.type === 'rise') await UI.riseUseChooser(this);
           else await UI.effectChooser(this);
           continue;
         }
@@ -230,14 +271,7 @@ class Game {
       const r = await this.call('ai_step');
       if (!r.ok) { this.toast(r.error); return false; }
       const res = r.result;
-      const moves = res.entries.filter((e) => e.act !== 'turn' && e.act !== 'reshuffle_reagents');
-      for (const [i, e] of moves.entries()) {
-        const slot = this.slotFor(e);
-        if (slot && !this.skip) this.board.focus(slot);
-        if (!this.skip) this.sfx(e.cast ? 'cast' : e.act === 'build' ? 'build' : e.act === 'dungeon' ? 'flip' : e.act === 'gather' ? 'gather' : 'tap');
-        await UI.banner(this, e, i, moves.length);
-        this.board.focus(null);
-      }
+      await this.showMoves(res.entries.filter((e) => e.act !== 'turn' && e.act !== 'reshuffle_reagents'));
       const vr = await this.call('view');
       this.setView(vr.result);
       await UI.bannerDone(this);
@@ -245,6 +279,23 @@ class Game {
       if (this.v.next === this.me || this.v.auction || this.v.game_over) this.skip = false;
       return res.status !== 'human' && res.status !== 'over';
     } finally { this.aiRunning = false; }
+  }
+
+  async showMoves(moves) {
+    for (const [i, e] of moves.entries()) {
+      const slot = this.slotFor(e);
+      if (slot && !this.skip) this.board.focus(slot);
+      if (!this.skip) this.sfx(e.cast ? 'cast' : e.act === 'build' ? 'build' : e.act === 'dungeon' ? 'flip' : e.act === 'gather' ? 'gather' : 'tap');
+      const run = moves.filter((x) => x.who === e.who);
+      await UI.banner(this, e, run.indexOf(e), run.length);
+      this.board.focus(null);
+    }
+  }
+
+  async playMoves(moves) {
+    this.aiRunning = true; this.renderDock(this.v);
+    try { await this.showMoves(moves); await UI.bannerDone(this); }
+    finally { this.aiRunning = false; if (this.v.next === this.me || this.v.auction) this.skip = false; }
   }
 
   slotFor(e) {
@@ -260,6 +311,8 @@ class Game {
 
   savedNote() { const at = Store.savedAt(); return at ? `Autosaved ${new Date(at).toLocaleString()}` : 'Not saved yet'; }
   async exportSave() { const d = await this.call('dump'); if (d.ok) Store.exportFile(d.result, this.v.round); }
+  async exportState() { const d = await this.call('dump'); return d.ok ? d.result : null; }
+  st() { return this.v; }
   async importSave() {
     const text = await Store.pickFile(); if (!text) return;
     const r = await this.call('load', { text });
