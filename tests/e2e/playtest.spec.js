@@ -304,10 +304,31 @@ class Playtest {
   }
 
   // ---------------------------------------------------------------- Keith's actions (taps)
+  // A keep tap must register (the icon turns on, or the last keep moves the sheet on); the icons sit over the card art,
+  // so the art is decoded and laid out first.
+  async tapKeep(i) {
+    const page = this.page;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const before = await page.evaluate(() => document.querySelector('[data-testid=keep-counter]')?.textContent || null);
+      if (before === null) return;
+      await page.getByTestId(`hot-gather-${i}`).tap();
+      const ok = await page.waitForFunction(([b, idx]) => {
+        const c = document.querySelector('[data-testid=keep-counter]');
+        return !c || c.textContent !== b || document.querySelector(`[data-testid=hot-gather-${idx}]`)?.classList.contains('on');
+      }, [before, i], { timeout: 2000 }).then(() => true).catch(() => false);
+      if (ok) return;
+      this.notes.push(`keep tap on icon ${i} did not register (attempt ${attempt + 1}); retried`);
+    }
+    throw new Error(`keep icon ${i} never registered`);
+  }
+
   async gather(handIndex, g, keep, { unselect = false, cast = null, protect = [] } = {}) {
     const page = this.page;
     await page.getByTestId(`hand-${handIndex}`).tap();
     await expect(page.getByTestId('gather')).toBeVisible();
+    await page.getByTestId('gather').locator('img').first().evaluate((im) => im.decode().catch(() => {}));
+    await page.waitForFunction(() => document.querySelector('[data-testid=gather]')?.getAnimations({ subtree: true })
+      .every((an) => an.playState !== 'running' || an.effect?.getTiming().iterations === Infinity), null, { timeout: 5000 }).catch(() => {});
     const idx = keepIdx(g.offers, keep);
     if (unselect && idx.length >= 2) {
       await page.getByTestId(`hot-gather-${idx[0]}`).tap();
@@ -316,7 +337,7 @@ class Playtest {
       await expect(page.getByTestId('keep-counter')).toHaveText(`0 / ${idx.length}`);
       this.mark('gatherUnselect');
     }
-    for (const i of idx) await page.getByTestId(`hot-gather-${i}`).tap();
+    for (const i of idx) await this.tapKeep(i);
     let phase = await gatherPhase(page); let cast2 = null; let returned = [];
     if (phase === 'cast') {
       if (cast && await page.getByTestId(`cast-${cast}`).isVisible()) {
