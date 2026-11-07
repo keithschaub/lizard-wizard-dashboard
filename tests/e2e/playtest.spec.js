@@ -547,6 +547,9 @@ class Playtest {
     await expect(page.getByTestId('dock-scores')).toBeVisible();
     await this.checkMats(false);
     await this.checkMenu('menu-final-scores');
+    await this.page.getByTestId('btn-menu').tap();
+    await this.page.getByTestId('menu').getByTestId('menu-final-scores').tap();
+    await expect(this.page.getByTestId('game-over')).toBeVisible();
     await page.getByTestId('go-play-again').tap();
     await expect(page.getByTestId('new-game-hand').locator('img')).toHaveCount(3);
     await page.getByTestId('pick-Sulphur').tap(); await page.getByTestId('pick-Toadstool').tap();
