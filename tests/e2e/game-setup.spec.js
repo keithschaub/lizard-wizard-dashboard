@@ -22,18 +22,24 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await page.getByTestId('setup-name-input').fill('Rex');
   await page.getByTestId('setup-custom-game').tap();
   await expect(page.getByTestId('setup-size-3')).toBeVisible();
+  await expect(page.getByTestId('setup-opponents')).toHaveText(/Choose opponentsName each AI & set difficulty/);
   await shot(page, 'game-setup-02-table');
-  await page.getByTestId('setup-size-2').tap();
-  await page.getByTestId('setup-continue').tap();
+  await page.getByTestId('setup-opponents').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'docs/screenshots/setup-table-size-actions-dpr3.png' });
+  await page.getByTestId('setup-size-4').tap();
+  await page.getByTestId('setup-opponents').tap();
   await expect(page.getByTestId('setup-ai-card-0')).toBeVisible();
+  await expect(page.getByTestId('setup-start')).toHaveText(/Begin the game4 wizards at the table/);
   await shot(page, 'game-setup-03-ais');
+  await page.getByTestId('setup-start').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'docs/screenshots/setup-ai-seats-actions-dpr3.png' });
   await page.getByTestId('setup-ai-0-hard').tap();
   await page.getByTestId('setup-start').tap();
   await expect(page.getByTestId('new-game-hand')).toBeVisible({ timeout: 60_000 });
   const raw = await page.evaluate(() => localStorage.getItem('lw.setup.v1'));
   const cfg = JSON.parse(raw);
   expect(cfg.human_name).toBe('Rex');
-  expect(cfg.player_count).toBe(2);
+  expect(cfg.player_count).toBe(4);
   expect(cfg.ais[0].level).toBe('hard');
 });
 

@@ -101,10 +101,11 @@ export function runSetupWizard(g) {
         }, 'Quick start', h('span', { class: 'setup-quick-sub' }, 'Last saved setup · 3 players · 2 Adept AIs')) : null,
         h('button', {
           type: 'button',
-          class: 'act setup-custom',
+          class: 'act setup-custom setup-action setup-action-secondary',
           'data-testid': 'setup-custom-game',
           onclick: () => { g.sfx('tap'); go(1); },
-        }, 'Custom game', h('span', { class: 'setup-quick-sub' }, 'Choose players, AI names & difficulty')));
+        }, h('span', { class: 'setup-action-title' }, 'Custom game'),
+        h('span', { class: 'setup-action-sub' }, 'Choose players, AI names & difficulty')));
     };
 
     const paintSize = () => {
@@ -126,7 +127,13 @@ export function runSetupWizard(g) {
       appendNodes(body,
         h('p', { class: 'setup-lead' }, 'How many seats at the table?'),
         h('div', { class: 'setup-tiles' }, tiles),
-        h('button', { type: 'button', class: 'act', 'data-testid': 'setup-continue', onclick: () => { g.sfx('tap'); go(2); } }, 'Continue'));
+        h('button', {
+          type: 'button',
+          class: 'act setup-action setup-action-secondary',
+          'data-testid': 'setup-opponents',
+          onclick: () => { g.sfx('tap'); go(2); },
+        }, h('span', { class: 'setup-action-title' }, 'Choose opponents'),
+        h('span', { class: 'setup-action-sub' }, 'Name each AI & set difficulty')));
     };
 
     const paintAis = () => {
@@ -153,7 +160,7 @@ export function runSetupWizard(g) {
         h('div', { class: 'setup-ai-list' }, cards),
         h('button', {
           type: 'button',
-          class: 'act',
+          class: 'act setup-action setup-action-primary',
           'data-testid': 'setup-start',
           onclick: () => {
             g.sfx('tap');
@@ -172,7 +179,8 @@ export function runSetupWizard(g) {
             Store.saveSetup(cfg);
             finish(cfg);
           },
-        }, 'Start'));
+        }, h('span', { class: 'setup-action-title' }, 'Begin the game'),
+        h('span', { class: 'setup-action-sub' }, `${draft.player_count} wizards at the table`)));
     };
 
     appendNodes(ov.el,

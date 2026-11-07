@@ -678,7 +678,11 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .setup-lead { color: var(--muted); font-size: 15px; line-height: 1.4; text-align: center; margin: 0; }
 .setup-name-input, .setup-ai-name { width: 100%; font-size: 22px; padding: 16px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255, 255, 255, .06); color: #fff; }
 .setup-quick { display: flex; flex-direction: column; gap: 4px; align-items: center; }
-.setup-custom { display: flex; flex-direction: column; gap: 4px; align-items: center; background: rgba(255, 255, 255, .04); border-color: rgba(214, 180, 90, .75); color: var(--gold-hi); box-shadow: none; }
+.setup-action { display: flex; flex-direction: column; justify-content: center; gap: 4px; align-items: center; min-height: 64px; text-align: center; font-family: var(--display); }
+.setup-action-title { font-size: 18px; line-height: 1.1; }
+.setup-action-sub { font-family: system-ui, sans-serif; font-size: 13px; font-weight: 500; line-height: 1.2; color: var(--muted); }
+.setup-action-secondary, .setup-custom { background: rgba(255, 255, 255, .04); border-color: rgba(214, 180, 90, .75); color: var(--gold-hi); box-shadow: none; }
+.setup-action-primary { background: linear-gradient(180deg, rgba(60, 46, 14, .95), rgba(34, 26, 8, .95)); border-color: rgba(214, 180, 90, .9); color: var(--gold-hi); box-shadow: 0 0 16px rgba(255, 211, 107, .3); }
 .setup-quick-sub { font-size: 13px; font-weight: 500; color: var(--muted); }
 .setup-tiles { display: flex; flex-direction: column; gap: 10px; }
 .setup-tile { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 18px 14px; border-radius: 16px; border: 1px solid var(--line); background: rgba(255, 255, 255, .04); min-height: 120px; transition: border-color .2s, box-shadow .2s, transform .15s; }
