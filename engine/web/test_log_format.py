@@ -92,6 +92,30 @@ def test_sell_banner_data_keeps_sales_and_total_mana_without_track_value():
     }
 
 
+def test_remaining_ai_banner_actions_have_structured_data():
+    common = {'who': 'Newt', 'spell': 'Spell_Trap.jpg', 'card': 'Spell_Trap.jpg',
+              'familiar': 'Familiar_10_Imp.jpg', 'wizard': 'Wizard_Draco_Mortemus.jpg',
+              'tower': 'Tower_T1_Ivory_Spire.jpg', 'item': 'Draco_Mortemus',
+              'took': 'Spell_Trap.jpg', 'target': 'LizWiz', 'reagent': 'Horn',
+              'n': 2, 'gain': 2, 'gold': 3, 'price': 5, 'drawn': [], 'kept': [],
+              'removed': [], 'reagents': ['Horn', 'Mandrake'], 'steps': [],
+              'parts': [], 'destroyed': 1, 'drawn': 2, 'use': 'score'}
+    acts = (
+        'research cast new_research summon build auction auction_nobid dungeon scry_dungeon '
+        'scry_spells convert1 transmute transform time_shift wand_tax energy_pulse '
+        'invisibility_potion invisibility_potion_blocked trap_spell demonic_possession '
+        'demonic_possession_blocked obscure obscure_blocked obscure_dungeon evolve rise '
+        'crystal_ball_refill flame_bolt disintegrate earthquake charm mana_drain trigger shield_used'
+    ).split()
+    for act in acts:
+        entry = dict(common, act=act)
+        if act == 'scry_dungeon':
+            entry['kept'] = [{'name': 'Trap'}]
+        if act == 'transform':
+            entry['steps'] = [{'from': ['Horn'], 'to': 'Mandrake'}]
+        assert lw_web.structured_banner_data(entry), act
+
+
 if __name__ == '__main__':
     test_all_log_actions_are_humanized()
     print(f'OK: {len(ACTS)} log actions humanized')

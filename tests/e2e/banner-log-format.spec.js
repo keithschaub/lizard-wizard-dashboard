@@ -111,3 +111,56 @@ test('structured multi-type sell banner uses one chip per type and one total gai
   await expect(page.getByTestId('ai-sell-structured')).not.toContainText('track now');
   await page.getByTestId('ai-banner').screenshot({ path: 'docs/screenshots/banner-sell-multi-dpr3.png' });
 });
+
+test('all structured AI banner types fit on iPhone at DPR3', async ({ page }) => {
+  await page.goto('/');
+  await waitForBoard(page);
+  const cases = [
+    ['research', 'Newt researched', [{ label: 'Transmutation Mastery', card: 'Spell_Transmutation_Mastery.jpg' }]],
+    ['cast', 'Newt cast', [{ label: 'Energy Pulse', card: 'Spell_Energy_Pulse.jpg' }]],
+    ['new-research', 'Newt used New Research', [{ label: 'Transmutation Mastery', card: 'Spell_Transmutation_Mastery.jpg' }]],
+    ['summon', 'LizWiz summoned', [{ label: 'Reptilius Venenum', card: 'Familiar_12_Reptilius_Venenum.jpg' }, { label: '-5 mana' }]],
+    ['build', 'Newt built', [{ label: 'The Ivory Spire', card: 'Tower_T1_Ivory_Spire.jpg' }, { label: '-Mandrake' }]],
+    ['auction', 'Rex won the auction', [{ label: 'Draco Mortemus', card: 'Wizard_Draco_Mortemus.jpg' }, { label: '-8 mana' }]],
+    ['auction-nobid', 'Newt auction: no bid', [{ label: 'Draco Mortemus', card: 'Wizard_Draco_Mortemus.jpg' }]],
+    ['dungeon', 'Gecko entered the dungeon', [{ label: 'The Longest Card Name Kept' }]],
+    ['scry-dungeon', 'Newt scried the Dungeon', [{ label: 'The Longest Card Name Kept' }]],
+    ['scry-familiars', 'Newt scried', [{ label: 'Familiars' }]],
+    ['convert1', 'Newt sold', [{ label: '-3 reagents' }, { label: '+3 mana' }]],
+    ['transmute', 'Newt transmuted', [{ label: '-4 reagents' }, { label: '+2 Gold' }]],
+    ['transform', 'Newt transformed', [{ label: 'Horn + Mandrake → Sulphur' }]],
+    ['time-shift', 'Newt cast Time Shift', [{ label: 'spells' }]],
+    ['wand-tax', 'Newt cast Wand Tax', [{ label: '+3 Gold' }]],
+    ['energy-pulse', 'Newt cast Energy Pulse', [{ label: '2 Spell Shields' }]],
+    ['invisibility', 'Newt cast Invisibility Potion', [{ label: '+4 Gold' }]],
+    ['invisibility-blocked', 'Newt cast Invisibility Potion', [{ label: 'blocked' }]],
+    ['trap', 'Newt cast Trap', [{ label: 'trap added' }]],
+    ['demonic', 'Newt used Demonic Possession', [{ label: 'Reptilius Venenum' }]],
+    ['obscure', 'Newt used Obscure', []],
+    ['evolve', 'Newt evolved', [{ label: 'Vulpes' }, { label: 'Draco Mortemus' }]],
+    ['rise', 'Newt reactivated', [{ label: 'Vulpes' }, { label: 'gather' }]],
+    ['crystal', 'Newt used Crystal Ball', [{ label: '+3 cards' }]],
+    ['flame-bolt', 'Newt cast Flame Bolt', [{ label: 'The Longest Card Name' }]],
+    ['disintegrate', 'Newt cast Disintegrate', [{ label: 'The Longest Card Name' }]],
+    ['earthquake', 'Newt cast Earthquake', [{ label: 'The Longest Card Name' }]],
+    ['charm', 'Newt cast Charm', [{ label: 'The Longest Card Name' }]],
+    ['mana-drain', 'Newt cast Mana Drain', [{ label: '5 mana drained' }]],
+    ['trigger', 'Newt cast Trigger', [{ label: '+3 mana' }]],
+    ['shield-used', 'Newt cast Shield Used', [{ label: 'Spell Shield' }]],
+  ];
+  for (let i = 0; i < cases.length; i++) {
+    const [name, headline, chips] = cases[i];
+    await page.evaluate(({ name, headline, chips }) => {
+      const g = window.lwDebug._g;
+      g.skipMove = true;
+      window.ui.banner(g, {
+        r: 10, who: 'Newt', act: name,
+        text: `${headline}: fallback`,
+        structured: { headline, chips, cards: [] },
+      }, 0, 1);
+    }, { name, headline, chips });
+    await expect(page.getByTestId('ai-structured')).toBeVisible();
+    await expect(page.getByTestId('ai-structured')).toContainText(headline);
+    await page.getByTestId('ai-banner').screenshot({ path: `/tmp/ai-banner-tiles/${String(i).padStart(2, '0')}-${name}.png` });
+  }
+});

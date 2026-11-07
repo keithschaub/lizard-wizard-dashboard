@@ -1429,6 +1429,19 @@ function sellBanner(g, e) {
           h('span', {}, `+${data.mana} mana`)))));
 }
 
+function structuredBanner(g, e) {
+  const data = e.structured;
+  if (!data) return null;
+  const chip = (item) => h('span', { class: `bstructured-chip${item.card ? ' card' : ''}`, 'data-testid': 'ai-structured-chip' },
+    item.card && g.cards[item.card] ? h('img', { src: art(item.card), alt: '' }) : null,
+    h('span', {}, item.label));
+  return h('div', { 'data-testid': 'ai-banner-text' },
+    h('div', { class: 'bstructured', 'data-testid': 'ai-structured' },
+      h('div', { class: 'bstructured-headline' }, data.headline),
+      h('div', { class: 'bstructured-row' }, ...(data.chips || []).map(chip)),
+      data.note ? h('div', { class: 'bstructured-note' }, data.note) : null));
+}
+
 export async function banner(g, e, i = 0, n = 1) {
   if (g.skip) return;
   const layer = document.getElementById('banner-layer');
@@ -1443,7 +1456,7 @@ export async function banner(g, e, i = 0, n = 1) {
     avatar(e.who || '?'),
     h('div', { class: 'btext' },
       h('div', { class: 'bhead' }, `${e.who || 'AI'}'s turn${n > 1 ? ` · move ${i + 1} of ${n}` : ''}`),
-      gatherBanner(g, e) || sellBanner(g, e) || h('div', { 'data-testid': 'ai-banner-text' }, e.text), extra,
+      gatherBanner(g, e) || sellBanner(g, e) || structuredBanner(g, e) || h('div', { 'data-testid': 'ai-banner-text' }, e.text), extra,
       h('div', { class: 'bfoot' }, h('span', { class: 'skiphint' }, i + 1 < n ? 'tap anywhere: next move' : 'tap anywhere to continue'),
         h('button', { class: 'bskip', 'data-testid': 'ai-skip', onclick: () => { g.skip = true; } }, 'Skip ⏭'))),
     imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null,

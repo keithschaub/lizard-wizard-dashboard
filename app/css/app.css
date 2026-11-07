@@ -237,6 +237,12 @@ img { -webkit-user-drag: none; user-select: none; }
 .banner .bsell-chip-copy small { color: var(--muted); font-size: 9px; margin-top: 2px; }
 .banner .bsell-gain { display: inline-flex; align-items: center; gap: 5px; flex: none; color: #9fd0ff; font-size: 16px; font-weight: 700; white-space: nowrap; }
 .banner .sell-mana-orb { width: 24px; height: 24px; flex: none; background: radial-gradient(circle at 35% 30%, #9fd0ff, #2b6ee0 60%, #173a8a); box-shadow: 0 0 9px rgba(90, 162, 255, .8); border-radius: 50%; }
+.banner .bstructured { min-width: 0; }
+.banner .bstructured-headline { color: var(--gold-hi); font-family: var(--display); font-size: 17px; font-weight: 700; line-height: 1.1; }
+.banner .bstructured-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; min-width: 0; }
+.banner .bstructured-chip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 4px 8px; border: 1px solid rgba(214, 180, 90, .5); border-radius: 14px; background: rgba(255, 255, 255, .06); color: #e9edff; font-size: 12px; line-height: 1.1; }
+.banner .bstructured-chip img { width: 27px; height: 34px; object-fit: contain; border-radius: 3px; flex: none; }
+.banner .bstructured-note { margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.15; }
 .banner .bfoot { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
 .banner .skiphint { font-size: 11px; color: #6f7ca5; flex: 1; }
 .banner .bskip { flex: none; height: 26px; padding: 0 10px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255, 255, 255, .06); color: inherit; font-size: 12.5px; font-weight: 700; }

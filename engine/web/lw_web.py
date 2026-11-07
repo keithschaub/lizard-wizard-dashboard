@@ -344,6 +344,85 @@ def sell_banner_data(e):
     return None
 
 
+def structured_banner_data(e):
+    """Compact banner facts; log_text remains the plain-text history fallback."""
+    a = e.get('act'); w = e.get('who') or e.get('won')
+    def card(label, key=None):
+        return {'label': label, **({'card': key} if key else {})}
+    def data(verb, chips=(), cards=(), note=None):
+        out = {'headline': f'{w} {verb}', 'chips': list(chips), 'cards': list(cards)}
+        if note: out['note'] = note
+        return out
+    if a == 'research':
+        spell = e.get('spell')
+        return data('researched', [card(CD.display(spell), spell)] if spell else [], [spell] if spell else [])
+    if a == 'cast':
+        spell = e.get('spell')
+        return data('cast', [card(CD.display(spell), spell)] if spell else [], [spell] if spell else [])
+    if a == 'new_research':
+        spell = e.get('took')
+        return data('used New Research', [card(CD.display(spell), spell)] if spell else [], [spell] if spell else [])
+    if a == 'summon':
+        fam = e.get('familiar')
+        chips = [card(CD.display(fam), fam)] if fam else []
+        if e.get('cost') is not None: chips.append({'label': f"-{e['cost']} mana"})
+        if e.get('gold') is not None: chips.append({'label': f"+{e['gold']} Gold"})
+        return data('summoned', chips, [fam] if fam else [])
+    if a == 'build':
+        tower = e.get('tower')
+        paid = e.get('paid')
+        pay = ', '.join(T.nice(r) for r in paid) if isinstance(paid, list) else str(paid or '')
+        return data('built', [card(CD.display(tower), tower), {'label': f'-{pay}'}] if tower else [], [tower] if tower else [])
+    if a == 'auction':
+        item = 'Wizard_' + e['item'] if e.get('item') else None
+        return data('won the auction', [card(CD.display(item), item), {'label': f"-{e['price']} mana"}] if item else [], [item] if item else [])
+    if a == 'auction_nobid':
+        item = 'Wizard_' + e['item'] if e.get('item') else None
+        return data('auction: no bid', [card(CD.display(item), item)] if item else [], [item] if item else [])
+    if a == 'dungeon':
+        kept = [c.get('name') or f"{c.get('gold')} Gold" for c in e.get('kept', [])]
+        return data('entered the dungeon', [{'label': f'kept {x}'} for x in kept[:2]])
+    if a == 'scry_dungeon':
+        kept = [c.get('name') or f"{c.get('gold')} Gold" for c in e.get('kept', [])]
+        return data('scried the Dungeon', [{'label': x} for x in kept[:2]])
+    if a and a.startswith('scry_'):
+        deck = a[5:].title()
+        return data('scried', [{'label': deck}] + ([card(CD.display(e['took']), e['took'])] if e.get('took') else []))
+    if a == 'convert1':
+        return data('sold', [{'label': f"-{len(e.get('reagents', []))} reagents"}, {'label': f"+{e.get('gain', len(e.get('reagents', [])))} mana"}])
+    if a == 'transmute':
+        return data('transmuted', [{'label': f"-{len(e.get('reagents', []))} reagents"}, {'label': f"+{e.get('gold', 0)} Gold"}])
+    if a == 'transform':
+        return data('transformed', [{'label': ' + '.join(T.nice(r) for r in step.get('from', [])) + f" → {T.nice(step.get('to'))}"} for step in e.get('steps', [])[:2]])
+    if a == 'time_shift':
+        return data('cast Time Shift', [{'label': e.get('deck', 'deck').title()}] + [{'label': CD.display(c)} for c in e.get('removed', [])[:1]])
+    if a == 'wand_tax':
+        return data('cast Wand Tax', [{'label': f"+{e.get('gold', 0)} Gold"}])
+    if a == 'energy_pulse':
+        return data('cast Energy Pulse', [{'label': f"{e.get('destroyed', 0)} Spell Shields"}])
+    if a in ('invisibility_potion', 'invisibility_potion_blocked'):
+        return data('cast Invisibility Potion', [{'label': f"+{e.get('gold', 0)} Gold"}] if a == 'invisibility_potion' else [{'label': 'blocked'}])
+    if a == 'trap_spell':
+        return data('cast Trap', [{'label': 'trap added'}])
+    if a in ('demonic_possession', 'demonic_possession_blocked'):
+        fam = e.get('familiar')
+        return data('used Demonic Possession', [card(CD.display(fam), fam), {'label': 'blocked'}] if a.endswith('blocked') else [card(CD.display(fam), fam)] if fam else [])
+    if a in ('obscure', 'obscure_blocked', 'obscure_dungeon'):
+        return data('used Obscure', [{'label': 'blocked'}] if a.endswith('blocked') else [])
+    if a == 'evolve':
+        return data('evolved', [card(CD.display(e.get('familiar')), e.get('familiar')), card(CD.display(e.get('wizard')), e.get('wizard'))])
+    if a == 'rise':
+        fam = e.get('familiar')
+        return data('reactivated', [card(CD.display(fam), fam), {'label': e.get('use', 'action')}])
+    if a == 'crystal_ball_refill':
+        return data('used Crystal Ball', [{'label': f"+{e.get('drawn', 0)} cards"}])
+    if a in ('flame_bolt', 'disintegrate', 'earthquake', 'charm', 'mana_drain', 'trigger', 'shield_used'):
+        spell = e.get('spell') or e.get('card')
+        outcome = {'label': f"{e.get('n')} mana drained"} if a == 'mana_drain' else None
+        return data(f"cast {a.replace('_', ' ').title()}", [card(CD.display(spell), spell)] + ([outcome] if outcome else []), [spell] if spell else [])
+    return None
+
+
 def log_cards(e):
     a = e.get('act'); out = []
     for f in ('spell', 'took', 'tower', 'familiar', 'card', 'wizard', 'gave', 'got'):
@@ -380,6 +459,9 @@ def public_log(s, viewer):
             item['gather'] = gather_banner_data(e)
         if a in ('convert', 'convert1'):
             item['sell'] = sell_banner_data(e)
+        structured = structured_banner_data(e)
+        if structured:
+            item['structured'] = structured
         if a == 'research' and e.get('cast') or a == 'cast':
             item['cast'] = key(e['spell'])
         if a == 'auction': item['bids'] = e.get('bids_tail'); item['price'] = e.get('price')
