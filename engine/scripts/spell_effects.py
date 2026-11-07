@@ -97,8 +97,18 @@ def wand_tax(s, name, sch):
 def time_shift(s, name, deck):
     """Time Shift (Enchantment 1x): 'Remove (out of play) the top 5 cards of any deck'."""
     L = {'wizards': 'wiz_list', 'towers': 'tow_list', 'familiars': 'fam_list', 'spells': 'spell_list'}[deck]
-    gone = s[L][:5]; s[L] = s[L][5:]; s.setdefault('out_of_play', []).extend(gone); _recount(s)
-    A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'time_shift', 'deck': deck, 'n': len(gone)})
+    gone = s[L][:5]
+    s[L] = s[L][5:]
+    s.setdefault('out_of_play', []).extend(gone)
+    _recount(s)
+    removed = []
+    for path in gone:
+        base = os.path.basename(str(path))
+        removed.append(base[:-4] if base.endswith('.jpg') else base)
+    remaining = len(s[L])
+    A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'time_shift', 'deck': deck, 'n': len(gone),
+              'removed': removed, 'remaining': remaining})
+    return dict(deck=deck, removed=removed, remaining=remaining, n=len(gone))
 def energy_pulse(s, name):
     """Energy Pulse (Sorcery 1x): 'Destroy all Spell Shield spell cards currently owned by all players'."""
     n = 0

@@ -198,7 +198,9 @@ def log_text(e):
             return f"{w} sold (Adept Conversion): " + '; '.join(bits) + f" (+{e['gain']} mana total)"
         if a == 'wand_tax': return f"{w} cast Wand Tax on {e['school']}: +{e['gold']} Gold"
         if a == 'transmute': return f"{w} transmuted {len(e['reagents'])} reagents into {e['gold']} Gold"
-        if a == 'time_shift': return f"{w} removed the top {e['n']} cards of the {e['deck']} deck (Time Shift)"
+        if a == 'time_shift':
+            names = ', '.join(CD.display(c) for c in e.get('removed', [])) or f"the top {e['n']}"
+            return f"{w} removed {names} from the {e['deck']} deck (Time Shift)"
         if a == 'energy_pulse': return f"{w} cast Energy Pulse: {e['destroyed']} Spell Shield(s) destroyed"
         if a == 'invisibility_potion': return f"{w} cast Invisibility Potion on {e['target']}: stole {e['gold']} Gold"
         if a == 'invisibility_potion_blocked': return f"{w}'s Invisibility Potion on {e['target']} was blocked by a Spell Shield"
@@ -226,6 +228,8 @@ def log_cards(e):
         out += [dungeon_key(c) for c in e.get('kept', [])]
     if a == 'summon' and e.get('cast'):
         out += [spell_key_of(x) for x in e['cast']]
+    if a == 'time_shift':
+        out += list(e.get('removed', []))
     if a == 'auction_nobid': out.append('Wizard_' + e['item'])
     return out
 
@@ -246,6 +250,8 @@ def public_log(s, viewer):
         if a == 'dungeon':
             item['drawn'] = [dungeon_key(c) for c in e.get('drawn', [])]
             item['hits'] = e.get('hits'); item['success'] = e.get('success')
+        if a == 'time_shift':
+            item['deck'] = e.get('deck'); item['remaining'] = e.get('remaining')
         if a == 'gather':
             item['got'] = list(e.get('got', [])) + list(e.get('bonus', [])); item['inc'] = list(e.get('inc', []))
         out.append(item)
@@ -725,7 +731,16 @@ def resolve_effect(choice):
             SE.transmute(s, n, rs)
         elif kind == 'scry':
             if ch.get('card') not in [o['card'] for o in opts]: raise Refused('pick one of the revealed cards')
-            SE.scry_deck(s, n, SCRY[k], lambda top: [c for c in top if key(c) == ch['card']][0], cast_free=(SCRY[k] == 'spells'))
+            cast_free = SCRY[k] == 'spells'
+            picked_key = ch['card'] if cast_free else None
+            SE.scry_deck(s, n, SCRY[k], lambda top: [c for c in top if key(c) == ch['card']][0], cast_free=cast_free)
+            if cast_free:
+                _crystal_ball_refill(s, n)
+                tail = list(wp.get('queue', []))
+                s['meta']['web_pending'] = None
+                if not _run_queue(s, n, [picked_key] + tail):
+                    return 'pending'
+                return _finish(s, n)
         else:
             ident = ('player', 'kind', 'card', 'mine', 'school', 'deck')
             match = [o for o in opts if all(o[f] == ch.get(f) for f in ident if f in o)]

@@ -85,7 +85,9 @@ export function cardInfo(g, key) {
     text ? h('div', { class: 'ci-text', 'data-testid': 'card-text' }, text) : null);
 }
 
-export function expandCard(g, key, { actions = [], extra = null, group = null, groupIndex = 0 } = {}) {
+const TIME_SHIFT_DECK_LABEL = { wizards: 'Wizards', towers: 'Towers', familiars: 'Familiars', spells: 'Spells' };
+
+export function expandCard(g, key, { actions = [], extra = null, group = null, groupIndex = 0, title = null, titleTestid = null } = {}) {
   // group: array of card keys for swipeable navigation, groupIndex: current card index in group
   const cards = (group && group.length ? group : [key]).filter(Boolean);
   const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : cards.indexOf(key);
@@ -321,7 +323,8 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
     ov.el.focus();
   }
   
-  appendNodes(scrollInner, cardTrack, indicator, cardinfoContainer, actionsContainer);
+  const titleEl = title ? h('div', { class: 'ov-title', 'data-testid': titleTestid || 'expand-title' }, title) : null;
+  appendNodes(scrollInner, titleEl, cardTrack, indicator, cardinfoContainer, actionsContainer);
   appendNodes(ov.el, closeBtn(() => ov.close()), prevBtn, nextBtn, scrollInner);
 
   // Initial render
@@ -816,6 +819,20 @@ function convertMixed(g) {
   appendNodes(ov.el, h('div', { class: 'sheet-panel' }, h('div', { class: 'phase-title' }, 'Sell any mix at 1 mana each'), grid, h('div', { class: 'actions' }, go)));
 }
 
+export function showTimeShiftRemoved(g, entry) {
+  const keys = entry.cards || [];
+  if (!keys.length) return Promise.resolve();
+  return new Promise((resolve) => {
+    expandCard(g, keys[0], {
+      group: keys,
+      groupIndex: 0,
+      title: 'Time Shift: removed from play',
+      titleTestid: 'time-shift-title',
+      actions: [{ label: 'Done', testid: 'time-shift-done', onClick: async () => { resolve(); } }],
+    });
+  });
+}
+
 // ------------------------------------------------------------------ pending steps: spell effects, New Research, dungeon
 export async function effectChooser(g) {
   const pd = g.v.pending; const k = pd.spell; const info = g.cards[k] || {};
@@ -874,6 +891,12 @@ export async function effectChooser(g) {
   const choice = await p;
   const r = await g.act('resolve_effect', { choice }, { sound: 'cast' });
   ov.close();
+  const ts = (r?.entries || []).find((e) => e.act === 'time_shift');
+  if (ts) {
+    const deckName = TIME_SHIFT_DECK_LABEL[ts.deck] || nice(ts.deck);
+    g.toast(`${deckName} deck: ${ts.remaining} cards left`);
+    await showTimeShiftRemoved(g, ts);
+  }
   return r;
 }
 

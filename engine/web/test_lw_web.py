@@ -121,6 +121,48 @@ r = call('act_research', spell='Spell_Haste', cast=True)
 check(r['ok'] and r['result'] == 'bonus' and r['view']['next'] == 'Keith' and r['view']['legal'], 'Haste: Keith takes a bonus action')
 r = call('act_convert', reagent='Sulphur', n=1)
 check(r['ok'] and r['view']['next'] == 'Newt', 'after the bonus action the turn passes')
+def m6ts(s):
+    k = A.P(s, 'Keith')
+    k['tok'] = ['Foxglove', 'Mandrake', 'Mandrake']
+    k['mana'] = 20
+    face = list(s.get('spell_face') or [''] * 3)
+    face[0] = 'assets/Spell_Time_Shift.jpg'
+    s['spell_face'] = face
+setup(m6ts)
+r = call('act_research', spell='Spell_Time_Shift', cast=True)
+check(r['ok'] and r['view']['pending']['kind'] == 'time_shift', 'Time Shift opens deck choice')
+top5 = [W.key(x) for x in W.st()['spell_list'][:5]]
+nspell = len(W.st()['spell_list'])
+r = call('resolve_effect', choice={'deck': 'spells'})
+ent = [e for e in W.st()['meta']['log'] if e.get('act') == 'time_shift'][-1]
+ts_pub = [e for e in r['entries'] if e.get('act') == 'time_shift'][-1]
+check(r['ok'] and ent['removed'] == top5 and ent['remaining'] == nspell - 5, 'Time Shift removes top 5 and logs card keys')
+check(ts_pub['cards'] == top5 and ts_pub['remaining'] == nspell - 5 and ts_pub['deck'] == 'spells', 'public log exposes removed cards for UI')
+def m6scribe(s):
+    k = A.P(s, 'Keith')
+    k['tok'] = ['Eye_of_Newt', 'Eye_of_Newt', 'Mandrake', 'Horn']
+    k['mana'] = 20
+    face = list(s.get('spell_face') or [''] * 4)
+    for i, sk in enumerate(face):
+        if sk and 'Time_Shift' in sk:
+            face[i] = 'assets/Spell_Scribe.jpg'
+            break
+    else:
+        face[0] = 'assets/Spell_Scribe.jpg'
+    s['spell_face'] = face
+    s['spell_list'].insert(1, 'assets/Spell_Time_Shift.jpg')
+    s['spell_deck'] = len(s['spell_list'])
+s = setup(m6scribe)
+ts_key = W.key(s['spell_list'][1])
+r = call('act_research', spell='Spell_Scribe', cast=True)
+opts = r['view']['pending']['options']
+check(r['ok'] and any(o['card'] == ts_key for o in opts), 'Scribe reveals top spell including Time Shift')
+r = call('resolve_effect', choice={'card': ts_key})
+check(r['ok'] and r['view'].get('pending', {}).get('kind') == 'time_shift', 'Scribe free-cast Time Shift opens deck picker')
+nmid = len(W.st()['spell_list'])
+r = call('resolve_effect', choice={'deck': 'spells'})
+ent = [e for e in W.st()['meta']['log'] if e.get('act') == 'time_shift'][-1]
+check(r['ok'] and ent['n'] == 5 and ent['remaining'] == nmid - 5, 'Scribe then Time Shift removes 5 from spell deck')
 def m6c(s):
     k = A.P(s, 'Keith'); k['tok'] = ['Foxglove', 'Foxglove', 'Mandrake', 'Mandrake', 'Mandrake']; add_spell(s, 'Keith', 'Spell_Charm')
     A.P(s, 'Newt')['spells'] = []
