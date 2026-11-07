@@ -67,6 +67,7 @@ test('structured long gather banner wraps four reagents and tracks without clipp
   await expect(page.getByTestId('ai-gather-track')).toHaveCount(4);
   const banner = page.getByTestId('ai-banner');
   await expect(banner).toBeVisible();
+  await expect(banner).toHaveCSS('background-color', 'rgb(12, 17, 44)');
   const box = await banner.boundingBox();
   expect(box.y).toBeGreaterThanOrEqual(0);
   expect(box.y + box.height).toBeLessThanOrEqual(844);
