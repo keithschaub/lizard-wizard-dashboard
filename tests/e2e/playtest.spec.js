@@ -135,7 +135,7 @@ class Playtest {
   async checkCardDetail(label) {
     const ov = this.page.getByTestId('expanded').last();
     await expect(ov).toBeVisible();
-    const imgEl = ov.getByTestId('expanded-img');
+    const imgEl = ov.getByTestId('expanded-img').first();
     if (await imgEl.count()) {
       await imgEl.evaluate((i) => i.decode().catch(() => {}));
     }

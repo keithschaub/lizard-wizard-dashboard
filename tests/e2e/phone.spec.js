@@ -239,7 +239,7 @@ test('every achievement tile a new deal can draw renders its icons (no missing a
     await expect(page.getByTestId('ach-0')).toBeVisible();
     await page.waitForLoadState('networkidle');
     for (const tile of await page.locator('.ach [data-testid=achievement-tile]').all()) {
-      await expect(tile.locator('.ach-tile-icon').locator('img, .ach-tile-orb')).toHaveCount(1);
+      await expect(tile.locator('.ach-tile-icon').locator('img, .ach-tile-orb, .ach-tile-svg')).toHaveCount(1);
     }
   }
   expect(errors, errors.join('\n')).toEqual([]);

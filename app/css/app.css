@@ -510,7 +510,7 @@ img { -webkit-user-drag: none; user-select: none; }
 /* The ring is sized from the visible height so the bid panel's Pass / Bid stay above Safari's bottom bar. */
 .arena-ring { position: relative; width: min(96vw, 520px); height: var(--ring-h); margin-top: 8px; }
 /* The card column starts under the top seat (which sits at max(48px, 12%)), so they never overlap. */
-.arena-center { position: absolute; left: 50%; top: calc(max(48px, 12%) + 52px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arena-center { position: absolute; left: 50%; top: calc(max(48px, 12%) + 110px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .arena-center .card-frame { width: clamp(84px, calc(var(--ring-h) * .29), 136px); padding: 6% 3% 3%; border-radius: 12px; background: #110d0c; box-shadow: 0 0 40px rgba(120, 150, 255, .55), 0 16px 40px rgba(0, 0, 0, .8), 0 0 0 1px rgba(214, 180, 90, .35); animation: zoomIn .4s both; }
 .arena-center .card-frame img { display: block; width: 100%; height: auto; border-radius: 5px; }
 .bid-mana { text-align: center; font-size: 13px; color: var(--muted); margin-top: -4px; }

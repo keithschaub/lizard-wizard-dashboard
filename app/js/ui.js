@@ -1101,7 +1101,7 @@ function familiarActionChooser(g, {
     cancel ? closeBtn(() => ov.close(), 'summon-cancel') : null);
   appendNodes(ov.el, panel);
   function render(idx) {
-    const key = cards[idx]; const l = (g.v.legal.summon || {})[key] || {};
+    const key = cards[idx]; const l = (g.v.legal?.summon || {})[key] || {};
     replaceChildren(track, h('img', { class: 'familiar-action-card', src: art(key), alt: key }));
     replaceChildren(actionGrid);
     uses.forEach((a) => {
@@ -1109,6 +1109,7 @@ function familiarActionChooser(g, {
       const detail = isDisabled ? a.reason : testPrefix === 'summon'
         ? (a.use === 'score' ? `+${l.score_gold + (l.powerful_helper || 0)} Gold` : a.use === 'gather' ? `${l.collect} ${nice(l.reagent)}` : a.detail)
         : a.detail;
+      const note = a.note || (testPrefix === 'summon' && a.use === 'score' && l.powerful_helper ? 'incl. Powerful Helper' : null);
       appendNodes(actionGrid, h('button', {
         class: `familiar-action-tile ${isDisabled ? 'disabled' : ''}`, disabled: isDisabled,
         'data-testid': `${testPrefix}-${a.use}`,
@@ -1116,7 +1117,7 @@ function familiarActionChooser(g, {
       }, h('span', { class: 'familiar-action-icon' }, familiarActionIcon(a.use, testPrefix === 'summon' ? l.reagent : reagent)),
       h('span', { class: 'familiar-action-copy' }, h('span', { class: 'familiar-action-title' }, a.label),
         h('span', { class: 'familiar-action-detail' }, detail),
-        a.note ? h('span', { class: 'familiar-action-note' }, a.note) : null)));
+        note ? h('span', { class: 'familiar-action-note' }, note) : null)));
     });
     indicator?.querySelectorAll('.dot').forEach((dot, i) => dot.classList.toggle('active', i === idx));
     if (prev) prev.style.opacity = idx > 0 ? '1' : '.4';
