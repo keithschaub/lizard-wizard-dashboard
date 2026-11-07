@@ -51,7 +51,14 @@ def resolve_effect(s, me, key, prm=None):
     elif k == 'Spell_Transmute.jpg' and prm.get('reagents'): SE.transmute(s, me, [r for r in prm['reagents'] if r in P(s, me)['tok']][:len(prm['reagents'])])
     elif k in ('Spell_Scry_Wizard.jpg', 'Spell_Scry_Tower.jpg', 'Spell_Scry_Familiar.jpg', 'Spell_Scribe.jpg'):
         deck = {'Spell_Scry_Wizard.jpg': 'wizards', 'Spell_Scry_Tower.jpg': 'towers', 'Spell_Scry_Familiar.jpg': 'familiars', 'Spell_Scribe.jpg': 'spells'}[k]
-        SE.scry_deck(s, me, deck, lambda top: AI.pick_scry(AI.public_view(s, me), me, top, deck), cast_free=(deck == 'spells'))
+        pick = SE.scry_deck(s, me, deck, lambda top: AI.pick_scry(AI.public_view(s, me), me, top, deck), cast_free=(deck == 'spells'))
+        if deck == 'spells' and pick:
+            pk = os.path.basename(pick)
+            if pk.endswith('.jpg'):
+                pk = pk[:-4]
+            img = pick if str(pick).startswith('assets/') else 'assets/' + (pk if pk.endswith('.jpg') else pk + '.jpg')
+            _, prm2 = AI.effect_value(AI.public_view(s, me), me, img)
+            resolve_effect(s, me, pk, prm2)
     elif k == 'Spell_Scry_Dungeon.jpg': A.scry_dungeon(s, me)
     elif k == 'Spell_Time_Shift.jpg' and prm.get('deck'): SE.time_shift(s, me, prm['deck'])
     elif k == 'Spell_Energy_Pulse.jpg': SE.energy_pulse(s, me)
