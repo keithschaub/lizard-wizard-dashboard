@@ -8,7 +8,7 @@ async function waitForBoard(page) {
     getComputedStyle(document.getElementById('loader')).opacity === '0', null, { timeout: 10_000 });
 }
 
-test('Trap spell AI banner is a sentence, not raw JSON', async ({ page }) => {
+test('Trap spell AI banner is structured, not raw JSON', async ({ page }) => {
   await page.goto('/');
   await waitForBoard(page);
   const text = await page.evaluate(async () => {
@@ -25,7 +25,7 @@ test('Trap spell AI banner is a sentence, not raw JSON', async ({ page }) => {
   });
   expect(text).toContain('Newt cast Trap');
   expect(text).not.toContain('{');
-  await expect(page.getByTestId('ai-banner-text')).toContainText('Newt cast Trap');
+  await expect(page.getByTestId('ai-banner-text')).toContainText('Newt set a Trap');
   await expect(page.getByTestId('ai-banner-text')).not.toContainText('{');
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'docs/screenshots/banner-trap-dpr3.png', fullPage: true });
@@ -110,4 +110,58 @@ test('structured multi-type sell banner uses one chip per type and one total gai
   await expect(page.getByTestId('ai-sell-mana')).toContainText('+32 mana');
   await expect(page.getByTestId('ai-sell-structured')).not.toContainText('track now');
   await page.getByTestId('ai-banner').screenshot({ path: 'docs/screenshots/banner-sell-multi-dpr3.png' });
+});
+
+test('all structured AI banner types fit on iPhone at DPR3', async ({ page }) => {
+  await page.goto('/');
+  await waitForBoard(page);
+  const cases = [
+    ['research', 'Newt', 'Newt researched', [{ label: 'Trap', card: 'Spell_Trap' }]],
+    ['cast', 'Gecko', 'Gecko cast', [{ label: 'Energy Pulse', card: 'Spell_Energy_Pulse' }]],
+    ['new-research', 'LizWiz', 'LizWiz researched', [{ label: 'Transmutation', card: 'Spell_Transmute' }]],
+    ['summon', 'LizWiz', 'LizWiz summoned', [{ label: 'Vulpes', card: 'Familiar_10_Vulpes' }, { label: '-5 mana', mana: -5 }]],
+    ['build', 'Newt', 'Newt built', [{ label: 'The Ivory Spire', card: 'Tower_T1_Ivory_Spire' }, { label: '-2 Mandrake', reagent: 'Mandrake' }]],
+    ['auction', 'Rex', 'Rex won the auction', [{ label: 'Draco Mortemus', card: 'Wizard_Draco_Mortemus' }, { label: '-8 mana', mana: -8 }]],
+    ['auction-nobid', 'Gecko', 'Gecko passed on the auction', [{ label: 'Reptilius Venenum', card: 'Wizard_Reptilius_Venenum' }]],
+    ['dungeon', 'Gecko', 'Gecko entered the dungeon', [{ label: 'Reptilius Venenum kept', card: 'Wizard_Reptilius_Venenum' }]],
+    ['scry-dungeon', 'LizWiz', 'LizWiz scried the dungeon', [{ label: 'Reptilius Venenum', card: 'Wizard_Reptilius_Venenum' }]],
+    ['scry-familiars', 'Newt', 'Newt scried', [{ label: 'Familiars' }]],
+    ['convert1', 'Newt', 'Newt sold', [{ label: '3 Sulphur', reagent: 'Sulphur' }, { label: '+3 mana', mana: 3 }]],
+    ['transmute', 'Newt', 'Newt transmuted', [{ label: '-2 Horn', reagent: 'Horn' }, { label: '-2 Mandrake', reagent: 'Mandrake' }, { label: '+2 Gold', gold: 2 }]],
+    ['transform', 'LizWiz', 'LizWiz transformed', [{ label: 'Horn + Mandrake → Sulphur', reagent: 'Sulphur' }]],
+    ['time-shift', 'Newt', 'Newt cast Time Shift', [{ label: 'removed Spell Shield', card: 'Spell_Spell_Shield_T' }]],
+    ['wand-tax', 'Rex', 'Rex cast Wand Tax', [{ label: '+3 Gold', gold: 3 }]],
+    ['energy-pulse', 'Gecko', 'Gecko cast Energy Pulse', [{ label: '2 Spell Shields', shield: true }]],
+    ['invisibility', 'LizWiz', 'LizWiz cast Invisibility Potion', [{ label: '+4 Gold', gold: 4 }]],
+    ['invisibility-blocked', 'LizWiz', 'LizWiz cast Invisibility Potion', [{ label: 'blocked', shield: true }]],
+    ['trap', 'Newt', 'Newt set a Trap', []],
+    ['demonic', 'Rex', 'Rex used Demonic Possession', [{ label: 'Vulpes', card: 'Familiar_10_Vulpes' }]],
+    ['obscure', 'Gecko', 'Gecko used Obscure', [{ label: 'target: LizWiz' }]],
+    ['evolve', 'LizWiz', 'LizWiz evolved', [{ label: 'Vulpes', card: 'Familiar_10_Vulpes' }, { label: 'Draco Mortemus', card: 'Wizard_Draco_Mortemus' }]],
+    ['rise', 'Newt', 'Newt reactivated', [{ label: 'Vulpes', card: 'Familiar_10_Vulpes' }, { label: 'gather' }]],
+    ['crystal', 'Rex', 'Rex used Crystal Ball', [{ label: '+3 cards' }]],
+    ['flame-bolt', 'Gecko', 'Gecko cast Flame Bolt', [{ label: 'vs LizWiz' }, { label: 'Reptilius Venenum', card: 'Wizard_Reptilius_Venenum' }]],
+    ['disintegrate', 'Newt', 'Newt cast Disintegrate', [{ label: 'vs Gecko' }, { label: 'Serpentium Machinus', card: 'Wizard_Serpentium_Machinus' }]],
+    ['earthquake', 'LizWiz', 'LizWiz cast Earthquake', [{ label: 'vs Rex' }, { label: 'Serpentium Machinus', card: 'Wizard_Serpentium_Machinus' }]],
+    ['charm', 'Rex', 'Rex cast Charm', [{ label: 'vs Newt' }, { label: 'Serpentium Machinus', card: 'Wizard_Serpentium_Machinus' }]],
+    ['mana-drain', 'Gecko', 'Gecko cast Mana Drain', [{ label: 'vs Newt' }, { label: '5 mana drained', mana: -5 }]],
+    ['shield-used', 'LizWiz', "LizWiz's Spell Shield blocked it", [{ label: 'blocked', shield: true }]],
+    ['trigger', 'Newt', 'Newt cast Trigger', [{ label: 'Trigger', card: 'Spell_Mana_Fountain' }, { label: '+3 mana', mana: 3 }]],
+  ];
+  for (let i = 0; i < cases.length; i++) {
+    const [name, who, headline, chips] = cases[i];
+    await page.evaluate(({ name, who, headline, chips }) => {
+      const g = window.lwDebug._g;
+      g.skipMove = true;
+      window.ui.banner(g, {
+        r: 10, who, act: name,
+        text: `${headline}: fallback`,
+        structured: { headline, chips, cards: [] },
+      }, 0, 1);
+    }, { name, who, headline, chips });
+    await expect(page.getByTestId('ai-structured')).toBeVisible();
+    await expect(page.getByTestId('ai-banner')).toContainText(`${who}'s turn`);
+    await expect(page.getByTestId('ai-structured')).toContainText(headline);
+    await page.getByTestId('ai-banner').screenshot({ path: `/tmp/ai-banner-tiles/${String(i).padStart(2, '0')}-${name}.png` });
+  }
 });
