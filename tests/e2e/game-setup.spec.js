@@ -26,6 +26,7 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await shot(page, 'game-setup-02-table');
   await page.getByTestId('setup-opponents').scrollIntoViewIfNeeded();
   await page.screenshot({ path: 'docs/screenshots/setup-table-size-actions-dpr3.png' });
+  await page.getByTestId('setup-opponents').screenshot({ path: 'docs/screenshots/setup-table-size-action-crop-dpr3.png' });
   await page.getByTestId('setup-size-4').tap();
   await page.getByTestId('setup-opponents').tap();
   await expect(page.getByTestId('setup-ai-card-0')).toBeVisible();
@@ -33,6 +34,7 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await shot(page, 'game-setup-03-ais');
   await page.getByTestId('setup-start').scrollIntoViewIfNeeded();
   await page.screenshot({ path: 'docs/screenshots/setup-ai-seats-actions-dpr3.png' });
+  await page.getByTestId('setup-start').screenshot({ path: 'docs/screenshots/setup-ai-seats-action-crop-dpr3.png' });
   await page.getByTestId('setup-ai-0-hard').tap();
   await page.getByTestId('setup-start').tap();
   await expect(page.getByTestId('new-game-hand')).toBeVisible({ timeout: 60_000 });
@@ -45,6 +47,7 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await expect(newGameStart).toHaveText('Begin the gameStarting with Eye of Newt & Horn');
   await newGameStart.scrollIntoViewIfNeeded();
   await page.screenshot({ path: 'docs/screenshots/setup-newgame-start-dpr3.png' });
+  await newGameStart.screenshot({ path: 'docs/screenshots/setup-newgame-start-action-crop-dpr3.png' });
   await newGameStart.tap();
   await page.waitForFunction(() => {
     const v = window.lwDebug.view();
