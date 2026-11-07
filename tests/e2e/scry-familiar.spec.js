@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures.js';
 import { watchErrors } from './helpers.js';
+test.use({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 });
 
 test('Scry Familiar immediately opens the summon-use chooser', async ({ page }) => {
   const errors = watchErrors(page);
@@ -45,6 +46,8 @@ test('Scry Familiar immediately opens the summon-use chooser', async ({ page }) 
   await expect(page.getByTestId('rise-gather')).toBeVisible();
   await expect(page.getByTestId('rise-research')).toBeVisible();
   await expect(page.getByTestId('rise-dungeon')).toBeVisible();
+  await page.getByTestId('rise-use').screenshot({ path: 'docs/screenshots/familiar-actions-scry-dpr3.png' });
+  await page.getByTestId('rise-use').screenshot({ path: 'docs/screenshots/familiar-actions-rise-dpr3.png' });
   await page.getByTestId('rise-score').tap();
   await expect.poll(async () => Number((await page.getByTestId('my-gold').textContent()).trim())).toBeGreaterThan(0);
   expect(errors, errors.join('\n')).toEqual([]);
