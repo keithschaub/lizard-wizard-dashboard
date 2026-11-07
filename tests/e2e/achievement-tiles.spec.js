@@ -44,7 +44,7 @@ async function tileGeometry(tile) {
 
 async function reagentGeometry(tile) {
   return tile.locator('.ach-reagent').evaluate((img) => new Promise((resolve) => {
-    const med = img.closest('.ach-tile-medallion');
+    const med = img.closest('.ach-tile-medallion, .ach-badge');
     const canvas = document.createElement('canvas');
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
@@ -150,10 +150,20 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
       await expect(zoomTile).toBeVisible();
       const geometry = await tileGeometry(zoomTile);
       expect(geometry.inside && geometry.separated, `zoom tile ${ach[j]} geometry`).toBe(true);
+      if (await zoomTile.locator('.ach-reagent').count()) {
+        const reagent = await reagentGeometry(zoomTile);
+        expect(reagent.centerDelta <= 0.06 && reagent.insideCircle, `zoom reagent ${ach[j]} centering`).toBe(true);
+      }
+      const badge = page.getByTestId('cardinfo-container').locator('.ach-reagent');
+      if (await badge.count()) {
+        const reagent = await reagentGeometry(page.getByTestId('cardinfo-container'));
+        expect(reagent.centerDelta <= 0.06 && reagent.insideCircle, `badge reagent ${ach[j]} centering`).toBe(true);
+      }
       if (ach[j] === '100 Mana') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-mana-dpr3.png`, fullPage: true });
       if (ach[j] === '7 Spells') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-spells-dpr3.png`, fullPage: true });
       if (ach[j] === 'x7 Foxglove') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-foxglove-dpr3.png`, fullPage: true });
       if (ach[j] === 'x7 Mandrake') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-mandrake-dpr3.png`, fullPage: true });
+      if (ach[j] === 'x7 Sulphur') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-sulphur-dpr3.png`, fullPage: true });
       if (j < ach.length - 1) {
         await page.getByTestId('nav-next').tap();
         await page.waitForTimeout(250);
