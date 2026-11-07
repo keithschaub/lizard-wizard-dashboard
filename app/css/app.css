@@ -1,5 +1,6 @@
 @font-face { font-family: 'Cinzel Decorative'; src: url('../../fonts/CinzelDecorative-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
 @font-face { font-family: 'Cinzel Decorative'; src: url('../../fonts/CinzelDecorative-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Cinzel'; src: url('../../fonts/Cinzel-Variable.ttf') format('truetype'); font-weight: 400 900; font-display: swap; }
 @font-face { font-family: 'Alegreya Sans'; src: url('../../fonts/AlegreyaSans-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
 @font-face { font-family: 'Alegreya Sans'; src: url('../../fonts/AlegreyaSans-Medium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
 @font-face { font-family: 'Alegreya Sans'; src: url('../../fonts/AlegreyaSans-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
@@ -680,7 +681,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .setup-name-input, .setup-ai-name { width: 100%; font-size: 22px; padding: 16px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255, 255, 255, .06); color: #fff; }
 .setup-quick { display: flex; flex-direction: column; gap: 4px; align-items: center; }
 .setup-action { display: flex; flex-direction: column; justify-content: center; gap: 4px; align-items: center; min-height: 64px; text-align: center; font-family: var(--display); }
-.setup-action-title { font-family: Georgia, 'Times New Roman', serif; font-size: 18px; line-height: 1.1; letter-spacing: .12em; text-transform: uppercase; font-variant-ligatures: none; font-feature-settings: "liga" 0, "dlig" 0, "clig" 0; }
+.setup-action-title { font-family: 'Cinzel', Georgia, serif; font-weight: 600; font-size: 18px; line-height: 1.1; letter-spacing: .12em; text-transform: uppercase; font-variant-ligatures: none; font-feature-settings: "liga" 0, "dlig" 0, "clig" 0; }
 .setup-action-sub { font-family: var(--sans); font-size: 13px; font-weight: 500; line-height: 1.2; color: var(--muted); }
 .setup-action-secondary, .setup-custom { background: linear-gradient(180deg, #3c2e0e, #221a08); border-color: rgba(214, 180, 90, .85); color: var(--gold-hi); box-shadow: none; }
 .setup-action-primary { background: linear-gradient(180deg, #3c2e0e, #221a08); border-color: rgba(214, 180, 90, .95); color: var(--gold-hi); box-shadow: 0 0 16px rgba(255, 211, 107, .35); }
@@ -695,7 +696,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .setup-tile.on { border-color: var(--gold); box-shadow: 0 0 28px rgba(214, 180, 90, .35); transform: scale(1.01); }
 .setup-seats { display: flex; gap: 10px; font-size: 28px; }
 .setup-seat.you { filter: drop-shadow(0 0 8px rgba(111, 240, 208, .7)); }
-.setup-tile-n { font-family: var(--display); font-size: 20px; color: var(--gold-hi); }
+.setup-tile-n { font-family: 'Cinzel', Georgia, serif; font-weight: 600; font-size: 20px; color: var(--gold-hi); }
 .setup-tile-sub { font-size: 14px; color: var(--muted); }
 .setup-ai-list { display: flex; flex-direction: column; gap: 12px; }
 .setup-ai-card { padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: linear-gradient(160deg, rgba(40, 52, 110, .55), rgba(12, 16, 36, .9)); display: flex; flex-direction: column; gap: 10px; }

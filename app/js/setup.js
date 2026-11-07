@@ -90,7 +90,7 @@ export function runSetupWizard(g) {
         inp,
         savedSetup ? h('button', {
           type: 'button',
-          class: 'act setup-quick',
+          class: 'act setup-quick setup-action',
           'data-testid': 'setup-quick-start',
           onclick: () => {
             g.sfx('tap');
@@ -98,7 +98,8 @@ export function runSetupWizard(g) {
             Store.saveSetup(cfg);
             finish(cfg);
           },
-        }, 'Quick start', h('span', { class: 'setup-quick-sub' }, 'Last saved setup · 3 players · 2 Adept AIs')) : null,
+        }, h('span', { class: 'setup-action-title' }, 'Quick start'),
+        h('span', { class: 'setup-action-sub setup-quick-sub' }, 'Last saved setup · 3 players · 2 Adept AIs')) : null,
         h('button', {
           type: 'button',
           class: 'act setup-custom setup-action setup-action-secondary',
