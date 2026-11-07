@@ -278,13 +278,23 @@ def log_text(e):
         if a == 'energy_pulse': return f"{w} cast Energy Pulse: {e['destroyed']} Spell Shield(s) destroyed"
         if a == 'invisibility_potion': return f"{w} cast Invisibility Potion on {e['target']}: stole {e['gold']} Gold"
         if a == 'invisibility_potion_blocked': return f"{w}'s Invisibility Potion on {e['target']} was blocked by a Spell Shield"
+        if a == 'trap_spell': return f"{w} cast Trap: a trap was added to the Dungeon"
+        if a == 'demonic_possession': return f"{w} took {CD.display(e.get('familiar'))} from {e.get('target')} and used it immediately"
+        if a == 'obscure': return f"{w} obscured {e.get('target')}'s next Dungeon attempt"
+        if a == 'obscure_dungeon': return f"{w} ignored Obscure and entered the Dungeon"
+        if a == 'evolve': return f"{w} evolved {CD.display(e.get('familiar'))} into {CD.display(e.get('wizard'))}"
+        if a == 'rise': return f"{w} re-activated {CD.display(e.get('familiar'))} for {e.get('use', 'an action')}"
+        if a == 'crystal_ball_refill': return f"{w} refilled their hand with Crystal Ball ({e.get('drawn', 0)} card(s))"
+        if a == 'demonic_possession_blocked': return f"{w}'s Demonic Possession was blocked by a Spell Shield"
+        if a == 'obscure_blocked': return f"{w}'s Obscure was blocked by a Spell Shield"
         if a == 'web_note': return e.get('text', '')
         if a == 'summon' and e.get('use') == 'gather':
             return f"{w} summoned {CD.display(e['familiar'])} for {e['cost']} mana: gathered {', '.join(T.nice(r) for r in e.get('got', []))}" + \
                    (f", cast {', '.join(CD.display(jpg(spell_key_of(x))) for x in e.get('cast', []))}" if e.get('cast') else '')
-        return T.describe(e)
+        text = T.describe(e)
+        return text if isinstance(text, str) and '{' not in text and '"act"' not in text else f"{w + ': ' if w else ''}{str(a or 'game event').replace('_', ' ')}"
     except Exception:
-        return T.describe(e) if a else json.dumps(e)
+        return f"{w + ': ' if w else ''}{str(a or 'game event').replace('_', ' ')}"
 
 
 def log_cards(e):
@@ -305,6 +315,7 @@ def log_cards(e):
     if a == 'time_shift':
         out += list(e.get('removed', []))
     if a == 'auction_nobid': out.append('Wizard_' + e['item'])
+    if a == 'trap_spell': out.append('Spell_Trap')
     return out
 
 
@@ -1101,6 +1112,8 @@ def new_game_start(picks, seed=None):
     s['meta']['ai_profiles'] = {a['name']: AI_PROFILES.get(a['name'], 'balanced') for a in cfg['ais']}
     A.log(s, {'r': 1, 'act': 'turn', 'seat': s['next']})
     A.log(s, {'r': 0, 'act': 'setup_picks', 'picks': {q['name']: list(q['tok']) for q in s['players']}})
+    s['meta'].pop('game_over', None)
+    s['meta'].pop('game_end_triggered', None)
     s['meta']['web_pending'] = None
     G['s'] = s; G['me'] = human; G.pop('setup', None); G.pop('setup_config', None)
     return 'started'
