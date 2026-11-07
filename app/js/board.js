@@ -1,4 +1,5 @@
 import { h, art, reagentIcon, schoolIcon, REAGENTS, SCHOOL_REAGENT } from './dom.js';
+import { achievementTile, achievementFromText } from './achievements.js';
 
 export const BW = 864, BH = 1152;
 // Slot positions in board units (864 x 1152), identical to the engine's own board renderer (scripts/render4.py).
@@ -20,7 +21,7 @@ function achSchool(t) {
 
 export class Board {
   constructor(stage, el, onTap) {
-    this.stage = stage; this.el = el; this.onTap = onTap;
+    this.stage = stage; this.el = el; this.onTap = onTap; this.cards = {};
     this.slots = {}; this.markers = {}; this.keys = {};
     el.appendChild(h('img', { class: 'board-bg', src: 'art/board/game_board_clean.webp', alt: '', draggable: 'false' }));
     for (const [name, [x, y]] of Object.entries(SLOTS)) {
@@ -37,7 +38,8 @@ export class Board {
 
   slotRect(name) { return this.slots[name]?.getBoundingClientRect(); }
 
-  render(v) {
+  render(v, cards = {}) {
+    this.cards = cards || {};
     const b = v.board; const L = v.legal || {};
     const want = {
       tower_deck: ['deck', b.tower_deck], tower_face: b.tower_face,
@@ -86,16 +88,9 @@ export class Board {
     if (this.achSig !== achSig) {
       this.achSig = achSig; this.achLayer.innerHTML = '';
       b.ach.forEach((t, k) => {
-        const sc = achSchool(t);
-        let main, sub;
-        if (t.startsWith('x7 ')) { main = [h('span', {}, '7'), h('img', { src: reagentIcon(t.slice(3)), alt: '' })]; sub = 'Reagents'; }
-        else {
-          const [num, ...rest] = t.split(' ');
-          main = [sc ? h('img', { src: schoolIcon(sc), alt: '' }) : null, h('span', {}, num)];
-          sub = rest.join(' ').replace(' cards', ' Cards');
-        }
+        const card = achievementFromText(this.cards, t);
         this.achLayer.appendChild(h('div', { class: 'ach', 'data-tap': 'ach', 'data-key': `Achievement:${t}`, 'data-testid': `ach-${k}`, style: { left: '722px', top: `${50 + k * 72}px` } },
-          h('div', { class: 'a-h' }, 'ACHIEVEMENT'), h('div', { class: 'a-vp' }, '10'), h('div', { class: 'a-main' }, main), h('div', { class: 'a-sub' }, sub)));
+          achievementTile(card, { size: 'board' })));
       });
     }
   }

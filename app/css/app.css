@@ -86,27 +86,39 @@ img { -webkit-user-drag: none; user-select: none; }
 .marker.bump { animation: bump .6s ease-out; }
 @keyframes bump { 50% { box-shadow: 0 0 0 4px rgba(111, 240, 208, .8), 0 0 14px 4px rgba(111, 240, 208, .9); } }
 
-.ach { position: absolute; width: 112px; height: 64px; border-radius: 6px; background: linear-gradient(180deg, #efdcab, #dcc184); border: 2px solid #96702a; color: #3c1e0a;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0, 0, 0, .55); }
-.ach .a-h { font-size: 8.5px; letter-spacing: 1.2px; color: #6e4614; font-weight: 700; position: absolute; top: 5px; }
-.ach .a-vp { position: absolute; top: 4px; right: 7px; font-size: 9px; color: #6e4614; font-weight: 700; }
-.ach .a-main { display: flex; align-items: center; gap: 4px; font-family: var(--display); font-weight: 700; font-size: 17px; margin-top: 9px; }
-.ach .a-main img { width: 18px; height: 18px; }
-.ach .a-sub { font-size: 11.5px; font-weight: 700; line-height: 1; }
+.ach { position: absolute; width: 112px; height: 64px; padding: 0; background: transparent; border: none; box-shadow: none; }
 
-/* Achievement zoom (expand overlay): same look as board tiles, scaled to the card frame */
-.expand .big-frame-ach { display: flex; align-items: center; justify-content: center; padding: 8% 6%; background: linear-gradient(180deg, #1a1520, #110d0c); }
-.ach-tile-zoom { position: relative; width: 92%; max-width: 280px; aspect-ratio: 112 / 64; border-radius: 8px;
+/* Unified achievement face (board column, zoom, mat chips) */
+.ach-tile { position: relative; width: 100%; height: 100%; border-radius: 6px;
   background: linear-gradient(180deg, #efdcab, #dcc184); border: 2px solid #96702a; color: #3c1e0a;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
-.ach-tile-zoom .ach-tile-h { position: absolute; top: 8%; left: 8%; font-size: 8px; letter-spacing: 1.2px; color: #6e4614; font-weight: 700; }
-.ach-tile-zoom .ach-tile-vp { position: absolute; top: 6%; right: 8%; font-size: 11px; color: #6e4614; font-weight: 700; }
-.ach-tile-zoom .ach-tile-main { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
-  font-family: var(--display); font-weight: 700; font-size: clamp(14px, 4.2vw, 20px); text-align: center; padding: 0 6px; }
-.ach-tile-zoom .ach-tile-main img { width: 22px; height: 22px; object-fit: contain; }
-.ach-tile-orb { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .55); text-align: center; overflow: hidden; }
+.ach-tile-h { position: absolute; top: 5px; left: 7px; font-size: 8px; letter-spacing: 1.1px; color: #6e4614; font-weight: 700; }
+.ach-tile-vp { position: absolute; top: 4px; right: 7px; font-size: 9px; color: #6e4614; font-weight: 700; }
+.ach-tile-icon { display: flex; align-items: center; justify-content: center; min-height: 18px; margin-top: 8px; }
+.ach-tile-icon .ach-tile-img { width: 18px; height: 18px; object-fit: contain; border-radius: 3px; }
+.ach-tile-icon .ach-tile-deck { border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, .35); }
+.ach-tile-count { font-family: var(--display); font-weight: 700; font-size: 17px; line-height: 1; }
+.ach-tile-label { font-size: 10px; font-weight: 700; line-height: 1.05; padding: 0 4px 3px; }
+.ach-tile-orb { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; }
 .ach-tile-orb.gold { background: radial-gradient(circle at 35% 30%, #fff1b0, #e0a92e 60%, #8a5a12); box-shadow: 0 0 6px rgba(224, 169, 46, .5); }
 .ach-tile-orb.mana { background: radial-gradient(circle at 35% 30%, #9fd0ff, #2b6ee0 60%, #173a8a); box-shadow: 0 0 6px rgba(90, 162, 255, .5); }
+
+.expand .big-frame-ach { display: flex; align-items: center; justify-content: center; padding: 8% 6%; background: linear-gradient(180deg, #1a1520, #110d0c); }
+.ach-tile-zoom { width: 92%; max-width: 280px; height: auto; aspect-ratio: 112 / 64; border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
+.ach-tile-zoom .ach-tile-h { top: 8%; left: 8%; font-size: 8px; }
+.ach-tile-zoom .ach-tile-vp { top: 6%; right: 8%; font-size: 11px; }
+.ach-tile-zoom .ach-tile-icon { min-height: 26px; margin-top: 12px; }
+.ach-tile-zoom .ach-tile-icon .ach-tile-img { width: 26px; height: 26px; }
+.ach-tile-zoom .ach-tile-orb { width: 26px; height: 26px; }
+.ach-tile-zoom .ach-tile-count { font-size: clamp(18px, 5vw, 24px); }
+.ach-tile-zoom .ach-tile-label { font-size: 12px; padding-bottom: 6px; }
+
+.ach-tile-chip { width: 92px; height: 52px; flex-shrink: 0; }
+.ach-chip { display: inline-flex; vertical-align: middle; margin: 2px 4px 2px 0; }
+.ci-meta .ach-badge { display: inline-flex; align-items: center; margin-left: 6px; vertical-align: middle; }
+.ci-meta .ach-badge .ach-tile-img { width: 20px; height: 20px; }
+.ci-meta .ach-badge .ach-tile-orb { width: 16px; height: 16px; }
 
 /* ---------- dock ---------- */
 #dock { flex: none; height: calc(var(--dock) + var(--safe-b)); padding: 8px 10px calc(8px + var(--safe-b)); z-index: 4;

@@ -147,7 +147,7 @@ class Game {
   setView(v) {
     const prev = this.v; this.v = v;
     if (v.next !== this.me) UI.closeExpandOverlays();
-    this.board.render(v);
+    this.board.render(v, this.cards);
     this.renderDock(prev);
     this.renderTop();
   }
