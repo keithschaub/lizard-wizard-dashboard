@@ -93,8 +93,10 @@ def apply_action(s, me, act, trace, mix):
                 if is_attack(c['spell']): mix['attack'] += 1
                 if 'Haste' in c['spell']: return 'bonus'
     elif t == 'convert':
+        if act.get('transforms'): SE.transform_tokens(s, me, act['transforms'])
         (SE.energized_convert if act.get('energize') else A.convert)(s, me, act['reagent'], act['n']); mix['convert'] += 1
     elif t == 'convert2':
+        if act.get('transforms'): SE.transform_tokens(s, me, act['transforms'])
         pairs = act['pairs']
         A.convert_adept(s, me, pairs, energize_first=act.get('energize', False)); mix['convert'] += 1
     elif t == 'research':

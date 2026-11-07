@@ -879,13 +879,29 @@ def _candidates(v, me):
             ctok = _minus(tok, SPELL[b(cimg)]['cost'])
             val = (holdings(vt, me, ctok) - tw0 if not last else 0) + cg + extra
             add(val, spell_cat(cimg), dict(act, cast=_cast_params(v, me, cimg)), why + f" and cast {sname(cimg)} (+{cg:.1f})")
-    # 2) Convert one type (Adept Conversion: two types; Energize: +3 value first)
+    # 2) Convert one type (Adept Conversion: two types; Energize: +3 value first; Transform: 2:1 before sale)
+    def _transform_steps(tok, target, need, use_transform):
+        if not use_transform or need <= tok.count(target): return []
+        steps = []; t = list(tok)
+        while t.count(target) < need and len(t) >= 2:
+            pool = sorted(set(t), key=lambda z: v['tracks'][z])
+            fr = []
+            for x in pool:
+                while x in t and len(fr) < 2: t.remove(x); fr.append(x)
+                if len(fr) == 2: break
+            if len(fr) < 2: break
+            steps.append({'from': fr, 'to': target}); t.append(target)
+        return steps
+    use_xform = has_cast(p, 'Transform')
     types = sorted(set(p['tok']))
     for r in types:
         n = p['tok'].count(r); en = has_cast(p, 'Energize'); val_r = min(12, v['tracks'][r] + 3) if en else v['tracks'][r]
         gain = val_r * n; tok = [t for t in p['tok'] if t != r]
         vt = _vclone(v); vt['tracks'][r] = max(1, val_r - n)
-        add(holdings(vt, me, tok, p['mana'] + gain) - tw0, 'convert', {'type': 'convert', 'reagent': r, 'n': n, 'energize': en},
+        act = {'type': 'convert', 'reagent': r, 'n': n, 'energize': en}
+        xsteps = _transform_steps(p['tok'], r, n, use_xform)
+        if xsteps: act['transforms'] = xsteps
+        add(holdings(vt, me, tok, p['mana'] + gain) - tw0, 'convert', act,
             f"convert {n} {r} for {gain} mana" + (' (Energize +3)' if en else ''))
     if has_cast(p, 'Adept_Conversion') and len(types) >= 2:
         en_adept = has_cast(p, 'Energize')

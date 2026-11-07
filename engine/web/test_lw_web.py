@@ -129,6 +129,36 @@ r = call('act_research', spell='Spell_Haste', cast=True)
 check(r['ok'] and r['result'] == 'bonus' and r['view']['next'] == 'Keith' and r['view']['legal'], 'Haste: Keith takes a bonus action')
 r = call('act_convert', reagent='Sulphur', n=1)
 check(r['ok'] and r['view']['next'] == 'Newt', 'after the bonus action the turn passes')
+
+print('\n=== 6b. Creation: take face-up wizard or tower (UI keys, engine paths) ===')
+def m6cr(s):
+    k = A.P(s, 'Keith')
+    k['tok'] = ['Horn'] * 4 + ['Eye_of_Newt', 'Eye_of_Newt']
+    k['mana'] = 25
+    face = list(s.get('spell_face') or ['', '', ''])
+    face[0] = 'assets/Spell_Creation.jpg'
+    s['spell_face'] = face
+setup(m6cr)
+st = W.st()
+wiz_key = W.key(st['wiz_face'][0])
+wz0 = len(st['wiz_list'])
+r = call('act_research', spell='Spell_Creation', cast=True)
+check(r['ok'] and r['view']['pending']['kind'] == 'creation', 'Creation opens the picker')
+r = call('resolve_effect', choice={'kind': 'wizards', 'card': wiz_key})
+check(r['ok'] and W.key(P('Keith')['wizards'][-1]) == wiz_key and len(W.st()['wiz_list']) == wz0 - 1, 'Creation takes a face-up wizard')
+check(any(e.get('act') == 'creation' and e.get('kind') == 'wizards' for e in W.st()['meta']['log']), 'creation wizard logged')
+setup(m6cr)
+st = W.st()
+tow_key = W.key(st['tower_face'])
+tlist0 = len(st['tow_list'])
+r = call('act_research', spell='Spell_Creation', cast=True)
+r = call('resolve_effect', choice={'kind': 'towers', 'card': tow_key})
+check(r['ok'] and W.key(P('Keith')['towers'][-1]) == tow_key and len(W.st()['tow_list']) == tlist0 - 1, 'Creation takes the face-up tower')
+setup(m6cr)
+r = call('act_research', spell='Spell_Creation', cast=True)
+before = W.dump()
+r = call('resolve_effect', choice={'kind': 'wizards', 'card': 'Wizard_Not_On_Face'})
+check(not r['ok'] and W.dump() == before and W.pend(W.st())['kind'] == 'creation', 'failed Creation leaves state and pending unchanged')
 def m6ts(s):
     k = A.P(s, 'Keith')
     k['tok'] = ['Foxglove', 'Mandrake', 'Mandrake']
@@ -273,6 +303,24 @@ setup(lambda s: None); before = W.dump()
 for fn, kw in (('act_build', dict(pay='gold')), ('act_research', dict(spell='Spell_Haste', cast=True)), ('act_summon', dict(familiar='Familiar_25_Imp', use='score')),
                ('act_convert', dict(reagent='Horn', n=5)), ('resolve_effect', dict(choice={})), ('dungeon_flip', {})):
     r = call(fn, **kw); check(not r['ok'] and W.dump() == before, f'{fn} refused, state unchanged ({r["error"][:60]})')
+
+print('\n=== 11a. Transform (2:1) before convert in the same action ===')
+def m_transform(s):
+    for r, (exp, _a) in A.audit_tracks(s).items():
+        s['tracks'][r] = exp
+    k = A.P(s, 'Keith')
+    k['tok'] = ['Horn', 'Horn', 'Sulphur']
+    add_spell(s, 'Keith', 'Transform', cast=True)
+setup(m_transform)
+t_h = W.st()['tracks']['Toadstool']
+m0 = P('Keith')['mana']
+r = call('act_convert', reagent='Toadstool', n=1, transforms=[{'from': ['Horn', 'Sulphur'], 'to': 'Toadstool'}])
+check(r['ok'] and r['result'] in ('done', 'stopped (--no-ai)'), 'transform + convert in one action')
+check(P('Keith')['tok'] == ['Horn'], 'transform consumed Horn+Sulphur; unsold Horn remains')
+check(P('Keith')['mana'] == m0 + t_h and W.st()['tracks']['Toadstool'] == max(1, t_h - 1), 'convert used track value after transform')
+xf = [e for e in W.st()['meta']['log'] if e.get('act') == 'transform'][-1]
+check(xf.get('steps') == [{'from': ['Horn', 'Sulphur'], 'to': 'Toadstool'}], 'transform logged before convert for replay')
+check(not A.audit_tracks(W.st()) and not A.audit(W.st()), 'tracks and convert audit clean after transform')
 
 print('\n=== 11b. Adept Conversion: two types in one convert action, one log entry, audits clean ===')
 def sync_tracks(s):
