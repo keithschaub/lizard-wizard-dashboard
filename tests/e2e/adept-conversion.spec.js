@@ -12,7 +12,7 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
     const r = await fetch('engine/game/g8_state.json');
     const s = await r.json();
     const k = s.players.find((p) => p.name === 'Keith');
-    k.tok = ['Toadstool', 'Toadstool', 'Horn', 'Horn', 'Mandrake', 'Eye_of_Newt', 'Foxglove'];
+    k.tok = ['Toadstool', 'Toadstool', 'Horn', 'Horn', 'Mandrake', 'Eye_of_Newt', 'Foxglove', 'Nightshade', 'Sulphur'];
     k.spells = k.spells || [];
     k.spells.push({ img: 'Spell_Adept_Conversion.jpg', cast: true });
     s.tracks.Toadstool = 4;
@@ -20,6 +20,8 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
     s.tracks.Mandrake = 6;
     s.tracks.Eye_of_Newt = 5;
     s.tracks.Foxglove = 4;
+    s.tracks.Nightshade = 7;
+    s.tracks.Sulphur = 2;
     s.next = 'Keith';
     s.meta = s.meta || {};
     s.meta.web_pending = null;
@@ -35,13 +37,17 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
   expect(v.legal.adept_conversion).toBe(true);
 
   await page.getByTestId('token-Toadstool').tap();
-  await expect(page.getByTestId('convert-adept-note')).toBeVisible();
+  await expect(page.getByTestId('convert-adept-banner')).toHaveText('Adept Conversion: you may also sell a second type.');
+  await expect(page.locator('.adept-second-label')).toContainText('Also sell a second type');
   await expect(page.locator('select')).toHaveCount(0);
   await expect(page.getByTestId('convert-adept-type2-Mandrake')).toBeVisible();
   await expect(page.getByTestId('convert-adept-type2-Eye_of_Newt')).toBeVisible();
   await expect(page.getByTestId('convert-adept-type2-Foxglove')).toBeVisible();
+  await expect(page.getByTestId('convert-adept-type2-Nightshade')).toBeVisible();
+  await expect(page.getByTestId('convert-adept-type2-Sulphur')).toBeVisible();
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'docs/screenshots/adept-conversion-v1-none-dpr3.png', fullPage: true });
+  await page.screenshot({ path: 'docs/screenshots/adept-conversion-v1-many-dpr3.png', fullPage: true });
   // Sheet defaults n to full holdings; sell 1 of each type for the assertion below.
   await page.getByTestId('convert-minus').tap();
   await page.getByTestId('convert-adept-type2-Horn').tap();

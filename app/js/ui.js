@@ -796,7 +796,7 @@ export function convertSheet(g, reagent) {
       },
       h('span', { class: 'reagent-choice-medallion' }, h('img', { src: reagentIcon(r), alt: '' })),
       h('span', { class: 'reagent-choice-copy' }, h('span', { class: 'reagent-choice-name' }, nice(r)),
-        h('span', { class: 'reagent-choice-price' }, `· ${trackOf(r)}`)));
+        h('span', { class: 'reagent-choice-price' }, `${trackOf(r)} mana each`)));
       return b;
     }));
   let xTargetValue = reagent;
@@ -916,7 +916,7 @@ export function convertSheet(g, reagent) {
       },
       h('span', { class: 'reagent-choice-medallion' }, h('img', { src: reagentIcon(r), alt: '' })),
       h('span', { class: 'reagent-choice-copy' }, h('span', { class: 'reagent-choice-name' }, nice(r)),
-        h('span', { class: 'reagent-choice-price' }, `· ${trackOf(r)}`)));
+        h('span', { class: 'reagent-choice-price' }, `${trackOf(r)} mana each`)));
       return b;
     }));
   };
@@ -939,13 +939,12 @@ export function convertSheet(g, reagent) {
       xTarget,
       xAdd,
       xQueued) : null,
-    adept ? h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-banner' }, 'Adept Conversion: you may sell a second type in this same action (below).') : null,
+    adept ? h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-banner' }, 'Adept Conversion: you may also sell a second type.') : null,
     h('div', { class: 'stepper' }, h('button', { 'data-testid': 'convert-minus', onclick: () => { n = Math.max(1, n - 1); upd(); g.sfx('tap'); } }, '−'), val,
       h('button', { 'data-testid': 'convert-plus', onclick: () => { n = Math.min(countTok(reagent), n + 1); upd(); g.sfx('tap'); } }, '+')),
     gain,
     adept ? h('div', { class: 'adept-second' },
-      h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-note' }, 'Adept Conversion: convert a 2nd type'),
-      h('div', { class: 'adept-second-label' }, 'Also sell a second type (optional)'),
+      h('div', { class: 'adept-second-label' }, 'Also sell a second type ', h('span', {}, '(optional)')),
       type2Pick,
       secondRow) : null,
     adept ? gain2 : null,
