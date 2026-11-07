@@ -163,8 +163,13 @@ def dungeon_key(c):
 
 
 def _public_vp(q, s, viewer):
-    if q['name'] == viewer or s['meta'].get('game_over'): return S.score(q, s)
-    return S.score(dict(q, mana=0), s)          # Hoard Mana would reveal secret mana: public VP leaves it out
+    """Live VP including end-game spell bonuses (Arch Mage, Order of the Wand, …); hide secret mana for others."""
+    if q['name'] == viewer or s['meta'].get('game_over'):
+        return S.score(q, s)
+    hoard = 0
+    if any(x.get('cast') and 'Spell_Hoard_Mana' in x['img'] for x in q.get('spells', [])):
+        hoard = q.get('mana', 0) // 7
+    return S.score(q, s) - hoard
 
 
 def player_view(s, q, viewer):
@@ -207,9 +212,18 @@ def effect_feedback(e):
     if a in ('mana_drain_blocked', 'flame_bolt_blocked', 'disintegrate_blocked', 'earthquake_blocked', 'charm_blocked', 'swapo_blocked'):
         return f"Blocked by {t}'s Spell Shield"
     if a in ('flame_bolt', 'disintegrate', 'earthquake'):
+        if e.get('secret_society'):
+            return f"Secret Society: destroyed {CD.display(e.get('card'))} (aimed at {CD.display(e.get('aimed'))})"
         return f"Destroyed {CD.display(e.get('card'))} ({t})"
     if a == 'charm':
+        if e.get('secret_society'):
+            return f"Secret Society: took {CD.display(e.get('wizard'))} (aimed at {CD.display(e.get('aimed'))})"
         return f"Took {CD.display(e.get('wizard'))} from {t}"
+    if a == 'summon' and e.get('use') == 'score' and 'gold' in e:
+        g = int(e['gold'])
+        if e.get('powerful_helper'):
+            return f"+{g} Gold (includes +{e['powerful_helper']} from Powerful Helper)"
+        return f"+{g} Gold from scoring"
     if a == 'swapo':
         return f"Swapped with {t}: gave {CD.display(e.get('gave'))}, took {CD.display(e.get('got'))}"
     if a == 'wand_tax':
@@ -374,8 +388,9 @@ def legal(s, n):
             if k[0] == 'research_cast': d['castable'] = True
         elif k[0] == 'summon':
             fk = key(k[1]); c = CD.get(k[1])
+            sch = c['school']
             d = L['summon'].setdefault(fk, dict(cost=SE.familiar_cost(p, k[1]), uses=[], collect=c['collect'], reagent=A.norm(c['reagent']),
-                                                score_gold=1 + SE.school_count(p, c['school'])))
+                                                score_gold=SE.familiar_score_gold(p, sch), powerful_helper=SE.powerful_helper_bonus(p, sch, include_summoned_familiar=True)))
             d['uses'].append(k[2])
     # Invisibility Potion has a variable cost (X Eye of Newt): castable with at least one Eye
     for sk, d in L['research'].items():
@@ -840,7 +855,7 @@ def resolve_effect(choice):
                 familiar_img = fam[0]; c = CD.get(familiar_img)
                 s['meta']['web_pending'] = dict(type='rise', familiar=familiar_img, school=CD.school(familiar_img),
                                                 reagent=A.norm(c['reagent']), collect=c['collect'],
-                                                score_gold=1 + SE.school_count(P(s, n), c['school']))
+                                                score_gold=SE.familiar_score_gold(P(s, n), c['school']))
                 return 'pending'
         s['meta']['web_pending'] = None
         return _after_action(s, n, wp.get('queue', []))

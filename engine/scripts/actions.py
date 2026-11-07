@@ -305,15 +305,33 @@ def flame_bolt(s,caster,target,card,kind):
     assert caster!=target
     if shield_blocks(s,target):
         log(s,{'r':s['meta'].get('round'),'who':caster,'act':'flame_bolt_blocked','target':target}); return False
+    import spell_effects as _SE2
+    aimed = card
+    if kind == 'wizards':
+        card, redirected = _SE2.secret_society_wizard(s, target, card)
+    else:
+        redirected = False
     p=P(s,target); p[kind].remove(card); s.setdefault('out_of_play',[]).append(card)
-    log(s,{'r':s['meta'].get('round'),'who':caster,'act':'flame_bolt','target':target,'card':card.split('/')[-1],'kind':kind})
+    ent = {'r':s['meta'].get('round'),'who':caster,'act':'flame_bolt','target':target,'card':card.split('/')[-1],'kind':kind}
+    if redirected:
+        ent['secret_society'] = True
+        ent['aimed'] = aimed.split('/')[-1]
+    log(s, ent)
     return True
 def charm(s,caster,target,wiz):
     """Charm (real card, Enchantment 1x): 'Take a Wizard Card from another player.' Shield checked first."""
     if shield_blocks(s,target):
         log(s,{'r':s['meta'].get('round'),'who':caster,'act':'charm_blocked','target':target}); return False
+    import spell_effects as _SE2
+    aimed = wiz
+    wiz, redirected = _SE2.secret_society_wizard(s, target, wiz)
     P(s,target)['wizards'].remove(wiz); P(s,caster)['wizards'].append(wiz)
-    log(s,{'r':s['meta'].get('round'),'who':caster,'act':'charm','target':target,'wizard':wiz.split('/')[-1]}); return True
+    ent = {'r':s['meta'].get('round'),'who':caster,'act':'charm','target':target,'wizard':wiz.split('/')[-1]}
+    if redirected:
+        ent['secret_society'] = True
+        ent['aimed'] = aimed.split('/')[-1]
+    log(s, ent)
+    return True
 
 # ---------------- Added Nov 2, 2026 for the win-seeking AI (ai_policy.py) ----------------
 def disintegrate(s,caster,target,card,kind):
@@ -321,8 +339,19 @@ def disintegrate(s,caster,target,card,kind):
     assert caster!=target
     if shield_blocks(s,target):
         log(s,{'r':s['meta'].get('round'),'who':caster,'act':'disintegrate_blocked','target':target}); return False
+    import spell_effects as _SE2
+    aimed = card
+    if kind == 'wizards':
+        card, redirected = _SE2.secret_society_wizard(s, target, card)
+    else:
+        redirected = False
     P(s,target)[kind].remove(card); s.setdefault('out_of_play',[]).append(card)
-    log(s,{'r':s['meta'].get('round'),'who':caster,'act':'disintegrate','target':target,'card':card.split('/')[-1],'kind':kind}); return True
+    ent = {'r':s['meta'].get('round'),'who':caster,'act':'disintegrate','target':target,'card':card.split('/')[-1],'kind':kind}
+    if redirected:
+        ent['secret_society'] = True
+        ent['aimed'] = aimed.split('/')[-1]
+    log(s, ent)
+    return True
 def earthquake(s,caster,target,tower):
     """Earthquake (real card, Druidry 1x): "Destroy (out of play) another player's Tower". Shield checked first."""
     assert caster!=target
@@ -382,9 +411,14 @@ def summon_familiar(s,name,fam_img,use,cast=None,discard=None,cont=None,choose=N
         log(s,{'r':s['meta'].get('round'),'who':name,'act':'summon','familiar':b,'cost':fcost,'use':use})
         return _SE.dungeon_delve(s,name,cont) if use=='dungeon' else {'took':_SE.new_research(s,name,choose)}
     if use=='score':
-        sc=f['school']; n=sum(1 for c in p.get('wizards',[])+p.get('towers',[])+p.get('familiars',[]) if school(c)==sc)
-        n+=sum(1 for x in p.get('spells',[]) if school(x['img'])==sc)
-        p['gold']=p.get('gold',0)+n; out={'gold':n}
+        sc = f['school']
+        import spell_effects as _SE2
+        n = _SE2.school_count(p, sc)
+        helper = _SE2.powerful_helper_bonus(p, sc)
+        p['gold'] = p.get('gold', 0) + n + helper
+        out = {'gold': n + helper}
+        if helper:
+            out['powerful_helper'] = helper
     elif use=='gather':
         r=norm(f['reagent']); p['tok']+= [r]*int(f['collect']); casted=[]
         if after_collect: after_collect()          # e.g. claim an x7 achievement met now, before casting spends the tokens

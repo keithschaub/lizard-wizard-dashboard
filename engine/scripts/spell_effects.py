@@ -89,6 +89,36 @@ def transmute(s, name, reagents):
 def school_count(p, sch, cast_only=False):
     n = sum(1 for c in p.get('wizards', []) + p.get('towers', []) + p.get('familiars', []) if school(c) == sch)
     return n + sum(1 for x in p.get('spells', []) if school(x['img']) == sch and (x.get('cast') or not cast_only))
+
+
+def powerful_helper_bonus(p, sch, *, include_summoned_familiar=False):
+    """Powerful Helper (ongoing): +1 Gold per Wizard and Familiar of the familiar's school when scoring."""
+    if not has_cast(p, 'Powerful_Helper'):
+        return 0
+    n = sum(1 for c in p.get('wizards', []) if school(c) == sch)
+    n += sum(1 for c in p.get('familiars', []) if school(c) == sch)
+    if include_summoned_familiar:
+        n += 1
+    return n
+
+
+def familiar_score_gold(p, sch, *, include_summoned_familiar=True):
+    """Total Gold from Summon to Score (base school holdings + Powerful Helper)."""
+    n = school_count(p, sch) + (1 if include_summoned_familiar else 0)
+    return n + powerful_helper_bonus(p, sch, include_summoned_familiar=include_summoned_familiar)
+
+
+def secret_society_wizard(s, target, aimed_wiz):
+    """Secret Society: negative spells aimed at a wizard hit a random one instead. Returns (actual, redirected)."""
+    p = A.P(s, target)
+    if not has_cast(p, 'Secret_Society'):
+        return aimed_wiz, False
+    wzs = p.get('wizards', [])
+    if not wzs:
+        return aimed_wiz, False
+    seed = f"{s.get('board_seed')}-ss-{target}-{len(s.get('meta', {}).get('log', []))}"
+    actual = random.Random(seed).choice(wzs)
+    return actual, actual != aimed_wiz
 def wand_tax(s, name, sch):
     """Wand Tax (Enchantment 1x): 'Gain 2 Gold/ Card of any School of Magic of your choice'.
     Interpreted as cards YOU own of that school (ruling unconfirmed; BGG has an open 'Target/AoE for Wand Tax?' thread)."""

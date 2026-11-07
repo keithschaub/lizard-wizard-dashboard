@@ -979,7 +979,7 @@ def _candidates(v, me):
         F = FAMILIAR.get(b(f)); cost = fam_cost(p, f) if F else 99
         if not F or p['mana'] < cost: continue
         import spell_effects as SE
-        n = SE.school_count(p, F['school']) + 1
+        n = SE.familiar_score_gold(p, F['school'])
         e, ewhy = _end_timing(v, me, 'familiar', vp0 + n)
         e += 0.8 * sp_p
         after = holdings(v, me, p['tok'], p['mana'] - cost); circ = 5 / mana_per_vp(v, me) if has_cast(p, 'Energy_Circle') else 0

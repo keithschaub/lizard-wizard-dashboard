@@ -546,5 +546,68 @@ wiz_face = [w for w in W.st()['wiz_face'] if w]
 check(len([w for w in wiz_face if 'Reptilius_Venenum' in w]) == 1, f'exactly 1 Reptilius Venenum left on offer: {[os.path.basename(w) for w in wiz_face]}')
 check(P('Keith')['wizards'].count('assets/Wizard_Reptilius_Venenum.jpg') == 1, 'Keith has exactly 1 Reptilius Venenum')
 
+print('\n=== 17. Audit gaps: Powerful Helper, Secret Society, projected VP ===')
+def m17ph(s):
+    k = A.P(s, 'Keith')
+    k['mana'] = 50
+    k.setdefault('spells', []).append({'img': 'assets/Spell_Powerful_Helper.jpg', 'cast': True})
+    k.setdefault('wizards', []).append('assets/Wizard_Lacerta_Arborus.jpg')  # Druidry sample
+setup(m17ph)
+fam_key = W.key([x for x in W.st()['fam_face'] if x][0])
+sch = W.CD.school('assets/' + fam_key + '.jpg')
+base = SE.school_count(A.P(W.st(), 'Keith'), sch) + 1
+helper = SE.powerful_helper_bonus(A.P(W.st(), 'Keith'), sch, include_summoned_familiar=True)
+leg = W.view()['legal']['summon'][fam_key]
+check(leg['score_gold'] == base + helper and leg.get('powerful_helper') == helper, 'legal summon shows Powerful Helper bonus')
+g0 = P('Keith').get('gold', 0)
+r = call('act_summon', familiar=fam_key, use='score')
+check(r['ok'] and P('Keith').get('gold', 0) - g0 == base + helper, 'summon score pays base + Powerful Helper')
+fb = [e for e in r.get('entries', []) if e.get('act') == 'summon' and e.get('feedback')]
+check(fb and 'Powerful Helper' in fb[0]['feedback'], 'summon score feedback mentions Powerful Helper')
+
+def m17ss(s):
+    s['board_seed'] = 0
+    k = A.P(s, 'Keith')
+    k['mana'] = 40
+    k['tok'] = ['Foxglove', 'Foxglove', 'Sulphur', 'Mandrake']
+    face = list(s.get('spell_face') or ['', '', ''])
+    face[0] = 'assets/Spell_Flame_Bolt_S.jpg'
+    s['spell_face'] = face
+    n = A.P(s, 'Newt')
+    n.setdefault('spells', []).append({'img': 'assets/Spell_Secret_Society.jpg', 'cast': True})
+    w1, w2 = 'assets/Wizard_Draco_Mortemus.jpg', 'assets/Wizard_Bufonem_Creaturae.jpg'
+    n['wizards'] = [w1, w2]
+setup(m17ss)
+_w1, _w2 = 'assets/Wizard_Draco_Mortemus.jpg', 'assets/Wizard_Bufonem_Creaturae.jpg'
+aim = W.key(_w1)
+r = call('act_research', spell='Spell_Flame_Bolt_S', cast=True)
+check(r['ok'] and r['view']['pending']['kind'] in ('flame_bolt', 'disintegrate'), 'Flame Bolt opens target picker')
+r = call('resolve_effect', choice={'player': 'Newt', 'kind': 'wizards', 'card': aim})
+check(r['ok'], f'resolve Flame Bolt on Newt wizard ({r.get("error")})')
+ent = [e for e in W.st()['meta']['log'] if e.get('act') == 'flame_bolt'][-1]
+check(ent.get('secret_society') and ent.get('aimed'), 'Secret Society logs redirect metadata')
+fb = [e for e in r.get('entries', []) if e.get('feedback')]
+check(fb and 'Secret Society' in fb[0]['feedback'], 'Flame Bolt toast mentions Secret Society')
+got = W.key(ent['card'] + '.jpg') if not ent['card'].endswith('.jpg') else W.key(ent['card'])
+check(got in (W.key(_w1), W.key(_w2)), 'a Newt wizard was destroyed')
+
+def m17vp(s):
+    k = A.P(s, 'Keith')
+    k['wizards'] = ['assets/Wizard_Draco_Mortemus.jpg', 'assets/Wizard_Bufonem_Creaturae.jpg', 'assets/Wizard_Lacerta_Arborus.jpg']
+    k.setdefault('spells', []).append({'img': 'assets/Spell_Arch_Mage.jpg', 'cast': True})
+    k['mana'] = 21
+    k.setdefault('spells', []).append({'img': 'assets/Spell_Hoard_Mana.jpg', 'cast': True})
+    nz = A.P(s, 'Newt')
+    nz['mana'] = 14
+    nz.setdefault('spells', []).append({'img': 'assets/Spell_Hoard_Mana.jpg', 'cast': True})
+setup(m17vp)
+me = [p for p in W.view()['players'] if p['you']][0]
+check(me['vp'] == S.score(A.P(W.st(), 'Keith'), W.st()), 'Keith HUD VP is full projected score')
+exp_keith = S.score(A.P(W.st(), 'Keith'), W.st())
+check(me['vp'] == exp_keith and exp_keith >= 9 + 3, 'Arch Mage (+9 unique) and Hoard Mana (+3) in live VP')
+newt_pub = [p for p in W.view()['players'] if p['name'] == 'Newt'][0]
+exp_newt = S.score(A.P(W.st(), 'Newt'), W.st()) - 14 // 7
+check(newt_pub['vp'] == exp_newt, 'opponent VP hides Hoard Mana mana bonus only')
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)
