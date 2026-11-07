@@ -788,7 +788,7 @@ export function convertSheet(g, reagent) {
   const choiceGroup = (options, selected, testPrefix, onPick) => h('div', { class: 'reagent-choice-group' },
     ...options.map((r) => {
       const b = h('button', {
-        class: `reagent-choice ${selected === r ? 'on' : ''}`,
+        class: `reagent-choice reagent-choice-${String(r).toLowerCase().replaceAll('_', '-')} ${selected === r ? 'on' : ''}`,
         type: 'button',
         'data-testid': `${testPrefix}-${r}`,
         'aria-pressed': selected === r ? 'true' : 'false',
@@ -898,7 +898,7 @@ export function convertSheet(g, reagent) {
     type2Pick.innerHTML = '';
     appendNodes(type2Pick, ...otherTypes.map((r) => {
       const b = h('button', {
-        class: `reagent-choice ${r2 === r ? 'on' : ''}`,
+        class: `reagent-choice reagent-choice-${String(r).toLowerCase().replaceAll('_', '-')} ${r2 === r ? 'on' : ''}`,
         type: 'button',
         'data-testid': `convert-adept-type2-${r}`,
         'aria-pressed': r2 === r ? 'true' : 'false',

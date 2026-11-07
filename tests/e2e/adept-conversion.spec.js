@@ -45,15 +45,21 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
   await expect(page.getByTestId('convert-adept-type2-Foxglove')).toBeVisible();
   await expect(page.getByTestId('convert-adept-type2-Nightshade')).toBeVisible();
   await expect(page.getByTestId('convert-adept-type2-Sulphur')).toBeVisible();
+  const nightshadeRightPadding = await page.getByTestId('convert-adept-type2-Nightshade').evaluate((el) => {
+    const chip = el.getBoundingClientRect();
+    const name = el.querySelector('.reagent-choice-name').getBoundingClientRect();
+    return chip.right - name.right;
+  });
+  expect(nightshadeRightPadding).toBeGreaterThanOrEqual(10);
   await page.waitForTimeout(500);
-  await page.screenshot({ path: 'docs/screenshots/adept-conversion-v1-none-dpr3.png', fullPage: true });
-  await page.screenshot({ path: 'docs/screenshots/adept-conversion-v1-many-dpr3.png', fullPage: true });
+  await page.screenshot({ path: 'docs/screenshots/adept-conversion-v2-none-dpr3.png', fullPage: true });
+  await page.screenshot({ path: 'docs/screenshots/adept-conversion-v2-many-dpr3.png', fullPage: true });
   // Sheet defaults n to full holdings; sell 1 of each type for the assertion below.
   await page.getByTestId('convert-minus').tap();
   await page.getByTestId('convert-adept-type2-Horn').tap();
   await expect(page.getByTestId('convert-stepper2')).toBeVisible();
   await expect(page.getByTestId('convert-adept-type2-Horn')).toHaveClass(/on/);
-  await page.screenshot({ path: 'docs/screenshots/adept-conversion-v1-selected-dpr3.png', fullPage: true });
+  await page.screenshot({ path: 'docs/screenshots/adept-conversion-v2-selected-dpr3.png', fullPage: true });
   await page.getByTestId('convert-adept-type2-Horn').tap();
   await expect(page.getByTestId('convert-stepper2')).toBeHidden();
   await page.getByTestId('convert-adept-type2-Horn').tap();

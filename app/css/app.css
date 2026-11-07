@@ -548,7 +548,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
   display: flex; flex-direction: column; gap: 12px; align-items: center; animation: sheetUp .28s cubic-bezier(.2, .9, .3, 1) both; }
 @keyframes sheetUp { from { transform: translateY(100%); } }
 .stepper { display: flex; align-items: center; gap: 18px; }
-.adept-stepper { justify-content: center; width: 100%; }
+.adept-stepper { justify-content: center; width: 100%; margin-top: 14px; }
 .stepper button { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: rgba(255, 255, 255, .06); font-size: 24px; font-weight: 700; }
 .stepper .val { font-family: var(--sans); font-weight: 700; font-size: 32px; min-width: 50px; text-align: center; color: var(--gold-hi); }
 .big-icon { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .6)); }
@@ -566,9 +566,12 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
   border: 1px solid var(--gold); border-radius: 50%; background: #211a15; box-shadow: 0 1px 5px rgba(0, 0, 0, .55); }
 .reagent-choice-medallion img { width: 100%; height: 100%; padding: 3px; box-sizing: border-box; object-fit: contain; }
 .reagent-choice-copy { display: flex; flex-direction: column; min-width: 0; line-height: 1.05; }
-.reagent-choice-name { font-family: var(--display); font-size: 14px; white-space: nowrap; }
+.reagent-choice-name { font-family: var(--display); font-size: 12px; letter-spacing: -.35px; white-space: nowrap;
+  transform: scaleX(.9); transform-origin: left center; }
 .reagent-choice-price { color: #f2d98e; font-size: 11px; margin-top: 3px; white-space: nowrap; }
 .reagent-choice.on .reagent-choice-price { color: #f2d98e; }
+.reagent-choice-foxglove .reagent-choice-medallion img,
+.reagent-choice-mandrake .reagent-choice-medallion img { transform: scale(1.2); }
 .adept-second-label { color: var(--ink); font-size: 15px; text-align: center; margin-top: 2px; }
 .adept-second-label span { color: var(--muted); font-size: 13px; }
 .adept-second .reagent-choice-group { margin-top: 2px; }
