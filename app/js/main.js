@@ -102,7 +102,13 @@ class Game {
       if (!db.ok) throw new Error(db.error);
       this.cards = db.result;
       let text = Store.loadLocal(); let r = null;
-      if (text) { r = await this.call('load', { text }); if (!r.ok) { console.warn('saved game unreadable, starting g8:', r.error); text = null; } }
+      if (text) {
+        r = await this.call('load', { text });
+        if (!r.ok || r.result?.game_over) {
+          console.warn('saved game is unreadable or finished; starting a fresh game');
+          Store.clearLocal(); text = null; r = null;
+        }
+      }
       if (!text) {
         const resp = await fetch('engine/game/g8_state.json');
         if (!resp.ok) throw new Error(`engine/game/g8_state.json: HTTP ${resp.status}`);
@@ -346,6 +352,7 @@ class Game {
   }
   async startedNewGame(view) {
     this.overShown = null; this.lastTurnRound = null;
+    Store.clearLocal();
     this.setView(view);
     await this.autosave();
     this.toast('New game: round 1, your move');

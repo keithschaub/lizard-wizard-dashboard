@@ -1405,6 +1405,8 @@ export async function newGame(g) {
 }
 
 async function newGameWithConfig(g, config) {
+  // A new deal must replace the autosave, never resume it after setup/replay.
+  Store.clearLocal();
   const ov = openOverlay('gather newgame', { testid: 'new-game' });
   appendNodes(ov.el, closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'), h('div', { class: 'ov-sub' }, 'Dealing…'));
   const seeds = g.nextGameSeeds || {};
