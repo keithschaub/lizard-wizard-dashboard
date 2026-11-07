@@ -43,6 +43,18 @@ async function showGather(page, gather) {
   await expect(page.getByTestId('ai-gather-structured')).toBeVisible();
 }
 
+async function showSell(page, sell) {
+  await page.evaluate(async (sell) => {
+    const g = window.lwDebug._g;
+    window.ui.banner(g, {
+      r: 10, who: 'Gecko', act: 'convert',
+      text: 'Gecko sold 2 Mandrake at 12 each (+24 mana); track now 10',
+      sell,
+    }, 0, 1);
+  }, sell);
+  await expect(page.getByTestId('ai-sell-structured')).toBeVisible();
+}
+
 test('structured short gather banner keeps reagent chips and tracks readable', async ({ page }) => {
   await page.goto('/');
   await waitForBoard(page);
@@ -72,4 +84,30 @@ test('structured long gather banner wraps four reagents and tracks without clipp
   expect(box.y).toBeGreaterThanOrEqual(0);
   expect(box.y + box.height).toBeLessThanOrEqual(844);
   await page.getByTestId('ai-banner').screenshot({ path: 'docs/screenshots/banner-gather-long-dpr3.png' });
+});
+
+test('structured single-type sell banner shows reagent and mana gain', async ({ page }) => {
+  await page.goto('/');
+  await waitForBoard(page);
+  await showSell(page, { sales: [{ reagent: 'Mandrake', n: 2, value: 12 }], mana: 24 });
+  await expect(page.getByTestId('ai-sell-reagent')).toContainText('2 Mandrake');
+  await expect(page.getByTestId('ai-sell-mana')).toContainText('+24 mana');
+  await expect(page.getByTestId('ai-sell-structured')).not.toContainText('track now');
+  await page.getByTestId('ai-banner').screenshot({ path: 'docs/screenshots/banner-sell-single-dpr3.png' });
+});
+
+test('structured multi-type sell banner uses one chip per type and one total gain', async ({ page }) => {
+  await page.goto('/');
+  await waitForBoard(page);
+  await showSell(page, {
+    sales: [
+      { reagent: 'Mandrake', n: 2, value: 12 },
+      { reagent: 'Horn', n: 1, value: 8 },
+    ],
+    mana: 32,
+  });
+  await expect(page.getByTestId('ai-sell-reagent')).toHaveCount(2);
+  await expect(page.getByTestId('ai-sell-mana')).toContainText('+32 mana');
+  await expect(page.getByTestId('ai-sell-structured')).not.toContainText('track now');
+  await page.getByTestId('ai-banner').screenshot({ path: 'docs/screenshots/banner-sell-multi-dpr3.png' });
 });

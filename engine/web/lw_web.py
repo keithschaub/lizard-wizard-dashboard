@@ -326,6 +326,24 @@ def gather_banner_data(e):
     }
 
 
+def sell_banner_data(e):
+    if e.get('act') == 'convert':
+        parts = e.get('parts')
+        if parts:
+            sales = [{'reagent': p.get('reagent'), 'n': p.get('n', 0), 'value': p.get('value', 0)} for p in parts]
+        elif e.get('reagent'):
+            sales = [{'reagent': e.get('reagent'), 'n': e.get('n', 0), 'value': e.get('value', 0)}]
+        else:
+            return None
+        return {'sales': sales, 'mana': e.get('gain', 0)}
+    if e.get('act') == 'convert1':
+        return {
+            'sales': [{'reagent': r, 'n': 1, 'value': 1} for r in e.get('reagents', [])],
+            'mana': e.get('gain', len(e.get('reagents', []))),
+        }
+    return None
+
+
 def log_cards(e):
     a = e.get('act'); out = []
     for f in ('spell', 'took', 'tower', 'familiar', 'card', 'wizard', 'gave', 'got'):
@@ -360,6 +378,8 @@ def public_log(s, viewer):
         item['cards'] = log_cards(e)
         if a == 'gather':
             item['gather'] = gather_banner_data(e)
+        if a in ('convert', 'convert1'):
+            item['sell'] = sell_banner_data(e)
         if a == 'research' and e.get('cast') or a == 'cast':
             item['cast'] = key(e['spell'])
         if a == 'auction': item['bids'] = e.get('bids_tail'); item['price'] = e.get('price')

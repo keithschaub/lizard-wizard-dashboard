@@ -70,6 +70,28 @@ def test_gather_banner_data_preserves_reagents_bonus_and_tracks():
     }
 
 
+def test_sell_banner_data_keeps_sales_and_total_mana_without_track_value():
+    assert lw_web.sell_banner_data({
+        'act': 'convert', 'reagent': 'Mandrake', 'n': 2, 'value': 12,
+        'gain': 24, 'track_after': 10,
+    }) == {
+        'sales': [{'reagent': 'Mandrake', 'n': 2, 'value': 12}],
+        'mana': 24,
+    }
+    assert lw_web.sell_banner_data({
+        'act': 'convert', 'parts': [
+            {'reagent': 'Mandrake', 'n': 2, 'value': 12, 'track_after': 10},
+            {'reagent': 'Horn', 'n': 1, 'value': 8, 'track_after': 7},
+        ], 'gain': 32,
+    }) == {
+        'sales': [
+            {'reagent': 'Mandrake', 'n': 2, 'value': 12},
+            {'reagent': 'Horn', 'n': 1, 'value': 8},
+        ],
+        'mana': 32,
+    }
+
+
 if __name__ == '__main__':
     test_all_log_actions_are_humanized()
     print(f'OK: {len(ACTS)} log actions humanized')
