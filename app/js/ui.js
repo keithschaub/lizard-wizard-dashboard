@@ -625,9 +625,8 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
     familiar: fk,
     title: 'Summon',
     subtitle: 'Choose how to use this familiar',
-    scoreDetail: L.powerful_helper
-      ? `+${L.score_gold} Gold (+${L.powerful_helper} Powerful Helper)`
-      : `+${L.score_gold} Gold`,
+    scoreDetail: `+${L.score_gold + (L.powerful_helper || 0)} Gold`,
+    scoreNote: L.powerful_helper ? 'incl. Powerful Helper' : null,
     gatherDetail: `${L.collect} ${nice(L.reagent)}`,
     reagent: L.reagent,
     disabled: Object.fromEntries(['score', 'gather', 'dungeon', 'research'].map((use) => [use, !uses.has(use)])),
@@ -1070,15 +1069,15 @@ function familiarActionIcon(use, reagent) {
 }
 
 function familiarActionChooser(g, {
-  familiar, title, subtitle, scoreDetail, gatherDetail, reagent, disabled = {},
+  familiar, title, subtitle, scoreDetail, scoreNote = null, gatherDetail, reagent, disabled = {},
   testPrefix = 'rise', onUse, cancel = false,
 }) {
   const ov = openOverlay('sheet', { onScrim: cancel ? (o) => o.close() : null, testid: `${testPrefix}-use` });
   const uses = [
-    { use: 'score', label: 'Score', detail: scoreDetail, reason: 'Scoring unavailable' },
+    { use: 'score', label: 'Score', detail: scoreDetail, note: scoreNote, reason: 'Scoring unavailable' },
     { use: 'gather', label: 'Gather', detail: gatherDetail, reason: 'Gathering unavailable' },
     { use: 'dungeon', label: 'Dungeon', detail: 'draw until treasure', reason: 'Dungeon unavailable' },
-    { use: 'research', label: 'New Research', detail: 'reveal spells', reason: 'Research unavailable' },
+    { use: 'research', label: 'Research', detail: 'reveal spells', reason: 'Research unavailable' },
   ];
   const actionGrid = h('div', { class: 'familiar-action-grid' });
   uses.forEach((a) => {
@@ -1090,8 +1089,10 @@ function familiarActionChooser(g, {
       'data-testid': `${testPrefix}-${a.use}`,
       onclick: async () => { g.sfx(a.use === 'score' ? 'coin' : 'select'); ov.close(); await onUse(a.use); },
     }, h('span', { class: 'familiar-action-icon' }, familiarActionIcon(a.use, reagent)),
-    h('span', { class: 'familiar-action-title' }, a.label),
-    h('span', { class: 'familiar-action-detail' }, detail)));
+    h('span', { class: 'familiar-action-copy' },
+      h('span', { class: 'familiar-action-title' }, a.label),
+      h('span', { class: 'familiar-action-detail' }, detail),
+      a.note ? h('span', { class: 'familiar-action-note' }, a.note) : null)));
   });
   appendNodes(ov.el, h('div', { class: 'familiar-action-panel' },
     h('img', { class: 'familiar-action-card', src: art(familiar), alt: familiar, onclick: () => expandCard(g, familiar) }),
