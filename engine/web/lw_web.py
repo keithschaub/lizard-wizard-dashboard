@@ -13,7 +13,7 @@ ai_policy, ai_sim, scoring, carddb); nothing here re-implements a rule. This mod
 Every committing call runs on a deep copy and only replaces the live state on success, so a refused action never
 leaves a half-applied state behind.
 """
-import copy, json, os, sys, random, itertools
+import copy, json, os, sys, random, itertools, re
 from collections import Counter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -253,7 +253,17 @@ def effect_feedback(e):
     return None
 
 
-def log_text(e):
+def _clean_card_ids(text):
+    if not isinstance(text, str):
+        return text
+    return re.sub(r'\b(?:Reagent|Tower|Wizard|Familiar|Spell)\s+\d+\b',
+                  lambda m: {'Reagent': 'a Gather Reagents card', 'Tower': 'a Tower card',
+                             'Wizard': 'a Wizard card', 'Familiar': 'a Familiar card',
+                             'Spell': 'a Spell card'}[m.group(0).split()[0]],
+                  text)
+
+
+def _log_text(e):
     a = e.get('act'); w = e.get('who')
     try:
         if a == 'scry_dungeon' and 'seen' not in e:
@@ -291,10 +301,18 @@ def log_text(e):
         if a == 'summon' and e.get('use') == 'gather':
             return f"{w} summoned {CD.display(e['familiar'])} for {e['cost']} mana: gathered {', '.join(T.nice(r) for r in e.get('got', []))}" + \
                    (f", cast {', '.join(CD.display(jpg(spell_key_of(x))) for x in e.get('cast', []))}" if e.get('cast') else '')
+        if a == 'gather':
+            got = ', '.join(T.nice(r) for r in e.get('got', [])) or 'nothing'
+            bonus = f" + wizard bonus {', '.join(T.nice(r) for r in e.get('bonus', []))}" if e.get('bonus') else ''
+            return f"{w} gathered from a Gather Reagents card: {got}{bonus}"
         text = T.describe(e)
         return text if isinstance(text, str) and '{' not in text and '"act"' not in text else f"{w + ': ' if w else ''}{str(a or 'game event').replace('_', ' ')}"
     except Exception:
         return f"{w + ': ' if w else ''}{str(a or 'game event').replace('_', ' ')}"
+
+
+def log_text(e):
+    return _clean_card_ids(_log_text(e))
 
 
 def log_cards(e):

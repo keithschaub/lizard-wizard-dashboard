@@ -1,5 +1,6 @@
 """Every engine log action must produce human-readable banner text."""
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
@@ -39,6 +40,19 @@ def test_all_log_actions_are_humanized():
         text = lw_web.log_text(entry)
         assert isinstance(text, str) and text.strip(), act
         assert '{' not in text and '"act"' not in text, (act, text)
+
+
+def test_log_text_does_not_expose_numbered_card_ids():
+    gather = {
+        'act': 'gather', 'who': 'Newt', 'card': 'Reagent_23.jpg',
+        'got': ['Sulphur', 'Mandrake', 'Horn'], 'bonus': ['Sulphur'],
+    }
+    text = lw_web.log_text(gather)
+    assert text == 'Newt gathered from a Gather Reagents card: Sulphur, Mandrake, Horn + wizard bonus Sulphur'
+    for kind in ('Reagent', 'Tower', 'Wizard', 'Familiar', 'Spell'):
+        assert re.search(rf'\b{kind} \d+\b', lw_web.log_text({
+            'act': 'web_note', 'text': f'{kind} 12 appeared',
+        })) is None
 
 
 if __name__ == '__main__':
