@@ -1432,8 +1432,17 @@ function sellBanner(g, e) {
 function structuredBanner(g, e) {
   const data = e.structured;
   if (!data) return null;
+  const icon = item => item.reagent
+    ? h('img', { src: reagentIcon(item.reagent), alt: nice(item.reagent) })
+    : item.mana !== undefined
+      ? h('span', { class: 'orb structured-mana-orb', 'aria-hidden': 'true' })
+      : item.gold !== undefined
+        ? h('span', { class: 'orb structured-gold-orb', 'aria-hidden': 'true' })
+        : item.card && g.cards[item.card]
+          ? h('img', { src: art(item.card), alt: '' })
+          : item.school ? schoolIcon(item.school) : null;
   const chip = (item) => h('span', { class: `bstructured-chip${item.card ? ' card' : ''}`, 'data-testid': 'ai-structured-chip' },
-    item.card && g.cards[item.card] ? h('img', { src: art(item.card), alt: '' }) : null,
+    icon(item),
     h('span', {}, item.label));
   return h('div', { 'data-testid': 'ai-banner-text' },
     h('div', { class: 'bstructured', 'data-testid': 'ai-structured' },
