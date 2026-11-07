@@ -179,7 +179,7 @@ export function runSetupWizard(g) {
             Store.saveSetup(cfg);
             finish(cfg);
           },
-        }, h('span', { class: 'setup-action-title' }, 'Begin the game'),
+        }, h('span', { class: 'setup-action-title' }, 'Pick reagents'),
         h('span', { class: 'setup-action-sub' }, `${draft.player_count} wizards at the table`)));
     };
 

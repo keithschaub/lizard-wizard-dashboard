@@ -30,7 +30,7 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await page.getByTestId('setup-size-4').tap();
   await page.getByTestId('setup-opponents').tap();
   await expect(page.getByTestId('setup-ai-card-0')).toBeVisible();
-  await expect(page.getByTestId('setup-start')).toHaveText(/Begin the game4 wizards at the table/);
+  await expect(page.getByTestId('setup-start')).toHaveText(/Pick reagents4 wizards at the table/);
   await shot(page, 'game-setup-03-ais');
   await page.getByTestId('setup-start').scrollIntoViewIfNeeded();
   await page.screenshot({ path: 'docs/screenshots/setup-ai-seats-actions-dpr3.png' });
