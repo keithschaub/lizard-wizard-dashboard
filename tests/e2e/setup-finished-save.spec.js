@@ -18,7 +18,10 @@ async function finishDeal(page) {
   await picks.nth(0).tap();
   await picks.nth(1).tap();
   await page.getByTestId('new-game-start').tap();
-  await expect.poll(() => page.evaluate(() => window.lwDebug.view().round)).toBe(1);
+  await page.waitForFunction(() => {
+    const v = window.lwDebug.view();
+    return v.round === 1 && !v.game_over;
+  });
   const view = await page.evaluate(() => window.lwDebug.view());
   expect(view.game_over).toBe(false);
   return view;

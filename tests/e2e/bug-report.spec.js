@@ -101,7 +101,9 @@ test('Bug report submits successfully with mock relay', async ({ page }) => {
   await shot(page, 'bug-report-02-filled');
   
   // Submit
+  const submission = page.waitForResponse((response) => response.url() === RELAY_TEST && response.request().method() === 'POST');
   await page.getByTestId('bug-submit').click();
+  await submission;
   
   // Should show success toast
   await expect(page.getByTestId('bug-toast')).toBeVisible({ timeout: 5000 });
@@ -135,7 +137,9 @@ test('Bug report captures game state in background', async ({ page }) => {
   await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
   
   await page.getByTestId('bug-description').fill('Test bug report');
+  const submission = page.waitForResponse((response) => response.url() === RELAY_TEST && response.request().method() === 'POST');
   await page.getByTestId('bug-submit').click();
+  await submission;
   
   // Wait for submission
   await expect(page.getByTestId('bug-toast')).toBeVisible({ timeout: 5000 });
