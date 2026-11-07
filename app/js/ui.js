@@ -1438,9 +1438,11 @@ function structuredBanner(g, e) {
       ? h('span', { class: 'orb structured-mana-orb', 'aria-hidden': 'true' })
       : item.gold !== undefined
         ? h('span', { class: 'orb structured-gold-orb', 'aria-hidden': 'true' })
-        : item.card && g.cards[item.card]
+        : item.shield
+          ? h('span', { class: 'structured-shield-icon', 'aria-hidden': 'true' }, '🛡')
+          : item.card && (g.cards[item.card] || item.card.startsWith('Dungeon_'))
           ? h('img', { src: art(item.card), alt: '' })
-          : item.school ? schoolIcon(item.school) : null;
+          : item.school ? h('img', { src: schoolIcon(item.school), alt: item.school }) : item.deck ? h('span', { class: 'structured-deck-icon', 'aria-hidden': 'true' }, '✦') : null;
   const chip = (item) => h('span', { class: `bstructured-chip${item.card ? ' card' : ''}`, 'data-testid': 'ai-structured-chip' },
     icon(item),
     h('span', {}, item.label));

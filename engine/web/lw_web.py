@@ -355,6 +355,8 @@ def structured_banner_data(e):
         return {'label': label, 'mana': value}
     def gold(label, value):
         return {'label': label, 'gold': value}
+    def dungeon_label(c):
+        return c.get('name') or f"{c.get('gold')} Gold"
     def data(verb, chips=(), cards=(), note=None):
         out = {'headline': f'{w} {verb}', 'chips': list(chips), 'cards': list(cards)}
         if note: out['note'] = note
@@ -392,18 +394,20 @@ def structured_banner_data(e):
         item = 'Wizard_' + e['item'] if e.get('item') else None
         return data('passed on the auction', [card(CD.display(item), item)] if item else [], [item] if item else [])
     if a == 'dungeon':
-        kept = [c.get('name') or f"{c.get('gold')} Gold" for c in e.get('kept', [])]
-        return data('entered the dungeon', [{'label': f'kept {x}'} for x in kept[:2]])
+        kept = e.get('kept', [])
+        return data('entered the dungeon', [{'label': f"kept {dungeon_label(c)}", 'card': dungeon_key(c)} for c in kept[:2]])
     if a == 'scry_dungeon':
-        kept = [c.get('name') or f"{c.get('gold')} Gold" for c in e.get('kept', [])]
-        return data('scried the Dungeon', [{'label': x} for x in kept[:2]])
+        kept = e.get('kept', [])
+        return data('scried the dungeon', [{'label': dungeon_label(c), 'card': dungeon_key(c)} for c in kept[:2]])
     if a and a.startswith('scry_'):
         deck = a[5:].title()
-        return data('scried', [{'label': deck}] + ([card(CD.display(e['took']), e['took'])] if e.get('took') else []))
+        return data('scried', [{'label': deck, 'deck': a[5:]}] + ([card(CD.display(e['took']), e['took'])] if e.get('took') else []))
     if a == 'convert1':
         return data('sold', [{'label': f"-{len(e.get('reagents', []))} reagents"}, {'label': f"+{e.get('gain', len(e.get('reagents', [])))} mana"}])
     if a == 'transmute':
-        return data('transmuted', [{'label': f"-{len(e.get('reagents', []))} reagents"}, {'label': f"+{e.get('gold', 0)} Gold"}])
+        from collections import Counter
+        sold = [{'label': f"-{n} {T.nice(r)}", 'reagent': r} for r, n in Counter(e.get('reagents', [])).items()]
+        return data('transmuted', sold + [gold(f"+{e.get('gold', 0)} Gold", e.get('gold', 0))])
     if a == 'transform':
         return data('transformed', [{'label': ' + '.join(T.nice(r) for r in step.get('from', [])) + f" → {T.nice(step.get('to'))}"} for step in e.get('steps', [])[:2]])
     if a == 'time_shift':
@@ -412,9 +416,9 @@ def structured_banner_data(e):
     if a == 'wand_tax':
         return data('cast Wand Tax', [{'label': f"+{e.get('gold', 0)} Gold"}])
     if a == 'energy_pulse':
-        return data('cast Energy Pulse', [{'label': f"{e.get('destroyed', 0)} Spell Shields"}])
+        return data('cast Energy Pulse', [{'label': f"{e.get('destroyed', 0)} Spell Shields", 'shield': True}])
     if a in ('invisibility_potion', 'invisibility_potion_blocked'):
-        return data('cast Invisibility Potion', [{'label': f"+{e.get('gold', 0)} Gold"}] if a == 'invisibility_potion' else [{'label': 'blocked'}])
+        return data('cast Invisibility Potion', [{'label': f"+{e.get('gold', 0)} Gold"}] if a == 'invisibility_potion' else [{'label': 'blocked', 'shield': True}])
     if a == 'trap_spell':
         return data('set a Trap')
     if a in ('demonic_possession', 'demonic_possession_blocked'):
@@ -436,10 +440,11 @@ def structured_banner_data(e):
         if a == 'trigger':
             spell = spell or 'Spell_Trigger.jpg'
             return data('cast Trigger', [card('Trigger', spell), mana(f"+{e.get('gain', 0)} mana", e.get('gain', 0))], [spell])
-        outcome = {'label': f"vs {e.get('target')}", 'target': e.get('target')} if e.get('target') else None
+        versus = {'label': f"vs {e.get('target')}", 'target': e.get('target')} if e.get('target') else None
         if a == 'mana_drain':
             outcome = {'label': f"{e.get('n', 0)} mana drained", 'mana': -e.get('n', 0)}
-        return data(f"cast {a.replace('_', ' ').title()}", ([outcome] if outcome else []) + ([card(CD.display(spell), spell)] if spell else []), [spell] if spell else [])
+            return data('cast Mana Drain', ([versus] if versus else []) + [outcome])
+        return data(f"cast {a.replace('_', ' ').title()}", ([versus] if versus else []) + ([card(CD.display(spell), spell)] if spell else []), [spell] if spell else [])
     return None
 
 
