@@ -69,14 +69,14 @@ const wait = () => { let res; const p = new Promise((r) => { res = r; }); return
 
 // Card art flying from one place to another (auction win, loot to the mat, builds).
 export function fly(src, from, toEl, { w = 54, hgt = 76 } = {}) {
-  if (!from || !toEl) return;
+  if (!from || !toEl) return Promise.resolve();
   const to = toEl.getBoundingClientRect();
   const img = h('img', { class: 'fly', src, alt: '', style: { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` } });
   appendNodes(document.body, img);
   requestAnimationFrame(() => requestAnimationFrame(() => Object.assign(img.style, {
     left: `${to.left + to.width / 2 - w / 2}px`, top: `${to.top + to.height / 2 - hgt / 2}px`, width: `${w}px`, height: `${hgt}px`, opacity: '0.15', transform: 'rotate(-8deg)',
   })));
-  setTimeout(() => img.remove(), 820);
+  return new Promise((resolve) => setTimeout(() => { img.remove(); resolve(); }, 820));
 }
 const dockTarget = () => document.querySelector('[data-testid=my-vp]');
 const slotRectOf = (key) => { const el = document.querySelector(`#board [data-key="${key}"]`); return el ? el.getBoundingClientRect() : null; };
@@ -637,7 +637,7 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
       if (r) {
         const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
         if (hit?.feedback) g.toast(hit.feedback);
-        fly(art(fk), from, dockTarget());
+        await fly(art(fk), from, dockTarget());
         await g.afterAction();
       }
       return r;
