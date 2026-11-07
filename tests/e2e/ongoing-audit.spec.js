@@ -32,6 +32,12 @@ test('Powerful Helper: summon score sub-label shows helper bonus', async ({ page
   await expect(page.getByTestId('summon-score')).toBeVisible();
   await expect(page.getByTestId('summon-dungeon')).toBeDisabled();
   await expect(page.getByTestId('summon-dungeon')).toContainText('Dungeon unavailable');
+  const centerDelta = await page.getByTestId('summon-score').evaluate((el) => {
+    const icon = el.querySelector('.familiar-action-icon').getBoundingClientRect();
+    const copy = el.querySelector('.familiar-action-copy').getBoundingClientRect();
+    return Math.abs((icon.top + icon.height / 2) - (copy.top + copy.height / 2));
+  });
+  expect(centerDelta).toBeLessThanOrEqual(2);
   await page.getByTestId('summon-use').screenshot({ path: 'docs/screenshots/familiar-actions-summon-disabled-dpr3.png' });
   const sub = await page.getByTestId('summon-score').textContent();
   expect(sub).toMatch(/Powerful Helper/);
