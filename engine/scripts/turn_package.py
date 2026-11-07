@@ -233,7 +233,7 @@ def grouped_options(s, me):
     for f in [x for x in s.get('fam_face', []) if x]:
         c = CD.get(f); cost = SE.familiar_cost(p, f)
         if p['mana'] < cost: U.append(f"Summon {disp(f)} (needs {cost} mana, you have {p['mana']})"); continue
-        sc = c['school']; n = 1 + sum(1 for y in p.get('wizards', []) + p.get('towers', []) + p.get('familiars', []) if S.school(y) == sc) + sum(1 for y in p.get('spells', []) if S.school(y['img']) == sc)
+        sc = c['school']; n = SE.familiar_score_gold(p, sc)
         fk = b(f)[:-4]
         opt('SUMMON', ('summon', b(f), 'score'), f"Summon {disp(f)} ({cost} mana) to SCORE: +{n} Gold", f"keith summon {fk} score", 2 + n - cost / 5.0)
         rr = A.norm(c['reagent']); after = Counter(p['tok']) + Counter([rr] * int(c['collect']))

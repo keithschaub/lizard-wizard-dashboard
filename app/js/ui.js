@@ -619,10 +619,18 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
         if (use === 'gather') { await summonGather(g, k); return; }
         const from = slotRectOf(k);
         const r = await g.act('act_summon', { familiar: k, use }, { sound: use === 'score' ? 'coin' : 'select' });
-        if (r) { fly(art(k), from, dockTarget()); g.afterAction(); }
+        if (r) {
+          const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
+          if (hit?.feedback) g.toast(hit.feedback);
+          fly(art(k), from, dockTarget());
+          g.afterAction();
+        }
       };
+      const scoreSub = L.powerful_helper
+        ? `${L.cost} mana · +${L.score_gold} Gold (+${L.powerful_helper} Powerful Helper)`
+        : `${L.cost} mana · +${L.score_gold} Gold`;
       return [
-        { label: 'Summon to Score', sub: `${L.cost} mana · +${L.score_gold} Gold`, testid: 'summon-score', disabled: !uses.has('score'), onClick: act('score') },
+        { label: 'Summon to Score', sub: scoreSub, testid: 'summon-score', disabled: !uses.has('score'), onClick: act('score') },
         { label: 'Summon to Gather', sub: [`${L.cost} mana · `, ...Array.from({ length: L.collect }, () => h('img', { src: reagentIcon(L.reagent), alt: '' }))], testid: 'summon-gather', disabled: !uses.has('gather'), onClick: act('gather') },
         { label: 'Enter the Dungeon', sub: `${L.cost} mana`, testid: 'summon-dungeon', disabled: !uses.has('dungeon'), onClick: act('dungeon') },
         { label: 'New Research', sub: `${L.cost} mana`, testid: 'summon-research', disabled: !uses.has('research'), onClick: act('research') },
