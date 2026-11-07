@@ -1,10 +1,11 @@
 import { h, art, reagentIcon } from './dom.js';
 
 const SAMPLE_ART = {
-  Wizards: 'Wizard_Anguis_Magicus',
-  Towers: 'Tower_T1_Azure_Tower',
-  Familiars: 'Familiar_10_Imp',
-  Spells: 'Spell_Scribe',
+  Wizards: 'art/icons/achievement-wizard.webp',
+  Towers: 'art/icons/achievement-tower.webp',
+  Familiars: 'art/icons/achievement-familiar.webp',
+  // A clean school crest is preferable to showing printed spell-card text.
+  Spells: 'art/icons/schools_ui/school_Alchemy.png',
 };
 
 function shortBoardLabel(card = {}) {
@@ -26,7 +27,7 @@ export function achievementIcon(card = {}) {
     if (r) return h('img', { src: reagentIcon(r), alt: '', class: 'ach-tile-img' });
   }
   const sample = SAMPLE_ART[kind];
-  if (sample) return h('img', { src: art(sample), alt: '', class: 'ach-tile-img ach-tile-deck' });
+  if (sample) return h('img', { src: sample, alt: '', class: 'ach-tile-img ach-tile-deck' });
   return h('span', { class: 'ach-tile-orb gold', 'aria-hidden': 'true' });
 }
 

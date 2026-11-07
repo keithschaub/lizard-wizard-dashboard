@@ -94,6 +94,7 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
     }, ach);
     await page.reload();
     await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 90_000 });
+    await page.waitForTimeout(500);
     for (let j = 0; j < ach.length; j++) {
       const tile = page.getByTestId(`ach-${j}`).locator('[data-testid=achievement-tile]');
       await expect(tile.locator('.ach-tile-icon').locator('img, .ach-tile-orb')).toHaveCount(1);
@@ -109,6 +110,8 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
       await expect(zoomTile).toBeVisible();
       const geometry = await tileGeometry(zoomTile);
       expect(geometry.inside && geometry.separated, `zoom tile ${ach[j]} geometry`).toBe(true);
+      if (ach[j] === '100 Mana') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-mana-dpr3.png`, fullPage: true });
+      if (ach[j] === '7 Spells') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-spells-dpr3.png`, fullPage: true });
       if (j < ach.length - 1) {
         await page.getByTestId('nav-next').tap();
         await page.waitForTimeout(250);

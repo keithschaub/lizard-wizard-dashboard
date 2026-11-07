@@ -123,7 +123,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .ach-tile-board .ach-tile-icon { width: 34px; height: 34px; flex: 0 0 34px; }
 .ach-tile-board .ach-tile-text { flex: 1; align-items: flex-start; padding-right: 2px; }
 .ach-tile-board .ach-tile-count { font-size: 22px; }
-.ach-tile-board .ach-tile-label { position: absolute; left: 3px; right: 3px; bottom: 3px; width: auto; font-size: 10px;
+.ach-tile-board .ach-tile-label { position: absolute; left: 5px; right: 5px; bottom: 3px; width: auto; font-size: 10px;
   white-space: normal; overflow: visible; text-align: center; }
 
 /* Zoom / expand — portrait card fills the frame */
