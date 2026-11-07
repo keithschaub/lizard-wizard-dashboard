@@ -71,7 +71,15 @@ r = call('act_gather', card='Reagent_01', cast='Spell_Mana_Drain')
 check(r['ok'] and r['result'] == 'pending' and r['view']['pending']['kind'] == 'mana_drain', 'after the cast the UI is asked for the target')
 r = call('resolve_effect', choice={'player': 'Newt'})
 check(r['ok'] and nm == 18 and P('Keith')['mana'] == km + 15 and P('Newt')['mana'] == 3, 'Mana Drain applied by the engine: Keith +15, Newt 18 -> 3')
+md = [e for e in r['entries'] if e.get('act') == 'mana_drain'][-1]
+check(md.get('feedback') == 'Stole 15 mana from Newt', 'Mana Drain public log includes steal feedback')
 check(r['view']['next'] == 'Newt' and any(e['act'] == 'mana_drain' for e in W.st()['meta']['log']), 'turn passes after the effect resolves')
+setup(m4)
+r = call('act_gather', card='Reagent_01', cast='Spell_Mana_Drain')
+A.P(W.st(), 'LizWiz')['mana'] = 0
+r = call('resolve_effect', choice={'player': 'LizWiz'})
+md0 = [e for e in r['entries'] if e.get('act') == 'mana_drain'][-1]
+check(r['ok'] and md0.get('feedback') == 'LizWiz had no mana, nothing to steal', 'Mana Drain on 0 mana exposes nothing-to-steal feedback')
 setup(m4)
 r = call('act_gather', card='Reagent_01')
 check(not r['ok'] and 'over storage' in r['error'], 'over storage without put-backs is refused')

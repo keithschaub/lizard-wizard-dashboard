@@ -819,6 +819,12 @@ function convertMixed(g) {
   appendNodes(ov.el, h('div', { class: 'sheet-panel' }, h('div', { class: 'phase-title' }, 'Sell any mix at 1 mana each'), grid, h('div', { class: 'actions' }, go)));
 }
 
+export function announceSpellEffectResults(g, entries) {
+  for (const e of entries || []) {
+    if (e.feedback) g.toast(e.feedback);
+  }
+}
+
 export function showTimeShiftRemoved(g, entry) {
   const keys = entry.cards || [];
   if (!keys.length) return Promise.resolve();
@@ -891,6 +897,7 @@ export async function effectChooser(g) {
   const choice = await p;
   const r = await g.act('resolve_effect', { choice }, { sound: 'cast' });
   ov.close();
+  announceSpellEffectResults(g, r?.entries);
   const ts = (r?.entries || []).find((e) => e.act === 'time_shift');
   if (ts) {
     const deckName = TIME_SHIFT_DECK_LABEL[ts.deck] || nice(ts.deck);

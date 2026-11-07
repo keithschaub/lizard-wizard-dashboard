@@ -31,7 +31,9 @@ class Game {
   sfx(n) { Audio.play(n); }
   toast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
+    t.textContent = msg;
+    t.setAttribute('data-testid', 'toast');
+    t.classList.add('show');
     clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 2600);
   }
   call(fn, args) { return this.engine.call(fn, args); }
