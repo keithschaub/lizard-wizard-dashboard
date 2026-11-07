@@ -58,6 +58,33 @@ test('Energize: no checkbox in convert UI when Energize is available', async ({ 
   expect(errors).toEqual([]);
 });
 
+test('Energize: convert sheet shows base track before boosted math', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/');
+  await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 60_000 });
+  await page.evaluate(async () => {
+    const r = await fetch('engine/game/g8_state.json');
+    const s = await r.json();
+    const k = s.players.find((p) => p.name === 'Keith');
+    k.tok = ['Horn', 'Horn', 'Horn'];
+    k.spells = [{ img: 'assets/Spell_Energize.jpg', cast: true }];
+    s.tracks = { ...s.tracks, Horn: 4 };
+    s.next = 'Keith';
+    s.meta = s.meta || {};
+    s.meta.web_pending = null;
+    const out = await window.lwDebug._g.call('load', { text: JSON.stringify(s) });
+    if (!out.ok) throw new Error(out.error);
+    window.lwDebug._g.setView(out.result);
+  });
+  await page.getByTestId('token-Horn').tap();
+  await expect(page.getByTestId('convert')).toBeVisible();
+  await expect(page.getByTestId('convert-energize-note')).toContainText('Horn track 4 + 3 Energize = 7');
+  await expect(page.getByTestId('convert-gain-math')).toContainText('3 × 7 =');
+  await expect(page.getByTestId('convert-gain-math')).toContainText('+21 mana');
+  await expect(page.getByTestId('convert-gain-math')).toContainText('track ends at 4');
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('Spell effects: Evolve, Rise, Energize not in NOT_AUTOMATED list', async ({ page }) => {
   const errors = watchErrors(page);
   await boot(page);

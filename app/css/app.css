@@ -492,6 +492,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .big-icon { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .6)); }
 .gain { font-size: 16px; color: #cfe0ff; text-align: center; }
 .gain b { color: #9fd0ff; }
+.gain .energize-track b { color: #f2d98e; }
 .toggle { display: flex; align-items: center; gap: 8px; font-size: 15px; }
 .linkish { background: none; border: none; color: var(--gold); font-size: 14px; text-decoration: underline; padding: 6px; }
 
