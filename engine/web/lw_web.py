@@ -304,7 +304,8 @@ def _log_text(e):
         if a == 'gather':
             got = ', '.join(T.nice(r) for r in e.get('got', [])) or 'nothing'
             bonus = f" + wizard bonus {', '.join(T.nice(r) for r in e.get('bonus', []))}" if e.get('bonus') else ''
-            return f"{w} gathered from a Gather Reagents card: {got}{bonus}"
+            tracks = f"; tracks up: {', '.join(T.nice(r) for r in e.get('inc', []))}" if e.get('inc') else ''
+            return f"{w} gathered {got}{bonus}{tracks}"
         text = T.describe(e)
         return text if isinstance(text, str) and '{' not in text and '"act"' not in text else f"{w + ': ' if w else ''}{str(a or 'game event').replace('_', ' ')}"
     except Exception:

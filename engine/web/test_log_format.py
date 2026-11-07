@@ -46,9 +46,10 @@ def test_log_text_does_not_expose_numbered_card_ids():
     gather = {
         'act': 'gather', 'who': 'Newt', 'card': 'Reagent_23.jpg',
         'got': ['Sulphur', 'Mandrake', 'Horn'], 'bonus': ['Sulphur'],
+        'inc': ['Eye_of_Newt', 'Foxglove', 'Horn', 'Mandrake'],
     }
     text = lw_web.log_text(gather)
-    assert text == 'Newt gathered from a Gather Reagents card: Sulphur, Mandrake, Horn + wizard bonus Sulphur'
+    assert text == 'Newt gathered Sulphur, Mandrake, Horn + wizard bonus Sulphur; tracks up: Eye of Newt, Foxglove, Horn, Mandrake'
     for kind in ('Reagent', 'Tower', 'Wizard', 'Familiar', 'Spell'):
         assert re.search(rf'\b{kind} \d+\b', lw_web.log_text({
             'act': 'web_note', 'text': f'{kind} 12 appeared',
