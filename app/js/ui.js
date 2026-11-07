@@ -323,7 +323,7 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
   }
   
   const titleEl = title ? h('div', { class: 'ov-title', 'data-testid': titleTestid || 'expand-title' }, title) : null;
-  appendNodes(scrollInner, titleEl, cardTrack, indicator, cardinfoContainer, actionsContainer);
+  appendNodes(scrollInner, titleEl, cardTrack, indicator, actionsContainer, cardinfoContainer);
   appendNodes(ov.el, closeBtn(() => ov.close()), prevBtn, nextBtn, scrollInner);
 
   // Initial render
@@ -354,7 +354,8 @@ function mini(g, key, { cls = '', badge = null, testid = null, group = null, gro
     e.stopPropagation(); 
     g.sfx('tap');
     const youTurn = g.v.next === g.me && !g.v.game_over;
-    if (handGather && youTurn) handFlow(g, key, { group, groupIndex });
+    const legal = !!(g.v.legal.gather || {})[key];
+    if (handGather && youTurn && legal && !g.busyFlow()) gatherFlow(g, key);
     else expandCard(g, key, { group, groupIndex });
   } },
     h('img', { src: art(key), alt: key }), badge ? h('div', { class: 'badge' }, badge) : null);
@@ -521,33 +522,6 @@ const HOT = {
   5: [[0.19, 0.3], [0.5, 0.3], [0.81, 0.3], [0.33, 0.74], [0.67, 0.74]],
 };
 const HALF = { gather: [0.125, 0.485], increase: [0.565, 0.965] };
-
-/** Enlarged hand row during your turn: swipe across reagents; Gather action follows legal.gather per card. */
-export function handFlow(g, cid, { group = null, groupIndex = 0 } = {}) {
-  const handGroup = (group && group.length ? group : g.me_().hand);
-  const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : handGroup.indexOf(cid);
-  const startIdx = resolvedIdx < 0 ? 0 : resolvedIdx;
-  expandCard(g, cid, {
-    group: handGroup,
-    groupIndex: startIdx,
-    actions: (k) => {
-      const L = (g.v.legal.gather || {})[k];
-      if (!L) return [];
-      const sub = L.raises?.length && L.miracle
-        ? `Keep ${L.keep} · Miracle side available`
-        : `Keep ${L.keep} from ${L.offers?.length || 3} icons`;
-      return [{
-        label: 'Gather',
-        sub,
-        testid: 'hand-gather',
-        onClick: async (overlay) => {
-          overlay.close();
-          await gatherFlow(g, k);
-        },
-      }];
-    },
-  });
-}
 
 export async function gatherFlow(g, cid) {
   const L = g.v.legal.gather[cid];
