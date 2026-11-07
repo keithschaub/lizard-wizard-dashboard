@@ -558,7 +558,16 @@ def describe(e, viewer='Keith'):
         dep = [k for k, v in (e.get('supplies') or {}).items() if v == 0]
         return f"GAME END TRIGGERED: the {'/'.join(dep) or '?'} supply is fully depleted (deck AND face-up cards). This round finishes, then the game ends."
     if a == 'game_over': return 'Game over.'
-    return json.dumps(e)
+    if a == 'trap_spell': return f"{w} cast Trap: a trap was added to the Dungeon"
+    if a == 'demonic_possession': return f"{w} took {disp(e.get('familiar'))} from {e.get('target')} and used it immediately"
+    if a == 'obscure': return f"{w} obscured {e.get('target')}'s next Dungeon attempt"
+    if a == 'obscure_dungeon': return f"{w} ignored an Obscure effect and entered the Dungeon"
+    if a == 'evolve': return f"{w} evolved {disp(e.get('familiar'))} into {disp(e.get('wizard'))}"
+    if a == 'rise': return f"{w} re-activated {disp(e.get('familiar'))} for {e.get('use', 'an action')}"
+    if a == 'crystal_ball_refill': return f"{w} refilled their hand with Crystal Ball ({e.get('drawn', 0)} card(s))"
+    if a == 'demonic_possession_blocked': return f"{w}'s Demonic Possession was blocked by a Spell Shield"
+    if a == 'obscure_blocked': return f"{w}'s Obscure was blocked by a Spell Shield"
+    return f"{w + ': ' if w else ''}{str(a or 'game event').replace('_', ' ')}"
 
 # ------------------------------------------------------------------ Keith's options for the next widget
 def matched_schools(p):
