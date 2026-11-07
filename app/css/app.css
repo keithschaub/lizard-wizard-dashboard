@@ -96,6 +96,11 @@ img { -webkit-user-drag: none; user-select: none; }
 .ach-tile-h { position: absolute; top: 5px; left: 7px; font-size: 8px; letter-spacing: 1.1px; color: #6e4614; font-weight: 700; }
 .ach-tile-vp { position: absolute; top: 4px; right: 7px; font-size: 9px; color: #6e4614; font-weight: 700; }
 .ach-tile-icon { display: flex; align-items: center; justify-content: center; min-height: 18px; margin-top: 8px; }
+.ach-tile-board .ach-tile-icon { margin-top: 14px; min-height: 16px; }
+.ach-tile-board .ach-tile-icon .ach-tile-img { width: 16px; height: 16px; }
+.ach-tile-board .ach-tile-orb { width: 16px; height: 16px; }
+.ach-tile-board .ach-tile-count { font-size: 15px; }
+.ach-tile-board .ach-tile-label { font-size: 9px; line-height: 1.1; }
 .ach-tile-icon .ach-tile-img { width: 18px; height: 18px; object-fit: contain; border-radius: 3px; }
 .ach-tile-icon .ach-tile-deck { border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, .35); }
 .ach-tile-count { font-family: var(--display); font-weight: 700; font-size: 17px; line-height: 1; }
