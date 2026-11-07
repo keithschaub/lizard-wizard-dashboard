@@ -173,25 +173,23 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
     }
     
     // Update info
-    cardinfoContainer.innerHTML = '';
-    cardinfoContainer.appendChild(cardInfo(g, k));
-    
-    // Update actions
-    if (typeof actions === 'function') {
-      const acts = actions(k, idx);
-      actionsContainer.innerHTML = '';
-      if (acts && acts.length) {
-        actionsContainer.appendChild(h('div', { class: 'actions' }, acts.map((a) => h('button', {
-          class: `act ${a.cls || ''}`, disabled: a.disabled || null, 'data-testid': a.testid,
-          onclick: async (e) => { e.stopPropagation(); g.sfx('tap'); const keep = await a.onClick(ov); if (!keep) ov.close(); },
-        }, h('span', {}, a.label), a.sub ? h('span', { class: 'sub' }, a.sub) : null))));
-      }
-    } else if (actions.length) {
-      actionsContainer.innerHTML = '';
-      actionsContainer.appendChild(h('div', { class: 'actions' }, actions.map((a) => h('button', {
+    replaceChildren(cardinfoContainer, cardInfo(g, k));
+
+    const actBtn = (a) => {
+      const sub = a.sub == null ? null : (Array.isArray(a.sub) ? h('span', { class: 'sub' }, ...a.sub) : h('span', { class: 'sub' }, a.sub));
+      return h('button', {
         class: `act ${a.cls || ''}`, disabled: a.disabled || null, 'data-testid': a.testid,
         onclick: async (e) => { e.stopPropagation(); g.sfx('tap'); const keep = await a.onClick(ov); if (!keep) ov.close(); },
-      }, h('span', {}, a.label), a.sub ? h('span', { class: 'sub' }, a.sub) : null))));
+      }, h('span', {}, a.label), sub);
+    };
+
+    // Update actions (function form refreshes per swipe target)
+    const acts = typeof actions === 'function' ? actions(k, idx) : actions;
+    replaceChildren(actionsContainer);
+    if (acts?.length) {
+      const row = h('div', { class: 'actions' });
+      acts.forEach((a) => appendNodes(row, actBtn(a)));
+      replaceChildren(actionsContainer, row);
     }
     
     // Update indicator
@@ -350,12 +348,14 @@ function pairUp(g, wizards, towers) {
   return cols;
 }
 
-function mini(g, key, { cls = '', badge = null, testid = null, group = null, groupIndex = 0 } = {}) {
+function mini(g, key, { cls = '', badge = null, testid = null, group = null, groupIndex = 0, handGather = false } = {}) {
   if (!key) return h('div', { class: 'mcard back', 'data-testid': testid }, 'LW');
   return h('div', { class: `mcard ${cls}`, 'data-testid': testid, onclick: (e) => { 
     e.stopPropagation(); 
-    g.sfx('tap'); 
-    expandCard(g, key, { group, groupIndex }); 
+    g.sfx('tap');
+    const youTurn = g.v.next === g.me && !g.v.game_over;
+    if (handGather && youTurn) handFlow(g, key, { group, groupIndex });
+    else expandCard(g, key, { group, groupIndex });
   } },
     h('img', { src: art(key), alt: key }), badge ? h('div', { class: 'badge' }, badge) : null);
 }
@@ -387,7 +387,9 @@ export function openMats(g) {
         h('span', { class: 'stat store' }, `Gather 3${p.bonus.length ? ' +' + p.bonus.length : ''}`, ...p.bonus.map((r) => h('img', { src: reagentIcon(r), alt: '', style: { width: '18px' } })))),
       h('div', { class: 'mat-row' }, tok.size ? [...tok].map(([r, n]) => tokenChip(r, n)) : h('span', { class: 'none' }, 'No reagent tokens')),
       h('div', { class: 'mat-label' }, p.you ? 'Reagent cards in hand' : `Reagent cards in hand: ${p.hand_count}`),
-      p.you ? h('div', { class: 'mat-row' }, p.hand.map((k, i) => mini(g, k, { group: p.hand, groupIndex: i }))) : null,
+      p.you ? h('div', { class: 'mat-row' }, p.hand.map((k, i) => mini(g, k, {
+        group: p.hand, groupIndex: i, handGather: p.you && g.v.next === g.me && !g.v.game_over,
+      }))) : null,
       h('div', { class: 'mat-label' }, `Wizards & Towers (${p.wizards.length}/${p.towers.length})`),
       h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m], i) => {
         // Create combined group of all wizards and towers for this mat
@@ -519,6 +521,33 @@ const HOT = {
   5: [[0.19, 0.3], [0.5, 0.3], [0.81, 0.3], [0.33, 0.74], [0.67, 0.74]],
 };
 const HALF = { gather: [0.125, 0.485], increase: [0.565, 0.965] };
+
+/** Enlarged hand row during your turn: swipe across reagents; Gather action follows legal.gather per card. */
+export function handFlow(g, cid, { group = null, groupIndex = 0 } = {}) {
+  const handGroup = (group && group.length ? group : g.me_().hand);
+  const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : handGroup.indexOf(cid);
+  const startIdx = resolvedIdx < 0 ? 0 : resolvedIdx;
+  expandCard(g, cid, {
+    group: handGroup,
+    groupIndex: startIdx,
+    actions: (k) => {
+      const L = (g.v.legal.gather || {})[k];
+      if (!L) return [];
+      const sub = L.raises?.length && L.miracle
+        ? `Keep ${L.keep} · Miracle side available`
+        : `Keep ${L.keep} from ${L.offers?.length || 3} icons`;
+      return [{
+        label: 'Gather',
+        sub,
+        testid: 'hand-gather',
+        onClick: async (overlay) => {
+          overlay.close();
+          await gatherFlow(g, k);
+        },
+      }];
+    },
+  });
+}
 
 export async function gatherFlow(g, cid) {
   const L = g.v.legal.gather[cid];

@@ -24,6 +24,8 @@ jobs:
         run: python3 engine/web/test_lw_web.py
       - name: Deploy version stamp (app/js/version.js)
         run: python3 tools/test_version_stamp.py
+      - name: Swipe expand flows (hand / board action groups)
+        run: python3 tools/test_swipe_groups.py
       - name: Engine files still unchanged after the tests
         run: cd engine && sha256sum -c --quiet ORIGINAL_SHA256SUMS
 
