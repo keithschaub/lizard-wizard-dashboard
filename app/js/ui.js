@@ -41,6 +41,20 @@ function scrollHint(el) {
 }
 export function closeAll() { document.querySelectorAll('#overlays .overlay').forEach((o) => o.remove()); }
 
+/** Remove swipe/enlarge card overlays (not other flows). */
+export function closeExpandOverlays() {
+  document.querySelectorAll('[data-testid="expanded"]').forEach((el) => el.remove());
+}
+
+/** Close expand before settle/AI so the enlarge sheet does not sit above banners. */
+export async function commitFromExpand(g, overlay, run) {
+  const r = await run();
+  if (!r) return;
+  overlay.close();
+  await g.afterAction();
+  return true;
+}
+
 function closeBtn(fn, testid = 'ov-close') { return h('button', { class: 'ov-close', 'aria-label': 'Close', 'data-testid': testid, onclick: (e) => { e.stopPropagation(); fn(); } }, '×'); }
 const wait = () => { let res; const p = new Promise((r) => { res = r; }); return [p, res]; };
 
@@ -619,16 +633,22 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
       const L = (g.v.legal.summon || {})[k];
       if (!L) return [];
       const uses = new Set(L.uses);
-      const act = (use) => async () => {
-        if (use === 'gather') { await summonGather(g, k); return; }
-        const from = slotRectOf(k);
-        const r = await g.act('act_summon', { familiar: k, use }, { sound: use === 'score' ? 'coin' : 'select' });
-        if (r) {
-          const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
-          if (hit?.feedback) g.toast(hit.feedback);
-          fly(art(k), from, dockTarget());
-          g.afterAction();
+      const act = (use) => async (overlay) => {
+        if (use === 'gather') {
+          overlay.close();
+          await summonGather(g, k);
+          return true;
         }
+        return commitFromExpand(g, overlay, async () => {
+          const from = slotRectOf(k);
+          const r = await g.act('act_summon', { familiar: k, use }, { sound: use === 'score' ? 'coin' : 'select' });
+          if (r) {
+            const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
+            if (hit?.feedback) g.toast(hit.feedback);
+            fly(art(k), from, dockTarget());
+          }
+          return r;
+        });
       };
       const scoreSub = L.powerful_helper
         ? `${L.cost} mana · +${L.score_gold} Gold (+${L.powerful_helper} Powerful Helper)`
@@ -682,11 +702,12 @@ export function researchFlow(g, sk, { group = null, groupIndex = 0 } = {}) {
       if (!L) return [];
       const cost = Object.entries(g.cards[k]?.cost?.reagents || {}).flatMap(([r, n]) => (n === 'X' ? [r] : Array.from({ length: n }, () => r)));
       return [
-        { label: 'Research', sub: `${L.mana} mana`, testid: 'research-only', onClick: async () => {
+        { label: 'Research', sub: `${L.mana} mana`, testid: 'research-only', onClick: (overlay) => commitFromExpand(g, overlay, async () => {
           const from = slotRectOf(k);
           const r = await g.act('act_research', { spell: k, cast: false }, { sound: 'select' });
-          if (r) { fly(art(k), from, dockTarget()); await g.afterAction(); }
-        } },
+          if (r) fly(art(k), from, dockTarget());
+          return r;
+        }) },
         { label: 'Research & Cast', sub: [`${L.mana} mana + `, ...costIcons(cost), L.x ? '×X' : ''], testid: 'research-cast', disabled: !L.castable, onClick: async (overlay) => {
           let x = null, target = null;
           if (L.x) {
@@ -694,14 +715,12 @@ export function researchFlow(g, sk, { group = null, groupIndex = 0 } = {}) {
             const eyes = g.me_().tok.filter((t) => t === 'Eye_of_Newt').length;
             const xt = await xTargetPicker(g, overlay.el, eyes); x = xt.x; target = xt.target;
           }
-          const from = slotRectOf(k);
-          const r = await g.act('act_research', { spell: k, cast: true, x, target }, { sound: 'cast' });
-          if (r) {
-            fly(art(k), from, dockTarget());
-            overlay.close();
-            await g.afterAction();
-            return true;
-          }
+          return commitFromExpand(g, overlay, async () => {
+            const from = slotRectOf(k);
+            const r = await g.act('act_research', { spell: k, cast: true, x, target }, { sound: 'cast' });
+            if (r) fly(art(k), from, dockTarget());
+            return r;
+          });
         } },
       ];
     },
@@ -720,14 +739,15 @@ export function buildFlow(g, towerKey = null, { group = null, groupIndex = 0 } =
     actions: (k) => {
       const buildLegal = g.v.legal.build;
       if (!buildLegal || buildLegal.tower !== k) return [];
-      const build = async (pay) => {
+      const build = (pay) => (overlay) => commitFromExpand(g, overlay, async () => {
         const from = slotRectOf(k);
         const r = await g.act('act_build', { pay }, { sound: 'build' });
-        if (r) { fly(art(k), from, dockTarget()); g.afterAction(); }
-      };
+        if (r) fly(art(k), from, dockTarget());
+        return r;
+      });
       return [
-        buildLegal.reagent ? { label: 'Build with reagents', sub: costIcons(Array.from({ length: buildLegal.reagent.n }, () => buildLegal.reagent.reagent)), testid: 'build-reagent', onClick: () => build('reagent') } : null,
-        buildLegal.gold ? { label: 'Build with Gold', sub: `${buildLegal.gold.n} Gold`, testid: 'build-gold', onClick: () => build('gold') } : null,
+        buildLegal.reagent ? { label: 'Build with reagents', sub: costIcons(Array.from({ length: buildLegal.reagent.n }, () => buildLegal.reagent.reagent)), testid: 'build-reagent', onClick: build('reagent') } : null,
+        buildLegal.gold ? { label: 'Build with Gold', sub: `${buildLegal.gold.n} Gold`, testid: 'build-gold', onClick: build('gold') } : null,
       ].filter(Boolean);
     },
   });
@@ -735,7 +755,7 @@ export function buildFlow(g, towerKey = null, { group = null, groupIndex = 0 } =
 
 export function divinationFlow(g) {
   expandCard(g, 'Spell_Divination', { actions: [
-    { label: 'Enter the Dungeon', sub: 'Divination', testid: 'divination-enter', onClick: async () => { const r = await g.act('act_divination', {}, { sound: 'select' }); if (r) g.afterAction(); } },
+    { label: 'Enter the Dungeon', sub: 'Divination', testid: 'divination-enter', onClick: (overlay) => commitFromExpand(g, overlay, () => g.act('act_divination', {}, { sound: 'select' })) },
   ] });
 }
 

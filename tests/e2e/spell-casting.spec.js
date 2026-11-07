@@ -183,6 +183,40 @@ test('Player target picker: shows actual mana and VP from game state', async ({ 
 
 const IMP = 'assets/Familiar_25_Imp.jpg';
 
+async function loadBoardSpell(page, spellAsset) {
+  await page.evaluate(async ({ spellAsset }) => {
+    const r = await fetch('engine/game/g8_state.json');
+    const s = await r.json();
+    const k = s.players.find((p) => p.name === 'Keith');
+    k.mana = 30;
+    s.spell_face = [spellAsset, '', '', ''];
+    s.next = 'Keith';
+    s.meta.web_pending = null;
+    s.meta.pending = null;
+    const out = await window.lwDebug._g.call('load', { text: JSON.stringify(s) });
+    if (!out.ok) throw new Error(out.error);
+    window.lwDebug._g.setView(out.result);
+  }, { spellAsset });
+}
+
+test('Research only: expand overlay closes before AI turns', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/');
+  await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 60_000 });
+  await loadBoardSpell(page, 'assets/Spell_Mana_Fountain.jpg');
+
+  await page.getByTestId('slot-spell_0').tap();
+  await expect(page.getByTestId('expanded')).toBeVisible();
+  await page.getByTestId('research-only').tap();
+  await expect(page.getByTestId('expanded')).toHaveCount(0, { timeout: 5_000 });
+  await page.waitForFunction(() => {
+    const v = window.lwDebug.view();
+    return v.next !== 'Keith' || v.round > 1;
+  }, null, { timeout: 45_000 });
+  await expect(page.getByTestId('expanded')).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 async function loadDemonic(page, { withFams = true } = {}) {
   await page.evaluate(async ({ withFams, imp }) => {
     const r = await fetch('engine/game/g8_state.json');
