@@ -23,6 +23,22 @@ async function seedAch(page, ach) {
 
 const SHOTS = 'docs/screenshots';
 
+async function tileGeometry(tile) {
+  return tile.evaluate((el) => {
+    const box = (node) => {
+      const r = node.getBoundingClientRect();
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    };
+    const intersects = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+    const t = box(el);
+    const icon = box(el.querySelector('.ach-tile-medallion'));
+    const count = box(el.querySelector('.ach-tile-count'));
+    const label = box(el.querySelector('.ach-tile-label'));
+    const inside = (x) => x.left >= t.left && x.right <= t.right && x.top >= t.top && x.bottom <= t.bottom;
+    return { inside: [icon, count, label].every(inside), separated: !intersects(icon, count) && !intersects(icon, label) };
+  });
+}
+
 test('achievement tiles: icon + stacked layout, info titles without parenthetical duplicate', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const sample = ['5 Necromancy cards', '10 Gold', '5 Wizards', '5 Druidry cards'];
@@ -46,6 +62,8 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
     await expect(tile.locator('.ach-tile-icon').locator('img, .ach-tile-orb')).toHaveCount(1);
     await expect(tile.locator('.ach-tile-count')).not.toBeEmpty();
     await expect(tile.locator('.ach-tile-label')).not.toBeEmpty();
+    const geometry = await tileGeometry(tile);
+    expect(geometry.inside && geometry.separated, `sample board tile ${i} geometry`).toBe(true);
   }
   await page.getByTestId('ach-1').tap();
   await page.waitForTimeout(450);
@@ -62,6 +80,10 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
   expect(title).not.toMatch(/\([^)]+\)/);
   await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-necromancy-dpr3.png`, fullPage: true });
   await page.getByTestId('ov-close').tap();
+  await page.getByTestId('ach-2').tap();
+  await page.waitForTimeout(450);
+  await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-wizards-dpr3.png`, fullPage: true });
+  await page.getByTestId('ov-close').tap();
 
   for (let i = 0; i < TILES.length; i += 4) {
     const ach = TILES.slice(i, i + 4);
@@ -75,6 +97,23 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
     for (let j = 0; j < ach.length; j++) {
       const tile = page.getByTestId(`ach-${j}`).locator('[data-testid=achievement-tile]');
       await expect(tile.locator('.ach-tile-icon').locator('img, .ach-tile-orb')).toHaveCount(1);
+      await expect(tile.locator('.ach-tile-label')).not.toBeEmpty();
+      const geometry = await tileGeometry(tile);
+      expect(geometry.inside && geometry.separated, `board tile ${ach[j]} geometry`).toBe(true);
+      await tile.screenshot({ path: `${SHOTS}/ach-contact-${String(i + j).padStart(2, '0')}.png` });
     }
+    await page.getByTestId('ach-0').tap();
+    await page.waitForTimeout(350);
+    for (let j = 0; j < ach.length; j++) {
+      const zoomTile = page.locator(`[data-testid=expanded-card][data-index="${j}"] [data-testid=achievement-tile]`);
+      await expect(zoomTile).toBeVisible();
+      const geometry = await tileGeometry(zoomTile);
+      expect(geometry.inside && geometry.separated, `zoom tile ${ach[j]} geometry`).toBe(true);
+      if (j < ach.length - 1) {
+        await page.getByTestId('nav-next').tap();
+        await page.waitForTimeout(250);
+      }
+    }
+    await page.getByTestId('ov-close').tap();
   }
 });

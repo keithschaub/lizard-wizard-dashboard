@@ -36,7 +36,7 @@ export function achievementTile(card = {}, { size = 'board' } = {}) {
   const count = card.tile_count ?? '';
   const label = size === 'board' || size === 'chip' ? shortBoardLabel(card) : (card.tile_label || card.name || '');
   const body = h('div', { class: 'ach-tile-body' },
-    h('div', { class: 'ach-tile-icon' }, achievementIcon(card)),
+    h('div', { class: 'ach-tile-icon' }, h('div', { class: 'ach-tile-medallion' }, achievementIcon(card))),
     h('div', { class: 'ach-tile-text' },
       h('div', { class: 'ach-tile-count' }, count),
       label ? h('div', { class: 'ach-tile-label' }, label) : null));
