@@ -197,10 +197,12 @@ class Game {
           }
           const el = h('div', { class: `hcard ${legal ? 'legal' : ''} ${prevHand && !prevHand.includes(k) ? 'deal' : ''}`, 'data-testid': `hand-${i}`, 'data-key': k, style: cardStyle },
             h('img', { src: art(k), alt: k, draggable: 'false' }));
-          el.onclick = () => { 
-            this.sfx('tap'); 
-            if (legal && !this.busyFlow()) UI.gatherFlow(this, k); 
-            else UI.expandCard(this, k, { group: p.hand, groupIndex: i }); 
+          el.onclick = () => {
+            this.sfx('tap');
+            if (this.busyFlow()) return;
+            const yourTurn = v.next === this.me && !v.game_over;
+            if (yourTurn) UI.handFlow(this, k, { group: p.hand, groupIndex: i });
+            else UI.expandCard(this, k, { group: p.hand, groupIndex: i });
           };
           return el;
         }))));
