@@ -777,6 +777,7 @@ export function convertSheet(g, reagent) {
   const countTok = (r) => virtualTok().filter((x) => x === r).length;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'convert' });
   const val = h('span', { class: 'val', 'data-testid': 'convert-n' }, String(n));
+  const heldCount = h('div', { class: 'convert-held-count', 'data-testid': 'convert-held-count' });
   const val2 = h('span', { class: 'val', 'data-testid': 'convert-n2' }, '1');
   const gain = h('div', { class: 'gain' });
   const gain2 = h('div', { class: 'gain', 'data-testid': 'convert-gain2' });
@@ -814,10 +815,10 @@ export function convertSheet(g, reagent) {
     secondRow.innerHTML = '';
     if (!r2) return;
     const c2 = L.convert[r2];
-    n2 = Math.min(c2.n, Math.max(1, n2));
+    n2 = Math.min(countTok(r2), Math.max(1, n2));
     appendNodes(secondRow, 
       h('button', { 'data-testid': 'convert-minus2', onclick: () => { n2 = Math.max(1, n2 - 1); upd(); g.sfx('tap'); } }, '−'), val2,
-      h('button', { 'data-testid': 'convert-plus2', onclick: () => { n2 = Math.min(c2.n, n2 + 1); upd(); g.sfx('tap'); } }, '+'),
+      h('button', { 'data-testid': 'convert-plus2', onclick: () => { n2 = Math.min(countTok(r2), n2 + 1); upd(); g.sfx('tap'); } }, '+'),
     );
   };
   const renderTransformPick = () => {
@@ -863,7 +864,9 @@ export function convertSheet(g, reagent) {
   };
 
   const upd = () => {
-    n = Math.min(n, countTok(reagent) || 1);
+    const held = countTok(reagent);
+    n = Math.min(n, held || 1);
+    heldCount.textContent = `You have ${held}`;
     const base = c.value;
     const v = Math.min(12, base + (energize ? 3 : 0));
     const endTrack = Math.max(1, v - n);
@@ -914,7 +917,9 @@ export function convertSheet(g, reagent) {
           g.sfx(r2 ? 'tap' : 'unselect');
         },
       },
-      h('span', { class: 'reagent-choice-medallion' }, h('img', { src: reagentIcon(r), alt: '' })),
+      h('span', { class: 'reagent-choice-medallion' },
+        h('img', { src: reagentIcon(r), alt: '' }),
+        h('span', { class: 'reagent-choice-count', 'data-testid': `convert-count-${r}` }, `×${countTok(r)}`)),
       h('span', { class: 'reagent-choice-copy' }, h('span', { class: 'reagent-choice-name' }, nice(r)),
         h('span', { class: 'reagent-choice-price' }, `${trackOf(r)} mana each`)));
       return b;
@@ -932,6 +937,7 @@ export function convertSheet(g, reagent) {
   const panel = h('div', { class: 'sheet-panel' },
     h('img', { class: 'big-icon', src: reagentIcon(reagent), alt: '' }),
     h('div', { class: 'phase-title' }, `Convert ${nice(reagent)}`),
+    heldCount,
     transformOn ? h('div', { class: 'transform-block', 'data-testid': 'convert-transform' },
       h('div', { class: 'ov-sub' }, 'Transform (2:1): pick any 2 tokens, then one target type (repeatable before selling).'),
       xPick,
