@@ -36,6 +36,21 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await page.getByTestId('setup-ai-0-hard').tap();
   await page.getByTestId('setup-start').tap();
   await expect(page.getByTestId('new-game-hand')).toBeVisible({ timeout: 60_000 });
+  const newGameStart = page.getByTestId('new-game-start');
+  await expect(newGameStart).toBeDisabled();
+  await expect(newGameStart).toHaveText(/Begin the gamePick 2 reagents/);
+  await page.getByTestId('pick-Eye_of_Newt').tap();
+  await page.getByTestId('pick-Horn').tap();
+  await expect(newGameStart).toBeEnabled();
+  await expect(newGameStart).toHaveText('Begin the gameStarting with Eye of Newt & Horn');
+  await newGameStart.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'docs/screenshots/setup-newgame-start-dpr3.png' });
+  await newGameStart.tap();
+  await page.waitForFunction(() => {
+    const v = window.lwDebug.view();
+    const me = v.players.find((p) => p.you);
+    return v.round === 1 && !v.game_over && me.tok.includes('Eye_of_Newt') && me.tok.includes('Horn');
+  });
   const raw = await page.evaluate(() => localStorage.getItem('lw.setup.v1'));
   const cfg = JSON.parse(raw);
   expect(cfg.human_name).toBe('Rex');
