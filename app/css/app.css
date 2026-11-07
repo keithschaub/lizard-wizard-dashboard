@@ -133,6 +133,12 @@ img { -webkit-user-drag: none; user-select: none; }
 .ach-tile-board .ach-tile-count { font-size: 22px; }
 .ach-tile-board .ach-tile-label { position: absolute; left: 5px; right: 5px; bottom: 3px; width: auto; font-size: 10px;
   white-space: normal; overflow: visible; text-align: center; }
+/* The padded plant sources need a little extra board/badge scale; zoom keeps
+   its established sizing above.  The 1.2× bbox remains inside the medallion. */
+.ach-tile-board .ach-reagent-foxglove,
+.ach-tile-board .ach-reagent-mandrake,
+.ci-meta .ach-badge .ach-reagent-foxglove,
+.ci-meta .ach-badge .ach-reagent-mandrake { transform: scale(1.2); }
 
 /* Zoom / expand — portrait card fills the frame */
 .expand .big-frame-ach { display: flex; align-items: stretch; justify-content: center; padding: 4% 5% 6%;
