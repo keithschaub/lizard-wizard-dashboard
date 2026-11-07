@@ -785,6 +785,30 @@ export function convertSheet(g, reagent) {
   const xPick = h('div', { class: 'chips' });
   const xAdd = h('button', { class: 'chip', disabled: true, 'data-testid': 'transform-add' }, 'Transform (2:1)');
   const trackOf = (r) => (g.v.board.tracks[r] ?? 0);
+  const choiceGroup = (options, selected, testPrefix, onPick) => h('div', { class: 'reagent-choice-group' },
+    ...options.map((r) => {
+      const b = h('button', {
+        class: `reagent-choice reagent-choice-${String(r).toLowerCase().replaceAll('_', '-')} ${selected === r ? 'on' : ''}`,
+        type: 'button',
+        'data-testid': `${testPrefix}-${r}`,
+        'aria-pressed': selected === r ? 'true' : 'false',
+        onclick: () => onPick(r),
+      },
+      h('span', { class: 'reagent-choice-medallion' }, h('img', { src: reagentIcon(r), alt: '' })),
+      h('span', { class: 'reagent-choice-copy' }, h('span', { class: 'reagent-choice-name' }, nice(r)),
+        h('span', { class: 'reagent-choice-price' }, `${trackOf(r)} mana each`)));
+      return b;
+    }));
+  let xTargetValue = reagent;
+  const xTarget = choiceGroup(REAGENTS, xTargetValue, 'transform-target', (r) => {
+    xTargetValue = r;
+    xTarget.querySelectorAll('.reagent-choice').forEach((b) => {
+      const selected = b.dataset.testid === `transform-target-${r}`;
+      b.classList.toggle('on', selected);
+      b.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+    g.sfx('select');
+  });
   const rebuildSecondStepper = () => {
     secondRow.style.display = r2 ? 'flex' : 'none';
     secondRow.innerHTML = '';
@@ -823,14 +847,11 @@ export function convertSheet(g, reagent) {
         } }, 'undo')));
     });
   };
-  const xTarget = h('select', { 'data-testid': 'transform-target' }, ...REAGENTS.map((r) => h('option', { value: r }, nice(r))));
-  xTarget.value = reagent;
-  xTarget.onchange = () => { g.sfx('select'); };
   xAdd.onclick = () => {
     if (xSel.size !== 2) return;
     const vt = virtualTok();
     const fr = [...xSel].sort((a, b) => a - b).map((i) => vt[i]);
-    transforms.push({ from: fr, to: xTarget.value });
+    transforms.push({ from: fr, to: xTargetValue });
     xSel.clear();
     renderTransformQueue();
     renderTransformPick();
@@ -872,17 +893,35 @@ export function convertSheet(g, reagent) {
       n2 = 1;
     }
   };
-  let type2Sel = null;
+  const type2Pick = h('div', { class: 'reagent-choice-group', 'data-testid': 'convert-adept-type2' });
+  const renderType2Choices = () => {
+    type2Pick.innerHTML = '';
+    appendNodes(type2Pick, ...otherTypes.map((r) => {
+      const b = h('button', {
+        class: `reagent-choice reagent-choice-${String(r).toLowerCase().replaceAll('_', '-')} ${r2 === r ? 'on' : ''}`,
+        type: 'button',
+        'data-testid': `convert-adept-type2-${r}`,
+        'aria-pressed': r2 === r ? 'true' : 'false',
+        onclick: () => {
+          r2 = r2 === r ? '' : r;
+          b.parentElement.querySelectorAll('.reagent-choice').forEach((el) => {
+            const selected = el.dataset.testid === `convert-adept-type2-${r2}`;
+            el.classList.toggle('on', selected);
+            el.setAttribute('aria-pressed', selected ? 'true' : 'false');
+          });
+          rebuildSecondStepper();
+          upd();
+          g.sfx(r2 ? 'tap' : 'unselect');
+        },
+      },
+      h('span', { class: 'reagent-choice-medallion' }, h('img', { src: reagentIcon(r), alt: '' })),
+      h('span', { class: 'reagent-choice-copy' }, h('span', { class: 'reagent-choice-name' }, nice(r)),
+        h('span', { class: 'reagent-choice-price' }, `${trackOf(r)} mana each`)));
+      return b;
+    }));
+  };
   if (adept) {
-    type2Sel = h('select', { id: 'convert-adept-type2', 'data-testid': 'convert-adept-type2' },
-      h('option', { value: '' }, '— optional —'),
-      ...otherTypes.map((r) => h('option', { value: r }, nice(r))));
-    type2Sel.onchange = () => {
-      r2 = type2Sel.value;
-      rebuildSecondStepper();
-      upd();
-      g.sfx('tap');
-    };
+    renderType2Choices();
   }
   const onGo = async () => {
     const args = adept && r2
@@ -900,14 +939,13 @@ export function convertSheet(g, reagent) {
       xTarget,
       xAdd,
       xQueued) : null,
-    adept ? h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-banner' }, 'Adept Conversion: you may sell a second type in this same action (below).') : null,
+    adept ? h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-banner' }, 'Adept Conversion: you may also sell a second type.') : null,
     h('div', { class: 'stepper' }, h('button', { 'data-testid': 'convert-minus', onclick: () => { n = Math.max(1, n - 1); upd(); g.sfx('tap'); } }, '−'), val,
       h('button', { 'data-testid': 'convert-plus', onclick: () => { n = Math.min(countTok(reagent), n + 1); upd(); g.sfx('tap'); } }, '+')),
     gain,
     adept ? h('div', { class: 'adept-second' },
-      h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-note' }, 'Adept Conversion: convert a 2nd type'),
-      h('label', { class: 'sr-only', for: 'convert-adept-type2' }, 'Second reagent type'),
-      type2Sel,
+      h('div', { class: 'adept-second-label' }, 'Also sell a second type ', h('span', {}, '(optional)')),
+      type2Pick,
       secondRow) : null,
     adept ? gain2 : null,
     h('div', { class: 'actions' }, h('button', { class: 'act', 'data-testid': 'convert-go', onclick: onGo }, 'Convert')),
