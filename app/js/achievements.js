@@ -15,8 +15,8 @@ function shortBoardLabel(card = {}) {
 
 export function achievementIcon(card = {}) {
   const kind = card.tile_icon;
-  if (kind === 'Gold') return h('span', { class: 'ach-tile-orb gold', 'aria-hidden': 'true' });
-  if (kind === 'Mana') return h('span', { class: 'ach-tile-orb mana', 'aria-hidden': 'true' });
+  if (kind === 'Gold') return h('img', { src: 'art/icons/gold-token.webp', alt: 'Gold', class: 'ach-tile-img ach-tile-gold' });
+  if (kind === 'Mana') return h('img', { src: 'art/icons/mana-orb.webp', alt: 'Mana', class: 'ach-tile-img ach-tile-mana' });
   if (kind === 'School' && card.school) {
     // The UI school crests are the largest clean source (256px), intended for display.
     return h('img', { src: `art/icons/schools_ui/school_${card.school}.png`, alt: '', class: 'ach-tile-img' });
