@@ -99,7 +99,7 @@ test('Swipe through board spell offer', async ({ page }) => {
   await expect(page.locator('#board')).toBeVisible({ timeout: 60_000 });
   
   // Find and tap a spell card
-  const spellSlot = page.locator('[data-slot^="spell_"]').first();
+  const spellSlot = page.locator('[data-testid^="slot-spell_"]').first();
   await expect(spellSlot).toBeVisible();
   await spellSlot.click({ force: true });
   
