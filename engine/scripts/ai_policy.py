@@ -61,7 +61,7 @@ NEGATIVE = ('Spell_Flame_Bolt', 'Spell_Disintegrate', 'Spell_Earthquake', 'Spell
 # effects the engine (actions.py / spell_effects.py / ai_sim.py) can resolve automatically; others are valued 0 for effect
 ENGINE_EFFECTS = ('Flame_Bolt', 'Disintegrate', 'Earthquake', 'Charm', 'Mana_Drain', 'Creation', 'Spell_Shield', 'Haste',
                   'Wand_Tax', 'Transmute', 'Scry_Wizard', 'Scry_Tower', 'Scry_Familiar', 'Scribe', 'Scry_Dungeon',
-                  'Time_Shift', 'Energy_Pulse', 'Invisibility_Potion', 'Swapo')
+                  'Time_Shift', 'Energy_Pulse', 'Invisibility_Potion', 'Swapo', 'Trap', 'Obscure', 'Demonic_Possession')
 def sname(img):
     """'Name (School)' for chat text."""
     if CD is not None and CD.get(img): return CD.display(img)
@@ -585,6 +585,27 @@ def effect_value(v, me, img):
             if shielded(v, n): continue
             gl = min(x, P(v, n).get('gold', 0)); val = gl * (1 + w[n]) - x * v['tracks']['Eye_of_Newt'] / mana_per_vp(v, me)
             if val > best[0]: best = (val, {'target': n, 'x': gl})
+    elif k == 'Spell_Trap.jpg':
+        best = (2.5, None)
+    elif k == 'Spell_Obscure.jpg':
+        for n in others(v, me):
+            if shielded(v, n):
+                val = w[n] * shield_loss(n) + 0.4
+                if val > best[0]: best = (val, {'target': n, 'blocked': True})
+                continue
+            val = w[n] * 3.0
+            if val > best[0]: best = (val, {'target': n, 'blocked': False})
+    elif k == 'Spell_Demonic_Possession.jpg':
+        import spell_effects as SE
+        for n in others(v, me):
+            if shielded(v, n):
+                val = w[n] * shield_loss(n) + 0.5
+                if val > best[0]: best = (val, {'target': n, 'blocked': True})
+                continue
+            for fam in P(v, n).get('familiars', []):
+                sc = S.school(fam) or CD.school(fam)
+                val = SE.school_count(p, sc) + 1 + w[n] * 2
+                if val > best[0]: best = (val, {'target': n, 'card': fam, 'blocked': False})
     elif k == 'Spell_Swapo.jpg':
         for n in others(v, me):
             if shielded(v, n): continue
