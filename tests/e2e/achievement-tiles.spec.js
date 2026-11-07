@@ -6,6 +6,7 @@ import { shot } from './helpers.js';
 const ACH_FILE = 'engine/cards/cards.json';
 const G8_ENGINE = JSON.parse(fs.readFileSync('engine/game/g8_state.json', 'utf8'));
 const TILES = JSON.parse(fs.readFileSync(ACH_FILE, 'utf8')).achievements.tiles.map((t) => t.text);
+test.use({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 });
 
 async function seedAch(page, ach) {
   const s = structuredClone(G8_ENGINE);

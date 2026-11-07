@@ -1,4 +1,4 @@
-import { h, art, reagentIcon, schoolIcon } from './dom.js';
+import { h, art, reagentIcon } from './dom.js';
 
 const SAMPLE_ART = {
   Wizards: 'Wizard_Anguis_Magicus',
@@ -17,7 +17,10 @@ export function achievementIcon(card = {}) {
   const kind = card.tile_icon;
   if (kind === 'Gold') return h('span', { class: 'ach-tile-orb gold', 'aria-hidden': 'true' });
   if (kind === 'Mana') return h('span', { class: 'ach-tile-orb mana', 'aria-hidden': 'true' });
-  if (kind === 'School' && card.school) return h('img', { src: schoolIcon(card.school), alt: '', class: 'ach-tile-img' });
+  if (kind === 'School' && card.school) {
+    // The UI school crests are the largest clean source (256px), intended for display.
+    return h('img', { src: `art/icons/schools_ui/school_${card.school}.png`, alt: '', class: 'ach-tile-img' });
+  }
   if (kind === 'Reagent') {
     const r = card.school_reagent || String(card.tile_label || '').replaceAll(' ', '_');
     if (r) return h('img', { src: reagentIcon(r), alt: '', class: 'ach-tile-img' });

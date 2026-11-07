@@ -90,17 +90,24 @@ img { -webkit-user-drag: none; user-select: none; }
 
 /* Unified achievement face (board column, zoom portrait, mat chips) */
 .ach-tile { position: relative; width: 100%; height: 100%; border-radius: 6px;
-  background: linear-gradient(180deg, #efdcab, #dcc184); border: 2px solid #96702a; color: #3c1e0a;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, .55); overflow: hidden; }
-.ach-tile-vp { position: absolute; top: 2px; right: 4px; z-index: 1; font-size: 9px; color: #6e4614; font-weight: 700; line-height: 1; }
-.ach-tile-h { position: absolute; top: 10px; left: 12px; z-index: 1; font-size: 14px; letter-spacing: 1.4px; color: #6e4614; font-weight: 700; }
+  /* A real spell-card parchment crop supplies the paper grain and warm ink variation. */
+  background-image: url('../../art/achievement_parchment.webp'); background-size: cover; background-position: center;
+  border: 3px double #d6b45a; color: #3c1e0a;
+  box-shadow: inset 0 0 0 1px rgba(255, 243, 180, .6), inset 0 0 22px rgba(91, 46, 12, .2),
+    0 3px 8px rgba(0, 0, 0, .55); overflow: hidden; }
+.ach-tile::after { content: ''; position: absolute; inset: 3px; border: 1px solid rgba(112, 65, 18, .65); border-radius: 3px; pointer-events: none; }
+.ach-tile-vp { position: absolute; top: 2px; right: 4px; z-index: 2; font-size: 9px; color: #4a260c; font-weight: 700; line-height: 1; }
+.ach-tile-h { position: absolute; top: 9px; left: 10px; right: 10px; z-index: 2; font-size: 14px; letter-spacing: 1.4px;
+  color: #f5df9b; font-weight: 700; text-align: center; padding: 3px 24px 4px 8px;
+  background: linear-gradient(180deg, rgba(55, 27, 12, .96), rgba(91, 43, 15, .9)); border: 1px solid #d6b45a;
+  box-shadow: 0 2px 5px rgba(48, 22, 6, .5); text-shadow: 0 1px 1px #1d0b04; }
 .ach-tile-body { display: flex; align-items: center; width: 100%; height: 100%; box-sizing: border-box; }
 .ach-tile-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 0; }
 .ach-tile-icon .ach-tile-img { object-fit: contain; border-radius: 3px; }
 .ach-tile-icon .ach-tile-deck { border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, .35); }
 .ach-tile-text { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-.ach-tile-count { font-family: var(--display); font-weight: 700; line-height: 1; }
-.ach-tile-label { font-weight: 700; line-height: 1.1; }
+.ach-tile-count { font-family: var(--display); font-weight: 700; line-height: 1; text-shadow: 0 1px 0 #f6dda0, 0 2px 2px rgba(57, 25, 5, .45); }
+.ach-tile-label { font-family: var(--display); font-weight: 700; line-height: 1.1; text-shadow: 0 1px 0 #f6dda0, 0 1px 2px rgba(57, 25, 5, .45); }
 .ach-tile-orb { border-radius: 50%; flex-shrink: 0; }
 .ach-tile-orb.gold { background: radial-gradient(circle at 35% 30%, #fff1b0, #e0a92e 60%, #8a5a12); box-shadow: 0 0 6px rgba(224, 169, 46, .5); }
 .ach-tile-orb.mana { background: radial-gradient(circle at 35% 30%, #9fd0ff, #2b6ee0 60%, #173a8a); box-shadow: 0 0 6px rgba(90, 162, 255, .5); }
@@ -128,7 +135,9 @@ img { -webkit-user-drag: none; user-select: none; }
 .ach-tile-zoom .ach-tile-text { align-items: center; text-align: center; width: 100%; }
 .ach-tile-zoom .ach-tile-count { font-size: clamp(48px, 16vw, 64px); }
 .ach-tile-zoom .ach-tile-label { font-size: clamp(20px, 6.5vw, 28px); width: 100%; white-space: normal; }
-.ach-tile-zoom .ach-tile-vp { top: 12px; right: 14px; font-size: 24px; }
+.ach-tile-zoom .ach-tile-vp { top: 12px; right: 14px; z-index: 3; width: 48px; height: 48px; display: grid; place-items: center;
+  font-size: 24px; color: #3d1e08; border: 2px solid #f4d778; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff0ae, #d6a83b 62%, #815318); box-shadow: 0 2px 5px rgba(55, 25, 5, .55); }
 
 .ach-tile-chip { width: 92px; height: 52px; flex-shrink: 0; padding: 10px 3px 3px; }
 .ach-tile-chip .ach-tile-body { flex-direction: row; gap: 2px; }
@@ -138,7 +147,8 @@ img { -webkit-user-drag: none; user-select: none; }
 .ach-tile-chip .ach-tile-count { font-size: 15px; }
 .ach-tile-chip .ach-tile-label { font-size: 10px; }
 .ach-chip { display: inline-flex; vertical-align: middle; margin: 2px 4px 2px 0; }
-.ci-meta .ach-badge { display: inline-flex; align-items: center; margin-left: 8px; vertical-align: middle; }
+.ci-meta .ach-badge { display: inline-flex; align-items: center; margin-left: 8px; padding: 3px; vertical-align: middle;
+  border: 2px solid #d6b45a; border-radius: 50%; background: #21130b; box-shadow: 0 1px 4px rgba(0, 0, 0, .45); }
 .ci-meta .ach-badge .ach-tile-img { width: 32px; height: 32px; }
 .ci-meta .ach-badge .ach-tile-orb { width: 32px; height: 32px; }
 
