@@ -113,7 +113,10 @@ img { -webkit-user-drag: none; user-select: none; }
 .ach-tile-count { font-family: var(--display); font-weight: 700; line-height: 1; text-shadow: 0 1px 0 #f6dda0, 0 2px 2px rgba(57, 25, 5, .45); }
 .ach-tile-label { font-family: var(--display); font-weight: 700; line-height: 1.1; text-shadow: 0 1px 0 #f6dda0, 0 1px 2px rgba(57, 25, 5, .45); }
 .ach-tile-orb { border-radius: 50%; flex-shrink: 0; }
-.ach-tile-orb.gold, .ach-tile-orb.mana { background: transparent; }
+.ach-tile-medallion:has(.ach-tile-orb) { background: radial-gradient(circle at 35% 30%, #fff4c4, #dfb85c 70%, #a06b20); }
+.ach-tile-medallion .ach-tile-orb { width: 70%; height: 70%; }
+.ach-tile-orb.gold { background: radial-gradient(circle at 35% 30%, #fff1b0, #e0a92e 60%, #8a5a12); box-shadow: 0 0 8px rgba(224, 169, 46, .65); }
+.ach-tile-orb.mana { background: radial-gradient(circle at 35% 30%, #d9edff, #4c9dff 58%, #173a8a); box-shadow: 0 0 8px rgba(90, 162, 255, .7); }
 .ach-tile-gold, .ach-tile-mana { border-radius: 50% !important; object-fit: cover; box-shadow: 0 1px 5px rgba(35, 15, 4, .7); }
 
 /* Board column (~112×64 on board; ~70px wide when scaled on phone) */

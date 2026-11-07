@@ -85,6 +85,7 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
   await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-wizards-dpr3.png`, fullPage: true });
   await page.getByTestId('ov-close').tap();
 
+  const iconKeys = [];
   for (let i = 0; i < TILES.length; i += 4) {
     const ach = TILES.slice(i, i + 4);
     await page.evaluate((a) => {
@@ -101,6 +102,7 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
       await expect(tile.locator('.ach-tile-label')).not.toBeEmpty();
       const geometry = await tileGeometry(tile);
       expect(geometry.inside && geometry.separated, `board tile ${ach[j]} geometry`).toBe(true);
+      iconKeys.push(await tile.locator('.ach-tile-medallion > *').evaluate((el) => el.tagName === 'IMG' ? el.getAttribute('src') : el.className));
       await tile.screenshot({ path: `${SHOTS}/ach-contact-${String(i + j).padStart(2, '0')}.png` });
     }
     await page.getByTestId('ach-0').tap();
@@ -119,4 +121,5 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
     }
     await page.getByTestId('ov-close').tap();
   }
+  expect(new Set(iconKeys).size, 'every achievement has a distinct icon source').toBe(TILES.length);
 });
