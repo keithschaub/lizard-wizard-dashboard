@@ -1,6 +1,7 @@
 import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenChip, costIcons, sleep, appendNodes, replaceChildren } from './dom.js';
 import { versionLabel } from './version.js';
 import * as Store from './store.js';
+import { achievementTile, achievementBadge, achievementTitle, achievementFromText } from './achievements.js';
 
 const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage' };
 
@@ -85,8 +86,7 @@ export function cardInfo(g, key) {
   const c = g.cards[key] || {};
   const meta = [];
   if (c.deck === 'Achievement') {
-    meta.push(h('span', {}, `${c.vp ?? 10} VP when claimed`));
-    if (c.school) meta.push(h('span', {}, h('img', { src: schoolIcon(c.school), alt: '' }), ` ${c.school}`));
+    meta.push(h('span', {}, `${c.vp ?? 10} VP when claimed`), achievementBadge(c));
   } else if (c.school) meta.push(h('span', {}, c.school !== 'Wild' ? h('img', { src: schoolIcon(c.school), alt: '' }) : null, ` ${c.school}`));
   if (c.deck === 'Spell') {
     meta.push(h('span', {}, c.duration === '1x' ? 'One-time (1x)' : 'Ongoing'));
@@ -103,7 +103,7 @@ export function cardInfo(g, key) {
   else if (c.deck === 'Reagent') text = [h('div', {}, 'Gather: ', ...costIcons(c.gather_icons || [])), h('div', {}, 'Increase Value: ', ...costIcons(c.increase_icons || []))];
   else text = c.effect || '';
   return h('div', { class: 'cardinfo', 'data-testid': 'card-info' },
-    h('div', { class: 'ci-name' }, c.display || c.name || key),
+    h('div', { class: 'ci-name' }, c.deck === 'Achievement' ? achievementTitle(c) : (c.display || c.name || key)),
     meta.length ? h('div', { class: 'ci-meta' }, meta) : null,
     text ? h('div', { class: 'ci-text', 'data-testid': 'card-text' }, text) : null);
 }
@@ -146,20 +146,6 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
     onclick: (e) => { e.stopPropagation(); if (currentIndex < cards.length - 1) navigateTo(currentIndex + 1); }
   }, '›') : null;
   
-  function achTile(k) {
-    const c = g.cards[k] || {};
-    const vp = c.vp ?? 10;
-    const main = [];
-    if (c.tile_icon === 'Gold') main.push(h('span', { class: 'ach-tile-orb gold', 'aria-hidden': 'true' }));
-    else if (c.tile_icon === 'Mana') main.push(h('span', { class: 'ach-tile-orb mana', 'aria-hidden': 'true' }));
-    else if (c.school) main.push(h('img', { src: schoolIcon(c.school), alt: '', class: 'ach-tile-school' }));
-    main.push(h('span', { class: 'ach-tile-name' }, c.display || c.name || k.replace(/^Achievement:/, '')));
-    return h('div', { class: 'ach-tile-zoom', 'data-testid': 'achievement-tile' },
-      h('div', { class: 'ach-tile-h' }, 'ACHIEVEMENT'),
-      h('div', { class: 'ach-tile-vp' }, String(vp)),
-      h('div', { class: 'ach-tile-main' }, main));
-  }
-
   function renderCard(idx) {
     const k = cards[idx];
     const isAch = k.startsWith('Achievement:');
@@ -168,7 +154,7 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
         class: 'big-frame big-frame-ach',
         'data-testid': 'expanded-card',
         'data-index': idx,
-      }, achTile(k));
+      }, achievementTile(g.cards[k] || {}, { size: 'zoom' }));
     }
     return h('div', {
       class: 'big-frame',
@@ -444,7 +430,7 @@ export function openMats(g) {
       })() : h('span', { class: 'none' }, 'None yet')),
       (p.treasures.length || p.achievements.length) ? h('div', { class: 'mat-label' }, 'Items & Achievements') : null,
       (p.treasures.length || p.achievements.length) ? h('div', { class: 'mat-row' },
-        ...p.treasures.map((t) => mini(g, t.key)), ...p.achievements.map((a) => h('span', { class: 'chip static' }, `🏆 ${a}`))) : null,
+        ...p.treasures.map((t) => mini(g, t.key)), ...p.achievements.map((a) => h('span', { class: 'ach-chip' }, achievementTile(achievementFromText(g.cards, a), { size: 'chip' })))) : null,
     ));
   }
   return ov;

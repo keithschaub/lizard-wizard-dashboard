@@ -149,7 +149,7 @@ class Game {
     if (v.next !== this.me) UI.closeExpandOverlays();
     const you = v.players?.find((p) => p.you);
     if (you) this.me = you.name;
-    this.board.render(v);
+    this.board.render(v, this.cards);
     this.renderDock(prev);
     this.renderTop();
   }

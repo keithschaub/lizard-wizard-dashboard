@@ -86,16 +86,45 @@ def build():
         db[key] = dict(key=key, deck='Dungeon', name=nm, display=nm + (f" ({d['monster_type']})" if k == 'monster' else ''), school=None,
                        kind=k, gold=d.get('gold'), item=d.get('item'), monster_type=d.get('monster_type'), hits=d.get('hits'),
                        effect=d['bottom_text'], source='dungeon_cards.json (Keith photos)')
+    def achievement_fields(txt, sch):
+        """Title + stacked tile fields for a unified achievement renderer (no '(School)' suffix)."""
+        if txt.startswith('x7 '):
+            return dict(title=txt, tile_count='x7', tile_label=txt[3:], tile_icon='Reagent')
+        if sch and txt.endswith(' cards'):
+            n, rest = txt.split(' ', 1)
+            words = rest.split()
+            label = ' '.join(w.capitalize() for w in words[:-1]) + ' Cards'
+            return dict(title=f'{n} {label}', tile_count=n, tile_label=label, tile_icon='School')
+        if txt.endswith(' Gold'):
+            n = txt.split()[0]
+            return dict(title=txt, tile_count=n, tile_label='Gold', tile_icon='Gold')
+        if txt.endswith(' Mana'):
+            n = txt.split()[0]
+            return dict(title=txt, tile_count=n, tile_label='Mana', tile_icon='Mana')
+        if txt.endswith(' Wizards'):
+            n = txt.split()[0]
+            return dict(title=txt, tile_count=n, tile_label='Wizards', tile_icon='Wizards')
+        if txt.endswith(' Towers'):
+            n = txt.split()[0]
+            return dict(title=txt, tile_count=n, tile_label='Towers', tile_icon='Towers')
+        if txt.endswith(' Familiars'):
+            n = txt.split()[0]
+            return dict(title=txt, tile_count=n, tile_label='Familiars', tile_icon='Familiars')
+        if txt.endswith(' Spells'):
+            n = txt.split()[0]
+            return dict(title=txt, tile_count=n, tile_label='Spells', tile_icon='Spells')
+        return dict(title=txt, tile_count='', tile_label=txt, tile_icon='School' if sch else 'Gold')
+
     # ---------------- achievements (no image; keyed 'Achievement:<text>' as stored in state['ach'])
     for t in cj['achievements']['tiles']:
         txt = t['text']; sch = next((s for s in SR if s.lower() in txt.lower()), None)
         if not sch and txt.startswith('x7 '): sch = next((s for s, r in SR.items() if r == norm(txt[3:])), None)
         key = 'Achievement:' + txt
-        db[key] = dict(key=key, deck='Achievement', name=txt, display=txt + (f" ({sch})" if sch else ''), school=sch,
+        af = achievement_fields(txt, sch)
+        db[key] = dict(key=key, deck='Achievement', name=txt, display=af['title'], school=sch,
                        school_reagent=SR.get(sch), vp=10, effect='Claim on your turn when met: 10 VP', source='cards.json achievements',
-                       # Real tiles (UG rulebook appendix p.19, checked Nov 2 2026): '5 Wizards', '7 Towers', '7 Familiars', '7 Spells'
-                       # print no school icon at all; '10 Gold' / '100 Mana' show a Gold / Mana icon, not a school.
-                       schoolless=sch is None, tile_icon=('Gold' if 'Gold' in txt else 'Mana' if 'Mana' in txt else None) if sch is None else None)
+                       schoolless=sch is None and af['tile_icon'] not in ('School', 'Reagent'),
+                       tile_icon=af['tile_icon'], tile_count=af['tile_count'], tile_label=af['tile_label'], title=af['title'])
     # ---------------- legacy / alias images (not dealt by deal4.py; resolve by name for safety)
     aliases = {}
     for f in sorted(os.listdir(os.path.join(R, 'assets'))):
