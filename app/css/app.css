@@ -526,6 +526,9 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .loader-hint { color: #cfd6f5; font-size: 14px; line-height: 1.35; }
 .loader-error .act { justify-content: center; }
 .loader-details { color: #6f7ca5; font-size: 11px; line-height: 1.3; word-break: break-all; -webkit-user-select: text; user-select: text; }
+.loader-version, .menu-version { font-size: 11px; line-height: 1.35; color: #6f7ca5; text-align: center; letter-spacing: .02em; }
+#loader .loader-version { position: fixed; left: 0; right: 0; bottom: max(10px, env(safe-area-inset-bottom)); padding: 0 16px; pointer-events: none; }
+.menu-version { margin-top: 10px; opacity: .92; }
 #loader.failed .loader-orb { animation: none; background: radial-gradient(circle at 35% 30%, #ffb3b3, #b3161c 60%, #4a0a0d); box-shadow: 0 0 30px rgba(255, 60, 60, .6); }
 
 @media (min-width: 900px) and (min-aspect-ratio: 1/1) {

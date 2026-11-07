@@ -1,4 +1,5 @@
 import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenChip, costIcons, sleep, appendNodes, replaceChildren } from './dom.js';
+import { versionLabel } from './version.js';
 
 // ------------------------------------------------------------------ overlay plumbing
 export function openOverlay(cls, { onScrim = null, testid = null } = {}) {
@@ -1353,7 +1354,8 @@ export function menu(g) {
         }
       } }, '🐛 Report Bug'),
       h('button', { class: 'act danger', 'data-testid': 'menu-restart', onclick: () => { ov.close(); g.restart(); } }, 'Load the paused game g8')),
-    h('div', { class: 'ov-sub' }, g.savedNote())));
+    h('div', { class: 'ov-sub' }, g.savedNote()),
+    h('div', { class: 'menu-version', 'data-testid': 'menu-version' }, versionLabel())));
 }
 
 // New game: Keith, Newt (AI) and LizWiz (AI), dealt by the engine's setup script; Keith picks 2 starting reagents.
