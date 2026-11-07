@@ -820,12 +820,21 @@ export function convertSheet(g, reagent) {
 
   const upd = () => {
     n = Math.min(n, countTok(reagent) || 1);
-    const v = Math.min(12, c.value + (energize ? 3 : 0));
+    const base = c.value;
+    const v = Math.min(12, base + (energize ? 3 : 0));
+    const endTrack = Math.max(1, v - n);
     val.textContent = n;
     gain.innerHTML = '';
-    appendNodes(gain, `${n} × ${v} = `, h('b', {}, `+${n * v} mana`), ` · track ${v} → ${Math.max(1, v - n)}`);
     if (energize) {
-      appendNodes(gain, h('div', { class: 'ov-sub', 'data-testid': 'convert-energize-note' }, "Energize: +3 to the first type's track before selling (cap 12). Applies only to the type above."));
+      const capped = base + 3 > 12;
+      appendNodes(gain,
+        h('div', { class: 'ov-sub energize-track', 'data-testid': 'convert-energize-note' },
+          h('b', {}, `${nice(reagent)} track ${base} + 3 Energize = ${v}${capped ? ' (capped at 12)' : ''}`)),
+        h('div', { 'data-testid': 'convert-gain-math' },
+          `${n} × ${v} = `, h('b', {}, `+${n * v} mana`), ` · track ends at ${endTrack}`));
+    } else {
+      appendNodes(gain, h('div', { 'data-testid': 'convert-gain-math' },
+        `${n} × ${v} = `, h('b', {}, `+${n * v} mana`), ` · track ${v} → ${endTrack}`));
     }
     if (adept && r2) {
       const c2 = L.convert[r2] || { n: countTok(r2), value: trackOf(r2) };
