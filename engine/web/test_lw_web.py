@@ -274,6 +274,24 @@ for fn, kw in (('act_build', dict(pay='gold')), ('act_research', dict(spell='Spe
                ('act_convert', dict(reagent='Horn', n=5)), ('resolve_effect', dict(choice={})), ('dungeon_flip', {})):
     r = call(fn, **kw); check(not r['ok'] and W.dump() == before, f'{fn} refused, state unchanged ({r["error"][:60]})')
 
+print('\n=== 11a. Transform (2:1) before convert in the same action ===')
+def m_transform(s):
+    for r, (exp, _a) in A.audit_tracks(s).items():
+        s['tracks'][r] = exp
+    k = A.P(s, 'Keith')
+    k['tok'] = ['Horn', 'Horn', 'Sulphur']
+    add_spell(s, 'Keith', 'Transform', cast=True)
+setup(m_transform)
+t_h = W.st()['tracks']['Toadstool']
+m0 = P('Keith')['mana']
+r = call('act_convert', reagent='Toadstool', n=1, transforms=[{'from': ['Horn', 'Sulphur'], 'to': 'Toadstool'}])
+check(r['ok'] and r['result'] in ('done', 'stopped (--no-ai)'), 'transform + convert in one action')
+check(P('Keith')['tok'] == ['Horn'], 'transform consumed Horn+Sulphur; unsold Horn remains')
+check(P('Keith')['mana'] == m0 + t_h and W.st()['tracks']['Toadstool'] == max(1, t_h - 1), 'convert used track value after transform')
+xf = [e for e in W.st()['meta']['log'] if e.get('act') == 'transform'][-1]
+check(xf.get('steps') == [{'from': ['Horn', 'Sulphur'], 'to': 'Toadstool'}], 'transform logged before convert for replay')
+check(not A.audit_tracks(W.st()) and not A.audit(W.st()), 'tracks and convert audit clean after transform')
+
 print('\n=== 11b. Adept Conversion: two types in one convert action, one log entry, audits clean ===')
 def sync_tracks(s):
     """Align tracks with audit_tracks replay so tests stay honest about g8 history."""

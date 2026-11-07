@@ -221,6 +221,9 @@ def log_text(e):
             return f"{w} sold (Adept Conversion): " + '; '.join(bits) + f" (+{e['gain']} mana total)"
         if a == 'wand_tax': return f"{w} cast Wand Tax on {e['school']}: +{e['gold']} Gold"
         if a == 'transmute': return f"{w} transmuted {len(e['reagents'])} reagents into {e['gold']} Gold"
+        if a == 'transform':
+            bits = [' + '.join(T.nice(r) for r in step.get('from', [])) + f" → {T.nice(step['to'])}" for step in e.get('steps', [])]
+            return f"{w} transformed (2:1) before converting: " + '; '.join(bits)
         if a == 'time_shift':
             names = ', '.join(CD.display(c) for c in e.get('removed', [])) or f"the top {e['n']}"
             return f"{w} removed {names} from the {e['deck']} deck (Time Shift)"
@@ -328,7 +331,8 @@ def legal(s, n):
     p = P(s, n)
     O, U = TP.grouped_options(s, n)
     tok_types = [r for r, c in Counter(p['tok']).items() if c]
-    L = dict(gather={}, convert={}, convert1=False, energize=SE.has_cast(p, 'Energize'), adept_conversion=False, build=None, recruit=[],
+    L = dict(gather={}, convert={}, convert1=False, energize=SE.has_cast(p, 'Energize'), transform=SE.has_cast(p, 'Transform'),
+             adept_conversion=False, build=None, recruit=[],
              research={}, summon={}, divination=False, unavailable=list(U))
     miracle = SE.has_cast(p, 'Miracle')
     for c in p['hand']:
@@ -467,9 +471,17 @@ def _keith(s, argv):
     return status
 
 
-def act_convert(reagent, n, energize=False, reagent2=None, n2=None):
+def _apply_transforms(s, nm, transforms):
+    steps = transforms or []
+    if not steps: return
+    if not SE.has_cast(P(s, nm), 'Transform'): raise Refused('Transform is not cast')
+    SE.transform_tokens(s, nm, steps)
+
+
+def act_convert(reagent, n, energize=False, reagent2=None, n2=None, transforms=None):
     def run(s):
         nm = me(); p0 = P(s, nm)
+        _apply_transforms(s, nm, transforms)
         if reagent2 is not None or n2 is not None:
             if reagent2 is None or n2 is None: raise Refused('pick both a second reagent type and a count (or clear the second sale)')
             if not SE.has_cast(p0, 'Adept_Conversion'): raise Refused('Adept Conversion is not cast')
@@ -482,7 +494,9 @@ def act_convert(reagent, n, energize=False, reagent2=None, n2=None):
             _start_action(s, nm)
             if not SE.has_cast(P(s, nm), 'Energize'): raise Refused('Energize is not cast')
             SE.energized_convert(s, nm, A.norm(reagent), int(n)); return _after_action(s, nm, [])
-        return _keith(s, ['convert', A.norm(reagent), int(n)])
+        _start_action(s, nm)
+        A.convert(s, nm, A.norm(reagent), int(n))
+        return _after_action(s, nm, [])
     return _commit(run)
 
 

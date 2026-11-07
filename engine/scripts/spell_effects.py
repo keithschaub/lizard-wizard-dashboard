@@ -127,6 +127,26 @@ def energized_convert(s, name, reagent, count):
     out = A.convert(s, name, reagent, count); s['meta']['log'][-1]['energized'] = True   # lets audit_tracks replay the +3
     return out
 
+def transform_tokens(s, name, steps):
+    """Transform (Alchemy ongoing): before converting, turn any 2 held tokens into 1 token of another type (2:1)."""
+    p = A.P(s, name)
+    if not has_cast(p, 'Transform'): raise ValueError('Transform is not cast')
+    if not steps: return []
+    applied = []
+    for st in steps:
+        fr = [norm(r) for r in st.get('from', [])]
+        to = norm(st['to'])
+        if len(fr) != 2: raise ValueError('each transform needs exactly 2 tokens')
+        pool = list(p['tok'])
+        for r in fr:
+            if r not in pool: raise ValueError(f'{name} lacks {r} for transform')
+            pool.remove(r)
+        for r in fr: p['tok'].remove(r)
+        p['tok'].append(to)
+        applied.append({'from': fr, 'to': to})
+    A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'transform', 'steps': applied})
+    return applied
+
 def invisibility_potion(s, caster, target, x):
     """Invisibility Potion (Alchemy 1x, card read Nov 2 2026): cost 5 Mana + X Eye of Newt;
     'Steal 1 Gold per Eye of Newt used in casting the Spell (from one player)'. Caller has already researched it;

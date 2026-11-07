@@ -521,6 +521,9 @@ def describe(e, viewer='Keith'):
             return f"{w} sold (Adept Conversion): " + '; '.join(bits) + f" (+{e['gain']} mana total)"
         return f"{w} sold {e['n']} {nice(e['reagent'])} at {e['value']} each (+{e['gain']} mana); track now {e['track_after']}"
     if a == 'convert1': return f"{w} sold {', '.join(nice(r) for r in e['reagents'])} at 1 mana each"
+    if a == 'transform':
+        bits = [' + '.join(nice(r) for r in step.get('from', [])) + f" → {nice(step['to'])}" for step in e.get('steps', [])]
+        return f"{w} transformed (2:1) before converting: " + '; '.join(bits)
     if a == 'build': return f"{w} built {disp(e['tower'])} paying {'Gold' if e['paid'] == 'gold' else ', '.join(nice(r) for r in e['paid'])}"
     if a == 'research': return f"{w} researched {disp(e['spell'])} for 5 mana" + (f" and cast it ({', '.join(nice(r) for r in e['cast_paid'])})" if e.get('cast') else ' (not cast yet)')
     if a == 'cast': return f"{w} cast {disp(e['spell'])} ({', '.join(nice(r) for r in e['cast_paid'])})"

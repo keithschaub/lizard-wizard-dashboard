@@ -726,15 +726,33 @@ export function convertSheet(g, reagent) {
   const L = g.v.legal;
   const c = L.convert[reagent]; let n = c.n;
   const energize = L.energize;
+  const transformOn = !!L.transform;
   const adept = !!L.adept_conversion;
   const otherTypes = REAGENTS.filter((r) => r !== reagent && L.convert[r]);
   let r2 = ''; let n2 = 1;
+  const transforms = [];
+  const xSel = new Set();
+  const virtualTok = () => {
+    const t = [...g.me_().tok];
+    for (const tr of transforms) {
+      for (const r of tr.from) {
+        const i = t.indexOf(r);
+        if (i >= 0) t.splice(i, 1);
+      }
+      t.push(tr.to);
+    }
+    return t;
+  };
+  const countTok = (r) => virtualTok().filter((x) => x === r).length;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'convert' });
   const val = h('span', { class: 'val', 'data-testid': 'convert-n' }, String(n));
   const val2 = h('span', { class: 'val', 'data-testid': 'convert-n2' }, '1');
   const gain = h('div', { class: 'gain' });
   const gain2 = h('div', { class: 'gain', 'data-testid': 'convert-gain2' });
   const secondRow = h('div', { class: 'stepper adept-stepper', style: { display: 'none' }, 'data-testid': 'convert-stepper2' });
+  const xQueued = h('div', { class: 'chips', 'data-testid': 'transform-queue' });
+  const xPick = h('div', { class: 'chips' });
+  const xAdd = h('button', { class: 'chip', disabled: true, 'data-testid': 'transform-add' }, 'Transform (2:1)');
   const trackOf = (r) => (g.v.board.tracks[r] ?? 0);
   const rebuildSecondStepper = () => {
     secondRow.style.display = r2 ? 'flex' : 'none';
@@ -747,7 +765,53 @@ export function convertSheet(g, reagent) {
       h('button', { 'data-testid': 'convert-plus2', onclick: () => { n2 = Math.min(c2.n, n2 + 1); upd(); g.sfx('tap'); } }, '+'),
     );
   };
+  const renderTransformPick = () => {
+    if (!transformOn) return;
+    xPick.innerHTML = '';
+    virtualTok().forEach((r, i) => {
+      const b = h('button', {
+        class: `tokbtn ${xSel.has(i) ? 'on' : ''}`,
+        'data-testid': `transform-pick-${i}`,
+      }, h('img', { src: reagentIcon(r), alt: nice(r) }));
+      b.onclick = () => {
+        if (xSel.has(i)) { xSel.delete(i); g.sfx('unselect'); }
+        else if (xSel.size < 2) { xSel.add(i); g.sfx('select'); }
+        renderTransformPick();
+        xAdd.disabled = xSel.size !== 2;
+      };
+      appendNodes(xPick, b);
+    });
+  };
+  const renderTransformQueue = () => {
+    xQueued.innerHTML = '';
+    transforms.forEach((tr, i) => {
+      appendNodes(xQueued, h('span', { class: 'chip static', 'data-testid': `transform-done-${i}` },
+        `${tr.from.map(nice).join(' + ')} → ${nice(tr.to)}`,
+        h('button', { class: 'linkish', 'data-testid': `transform-undo-${i}`, onclick: () => {
+          transforms.splice(i, 1); renderTransformQueue(); renderTransformPick(); upd(); g.sfx('tap');
+        } }, 'undo')));
+    });
+  };
+  const xTarget = h('select', { 'data-testid': 'transform-target' }, ...REAGENTS.map((r) => h('option', { value: r }, nice(r))));
+  xTarget.value = reagent;
+  xTarget.onchange = () => { g.sfx('select'); };
+  xAdd.onclick = () => {
+    if (xSel.size !== 2) return;
+    const vt = virtualTok();
+    const fr = [...xSel].sort((a, b) => a - b).map((i) => vt[i]);
+    transforms.push({ from: fr, to: xTarget.value });
+    xSel.clear();
+    renderTransformQueue();
+    renderTransformPick();
+    xAdd.disabled = true;
+    n = Math.min(n, countTok(reagent));
+    if (adept && r2) n2 = Math.min(n2, countTok(r2));
+    upd();
+    g.sfx('coin');
+  };
+
   const upd = () => {
+    n = Math.min(n, countTok(reagent) || 1);
     const v = Math.min(12, c.value + (energize ? 3 : 0));
     val.textContent = n;
     gain.innerHTML = '';
@@ -756,8 +820,8 @@ export function convertSheet(g, reagent) {
       appendNodes(gain, h('div', { class: 'ov-sub', 'data-testid': 'convert-energize-note' }, "Energize: +3 to the first type's track before selling (cap 12). Applies only to the type above."));
     }
     if (adept && r2) {
-      const c2 = L.convert[r2];
-      n2 = Math.min(c2.n, Math.max(1, n2));
+      const c2 = L.convert[r2] || { n: countTok(r2), value: trackOf(r2) };
+      n2 = Math.min(Math.max(1, n2), countTok(r2));
       val2.textContent = String(n2);
       const tv = trackOf(r2);
       gain2.innerHTML = '';
@@ -782,16 +846,23 @@ export function convertSheet(g, reagent) {
   }
   const onGo = async () => {
     const args = adept && r2
-      ? { reagent, n, energize, reagent2: r2, n2 }
-      : { reagent, n, energize };
+      ? { reagent, n, energize, reagent2: r2, n2, ...(transforms.length ? { transforms } : {}) }
+      : { reagent, n, energize, ...(transforms.length ? { transforms } : {}) };
     const r = await g.act('act_convert', args, { sound: 'coin' }); ov.close(); if (r) g.afterAction();
   };
   const panel = h('div', { class: 'sheet-panel' },
     h('img', { class: 'big-icon', src: reagentIcon(reagent), alt: '' }),
     h('div', { class: 'phase-title' }, `Convert ${nice(reagent)}`),
+    transformOn ? h('div', { class: 'transform-block', 'data-testid': 'convert-transform' },
+      h('div', { class: 'ov-sub' }, 'Transform (2:1): pick any 2 tokens, then one target type (repeatable before selling).'),
+      xPick,
+      h('label', { class: 'sr-only', for: 'transform-target' }, 'Transform into'),
+      xTarget,
+      xAdd,
+      xQueued) : null,
     adept ? h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-banner' }, 'Adept Conversion: you may sell a second type in this same action (below).') : null,
     h('div', { class: 'stepper' }, h('button', { 'data-testid': 'convert-minus', onclick: () => { n = Math.max(1, n - 1); upd(); g.sfx('tap'); } }, '−'), val,
-      h('button', { 'data-testid': 'convert-plus', onclick: () => { n = Math.min(c.n, n + 1); upd(); g.sfx('tap'); } }, '+')),
+      h('button', { 'data-testid': 'convert-plus', onclick: () => { n = Math.min(countTok(reagent), n + 1); upd(); g.sfx('tap'); } }, '+')),
     gain,
     adept ? h('div', { class: 'adept-second' },
       h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-note' }, 'Adept Conversion: convert a 2nd type'),
@@ -803,6 +874,7 @@ export function convertSheet(g, reagent) {
     L.convert1 ? h('button', { class: 'linkish', 'data-testid': 'convert-mixed', onclick: () => { ov.close(); convertMixed(g); } }, 'Sell a mix of reagents at 1 mana each') : null);
   appendNodes(ov.el, panel);
   if (adept) rebuildSecondStepper();
+  if (transformOn) { renderTransformPick(); renderTransformQueue(); }
   upd();
 }
 
