@@ -142,9 +142,9 @@ def dump():
 
 
 # ------------------------------------------------------------------ public view for the UI
-CARD_FIELDS = ('key', 'deck', 'name', 'display', 'school', 'effect', 'duration', 'cost', 'gather_icons', 'increase_icons',
+CARD_FIELDS = ('key', 'deck', 'name', 'display', 'title', 'school', 'effect', 'duration', 'cost', 'gather_icons', 'increase_icons',
                'gather_bonus', 'collect', 'reagent', 'tier', 'monster_type', 'kind', 'gold', 'hits', 'item', 'negative',
-               'vp', 'tile_icon', 'school_reagent')
+               'vp', 'tile_icon', 'tile_count', 'tile_label', 'school_reagent')
 
 
 def card_db():
