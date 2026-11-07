@@ -56,6 +56,20 @@ def test_log_text_does_not_expose_numbered_card_ids():
         })) is None
 
 
+def test_gather_banner_data_preserves_reagents_bonus_and_tracks():
+    entry = {
+        'act': 'gather',
+        'got': ['Sulphur', 'Mandrake', 'Horn'],
+        'bonus': ['Sulphur'],
+        'inc': ['Eye_of_Newt', 'Foxglove', 'Horn', 'Mandrake'],
+    }
+    assert lw_web.gather_banner_data(entry) == {
+        'reagents': ['Sulphur', 'Mandrake', 'Horn'],
+        'bonus': ['Sulphur'],
+        'tracks': ['Eye_of_Newt', 'Foxglove', 'Horn', 'Mandrake'],
+    }
+
+
 if __name__ == '__main__':
     test_all_log_actions_are_humanized()
     print(f'OK: {len(ACTS)} log actions humanized')

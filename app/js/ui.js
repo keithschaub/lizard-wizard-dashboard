@@ -1390,6 +1390,27 @@ export const AI_MOVE_MS = 4400;
 export const AI_CAST_MS = 5000;
 export const aiMoveMs = (e) => (e.cast ? AI_CAST_MS : AI_MOVE_MS);
 
+function gatherBanner(g, e) {
+  const data = e.gather;
+  if (!data) return null;
+  const chip = (r, bonus = false) => h('span', {
+    class: `bgather-chip${bonus ? ' bonus' : ''}`,
+    'data-testid': bonus ? 'ai-gather-bonus' : 'ai-gather-reagent',
+  }, h('img', { src: reagentIcon(r), alt: nice(r) }), h('span', { class: 'bgather-name' }, nice(r)),
+  bonus ? h('span', { class: 'bgather-bonus-label' }, 'bonus') : null);
+  const track = (r) => h('span', { class: 'bgather-track', 'data-testid': 'ai-gather-track' },
+    h('img', { src: reagentIcon(r), alt: nice(r) }), h('span', { class: 'bgather-name' }, nice(r)));
+  return h('div', { 'data-testid': 'ai-banner-text' },
+    h('div', { class: 'bgather', 'data-testid': 'ai-gather-structured' },
+      h('div', { class: 'bgather-headline' }, `${e.who || 'AI'} gathered`),
+      h('div', { class: 'bgather-chips' },
+        ...(data.reagents || []).map((r) => chip(r)),
+        ...(data.bonus || []).map((r) => chip(r, true))),
+      h('div', { class: 'bgather-divider' }),
+      h('div', { class: 'bgather-tracks-label' }, 'Tracks up:'),
+      h('div', { class: 'bgather-tracks' }, ...(data.tracks || []).map(track))));
+}
+
 export async function banner(g, e, i = 0, n = 1) {
   if (g.skip) return;
   const layer = document.getElementById('banner-layer');
@@ -1404,7 +1425,7 @@ export async function banner(g, e, i = 0, n = 1) {
     avatar(e.who || '?'),
     h('div', { class: 'btext' },
       h('div', { class: 'bhead' }, `${e.who || 'AI'}'s turn${n > 1 ? ` · move ${i + 1} of ${n}` : ''}`),
-      h('div', { 'data-testid': 'ai-banner-text' }, e.text), extra,
+      gatherBanner(g, e) || h('div', { 'data-testid': 'ai-banner-text' }, e.text), extra,
       h('div', { class: 'bfoot' }, h('span', { class: 'skiphint' }, i + 1 < n ? 'tap anywhere: next move' : 'tap anywhere to continue'),
         h('button', { class: 'bskip', 'data-testid': 'ai-skip', onclick: () => { g.skip = true; } }, 'Skip ⏭'))),
     imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null,

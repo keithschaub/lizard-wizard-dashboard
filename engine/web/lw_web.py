@@ -316,6 +316,16 @@ def log_text(e):
     return _clean_card_ids(_log_text(e))
 
 
+def gather_banner_data(e):
+    if e.get('act') != 'gather':
+        return None
+    return {
+        'reagents': list(e.get('got', [])),
+        'bonus': list(e.get('bonus', [])),
+        'tracks': list(e.get('inc', [])),
+    }
+
+
 def log_cards(e):
     a = e.get('act'); out = []
     for f in ('spell', 'took', 'tower', 'familiar', 'card', 'wizard', 'gave', 'got'):
@@ -348,6 +358,8 @@ def public_log(s, viewer):
         elif a == 'setup_picks': item['text'] = 'Starting reagents: ' + '; '.join(f"{n} {', '.join(T.nice(r) for r in v)}" for n, v in e['picks'].items())
         else: item['text'] = log_text(e)
         item['cards'] = log_cards(e)
+        if a == 'gather':
+            item['gather'] = gather_banner_data(e)
         if a == 'research' and e.get('cast') or a == 'cast':
             item['cast'] = key(e['spell'])
         if a == 'auction': item['bids'] = e.get('bids_tail'); item['price'] = e.get('price')

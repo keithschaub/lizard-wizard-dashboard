@@ -199,7 +199,7 @@ img { -webkit-user-drag: none; user-select: none; }
   background: rgba(40, 12, 18, .95); border: 1px solid rgba(255, 107, 107, .6); color: #ffd9d9; padding: 9px 14px; border-radius: 12px; font-size: 14px; transition: all .25s; z-index: 60; max-width: 90vw; text-align: center; }
 #toast.show { opacity: 1; transform: translateX(-50%); }
 #banner-layer { position: fixed; left: 0; right: 0; bottom: calc(var(--dock) + var(--safe-b) + 10px); display: flex; justify-content: center; pointer-events: none; z-index: 30; }
-.banner { pointer-events: auto; width: min(92vw, 460px); display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; background: rgba(12, 17, 44, .94);
+.banner { pointer-events: auto; width: min(92vw, 460px); display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; background: rgb(12, 17, 44);
   border: 1px solid rgba(214, 180, 90, .55); box-shadow: 0 10px 40px rgba(0, 0, 0, .6); animation: bannerIn .3s ease-out both; }
 .banner.out { animation: bannerOut .25s ease-in both; }
 @keyframes bannerIn { from { transform: translateY(14px); opacity: 0; } }
@@ -213,6 +213,19 @@ img { -webkit-user-drag: none; user-select: none; }
 .banner.swap .btext, .banner.swap .bcards { animation: bannerSwap .25s ease-out both; }
 @keyframes bannerSwap { from { opacity: 0; transform: translateX(10px); } }
 .banner .bhead { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--teal); margin-bottom: 2px; }
+.banner .bgather { min-width: 0; }
+.banner .bgather-headline { color: var(--gold-hi); font-family: var(--display); font-size: 17px; font-weight: 700; line-height: 1.1; }
+.banner .bgather-chips, .banner .bgather-tracks { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.banner .bgather-chips { margin-top: 5px; }
+.banner .bgather-chip, .banner .bgather-track { display: inline-flex; align-items: center; gap: 3px; min-width: 0; }
+.banner .bgather-chip { padding: 2px 6px 2px 3px; border: 1px solid rgba(214, 180, 90, .45); border-radius: 12px; background: rgba(255, 255, 255, .06); font-size: 11.5px; line-height: 1.1; }
+.banner .bgather-chip img, .banner .bgather-track img { width: 19px; height: 19px; object-fit: contain; flex: none; }
+.banner .bgather-chip.bonus { border-color: var(--gold); color: var(--gold-hi); }
+.banner .bgather-bonus-label { font-size: 9px; text-transform: uppercase; letter-spacing: .04em; color: var(--gold-hi); }
+.banner .bgather-divider { height: 1px; background: rgba(214, 180, 90, .55); margin: 7px 0 5px; }
+.banner .bgather-tracks-label { display: inline; color: #c9b878; font-size: 10.5px; font-weight: 700; margin-right: 5px; }
+.banner .bgather-tracks { display: inline-flex; vertical-align: middle; gap: 5px 8px; }
+.banner .bgather-track { font-size: 10.5px; color: #d8d4c4; }
 .banner .bfoot { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
 .banner .skiphint { font-size: 11px; color: #6f7ca5; flex: 1; }
 .banner .bskip { flex: none; height: 26px; padding: 0 10px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255, 255, 255, .06); color: inherit; font-size: 12.5px; font-weight: 700; }
