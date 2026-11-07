@@ -1,6 +1,14 @@
 import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenChip, costIcons, sleep, appendNodes, replaceChildren } from './dom.js';
 import { versionLabel } from './version.js';
+import * as Store from './store.js';
 import { achievementTile, achievementBadge, achievementTitle, achievementFromText } from './achievements.js';
+
+const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage' };
+
+function diffBadge(level) {
+  if (!level) return null;
+  return h('span', { class: `diff-badge ${level}`, 'data-testid': `diff-badge-${level}` }, DIFF_LABELS[level] || level);
+}
 
 // ------------------------------------------------------------------ overlay plumbing
 export function openOverlay(cls, { onScrim = null, testid = null } = {}) {
@@ -375,11 +383,11 @@ export function openMats(g) {
   const order = [...v.players].sort((a, b) => (b.you - a.you) || v.seat_order.indexOf(a.name) - v.seat_order.indexOf(b.name));
   console.info('[mats]', order.map((p) => `${p.name}: wizards [${p.wizards.join(', ')}] towers [${p.towers.join(', ')}]`).join(' | '));
   for (const p of order) {
-    const tag = p.you ? 'You' : (p.human ? 'Human' : `AI ${p.level ? p.level[0].toUpperCase() + p.level.slice(1) : ''}${p.profile ? ' · ' + p.profile : ''}`);
+    const tag = p.you ? 'You' : (p.human ? 'Human' : `AI${p.profile ? ' · ' + p.profile : ''}`);
     const tok = counts(p.tok);
     const pairs = pairUp(g, p.wizards, p.towers);
     appendNodes(ov.el, h('div', { class: `mat ${p.you ? 'you' : ''}`, 'data-testid': `mat-${p.name}` },
-      h('div', { class: 'mat-head' }, avatar(p.name, 30), h('span', { class: 'mat-name' }, p.name), h('span', { class: `mat-tag ${p.you ? 'you' : ''}` }, tag),
+      h('div', { class: 'mat-head' }, avatar(p.name, 30), h('span', { class: 'mat-name' }, p.name), !p.you && p.level ? diffBadge(p.level) : null, h('span', { class: `mat-tag ${p.you ? 'you' : ''}` }, tag),
         h('span', { class: 'stat vp mat-vp' }, `${p.vp} VP`)),
       h('div', { class: 'mat-row' },
         h('span', { class: 'stat mana' }, h('span', { class: 'orb' }), p.mana === null ? '?' : p.mana),
@@ -1185,7 +1193,9 @@ export async function arena(g, { mode, wizard = null }) {
   ring.forEach((n, i) => {
     const [x, y] = seatPos(i, ring.length);
     const b = h('div', { class: 'bid', 'data-testid': `bid-${n}` }, '–');
-    const s = h('div', { class: 'seat', 'data-testid': `seat-${n}`, style: { left: `${x}%`, top: y < 50 ? `max(48px, ${y}%)` : `${y}%` } }, avatar(n, 44), h('div', { class: 'sname' }, n), b);
+    const pd = g.v.players.find((p) => p.name === n);
+    const s = h('div', { class: 'seat', 'data-testid': `seat-${n}`, style: { left: `${x}%`, top: y < 50 ? `max(48px, ${y}%)` : `${y}%` } }, avatar(n, 44),
+      h('div', { class: 'sname' }, n, pd && !pd.you && pd.level ? diffBadge(pd.level) : null), b);
     seats[n] = s; bids[n] = b; appendNodes(ringEl, s);
   });
   const bar = h('div', { class: 'bidbar', 'data-testid': 'bidbar' });
@@ -1342,7 +1352,8 @@ export function gameOver(g) {
   const v = g.v; const ov = openOverlay('final', { testid: 'game-over' });
   appendNodes(ov.el, h('div', { class: 'ov-title' }, 'Game Over'), h('div', { class: 'winner', 'data-testid': 'winner' }, ranking(v).text), ...rankRows(v),
     h('div', { class: 'actions' },
-      h('button', { class: 'act', 'data-testid': 'go-new-game', onclick: () => { ov.close(); newGame(g); } }, 'Play again'),
+      h('button', { class: 'act', 'data-testid': 'go-play-again', onclick: () => { ov.close(); replayNewGame(g); } }, 'Play again'),
+      h('button', { class: 'act secondary', 'data-testid': 'go-new-setup', onclick: () => { ov.close(); openNewGameSetup(g); } }, 'New setup'),
       h('button', { class: 'act secondary', 'data-testid': 'go-mats', onclick: () => { ov.close(); openMats(g); } }, 'View mats'),
       h('button', { class: 'act secondary', 'data-testid': 'go-close', onclick: () => ov.close() }, 'Close')));
   g.sfx('win');
@@ -1355,7 +1366,8 @@ export function menu(g) {
   appendNodes(ov.el, h('div', { class: 'sheet-panel' }, h('button', { class: 'sheet-close', 'aria-label': 'Close', 'data-testid': 'menu-close', onclick: () => ov.close() }, '×'),
     ...(scores.length ? scores : [h('div', { class: 'phase-title' }, 'Game')]),
     h('div', { class: 'actions' },
-      h('button', { class: v.game_over ? 'act' : 'act secondary', 'data-testid': 'menu-new-game', onclick: () => { ov.close(); newGame(g); } }, v.game_over ? 'Play again (new game)' : 'New game'),
+      h('button', { class: v.game_over ? 'act' : 'act secondary', 'data-testid': 'menu-new-game', onclick: () => { ov.close(); openNewGameSetup(g); } }, 'New game'),
+      v.game_over ? h('button', { class: 'act secondary', 'data-testid': 'menu-play-again', onclick: () => { ov.close(); replayNewGame(g); } }, 'Play again') : null,
       v.game_over ? h('button', { class: 'act secondary', 'data-testid': 'menu-final-scores', onclick: () => { ov.close(); gameOver(g); } }, 'Final scores') : null,
       h('button', { class: 'act secondary', 'data-testid': 'menu-export', onclick: () => { ov.close(); g.exportSave(); } }, 'Export save file'),
       h('button', { class: 'act secondary', 'data-testid': 'menu-import', onclick: () => { ov.close(); g.importSave(); } }, 'Import save file'),
@@ -1374,15 +1386,33 @@ export function menu(g) {
     h('div', { class: 'menu-version', 'data-testid': 'menu-version' }, versionLabel())));
 }
 
-// New game: Keith, Newt (AI) and LizWiz (AI), dealt by the engine's setup script; Keith picks 2 starting reagents.
+export async function openNewGameSetup(g) {
+  const { runSetupWizard } = await import('./setup.js');
+  const cfg = await runSetupWizard(g);
+  if (!cfg) return;
+  await newGameWithConfig(g, cfg);
+}
+
+export async function replayNewGame(g) {
+  const cfg = Store.loadSetup() || Store.defaultSetup();
+  await newGameWithConfig(g, cfg);
+}
+
+// Legacy entry (tests): skip wizard, use last saved setup or default Keith vs 2 AIs.
 export async function newGame(g) {
+  const cfg = Store.loadSetup() || Store.defaultSetup();
+  await newGameWithConfig(g, cfg);
+}
+
+async function newGameWithConfig(g, config) {
   const ov = openOverlay('gather newgame', { testid: 'new-game' });
   appendNodes(ov.el, closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'), h('div', { class: 'ov-sub' }, 'Dealing…'));
-  const seeds = g.nextGameSeeds || {};          // tests seed the deal for reproducible playthroughs
-  const pr = await g.call('new_game_preview', { seed: seeds.seed, ai_seed: seeds.ai_seed });
+  const seeds = g.nextGameSeeds || {};
+  const pr = await g.call('new_game_preview', { seed: seeds.seed, ai_seed: seeds.ai_seed, config });
   if (ov.closed) return;
   if (!pr.ok) { g.toast(pr.error); ov.close(); return; }
-  const { hand, reagents, players } = pr.result;
+  const { hand, reagents, players, human } = pr.result;
+  if (human) g.me = human;
   const picks = [];
   const start = h('button', { class: 'act', disabled: true, 'data-testid': 'new-game-start' }, 'Start game');
   const chips = reagents.map((r) => {
@@ -1397,7 +1427,7 @@ export async function newGame(g) {
   });
   ov.el.innerHTML = '';
   appendNodes(ov.el, closeBtn(() => ov.close(), 'new-game-cancel'), h('div', { class: 'ov-title' }, 'New game'),
-    h('div', { class: 'ov-sub' }, `${players.join(', ')} · you start. This replaces the current game (export it first to keep it).`),
+    h('div', { class: 'ov-sub' }, `${players.join(', ')} · you sit first unless random first player applies. This replaces the current game (export first to keep it).`),
     h('div', { class: 'phase-title', style: { fontSize: '15px' } }, 'Your reagent cards'),
     h('div', { class: 'hand-preview', 'data-testid': 'new-game-hand' }, hand.map((k) => h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }))),
     h('div', { class: 'phase-title', style: { fontSize: '15px' } }, 'Pick 2 different starting reagents'),

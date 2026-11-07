@@ -127,12 +127,19 @@ def _commit(fn, *a, **kw):
 
 
 # ------------------------------------------------------------------ load / save
-def load(text, viewer='Keith'):
+def load(text, viewer=None):
     s = json.loads(text) if isinstance(text, str) else text
     for k in ('players', 'meta', 'tracks'):
         if k not in s: raise Refused(f'not a Lizard Wizard save: missing {k}')
-    if viewer not in [q['name'] for q in s['players']]: raise Refused(f'{viewer} is not a seat in this game')
+    names = [q['name'] for q in s['players']]
+    humans = list(s['meta'].get('humans') or [])
+    if viewer is None: viewer = humans[0] if humans and humans[0] in names else 'Keith'
+    if viewer not in names:
+        viewer = humans[0] if humans and humans[0] in names else names[0]
     s['meta'].setdefault('web_pending', None)
+    m = s['meta']; levels = m.setdefault('ai_levels', {})
+    for q in s['players']:
+        if q['name'] not in humans: levels.setdefault(q['name'], 'normal')
     G['s'] = s; G['me'] = viewer
     return view()
 
@@ -987,8 +994,35 @@ def ai_step():
 
 # ------------------------------------------------------------------ new game (rulebook setup through scripts/deal4.py)
 WORKSTATION = '/workspace/lizard-wizard/'          # deal4.py's hardcoded engine root (the worker mounts the engine here)
-NEW_GAME = dict(players=['Keith', 'Newt', 'LizWiz'], humans=['Keith'], profiles={'Newt': 'spellslinger', 'LizWiz': 'delver'})
+DEFAULT_NEW_GAME = dict(human_name='Keith', player_count=3, ais=[{'name': 'Newt', 'level': 'normal'}, {'name': 'LizWiz', 'level': 'normal'}])
+AI_PROFILES = {'Newt': 'spellslinger', 'LizWiz': 'delver', 'Gecko': 'tycoon', 'Iggy': 'balanced'}
 NEW_STATE = '/tmp/lw_web_new_game.json'
+
+
+def _norm_config(config):
+    """Validate and fill defaults for a new-game setup (single human + 1–3 AI seats)."""
+    defaults = [{'name': 'Newt', 'level': 'normal'}, {'name': 'LizWiz', 'level': 'normal'}, {'name': 'Gecko', 'level': 'normal'}]
+    config = dict(config or DEFAULT_NEW_GAME)
+    human = str(config.get('human_name') or 'Keith').strip() or 'Keith'
+    count = int(config.get('player_count') or 3)
+    if count not in (2, 3, 4): raise Refused('table size must be 2, 3, or 4 players')
+    ais = list(config.get('ais') or [])
+    if len(ais) != count - 1:
+        ais = defaults[:count - 1]
+    out_ais = []
+    for i, a in enumerate(ais[:count - 1]):
+        name = str(a.get('name') or defaults[i]['name']).strip() or defaults[i]['name']
+        lvl = str(a.get('level') or 'normal').lower()
+        if lvl not in ('easy', 'normal', 'hard'): lvl = 'normal'
+        if name == human: raise Refused('AI names must differ from your name')
+        out_ais.append(dict(name=name, level=lvl))
+    names = {a['name'] for a in out_ais}
+    if len(names) != len(out_ais): raise Refused('each AI needs a unique name')
+    return dict(human_name=human, player_count=count, ais=out_ais)
+
+
+def _players_from_config(cfg):
+    return [cfg['human_name']] + [a['name'] for a in cfg['ais']]
 
 
 def _deal4(argv):
@@ -1012,42 +1046,54 @@ def _deal4(argv):
         else: os.environ['LW_STATE'] = old_env
 
 
-def new_game_preview(seed=None, ai_seed=None):
+def new_game_preview(seed=None, ai_seed=None, config=None):
     """Setup A-D (deal4 hands): deal 3 reagent cards each, AI seats pick their 2 tokens in secret. Nothing replaces the
     current game until new_game_start. Returns only the human's own hand."""
+    cfg = _norm_config(config)
+    players = _players_from_config(cfg)
+    human = cfg['human_name']
     rng = random.SystemRandom()
     seed = int(seed) if seed is not None else rng.randrange(10 ** 6)
     ai_seed = int(ai_seed) if ai_seed is not None else rng.randrange(10 ** 6)
     if os.path.exists(NEW_STATE): os.remove(NEW_STATE)
-    _deal4(['hands', '--seed', seed, '--ai-seed', ai_seed, '--players', ','.join(NEW_GAME['players']), '--humans', ','.join(NEW_GAME['humans']),
+    _deal4(['hands', '--seed', seed, '--ai-seed', ai_seed, '--players', ','.join(players), '--humans', human,
             '--coach', 'game/coaching_log_web.md', '--force'])
     s = json.load(open(NEW_STATE)); m = s['meta']
-    ais = [n for n in NEW_GAME['players'] if n not in NEW_GAME['humans']]
-    # the same meta scripts/new_game.py writes, plus g8's house rule of public Gold
-    m['humans'] = list(NEW_GAME['humans']); m['ai_levels'] = {n: 'normal' for n in ais}
-    m['ai_profiles'] = {n: NEW_GAME['profiles'].get(n, 'balanced') for n in ais}
+    ais = [a['name'] for a in cfg['ais']]
+    m['humans'] = [human]
+    m['ai_levels'] = {a['name']: a['level'] for a in cfg['ais']}
+    m['ai_profiles'] = {a['name']: AI_PROFILES.get(a['name'], 'balanced') for a in cfg['ais']}
     m['ai_seed'] = ai_seed; m['ai_random'] = True; m['private_mats'] = True; m['show_gold'] = True
     m['mode'] = 'free-for-all (each AI plays only for itself; humans play for themselves)'
+    m['setup_config'] = cfg
     G['setup'] = s
-    p = P(s, me())
-    return dict(hand=[key(c) for c in p['hand']], reagents=list(REAGENTS), players=list(NEW_GAME['players']))
+    G['setup_config'] = cfg
+    G['me'] = human
+    p = P(s, human)
+    return dict(hand=[key(c) for c in p['hand']], reagents=list(REAGENTS), players=players, human=human, config=cfg)
 
 
 def new_game_start(picks, seed=None):
     """Setup C for the human (2 different starting reagents), then deal4 board (E-J) and the dungeon, as turn.py does."""
     s = G.get('setup')
     if not s: raise Refused('start a new game first')
+    cfg = G.get('setup_config') or _norm_config(s['meta'].get('setup_config'))
+    human = cfg['human_name']
     picks = [A.norm(r) for r in picks]
     if len(picks) != 2 or len(set(picks)) != 2 or any(r not in REAGENTS for r in picks): raise Refused('pick 2 different reagents')
     json.dump(s, open(NEW_STATE, 'w'))
     board_seed = int(seed) if seed is not None else random.SystemRandom().randrange(10 ** 6)
-    _deal4(['board', '--pick', f"{me()}={picks[0]},{picks[1]}", '--seed', board_seed])
+    _deal4(['board', '--pick', f"{human}={picks[0]},{picks[1]}", '--seed', board_seed])
     s = json.load(open(NEW_STATE))
     A.ensure_dungeon(s); s['next'] = s['meta']['seat_order'][0]; s['turn'] = 0
+    s['meta']['setup_config'] = cfg
+    s['meta']['humans'] = [human]
+    s['meta']['ai_levels'] = {a['name']: a['level'] for a in cfg['ais']}
+    s['meta']['ai_profiles'] = {a['name']: AI_PROFILES.get(a['name'], 'balanced') for a in cfg['ais']}
     A.log(s, {'r': 1, 'act': 'turn', 'seat': s['next']})
     A.log(s, {'r': 0, 'act': 'setup_picks', 'picks': {q['name']: list(q['tok']) for q in s['players']}})
     s['meta']['web_pending'] = None
-    G['s'] = s; G.pop('setup', None)
+    G['s'] = s; G['me'] = human; G.pop('setup', None); G.pop('setup_config', None)
     return 'started'
 
 

@@ -204,7 +204,7 @@ test('game end: scores stay reachable after dismissing, and Play again deals a f
   await expect(page.getByTestId('game-over')).toHaveCount(0);
   await page.getByTestId('dock-scores').tap();
   await expect(page.getByTestId('game-over')).toBeVisible();
-  await page.getByTestId('go-new-game').tap();
+  await page.getByTestId('go-play-again').tap();
   await expect(page.getByTestId('new-game-hand').locator('img')).toHaveCount(3);
   await expect(page.getByTestId('new-game-start')).toBeDisabled();
   await page.getByTestId('pick-Horn').tap();

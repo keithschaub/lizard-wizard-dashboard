@@ -149,9 +149,9 @@ def public_view(state, me, tokens_public=TOKENS_PUBLIC):
 
 # ------------------------------------------------------------------ difficulty levels (all use public_view only)
 LEVELS = {
-    'easy':   dict(tau=1.6, margin=5.0, shallow=True, bid_mult=0.5, attack_w=0.35, end=False, spend=False, lookahead=0),
-    'normal': dict(tau=0.5, margin=1.0, shallow=False, bid_mult=1.0, attack_w=1.0, end=True, spend=True, lookahead=0),
-    'hard':   dict(tau=0.12, margin=0.4, shallow=False, bid_mult=1.0, attack_w=1.0, end=True, spend=True, lookahead=3),
+    'easy':   dict(tau=1.6, margin=5.0, shallow=True, bid_mult=0.5, attack_w=0.35, end=False, spend=False, lookahead=0, epsilon=0.35, skip_bid=0.65),
+    'normal': dict(tau=0.5, margin=1.0, shallow=False, bid_mult=1.0, attack_w=1.0, end=True, spend=True, lookahead=0, epsilon=0.0, skip_bid=0.0),
+    'hard':   dict(tau=0.12, margin=0.4, shallow=False, bid_mult=1.0, attack_w=1.0, end=True, spend=True, lookahead=3, epsilon=0.0, skip_bid=0.0),
     'hard0':  dict(tau=0.12, margin=0.4, shallow=False, bid_mult=1.0, attack_w=1.0, end=True, spend=True, lookahead=0),   # ablation (tests only)
 }
 _CTX = {'level': 'normal'}
@@ -504,6 +504,9 @@ def spell_cat(img):
     if SPELL.get(k) and not SPELL[k]['one_time']: return 'econ'
     return 'cast'
 
+def _humans(v):
+    return set((v.get('meta') or {}).get('humans') or [])
+
 def effect_value(v, me, img):
     """Best modeled one-time effect of casting `img` now: (VP-equivalent swing, params). Opponents' losses are weighted
     by threat_weights; a cast Spell Shield on the target wastes the attack (only the shield is lost)."""
@@ -512,6 +515,7 @@ def effect_value(v, me, img):
     o, val = _MEMO.get(('eff', id(v), me, k), (None, None))
     if o is v: return val
     w, top, _ = threat_weights(v, me); best = (0.0, None); p = P(v, me)
+    humans = _humans(v)
     def loss_if(n, kind, card):
         q = copy.deepcopy(P(v, n)); bef = S.score(q, v); q[kind].remove(card); return bef - S.score(q, v)
     def shield_loss(n):
@@ -521,6 +525,8 @@ def effect_value(v, me, img):
     if k.startswith(('Spell_Flame_Bolt', 'Spell_Disintegrate', 'Spell_Earthquake', 'Spell_Charm')):
         kinds = ['towers'] if k.startswith('Spell_Earthquake') else (['wizards'] if k.startswith('Spell_Charm') else ['wizards', 'towers'])
         for n in others(v, me):
+            if LV()['shallow'] and n in humans:
+                continue
             if shielded(v, n):
                 val = w[n] * shield_loss(n) + 0.5
                 if val > best[0]: best = (val, {'target': n, 'card': None, 'kind': None, 'blocked': True})
@@ -528,6 +534,7 @@ def effect_value(v, me, img):
             gap_ = S.score(P(v, n), v) - S.score(p, v)       # knocking a clear leader down is how a trailing player wins
             chase = (1.8 if gap_ >= 20 else 1.5 if gap_ >= 8 else 1.0) if n == top else 1.0
             if LV()['shallow']: chase = 0.5 / max(0.3, w[n])     # EASY: never singles out the leader (flat 0.5 weight)
+            if not LV()['shallow'] and n == top and gap_ >= 0: chase = max(chase, 1.6)   # HARD: pressure the VP leader
             for kind in kinds:
                 for card in sorted(set(P(v, n).get(kind, []))):
                     val = w[n] * chase * loss_if(n, kind, card)
@@ -536,6 +543,7 @@ def effect_value(v, me, img):
     elif k.startswith('Spell_Mana_Drain'):
         rate = mana_per_vp(v, me)
         for n in others(v, me):
+            if LV()['shallow'] and n in humans: continue
             m = min(15, P(v, n)['mana']); val = 0 if shielded(v, n) else m / rate + w[n] * m / max(3.0, mana_per_vp(v, n))
             if val > best[0]: best = (val, {'target': n})
     elif k == 'Spell_Creation.jpg':
@@ -582,6 +590,7 @@ def effect_value(v, me, img):
     elif k == 'Spell_Invisibility_Potion.jpg':
         x = p['tok'].count('Eye_of_Newt')
         for n in others(v, me):
+            if LV()['shallow'] and n in humans: continue
             if shielded(v, n): continue
             gl = min(x, P(v, n).get('gold', 0)); val = gl * (1 + w[n]) - x * v['tracks']['Eye_of_Newt'] / mana_per_vp(v, me)
             if val > best[0]: best = (val, {'target': n, 'x': gl})
@@ -589,6 +598,7 @@ def effect_value(v, me, img):
         best = (2.5, None)
     elif k == 'Spell_Obscure.jpg':
         for n in others(v, me):
+            if LV()['shallow'] and n in humans: continue
             if shielded(v, n):
                 val = w[n] * shield_loss(n) + 0.4
                 if val > best[0]: best = (val, {'target': n, 'blocked': True})
@@ -743,6 +753,10 @@ def bid_limit(view, me, card, kind='wizards'):
     return min(P(view, me)['mana'], lim)
 def opening_bid(view, me, card, kind='wizards'):
     """No minimum bid in the rulebook: open at 1 (0 = don't open if it's worthless to me)."""
+    if LV().get('skip_bid', 0) and bid_limit(view, me, card, kind) >= 1:
+        rng = random.Random(f"{view['meta'].get('ai_seed', 0)}-open-{me}-{b(card)}")
+        if rng.random() < LV()['skip_bid']:
+            return 0
     return 1 if bid_limit(view, me, card, kind) >= 1 else 0
 def raise_bid(view, me, card, high, kind='wizards'):
     """(d) Raise by the minimum (+1) while that stays within my limit; otherwise pass (None). Never pass below the limit."""
@@ -1053,13 +1067,17 @@ def choose_action(view, me):
         _CTX['level'] = lvl
     pick = C[0]
     if v['meta'].get('ai_random', True):
-        near = [c for c in C if c[0] >= C[0][0] - L['margin']]
-        if len(near) > 1:
-            rng = random.Random(seed); ws = [math.exp((c[0] - C[0][0]) / L['tau']) for c in near]
-            x = rng.random() * sum(ws); acc = 0
-            for c, wt in zip(near, ws):
-                acc += wt
-                if x <= acc: pick = c; break
+        rng = random.Random(seed)
+        if L.get('epsilon', 0) and len(C) > 1 and rng.random() < L['epsilon']:
+            pick = rng.choice(C)
+        else:
+            near = [c for c in C if c[0] >= C[0][0] - L['margin']]
+            if len(near) > 1:
+                ws = [math.exp((c[0] - C[0][0]) / L['tau']) for c in near]
+                x = rng.random() * sum(ws); acc = 0
+                for c, wt in zip(near, ws):
+                    acc += wt
+                    if x <= acc: pick = c; break
     wv, val, cat, act, why = pick
     act = dict(act, claim=claims, value=wv, category=cat, profile=prof, level=lvl, rng_seed=seed)
     if la_note: why = f"{why} ({la_note})"
