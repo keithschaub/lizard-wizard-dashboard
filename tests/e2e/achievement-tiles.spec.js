@@ -35,7 +35,10 @@ async function tileGeometry(tile) {
     const count = box(el.querySelector('.ach-tile-count'));
     const label = box(el.querySelector('.ach-tile-label'));
     const inside = (x) => x.left >= t.left && x.right <= t.right && x.top >= t.top && x.bottom <= t.bottom;
-    return { inside: [icon, count, label].every(inside), separated: !intersects(icon, count) && !intersects(icon, label) };
+    return {
+      inside: [icon, count, label].every(inside),
+      separated: !intersects(icon, count) && icon.bottom <= label.top - 2,
+    };
   });
 }
 
