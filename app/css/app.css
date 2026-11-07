@@ -550,7 +550,14 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 @keyframes sheetUp { from { transform: translateY(100%); } }
 .familiar-action-panel { width: min(100%, 520px); box-sizing: border-box; background: linear-gradient(180deg, #121a40, #0a0f26);
   border-top: 1px solid rgba(214, 180, 90, .5); border-radius: 18px 18px 0 0; padding: 28px 16px calc(12px + var(--clear-b));
-  display: flex; flex-direction: column; gap: 8px; align-items: center; animation: sheetUp .28s cubic-bezier(.2, .9, .3, 1) both; }
+  display: flex; flex-direction: column; gap: 8px; align-items: center; position: relative; animation: sheetUp .28s cubic-bezier(.2, .9, .3, 1) both; }
+.familiar-action-card-track { position: relative; width: min(45vw, 180px); height: min(30vh, 220px); overflow: hidden; touch-action: pan-y; }
+.familiar-action-card-track .familiar-action-card { width: 100%; height: 100%; margin: 0; }
+.familiar-action-nav { position: absolute; top: 150px; width: 44px; height: 44px; border-radius: 50%; background: rgba(17, 13, 12, .85);
+  border: 1px solid rgba(214, 180, 90, .5); color: var(--gold-hi); font-size: 28px; line-height: 1; z-index: 2; }
+.familiar-action-nav.prev { left: 8px; }
+.familiar-action-nav.next { right: 8px; }
+.familiar-action-panel > .ov-close { position: absolute; top: 10px; right: 10px; margin: 0; }
 .familiar-action-card { width: min(45vw, 180px); height: min(30vh, 220px); object-fit: contain; border-radius: 8px;
   margin-top: 4px; box-shadow: none; cursor: zoom-in; }
 .familiar-action-subtitle { margin-top: -2px; }

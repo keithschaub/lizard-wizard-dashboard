@@ -619,25 +619,24 @@ export async function gatherFlow(g, cid) {
 export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
   const L = (g.v.legal.summon || {})[fk];
   if (!L) return;
-  const uses = new Set(L.uses);
-  const from = slotRectOf(fk);
   familiarActionChooser(g, {
     familiar: fk,
+    group: group && group.length ? group : [fk],
+    groupIndex,
     title: 'Summon',
     subtitle: 'Choose how to use this familiar',
-    scoreDetail: `+${L.score_gold + (L.powerful_helper || 0)} Gold`,
-    scoreNote: L.powerful_helper ? 'incl. Powerful Helper' : null,
-    gatherDetail: `${L.collect} ${nice(L.reagent)}`,
-    reagent: L.reagent,
-    disabled: Object.fromEntries(['score', 'gather', 'dungeon', 'research'].map((use) => [use, !uses.has(use)])),
+    cancel: true,
     testPrefix: 'summon',
-    onUse: async (use) => {
-      if (use === 'gather') return summonGather(g, fk);
-      const r = await g.act('act_summon', { familiar: fk, use }, { sound: use === 'score' ? 'coin' : 'select' });
+    onUse: async (use, currentFamiliar) => {
+      const current = (g.v.legal.summon || {})[currentFamiliar];
+      if (!current) return null;
+      if (use === 'gather') return summonGather(g, currentFamiliar);
+      const from = slotRectOf(currentFamiliar);
+      const r = await g.act('act_summon', { familiar: currentFamiliar, use }, { sound: use === 'score' ? 'coin' : 'select' });
       if (r) {
         const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
         if (hit?.feedback) g.toast(hit.feedback);
-        await fly(art(fk), from, dockTarget());
+        await fly(art(currentFamiliar), from, dockTarget());
         await g.afterAction();
       }
       return r;
@@ -1077,9 +1076,11 @@ function familiarActionIcon(use, reagent) {
 
 function familiarActionChooser(g, {
   familiar, title, subtitle, scoreDetail, scoreNote = null, gatherDetail, reagent, disabled = {},
-  testPrefix = 'rise', onUse, cancel = false,
+  group = null, groupIndex = 0, testPrefix = 'rise', onUse, cancel = false,
 }) {
   const ov = openOverlay('sheet', { onScrim: cancel ? (o) => o.close() : null, testid: `${testPrefix}-use` });
+  const cards = (group && group.length ? group : [familiar]).filter(Boolean);
+  let currentIndex = Math.min(Math.max(0, groupIndex), cards.length - 1);
   const uses = [
     { use: 'score', label: 'Score', detail: scoreDetail, note: scoreNote, reason: 'Scoring unavailable' },
     { use: 'gather', label: 'Gather', detail: gatherDetail, reason: 'Gathering unavailable' },
@@ -1087,27 +1088,49 @@ function familiarActionChooser(g, {
     { use: 'research', label: 'Research', detail: 'reveal spells', reason: 'Research unavailable' },
   ];
   const actionGrid = h('div', { class: 'familiar-action-grid' });
-  uses.forEach((a) => {
-    const isDisabled = !!disabled[a.use];
-    const detail = isDisabled ? a.reason : a.detail;
-    appendNodes(actionGrid, h('button', {
-      class: `familiar-action-tile ${isDisabled ? 'disabled' : ''}`,
-      disabled: isDisabled,
-      'data-testid': `${testPrefix}-${a.use}`,
-      onclick: async () => { g.sfx(a.use === 'score' ? 'coin' : 'select'); ov.close(); await onUse(a.use); },
-    }, h('span', { class: 'familiar-action-icon' }, familiarActionIcon(a.use, reagent)),
-    h('span', { class: 'familiar-action-copy' },
-      h('span', { class: 'familiar-action-title' }, a.label),
-      h('span', { class: 'familiar-action-detail' }, detail),
-      a.note ? h('span', { class: 'familiar-action-note' }, a.note) : null)));
-  });
-  appendNodes(ov.el, h('div', { class: 'familiar-action-panel' },
-    h('img', { class: 'familiar-action-card', src: art(familiar), alt: familiar, onclick: () => expandCard(g, familiar) }),
+  const track = h('div', { class: 'familiar-action-card-track', 'data-testid': 'familiar-action-card-track' });
+  const indicator = cards.length > 1 ? h('div', { class: 'card-indicator', 'data-testid': 'card-indicator' }, cards.map((_, i) => h('span', { class: i === currentIndex ? 'dot active' : 'dot', 'data-index': i }))) : null;
+  const prev = cards.length > 1 ? h('button', { class: 'familiar-action-nav prev', 'aria-label': 'Previous card', 'data-testid': 'nav-prev', onclick: () => navigate(currentIndex - 1) }, '‹') : null;
+  const next = cards.length > 1 ? h('button', { class: 'familiar-action-nav next', 'aria-label': 'Next card', 'data-testid': 'nav-next', onclick: () => navigate(currentIndex + 1) }, '›') : null;
+  const panel = h('div', { class: 'familiar-action-panel' },
+    track, prev, next, indicator,
     h('div', { class: 'phase-title' }, title),
     h('div', { class: 'ov-sub familiar-action-subtitle' }, subtitle),
     h('div', { class: 'familiar-action-pick' }, 'Pick one action'),
     actionGrid,
-    cancel ? h('button', { class: 'linkish familiar-action-cancel', 'data-testid': `${testPrefix}-cancel`, onclick: () => ov.close() }, 'Cancel') : null));
+    cancel ? closeBtn(() => ov.close(), 'summon-cancel') : null);
+  appendNodes(ov.el, panel);
+  function render(idx) {
+    const key = cards[idx]; const l = (g.v.legal.summon || {})[key] || {};
+    replaceChildren(track, h('img', { class: 'familiar-action-card', src: art(key), alt: key }));
+    replaceChildren(actionGrid);
+    uses.forEach((a) => {
+      const isDisabled = testPrefix === 'summon' ? !new Set(l.uses || []).has(a.use) : !!disabled[a.use];
+      const detail = isDisabled ? a.reason : testPrefix === 'summon'
+        ? (a.use === 'score' ? `+${l.score_gold + (l.powerful_helper || 0)} Gold` : a.use === 'gather' ? `${l.collect} ${nice(l.reagent)}` : a.detail)
+        : a.detail;
+      appendNodes(actionGrid, h('button', {
+        class: `familiar-action-tile ${isDisabled ? 'disabled' : ''}`, disabled: isDisabled,
+        'data-testid': `${testPrefix}-${a.use}`,
+        onclick: async () => { g.sfx(a.use === 'score' ? 'coin' : 'select'); ov.close(); await onUse(a.use, key); },
+      }, h('span', { class: 'familiar-action-icon' }, familiarActionIcon(a.use, testPrefix === 'summon' ? l.reagent : reagent)),
+      h('span', { class: 'familiar-action-copy' }, h('span', { class: 'familiar-action-title' }, a.label),
+        h('span', { class: 'familiar-action-detail' }, detail),
+        a.note ? h('span', { class: 'familiar-action-note' }, a.note) : null)));
+    });
+    indicator?.querySelectorAll('.dot').forEach((dot, i) => dot.classList.toggle('active', i === idx));
+    if (prev) prev.style.opacity = idx > 0 ? '1' : '.4';
+    if (next) next.style.opacity = idx < cards.length - 1 ? '1' : '.4';
+  }
+  function navigate(idx) { if (idx < 0 || idx >= cards.length) return; currentIndex = idx; render(idx); }
+  if (cards.length > 1) {
+    let sx = 0;
+    track.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
+    track.addEventListener('touchend', (e) => { const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) navigate(currentIndex + (dx < 0 ? 1 : -1)); }, { passive: true });
+    track.addEventListener('pointerdown', (e) => { sx = e.clientX; });
+    track.addEventListener('pointerup', (e) => { const dx = e.clientX - sx; if (Math.abs(dx) > 50) navigate(currentIndex + (dx < 0 ? 1 : -1)); });
+  }
+  render(currentIndex);
   return ov;
 }
 
