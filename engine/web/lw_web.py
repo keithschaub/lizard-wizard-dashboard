@@ -1092,6 +1092,8 @@ def new_game_start(picks, seed=None):
     s['meta']['ai_profiles'] = {a['name']: AI_PROFILES.get(a['name'], 'balanced') for a in cfg['ais']}
     A.log(s, {'r': 1, 'act': 'turn', 'seat': s['next']})
     A.log(s, {'r': 0, 'act': 'setup_picks', 'picks': {q['name']: list(q['tok']) for q in s['players']}})
+    s['meta'].pop('game_over', None)
+    s['meta'].pop('game_end_triggered', None)
     s['meta']['web_pending'] = None
     G['s'] = s; G['me'] = human; G.pop('setup', None); G.pop('setup_config', None)
     return 'started'
