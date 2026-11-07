@@ -1,7 +1,7 @@
 import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenChip, costIcons, sleep, appendNodes, replaceChildren } from './dom.js';
 import { versionLabel } from './version.js';
 import * as Store from './store.js';
-import { achievementTile, achievementBadge, achievementTitle, achievementFromText } from './achievements.js';
+import { achievementTile, achievementBadge, achievementTitle, achievementFromText, SPELL_SCROLL_ICON } from './achievements.js';
 
 const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage' };
 
@@ -1063,9 +1063,10 @@ export async function newResearchChooser(g) {
 }
 
 function familiarActionIcon(use, reagent) {
-  if (use === 'score') return h('img', { src: 'art/icons/gold-token.webp', alt: '' });
+  if (use === 'score') return h('span', { class: 'familiar-action-gold-orb', 'aria-hidden': 'true' });
   if (use === 'gather') return h('img', { src: reagentIcon(reagent), alt: '' });
-  return h('span', { class: `familiar-action-glyph ${use}`, 'aria-hidden': 'true' }, use === 'dungeon' ? '⚔' : '▤');
+  if (use === 'dungeon') return h('img', { src: 'art/icons/familiar-action-dungeon.webp', alt: '' });
+  return h('span', { class: 'familiar-action-scroll', html: SPELL_SCROLL_ICON, 'aria-hidden': 'true' });
 }
 
 function familiarActionChooser(g, {
@@ -1076,7 +1077,7 @@ function familiarActionChooser(g, {
   const uses = [
     { use: 'score', label: 'Score', detail: scoreDetail, reason: 'Scoring unavailable' },
     { use: 'gather', label: 'Gather', detail: gatherDetail, reason: 'Gathering unavailable' },
-    { use: 'dungeon', label: 'Enter the Dungeon', detail: 'draw until treasure', reason: 'Dungeon unavailable' },
+    { use: 'dungeon', label: 'Dungeon', detail: 'draw until treasure', reason: 'Dungeon unavailable' },
     { use: 'research', label: 'New Research', detail: 'reveal spells', reason: 'Research unavailable' },
   ];
   const actionGrid = h('div', { class: 'familiar-action-grid' });
@@ -1096,6 +1097,7 @@ function familiarActionChooser(g, {
     h('img', { class: 'familiar-action-card', src: art(familiar), alt: familiar, onclick: () => expandCard(g, familiar) }),
     h('div', { class: 'phase-title' }, title),
     h('div', { class: 'ov-sub familiar-action-subtitle' }, subtitle),
+    h('div', { class: 'familiar-action-pick' }, 'Pick one action'),
     actionGrid,
     cancel ? h('button', { class: 'linkish familiar-action-cancel', 'data-testid': `${testPrefix}-cancel`, onclick: () => ov.close() }, 'Cancel') : null));
   return ov;
