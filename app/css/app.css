@@ -430,6 +430,7 @@ img { -webkit-user-drag: none; user-select: none; }
 /* gather sheet */
 .gather { padding: calc(10px + var(--safe-t)) 12px 14px; gap: 10px; justify-content: flex-start; }
 .gather > .ov-close { margin-bottom: -4px; }
+.gather-body { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; flex: none; }
 .gcard-wrap { position: relative; width: min(76vw, 44vh, 360px); flex: none; animation: zoomIn .28s cubic-bezier(.2, .9, .3, 1.2) both; }
 .gcard-wrap img.gcard { width: 100%; display: block; border-radius: 14px; box-shadow: 0 20px 60px rgba(0, 0, 0, .8); }
 .hot { position: absolute; width: 24%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); border: 2.5px solid rgba(255, 255, 255, .0); padding: 0; background: transparent; }

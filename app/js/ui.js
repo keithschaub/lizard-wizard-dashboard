@@ -537,7 +537,7 @@ export async function gatherFlow(g, cid) {
   let side = 'gather'; const sel = new Set(); let bloom = null; let busy = false;
   const icons = (sd) => (sd === 'gather' ? L.offers : L.raises);
   const need = (sd) => (sd === 'gather' ? L.keep : L.reversed_keep);
-  const body = h('div', { style: { display: 'contents' } });
+  const body = h('div', { class: 'gather-body' });
   appendNodes(ov.el, closeBtn(() => ov.close(), 'gather-cancel'), body);
 
   const renderKeep = () => {
@@ -646,7 +646,7 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
 
 async function summonGather(g, fk) {
   const ov = openOverlay('gather', { testid: 'summon-gather-flow' });
-  const body = h('div', { style: { display: 'contents' } });
+  const body = h('div', { class: 'gather-body' });
   appendNodes(ov.el, closeBtn(() => ov.close(), 'gather-cancel'), body);
   let casts = [];
   for (;;) {
