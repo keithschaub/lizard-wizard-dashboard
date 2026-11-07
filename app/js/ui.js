@@ -638,6 +638,7 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
         const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
         if (hit?.feedback) g.toast(hit.feedback);
         fly(art(fk), from, dockTarget());
+        await g.afterAction();
       }
       return r;
     },
