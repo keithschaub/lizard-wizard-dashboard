@@ -16,6 +16,7 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await page.getByTestId('menu-new-game').tap();
   await expect(page.getByTestId('game-setup')).toBeVisible();
   await expect(page.getByTestId('setup-custom-game')).toHaveText(/Custom gameChoose players, AI names & difficulty/);
+  await expect(page.getByTestId('setup-custom-game').locator('.setup-action-title')).toHaveCSS('font-family', /Georgia/);
   await expect(page.getByTestId('setup-quick-start')).toBeVisible();
   await shot(page, 'game-setup-01-name');
   await shot(page, 'setup-name-custom-game-dpr3');
@@ -23,6 +24,7 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await page.getByTestId('setup-custom-game').tap();
   await expect(page.getByTestId('setup-size-3')).toBeVisible();
   await expect(page.getByTestId('setup-opponents')).toHaveText(/Choose opponentsName each AI & set difficulty/);
+  await expect(page.getByTestId('setup-opponents').locator('.setup-action-title')).toHaveCSS('font-family', /Georgia/);
   await shot(page, 'game-setup-02-table');
   await page.getByTestId('setup-opponents').scrollIntoViewIfNeeded();
   await page.screenshot({ path: 'docs/screenshots/setup-table-size-actions-dpr3.png' });
@@ -31,6 +33,7 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await page.getByTestId('setup-opponents').tap();
   await expect(page.getByTestId('setup-ai-card-0')).toBeVisible();
   await expect(page.getByTestId('setup-start')).toHaveText(/Pick reagents4 wizards at the table/);
+  await expect(page.getByTestId('setup-start').locator('.setup-action-title')).toHaveCSS('font-family', /Georgia/);
   await shot(page, 'game-setup-03-ais');
   await page.getByTestId('setup-start').scrollIntoViewIfNeeded();
   await page.screenshot({ path: 'docs/screenshots/setup-ai-seats-actions-dpr3.png' });
@@ -45,6 +48,7 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await page.getByTestId('pick-Horn').tap();
   await expect(newGameStart).toBeEnabled();
   await expect(newGameStart).toHaveText('Begin the gameStarting with Eye of Newt & Horn');
+  await expect(newGameStart.locator('.setup-action-title')).toHaveCSS('font-family', /Georgia/);
   await newGameStart.scrollIntoViewIfNeeded();
   await page.screenshot({ path: 'docs/screenshots/setup-newgame-start-dpr3.png' });
   await newGameStart.screenshot({ path: 'docs/screenshots/setup-newgame-start-action-crop-dpr3.png' });
