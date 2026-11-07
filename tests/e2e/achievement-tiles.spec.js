@@ -42,6 +42,33 @@ async function tileGeometry(tile) {
   });
 }
 
+async function reagentGeometry(tile) {
+  return tile.locator('.ach-reagent').evaluate((img) => new Promise((resolve) => {
+    const med = img.closest('.ach-tile-medallion');
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let left = canvas.width, top = canvas.height, right = 0, bottom = 0;
+    for (let y = 0; y < canvas.height; y++) for (let x = 0; x < canvas.width; x++) {
+      if (pixels[(y * canvas.width + x) * 4 + 3] >= 32) {
+        left = Math.min(left, x); top = Math.min(top, y);
+        right = Math.max(right, x + 1); bottom = Math.max(bottom, y + 1);
+      }
+    }
+    const size = 256;
+    const scale = Math.min(size * .82 / canvas.width, size * .82 / canvas.height);
+    const ox = (size - canvas.width * scale) / 2;
+    const oy = (size - canvas.height * scale) / 2;
+    const b = { left: ox + left * scale, top: oy + top * scale, right: ox + right * scale, bottom: oy + bottom * scale };
+    const cx = (b.left + b.right) / 2, cy = (b.top + b.bottom) / 2, radius = size / 2;
+    const insideCircle = b.left >= 0 && b.top >= 0 && b.right <= size && b.bottom <= size;
+    resolve({ centerDelta: Math.hypot(cx - radius, cy - radius) / size, insideCircle });
+  }));
+}
+
 test('achievement tiles: icon + stacked layout, info titles without parenthetical duplicate', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const sample = ['5 Necromancy cards', '10 Gold', '5 Wizards', '5 Druidry cards'];
@@ -67,6 +94,10 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
     await expect(tile.locator('.ach-tile-label')).not.toBeEmpty();
     const geometry = await tileGeometry(tile);
     expect(geometry.inside && geometry.separated, `sample board tile ${i} geometry`).toBe(true);
+      if (await tile.locator('.ach-reagent').count()) {
+        const reagent = await reagentGeometry(tile);
+        expect(reagent.centerDelta <= 0.06 && reagent.insideCircle, `sample reagent ${i} centering`).toBe(true);
+      }
   }
   await page.getByTestId('ach-1').tap();
   await page.waitForTimeout(450);
@@ -105,6 +136,10 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
       await expect(tile.locator('.ach-tile-label')).not.toBeEmpty();
       const geometry = await tileGeometry(tile);
       expect(geometry.inside && geometry.separated, `board tile ${ach[j]} geometry`).toBe(true);
+      if (await tile.locator('.ach-reagent').count()) {
+        const reagent = await reagentGeometry(tile);
+        expect(reagent.centerDelta <= 0.06 && reagent.insideCircle, `reagent ${ach[j]} centering`).toBe(true);
+      }
       iconKeys.push(await tile.locator('.ach-tile-medallion > *').evaluate((el) => el.tagName === 'IMG' ? el.getAttribute('src') : el.className));
       await tile.screenshot({ path: `${SHOTS}/ach-contact-${String(i + j).padStart(2, '0')}.png` });
     }

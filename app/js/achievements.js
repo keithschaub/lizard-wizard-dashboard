@@ -6,7 +6,7 @@ const SAMPLE_ART = {
   Familiars: 'art/icons/achievement-familiar.webp',
 };
 
-const SPELL_SCROLL_ICON = `<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+const SPELL_SCROLL_ICON = `<svg viewBox="12 19 79 70" aria-hidden="true" focusable="false">
   <path d="M27 27c-5 2-8 7-7 13l5 31c1 7 7 11 14 10l36-6c5-1 8-5 7-10l-5-31c-1-6-6-9-12-8z" fill="#f5e4ad" stroke="#d6b45a" stroke-width="3"/>
   <path d="M27 27c-7-3-13 2-12 9l2 8c1 5 6 8 11 6l8-3-2-15z" fill="#fff0bd" stroke="#d6b45a" stroke-width="3"/>
   <path d="M73 20c7-2 13 2 14 8l2 8c1 5-3 9-8 10l-8 1-3-15z" fill="#fff0bd" stroke="#d6b45a" stroke-width="3"/>
@@ -32,7 +32,7 @@ export function achievementIcon(card = {}) {
     const r = card.school_reagent || String(card.tile_label || '').replaceAll(' ', '_');
     if (r) {
       const slug = r.toLowerCase().replaceAll('_', '-');
-      return h('img', { src: reagentIcon(r), alt: '', class: `ach-tile-img ach-reagent-${slug}` });
+      return h('img', { src: reagentIcon(r), alt: '', class: `ach-tile-img ach-reagent ach-reagent-${slug}` });
     }
   }
   if (kind === 'Spells') return h('span', { class: 'ach-tile-svg ach-tile-spells', 'aria-label': 'Spells', html: SPELL_SCROLL_ICON });
