@@ -147,6 +147,8 @@ class Game {
   setView(v) {
     const prev = this.v; this.v = v;
     if (v.next !== this.me) UI.closeExpandOverlays();
+    const you = v.players?.find((p) => p.you);
+    if (you) this.me = you.name;
     this.board.render(v);
     this.renderDock(prev);
     this.renderTop();

@@ -547,8 +547,7 @@ class Playtest {
     await expect(page.getByTestId('dock-scores')).toBeVisible();
     await this.checkMats(false);
     await this.checkMenu('menu-final-scores');
-    await page.getByTestId('btn-menu').tap();
-    await page.getByTestId('menu-new-game').tap();
+    await page.getByTestId('go-play-again').tap();
     await expect(page.getByTestId('new-game-hand').locator('img')).toHaveCount(3);
     await page.getByTestId('pick-Sulphur').tap(); await page.getByTestId('pick-Toadstool').tap();
     await page.getByTestId('new-game-start').tap();
@@ -586,6 +585,7 @@ for (const run of RUNS) {
       await page.evaluate((s) => window.lwDebug.seedNextGame(s), run.seeds);
       await page.getByTestId('btn-menu').tap();
       await page.getByTestId('menu-new-game').tap();
+      await page.getByTestId('setup-quick-start').tap();
       await expect(page.getByTestId('new-game-hand').locator('img')).toHaveCount(3);
       await pt.shot('new-game');
       await page.getByTestId('pick-Horn').tap(); await page.getByTestId('pick-Mandrake').tap();
