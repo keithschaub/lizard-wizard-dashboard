@@ -1107,7 +1107,7 @@ export async function riseUseChooser(g) {
   const pd = g.v.pending;
   return new Promise((resolve) => {
     familiarActionChooser(g, {
-      familiar: pd.familiar, title: 'Rise', subtitle: 'Use this familiar',
+      familiar: pd.familiar, title: pd.title || 'Rise', subtitle: pd.subtitle || 'Use this familiar',
       scoreDetail: `+${pd.score_gold} Gold`, gatherDetail: `${pd.collect} ${nice(pd.reagent)}`,
       reagent: pd.reagent, testPrefix: 'rise',
       onUse: async (use) => {

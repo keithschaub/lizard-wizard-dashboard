@@ -8,11 +8,15 @@ MAIN = (ROOT / "app" / "js" / "main.js").read_text(encoding="utf-8")
 
 
 def main() -> None:
-    for name in ("researchFlow", "summonFlow", "buildFlow"):
+    for name in ("researchFlow", "buildFlow"):
         assert f"export function {name}" in UI, f"missing {name}"
         assert "actions: (k)" in UI.split(f"export function {name}", 1)[1][:1200], (
             f"{name} should pass actions as (k) => for swipe refresh"
         )
+    assert "export function summonFlow" in UI, "missing summonFlow"
+    assert "familiarActionChooser" in UI.split("export function summonFlow", 1)[1][:1600], (
+        "summonFlow should use the shared familiar action chooser"
+    )
     assert "UI.gatherFlow(this, k)" in MAIN, "legal hand tap should open gatherFlow directly"
     assert "replaceChildren(actionsContainer" in UI, "expand actions should use replaceChildren"
     print("swipe group UI OK")

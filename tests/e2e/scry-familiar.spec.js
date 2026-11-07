@@ -42,12 +42,13 @@ test('Scry Familiar immediately opens the summon-use chooser', async ({ page }) 
   await expect(page.getByTestId('scry-Familiar_10_Imp')).toBeVisible();
   await page.getByTestId('scry-Familiar_10_Imp').tap();
   await expect(page.getByTestId('rise-use')).toBeVisible();
+  await expect(page.getByTestId('rise-use')).toContainText('Scry Familiar');
+  await expect(page.getByTestId('rise-use')).toContainText('Use it now: pick one action');
   await expect(page.getByTestId('rise-score')).toContainText('Score');
   await expect(page.getByTestId('rise-gather')).toBeVisible();
   await expect(page.getByTestId('rise-research')).toBeVisible();
   await expect(page.getByTestId('rise-dungeon')).toBeVisible();
   await page.getByTestId('rise-use').screenshot({ path: 'docs/screenshots/familiar-actions-scry-dpr3.png' });
-  await page.getByTestId('rise-use').screenshot({ path: 'docs/screenshots/familiar-actions-rise-dpr3.png' });
   await page.getByTestId('rise-score').tap();
   await expect.poll(async () => Number((await page.getByTestId('my-gold').textContent()).trim())).toBeGreaterThan(0);
   expect(errors, errors.join('\n')).toEqual([]);
