@@ -80,6 +80,36 @@ def scry_deck(s, name, deck, choose, cast_free=False):
     else: p.setdefault(deck, []).append(pick)
     _recount(s); A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'scry_' + deck, 'took': os.path.basename(pick)})
     return pick
+
+def immediate_familiar_use(s, name, fam_img, use, cast=(), discard=None, cont=None, choose=None):
+    """Use a familiar already acquired for free (Scry Familiar / Possession) through summon rules."""
+    p = A.P(s, name); c = A._fam_cards()[os.path.basename(fam_img)]
+    if fam_img not in p.get('familiars', []):
+        raise ValueError('familiar is not in the collection')
+    if use == 'score':
+        out = immediate_familiar_score(s, name, fam_img)
+        s['meta']['log'][-1]['free'] = True
+        return out
+    if use == 'gather':
+        r = norm(c['reagent']); p['tok'] += [r] * int(c['collect']); casted = []
+        for k, cost in cast:
+            A.cast_spell(s, name, k, cost); casted.append(k)
+        over = len(p['tok']) - A.capacity(p)
+        if over > 0:
+            if not discard or len(discard) < over:
+                raise ValueError(f'over storage by {over}; pass discard')
+            for d in discard[:over]: p['tok'].remove(norm(d))
+        out = {'got': [r] * int(c['collect']), 'cast': casted}
+    elif use == 'dungeon':
+        out = dungeon_delve(s, name, cont)
+    elif use == 'research':
+        out = {'took': new_research(s, name, choose)}
+    else:
+        raise ValueError('use must be score, gather, dungeon, or research')
+    A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'summon',
+              'familiar': os.path.basename(fam_img), 'cost': 0, 'use': use,
+              'free': True, **out})
+    return out
 def transmute(s, name, reagents):
     """Transmute (Alchemy 1x): 'Transmute any number of Reagents to Gold at a 2:1 ratio'."""
     p = A.P(s, name)

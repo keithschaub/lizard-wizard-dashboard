@@ -1099,6 +1099,11 @@ def pick_scry(view, me, cards, kind):
         return max(cards, key=lambda x: (SE.school_count(P(view, me), FAMILIAR[b(x)]['school']), -FAMILIAR[b(x)]['cost_mana'], b(x)))
     return max(cards, key=lambda x: (S.card_value(view, me, x, kind)[2], b(x)))
 
+def pick_free_familiar_use(view, me, familiar):
+    """Scry Familiar still requires an immediate summon use; score is the safe default."""
+    _guard(view, me); _reset()
+    return 'score'
+
 
 # ------------------------------------------------------------------ HARD: 1-ply lookahead on determinized PUBLIC info
 def _all_reagent_paths(): return ['assets/%s.jpg' % k for k in sorted(_RC)]

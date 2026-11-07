@@ -52,7 +52,10 @@ def resolve_effect(s, me, key, prm=None):
     elif k in ('Spell_Scry_Wizard.jpg', 'Spell_Scry_Tower.jpg', 'Spell_Scry_Familiar.jpg', 'Spell_Scribe.jpg'):
         deck = {'Spell_Scry_Wizard.jpg': 'wizards', 'Spell_Scry_Tower.jpg': 'towers', 'Spell_Scry_Familiar.jpg': 'familiars', 'Spell_Scribe.jpg': 'spells'}[k]
         pick = SE.scry_deck(s, me, deck, lambda top: AI.pick_scry(AI.public_view(s, me), me, top, deck), cast_free=(deck == 'spells'))
-        if deck == 'spells' and pick:
+        if deck == 'familiars' and pick:
+            use = AI.pick_free_familiar_use(AI.public_view(s, me), me, pick)
+            SE.immediate_familiar_use(s, me, pick, use)
+        elif deck == 'spells' and pick:
             pk = os.path.basename(pick)
             if pk.endswith('.jpg'):
                 pk = pk[:-4]
