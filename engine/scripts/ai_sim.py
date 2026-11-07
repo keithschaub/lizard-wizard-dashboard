@@ -163,17 +163,17 @@ def take_turn(s, me, trace, mix):
         break
     claim_all(s, me); A.check_end(s)
 
-def new_game(seed, path=None):
+def new_game(seed, path=None, players='Keith,Newt,LizWiz'):
     path = path or f'/tmp/aisim_{seed}_{os.getpid()}.json'
     env = dict(os.environ, LW_STATE=path); py = sys.executable; d = os.path.join(R, 'scripts', 'deal4.py')
-    subprocess.run([py, d, 'hands', '--seed', str(seed), '--humans', 'nobody'], env=env, check=True, capture_output=True)
+    subprocess.run([py, d, 'hands', '--seed', str(seed), '--players', players, '--humans', 'nobody'], env=env, check=True, capture_output=True)
     subprocess.run([py, d, 'board', '--seed', str(seed + 1)], env=env, check=True, capture_output=True)
     s = json.load(open(path)); s['meta']['humans'] = []
     return s
 
-def play(seed=4242, profiles=None, max_rounds=60, ai_seed=None, levels=None):
-    s = new_game(seed)
-    s['meta']['ai_profiles'] = profiles or {'Keith': 'balanced', 'Newt': 'spellslinger', 'LizWiz': 'delver', 'Gecko': 'tycoon'}
+def play(seed=4242, profiles=None, max_rounds=60, ai_seed=None, levels=None, players='Keith,Newt,LizWiz'):
+    s = new_game(seed, players=players)
+    s['meta']['ai_profiles'] = profiles or {'Keith': 'balanced', 'Newt': 'spellslinger', 'LizWiz': 'delver'}
     s['meta']['ai_seed'] = seed if ai_seed is None else ai_seed; s['meta']['ai_random'] = True
     s['meta']['ai_levels'] = dict(levels or {})      # per seat: easy | normal | hard (default normal)
     trace = []; mix = {n: Counter() for n in s['meta']['seat_order']}
