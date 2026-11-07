@@ -27,6 +27,16 @@ test('a WebAssembly instantiation failure is reported instead of hanging', async
   await expect(page.getByTestId('loader-retry')).toBeVisible();
 });
 
+test('build stamp is visible on the loader and in the in-game menu', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('loader-version')).toHaveText('dev');
+  await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 60_000 });
+  await page.getByTestId('btn-menu').tap();
+  const label = await page.evaluate(() => window.lwDebug.version());
+  await expect(page.getByTestId('menu-version')).toHaveText(label);
+  await expect(label).toBe('dev');
+});
+
 test('a stalled runtime download times out with a message and Retry (never spins forever)', async ({ page, context }) => {
   test.setTimeout(150_000);
   await context.route('**/pyodide.asm.wasm', () => { /* never answer: a dead connection */ });

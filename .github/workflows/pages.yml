@@ -27,6 +27,19 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run vendor
+      - name: Write deploy version stamp
+        run: |
+          SHA="${GITHUB_SHA::7}"
+          DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          {
+            echo '/** Generated at deploy — do not edit on Pages builds. */'
+            echo "export const BUILD = '${{ github.run_number }}';"
+            echo "export const SHA = '${SHA}';"
+            echo "export const BUILT_AT = '${DATE}';"
+            echo 'export function versionLabel() {'
+            echo '  return `v1.0.${BUILD} · ${SHA} · ${BUILT_AT}`;'
+            echo '}'
+          } > app/js/version.js
       - name: Assemble the static site
         run: tools/build_site.sh _site
       - uses: actions/configure-pages@v5

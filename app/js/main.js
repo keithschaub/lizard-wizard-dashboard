@@ -4,6 +4,7 @@ import { h, art, reagentIcon, nice, counts, sleep } from './dom.js';
 import * as UI from './ui.js';
 import * as Audio from './audio.js';
 import * as Store from './store.js';
+import { versionLabel } from './version.js';
 
 const T_START = performance.now();
 const ME = 'Keith';
@@ -23,7 +24,9 @@ class Game {
     mute.onclick = () => { Audio.setMuted(!Audio.isMuted()); paintMute(); this.sfx('select'); };
     paintMute();
     window.addEventListener('pointerdown', () => { Audio.unlock(); if (this.aiRunning) this.skipMove = true; }, { capture: true });
-    window.lwDebug = { seedNextGame: (seeds) => { this.nextGameSeeds = seeds; }, view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning, _g: this };
+    const verEl = document.getElementById('loader-version');
+    if (verEl) verEl.textContent = versionLabel();
+    window.lwDebug = { seedNextGame: (seeds) => { this.nextGameSeeds = seeds; }, view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning, version: versionLabel, _g: this };
     window.ui = UI;
   }
 
