@@ -109,6 +109,8 @@ img { -webkit-user-drag: none; user-select: none; }
   box-shadow: inset 0 0 0 1px #6f4b1e, 0 2px 5px rgba(32, 12, 2, .75); }
 .ach-tile-medallion .ach-tile-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .ach-tile-medallion .ach-tile-deck { box-shadow: none; }
+.ach-tile-svg { width: 65%; height: 65%; display: grid; place-items: center; }
+.ach-tile-svg svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .65)); }
 .ach-tile-text { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
 .ach-tile-count { font-family: var(--display); font-weight: 700; line-height: 1; text-shadow: 0 1px 0 #f6dda0, 0 2px 2px rgba(57, 25, 5, .45); }
 .ach-tile-label { font-family: var(--display); font-weight: 700; line-height: 1.1; text-shadow: 0 1px 0 #f6dda0, 0 1px 2px rgba(57, 25, 5, .45); }
@@ -155,6 +157,7 @@ img { -webkit-user-drag: none; user-select: none; }
   border: 2px solid #d6b45a; border-radius: 50%; background: #21130b; box-shadow: 0 1px 4px rgba(0, 0, 0, .45); }
 .ci-meta .ach-badge .ach-tile-img { width: 32px; height: 32px; }
 .ci-meta .ach-badge .ach-tile-orb { width: 32px; height: 32px; }
+.ci-meta .ach-badge .ach-tile-svg { width: 32px; height: 32px; }
 
 /* ---------- dock ---------- */
 #dock { flex: none; height: calc(var(--dock) + var(--safe-b)); padding: 8px 10px calc(8px + var(--safe-b)); z-index: 4;

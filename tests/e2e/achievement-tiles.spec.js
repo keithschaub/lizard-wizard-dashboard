@@ -59,7 +59,7 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
   for (let i = 0; i < sample.length; i++) {
     const tile = page.getByTestId(`ach-${i}`).locator('[data-testid=achievement-tile]');
     await expect(tile).toBeVisible();
-    await expect(tile.locator('.ach-tile-icon').locator('img, .ach-tile-orb')).toHaveCount(1);
+    await expect(tile.locator('.ach-tile-icon').locator('img, .ach-tile-orb, .ach-tile-svg')).toHaveCount(1);
     await expect(tile.locator('.ach-tile-count')).not.toBeEmpty();
     await expect(tile.locator('.ach-tile-label')).not.toBeEmpty();
     const geometry = await tileGeometry(tile);
@@ -98,7 +98,7 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
     await page.waitForTimeout(500);
     for (let j = 0; j < ach.length; j++) {
       const tile = page.getByTestId(`ach-${j}`).locator('[data-testid=achievement-tile]');
-      await expect(tile.locator('.ach-tile-icon').locator('img, .ach-tile-orb')).toHaveCount(1);
+      await expect(tile.locator('.ach-tile-icon').locator('img, .ach-tile-orb, .ach-tile-svg')).toHaveCount(1);
       await expect(tile.locator('.ach-tile-label')).not.toBeEmpty();
       const geometry = await tileGeometry(tile);
       expect(geometry.inside && geometry.separated, `board tile ${ach[j]} geometry`).toBe(true);
