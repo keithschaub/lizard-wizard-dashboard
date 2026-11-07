@@ -662,7 +662,7 @@ def choose_new_research(spell):
         wp = pend(s); n = me()
         if not wp or wp['type'] != 'new_research': raise Refused('no New Research waiting')
         if spell not in wp['four']: raise Refused('pick one of the four new spells')
-        fam = [f for f in s['fam_face'] if f and key(f) == wp['familiar']][0]
+        fam = [f for f in s['fam_face'] if f and key(f) == key(wp['familiar'])][0]
         s['meta']['web_pending'] = None
         A.summon_familiar(s, n, fam, 'research', choose=lambda x: spell)
         return _after_action(s, n, [])
@@ -769,6 +769,27 @@ def effect_options(s, k):
         return [dict(familiar=key(f), school=CD.school(f)) for f in p.get('familiars', [])]
     return []
 
+def _queue_familiar_use(s, n, familiar, *, queue=(), title='Rise', subtitle='Use this familiar'):
+    c = CD.get(familiar)
+    s['meta']['web_pending'] = dict(
+        type='rise', familiar=familiar, school=c['school'],
+        reagent=A.norm(c['reagent']), collect=c['collect'],
+        score_gold=SE.school_count(P(s, n), c['school']) + SE.powerful_helper_bonus(P(s, n), c['school']),
+        title=title, subtitle=subtitle,
+        queue=list(queue),
+    )
+
+
+def _ai_use_free_familiar(s, n, familiar):
+    """Web glue completes an AI's free familiar use immediately after its AI turn."""
+    p = P(s, n); c = CD.get(familiar)
+    school = c['school']
+    gold = SE.familiar_score_gold(p, school)
+    p['gold'] = p.get('gold', 0) + gold
+    A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'summon',
+              'familiar': b(familiar), 'cost': 0, 'use': 'score',
+              'gold': gold, 'free': True})
+
 
 def _effect_auto(s, n, k):
     """Effects with no choice; returns True when handled."""
@@ -845,7 +866,11 @@ def resolve_effect(choice):
             if ch.get('card') not in [o['card'] for o in opts]: raise Refused('pick one of the revealed cards')
             cast_free = SCRY[k] == 'spells'
             picked_key = ch['card'] if cast_free else None
-            SE.scry_deck(s, n, SCRY[k], lambda top: [c for c in top if key(c) == ch['card']][0], cast_free=cast_free)
+            picked = SE.scry_deck(s, n, SCRY[k], lambda top: [c for c in top if key(c) == ch['card']][0], cast_free=cast_free)
+            if SCRY[k] == 'familiars':
+                _queue_familiar_use(s, n, picked, queue=wp.get('queue', []),
+                                    title='Scry Familiar', subtitle='Use it now: pick one action')
+                return 'pending'
             if cast_free:
                 _crystal_ball_refill(s, n)
                 tail = list(wp.get('queue', []))
@@ -875,10 +900,7 @@ def resolve_effect(choice):
                 fam = [f for f in P(s, o['player']).get('familiars', []) if key(f) == o['card']][0]
                 taken = SE.demonic_possession(s, n, o['player'], fam)
                 if taken:
-                    c = CD.get(taken)
-                    s['meta']['web_pending'] = dict(type='rise', familiar=taken, school=c['school'],
-                                                    reagent=A.norm(c['reagent']), collect=c['collect'],
-                                                    score_gold=SE.familiar_score_gold(P(s, n), c['school']))
+                    _queue_familiar_use(s, n, taken, title='Demonic Possession', subtitle='Use the stolen familiar now')
                     return 'pending'
             elif kind == 'swapo':
                 th = [c for c in P(s, o['player'])[o['kind']] if key(c) == o['card']][0]
@@ -930,7 +952,7 @@ def rise_use(use, casts=(), discard=None):
             p['gold'] = p.get('gold', 0) + gold_count
             A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'score', 'gold': gold_count})
             s['meta']['web_pending'] = None
-            return _after_action(s, n, [])
+            return _after_action(s, n, wp.get('queue', []))
         elif use == 'gather':
             r = A.norm(c['reagent']); p['tok'] += [r] * int(c['collect']); casted = []
             T.auto_claim(s, n)
@@ -943,12 +965,12 @@ def rise_use(use, casts=(), discard=None):
                 for d in discard: p['tok'].remove(d)
             A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'gather', 'got': [r] * int(c['collect']), 'cast': casted})
             s['meta']['web_pending'] = None
-            return _after_action(s, n, [])
+            return _after_action(s, n, wp.get('queue', []))
         elif use == 'dungeon':
             if not TP.treasure_left(s): raise Refused('no treasure left in the Dungeon')
             if SE.try_obscure_dungeon(s, n):
                 s['meta']['web_pending'] = None
-                return _after_action(s, n, [])
+                return _after_action(s, n, wp.get('queue', []))
             A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'dungeon'})
             s['meta']['web_pending'] = dict(type='dungeon', via=key(familiar_img), draws=0)
             return 'pending'
@@ -970,7 +992,8 @@ def pending_view(s):
     out = dict(type=wp['type'])
     if wp['type'] == 'rise':
         out.update(familiar=key(wp['familiar']), school=wp['school'], reagent=wp['reagent'], 
-                   collect=wp['collect'], score_gold=wp['score_gold'])
+                   collect=wp['collect'], score_gold=wp['score_gold'],
+                   title=wp.get('title', 'Rise'), subtitle=wp.get('subtitle', 'Use this familiar'))
     elif wp['type'] == 'dungeon':
         o = _dungeon_peek(s, wp)
         out.update(via=wp['via'], draws=wp['draws'], limit=dungeon_limit(s), done=bool(wp.get('done')), deck=len(s.get('dungeon_list') or []),
@@ -996,6 +1019,11 @@ def ai_step():
     def run(t):
         ev = []
         r = T.ai_turn(t, n, 0, ev)
+        # Scry Familiar is a free acquisition, but never a free inventory card:
+        # the web worker immediately resolves the AI's safe default use.
+        for entry in list(ev):
+            if entry.get('act') == 'scry_familiars' and entry.get('took'):
+                _ai_use_free_familiar(t, n, entry['took'])
         if r != 'paused': T.advance(t, ev)
         return r
     r = _commit(run)

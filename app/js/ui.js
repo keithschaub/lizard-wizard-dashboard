@@ -1,7 +1,7 @@
 import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenChip, costIcons, sleep, appendNodes, replaceChildren } from './dom.js';
 import { versionLabel } from './version.js';
 import * as Store from './store.js';
-import { achievementTile, achievementBadge, achievementTitle, achievementFromText } from './achievements.js';
+import { achievementTile, achievementBadge, achievementTitle, achievementFromText, SPELL_SCROLL_ICON } from './achievements.js';
 
 const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage' };
 
@@ -617,42 +617,29 @@ export async function gatherFlow(g, cid) {
 
 // ------------------------------------------------------------------ summon / research / build / recruit / convert
 export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
-  const famGroup = (group && group.length ? group : (g.v.board.fam_face || []).filter(Boolean));
-  const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : famGroup.indexOf(fk);
-  const startIdx = resolvedIdx < 0 ? 0 : resolvedIdx;
-  expandCard(g, fk, {
-    group: famGroup,
-    groupIndex: startIdx,
-    actions: (k) => {
-      const L = (g.v.legal.summon || {})[k];
-      if (!L) return [];
-      const uses = new Set(L.uses);
-      const act = (use) => async (overlay) => {
-        if (use === 'gather') {
-          overlay.close();
-          await summonGather(g, k);
-          return true;
-        }
-        return commitFromExpand(g, overlay, async () => {
-          const from = slotRectOf(k);
-          const r = await g.act('act_summon', { familiar: k, use }, { sound: use === 'score' ? 'coin' : 'select' });
-          if (r) {
-            const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
-            if (hit?.feedback) g.toast(hit.feedback);
-            fly(art(k), from, dockTarget());
-          }
-          return r;
-        });
-      };
-      const scoreSub = L.powerful_helper
-        ? `${L.cost} mana · +${L.score_gold} Gold (+${L.powerful_helper} Powerful Helper)`
-        : `${L.cost} mana · +${L.score_gold} Gold`;
-      return [
-        { label: 'Summon to Score', sub: scoreSub, testid: 'summon-score', disabled: !uses.has('score'), onClick: act('score') },
-        { label: 'Summon to Gather', sub: [`${L.cost} mana · `, ...Array.from({ length: L.collect }, () => h('img', { src: reagentIcon(L.reagent), alt: '' }))], testid: 'summon-gather', disabled: !uses.has('gather'), onClick: act('gather') },
-        { label: 'Enter the Dungeon', sub: `${L.cost} mana`, testid: 'summon-dungeon', disabled: !uses.has('dungeon'), onClick: act('dungeon') },
-        { label: 'New Research', sub: `${L.cost} mana`, testid: 'summon-research', disabled: !uses.has('research'), onClick: act('research') },
-      ];
+  const L = (g.v.legal.summon || {})[fk];
+  if (!L) return;
+  const uses = new Set(L.uses);
+  const from = slotRectOf(fk);
+  familiarActionChooser(g, {
+    familiar: fk,
+    title: 'Summon',
+    subtitle: 'Choose how to use this familiar',
+    scoreDetail: `+${L.score_gold + (L.powerful_helper || 0)} Gold`,
+    scoreNote: L.powerful_helper ? 'incl. Powerful Helper' : null,
+    gatherDetail: `${L.collect} ${nice(L.reagent)}`,
+    reagent: L.reagent,
+    disabled: Object.fromEntries(['score', 'gather', 'dungeon', 'research'].map((use) => [use, !uses.has(use)])),
+    testPrefix: 'summon',
+    onUse: async (use) => {
+      if (use === 'gather') return summonGather(g, fk);
+      const r = await g.act('act_summon', { familiar: fk, use }, { sound: use === 'score' ? 'coin' : 'select' });
+      if (r) {
+        const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
+        if (hit?.feedback) g.toast(hit.feedback);
+        fly(art(fk), from, dockTarget());
+      }
+      return r;
     },
   });
 }
@@ -1080,35 +1067,66 @@ export async function newResearchChooser(g) {
   return r;
 }
 
+function familiarActionIcon(use, reagent) {
+  if (use === 'score') return h('span', { class: 'familiar-action-gold-orb', 'aria-hidden': 'true' });
+  if (use === 'gather') return h('img', { src: reagentIcon(reagent), alt: '' });
+  if (use === 'dungeon') return h('img', { src: 'art/icons/familiar-action-dungeon.webp', alt: '' });
+  return h('span', { class: 'familiar-action-scroll', html: SPELL_SCROLL_ICON, 'aria-hidden': 'true' });
+}
+
+function familiarActionChooser(g, {
+  familiar, title, subtitle, scoreDetail, scoreNote = null, gatherDetail, reagent, disabled = {},
+  testPrefix = 'rise', onUse, cancel = false,
+}) {
+  const ov = openOverlay('sheet', { onScrim: cancel ? (o) => o.close() : null, testid: `${testPrefix}-use` });
+  const uses = [
+    { use: 'score', label: 'Score', detail: scoreDetail, note: scoreNote, reason: 'Scoring unavailable' },
+    { use: 'gather', label: 'Gather', detail: gatherDetail, reason: 'Gathering unavailable' },
+    { use: 'dungeon', label: 'Dungeon', detail: 'draw until treasure', reason: 'Dungeon unavailable' },
+    { use: 'research', label: 'Research', detail: 'reveal spells', reason: 'Research unavailable' },
+  ];
+  const actionGrid = h('div', { class: 'familiar-action-grid' });
+  uses.forEach((a) => {
+    const isDisabled = !!disabled[a.use];
+    const detail = isDisabled ? a.reason : a.detail;
+    appendNodes(actionGrid, h('button', {
+      class: `familiar-action-tile ${isDisabled ? 'disabled' : ''}`,
+      disabled: isDisabled,
+      'data-testid': `${testPrefix}-${a.use}`,
+      onclick: async () => { g.sfx(a.use === 'score' ? 'coin' : 'select'); ov.close(); await onUse(a.use); },
+    }, h('span', { class: 'familiar-action-icon' }, familiarActionIcon(a.use, reagent)),
+    h('span', { class: 'familiar-action-copy' },
+      h('span', { class: 'familiar-action-title' }, a.label),
+      h('span', { class: 'familiar-action-detail' }, detail),
+      a.note ? h('span', { class: 'familiar-action-note' }, a.note) : null)));
+  });
+  appendNodes(ov.el, h('div', { class: 'familiar-action-panel' },
+    h('img', { class: 'familiar-action-card', src: art(familiar), alt: familiar, onclick: () => expandCard(g, familiar) }),
+    h('div', { class: 'phase-title' }, title),
+    h('div', { class: 'ov-sub familiar-action-subtitle' }, subtitle),
+    h('div', { class: 'familiar-action-pick' }, 'Pick one action'),
+    actionGrid,
+    cancel ? h('button', { class: 'linkish familiar-action-cancel', 'data-testid': `${testPrefix}-cancel`, onclick: () => ov.close() }, 'Cancel') : null));
+  return ov;
+}
+
 export async function riseUseChooser(g) {
   const pd = g.v.pending;
-  const ov = openOverlay('gather', { testid: 'rise-use' });
-  const [p, done] = wait();
-  appendNodes(ov.el, h('div', { class: 'chooser-head' }, h('img', { src: art(pd.familiar), alt: '' }),
-    h('div', {}, h('div', { class: 'phase-title' }, 'Rise'), h('div', { class: 'ov-sub' }, 'Use this familiar'))));
-  const uses = [
-    { use: 'score', label: `Score: +${pd.score_gold} Gold`, testid: 'rise-score' },
-    { use: 'gather', label: `Gather: ${pd.collect} ${nice(pd.reagent)}`, testid: 'rise-gather' },
-    { use: 'dungeon', label: 'Enter the Dungeon', testid: 'rise-dungeon' },
-    { use: 'research', label: 'New Research', testid: 'rise-research' }
-  ];
-  appendNodes(ov.el, h('div', { class: 'opt-grid' }, uses.map((u) => h('button', { class: 'chip', 'data-testid': u.testid, onclick: () => done(u.use) }, u.label))));
-  const use = await p;
-  ov.close();
-  if (use === 'score') {
-    const r = await g.act('rise_use', { use }, { sound: 'coin' });
-    return r;
-  } else if (use === 'gather') {
-    return riseGather(g, pd);
-  } else if (use === 'dungeon') {
-    const r = await g.act('rise_use', { use: 'dungeon' });
-    if (r) await dungeonFlow(g);
-    return r;
-  } else if (use === 'research') {
-    const r = await g.act('rise_use', { use: 'research' });
-    if (r) await newResearchChooser(g);
-    return r;
-  }
+  return new Promise((resolve) => {
+    familiarActionChooser(g, {
+      familiar: pd.familiar, title: pd.title || 'Rise', subtitle: pd.subtitle || 'Use this familiar',
+      scoreDetail: `+${pd.score_gold} Gold`, gatherDetail: `${pd.collect} ${nice(pd.reagent)}`,
+      reagent: pd.reagent, testPrefix: 'rise',
+      onUse: async (use) => {
+        if (use === 'gather') return resolve(await riseGather(g, pd));
+        const r = await g.act('rise_use', { use }, { sound: use === 'score' ? 'coin' : 'select' });
+        if (use === 'dungeon' && r) await dungeonFlow(g);
+        if (use === 'research' && r) await newResearchChooser(g);
+        resolve(r);
+        return r;
+      },
+    });
+  });
 }
 
 async function riseGather(g, pd) {

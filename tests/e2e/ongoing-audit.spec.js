@@ -1,6 +1,7 @@
 // Powerful Helper: summon-score sub-label shows helper bonus when cast.
 import { test, expect } from './fixtures.js';
 import { watchErrors, untilMyAction } from './helpers.js';
+test.use({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 });
 
 test('Powerful Helper: summon score sub-label shows helper bonus', async ({ page }) => {
   const errors = watchErrors(page);
@@ -14,6 +15,7 @@ test('Powerful Helper: summon score sub-label shows helper bonus', async ({ page
     k.mana = 50;
     k.spells = [{ img: 'assets/Spell_Powerful_Helper.jpg', cast: true }];
     s.next = 'Keith';
+    s.dungeon_list = [];
     s.meta = s.meta || {};
     s.meta.web_pending = null;
     const fk = (s.fam_face.find((x) => x) || '').split('/').pop().replace(/\.jpg$/, '');
@@ -28,6 +30,15 @@ test('Powerful Helper: summon score sub-label shows helper bonus', async ({ page
   const idx = v.board.fam_face.indexOf(famKey);
   await page.getByTestId(`slot-fam_${idx}`).tap();
   await expect(page.getByTestId('summon-score')).toBeVisible();
+  await expect(page.getByTestId('summon-dungeon')).toBeDisabled();
+  await expect(page.getByTestId('summon-dungeon')).toContainText('Dungeon unavailable');
+  const centerDelta = await page.getByTestId('summon-score').evaluate((el) => {
+    const icon = el.querySelector('.familiar-action-icon').getBoundingClientRect();
+    const copy = el.querySelector('.familiar-action-copy').getBoundingClientRect();
+    return Math.abs((icon.top + icon.height / 2) - (copy.top + copy.height / 2));
+  });
+  expect(centerDelta).toBeLessThanOrEqual(2);
+  await page.getByTestId('summon-use').screenshot({ path: 'docs/screenshots/familiar-actions-summon-disabled-dpr3.png' });
   const sub = await page.getByTestId('summon-score').textContent();
   expect(sub).toMatch(/Powerful Helper/);
   expect(errors, errors.join('\n')).toEqual([]);
