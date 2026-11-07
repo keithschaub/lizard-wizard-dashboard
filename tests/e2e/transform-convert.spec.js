@@ -28,7 +28,7 @@ test('Transform: 2 tokens become target type then convert in one action', async 
   await expect(page.getByTestId('convert-transform')).toBeVisible();
   await page.getByTestId('transform-pick-1').tap();
   await page.getByTestId('transform-pick-3').tap();
-  await page.getByTestId('transform-target').selectOption('Toadstool');
+  await page.getByTestId('transform-target-Toadstool').tap();
   await page.getByTestId('transform-add').tap();
   await expect(page.getByTestId('transform-done-0')).toContainText('→ Toadstool');
   await page.getByTestId('convert-go').tap();

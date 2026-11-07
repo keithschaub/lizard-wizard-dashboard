@@ -554,6 +554,22 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .gain { font-size: 16px; color: #cfe0ff; text-align: center; }
 .gain b { color: #9fd0ff; }
 .gain .energize-track b { color: #f2d98e; }
+.reagent-choice-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; }
+.reagent-choice { display: inline-flex; align-items: center; gap: 7px; min-height: 48px; padding: 3px 10px 3px 4px;
+  border: 1px solid rgba(214, 180, 90, .55); border-radius: 28px; background: rgba(8, 13, 38, .72);
+  color: var(--ink); text-align: left; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .04); }
+.reagent-choice:active { transform: scale(.98); }
+.reagent-choice.on { border-color: var(--gold-hi); color: var(--gold-hi); background: rgba(90, 67, 18, .48);
+  box-shadow: 0 0 16px rgba(214, 180, 90, .42), inset 0 0 0 1px rgba(255, 240, 170, .18); }
+.reagent-choice-medallion { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; overflow: hidden;
+  border: 1px solid var(--gold); border-radius: 50%; background: #211a15; box-shadow: 0 1px 5px rgba(0, 0, 0, .55); }
+.reagent-choice-medallion img { width: 100%; height: 100%; object-fit: contain; }
+.reagent-choice-copy { display: flex; flex-direction: column; min-width: 0; line-height: 1.05; }
+.reagent-choice-name { font-family: var(--display); font-size: 14px; white-space: nowrap; }
+.reagent-choice-price { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.reagent-choice.on .reagent-choice-price { color: #f2d98e; }
+.adept-second-label { color: var(--gold-hi); font-family: var(--display); font-size: 16px; text-align: center; margin-top: 2px; }
+.adept-second .reagent-choice-group { margin-top: 2px; }
 .toggle { display: flex; align-items: center; gap: 8px; font-size: 15px; }
 .linkish { background: none; border: none; color: var(--gold); font-size: 14px; text-decoration: underline; padding: 6px; }
 
