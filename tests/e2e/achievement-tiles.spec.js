@@ -117,6 +117,8 @@ test('achievement tiles: icon + stacked layout, info titles without parenthetica
       expect(geometry.inside && geometry.separated, `zoom tile ${ach[j]} geometry`).toBe(true);
       if (ach[j] === '100 Mana') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-mana-dpr3.png`, fullPage: true });
       if (ach[j] === '7 Spells') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-spells-dpr3.png`, fullPage: true });
+      if (ach[j] === 'x7 Foxglove') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-foxglove-dpr3.png`, fullPage: true });
+      if (ach[j] === 'x7 Mandrake') await page.screenshot({ path: `${SHOTS}/ach-art-v3-zoom-mandrake-dpr3.png`, fullPage: true });
       if (j < ach.length - 1) {
         await page.getByTestId('nav-next').tap();
         await page.waitForTimeout(250);

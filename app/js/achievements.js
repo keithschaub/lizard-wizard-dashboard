@@ -30,9 +30,12 @@ export function achievementIcon(card = {}) {
   }
   if (kind === 'Reagent') {
     const r = card.school_reagent || String(card.tile_label || '').replaceAll(' ', '_');
-    if (r) return h('img', { src: reagentIcon(r), alt: '', class: 'ach-tile-img' });
+    if (r) {
+      const slug = r.toLowerCase().replaceAll('_', '-');
+      return h('img', { src: reagentIcon(r), alt: '', class: `ach-tile-img ach-reagent-${slug}` });
+    }
   }
-  if (kind === 'Spells') return h('span', { class: 'ach-tile-svg', 'aria-label': 'Spells', html: SPELL_SCROLL_ICON });
+  if (kind === 'Spells') return h('span', { class: 'ach-tile-svg ach-tile-spells', 'aria-label': 'Spells', html: SPELL_SCROLL_ICON });
   const sample = SAMPLE_ART[kind];
   if (sample) return h('img', { src: sample, alt: '', class: 'ach-tile-img ach-tile-deck' });
   return h('span', { class: 'ach-tile-orb gold', 'aria-hidden': 'true' });
