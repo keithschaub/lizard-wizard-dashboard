@@ -1523,14 +1523,21 @@ async function newGameWithConfig(g, config) {
   const { hand, reagents, players, human } = pr.result;
   if (human) g.me = human;
   const picks = [];
-  const start = h('button', { class: 'act', disabled: true, 'data-testid': 'new-game-start' }, 'Start game');
+  const start = h('button', { class: 'act setup-action setup-action-primary', disabled: true, 'data-testid': 'new-game-start' });
+  const updateStart = () => {
+    const sub = picks.length === 2 ? `Starting with ${nice(picks[0])} & ${nice(picks[1])}` : 'Pick 2 reagents';
+    replaceChildren(start, h('span', { class: 'setup-action-title' }, 'Begin the game'),
+      h('span', { class: 'setup-action-sub' }, sub));
+    start.disabled = picks.length !== 2;
+  };
+  updateStart();
   const chips = reagents.map((r) => {
     const c = h('button', { class: 'chip', 'data-testid': `pick-${r}` }, h('img', { src: reagentIcon(r), alt: '' }), nice(r));
     c.onclick = () => {
       const i = picks.indexOf(r);
       if (i >= 0) { picks.splice(i, 1); c.classList.remove('on'); g.sfx('unselect'); }
       else if (picks.length < 2) { picks.push(r); c.classList.add('on'); g.sfx('select'); }
-      start.disabled = picks.length !== 2;
+      updateStart();
     };
     return c;
   });

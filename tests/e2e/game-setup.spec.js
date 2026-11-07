@@ -16,24 +16,86 @@ test('setup wizard: name, table size, AI seats, then reagent deal', async ({ pag
   await page.getByTestId('menu-new-game').tap();
   await expect(page.getByTestId('game-setup')).toBeVisible();
   await expect(page.getByTestId('setup-custom-game')).toHaveText(/Custom gameChoose players, AI names & difficulty/);
+  await expect(page.getByTestId('setup-quick-start').locator('.setup-action-title')).toBeVisible();
+  const setupTitleFont = await page.evaluate(() => {
+    const action = document.querySelector('[data-testid="setup-custom-game"] .setup-action-title');
+    const quick = document.querySelector('[data-testid="setup-quick-start"] .setup-action-title');
+    return {
+      action: getComputedStyle(action).fontFamily,
+      actionWeight: getComputedStyle(action).fontWeight,
+      quick: getComputedStyle(quick).fontFamily,
+      quickWeight: getComputedStyle(quick).fontWeight,
+    };
+  });
+  expect(setupTitleFont.action).toBe(setupTitleFont.quick);
+  expect(setupTitleFont.actionWeight).toBe(setupTitleFont.quickWeight);
   await expect(page.getByTestId('setup-quick-start')).toBeVisible();
   await shot(page, 'game-setup-01-name');
   await shot(page, 'setup-name-custom-game-dpr3');
+  const buttonBoxes = await Promise.all([
+    page.getByTestId('setup-quick-start').boundingBox(),
+    page.getByTestId('setup-custom-game').boundingBox(),
+  ]);
+  await page.screenshot({
+    path: 'docs/screenshots/setup-name-actions-crop-dpr3.png',
+    clip: {
+      x: Math.min(...buttonBoxes.map((b) => b.x)),
+      y: Math.min(...buttonBoxes.map((b) => b.y)),
+      width: Math.max(...buttonBoxes.map((b) => b.x + b.width)) - Math.min(...buttonBoxes.map((b) => b.x)),
+      height: Math.max(...buttonBoxes.map((b) => b.y + b.height)) - Math.min(...buttonBoxes.map((b) => b.y)),
+    },
+  });
   await page.getByTestId('setup-name-input').fill('Rex');
   await page.getByTestId('setup-custom-game').tap();
   await expect(page.getByTestId('setup-size-3')).toBeVisible();
+  const tableTitleFont = await page.evaluate(() => {
+    const tile = document.querySelector('[data-testid="setup-size-2"] .setup-tile-n');
+    const action = document.querySelector('[data-testid="setup-opponents"] .setup-action-title');
+    return {
+      tile: getComputedStyle(tile).fontFamily,
+      tileWeight: getComputedStyle(tile).fontWeight,
+      action: getComputedStyle(action).fontFamily,
+      actionWeight: getComputedStyle(action).fontWeight,
+    };
+  });
+  expect(tableTitleFont.action).toBe(tableTitleFont.tile);
+  expect(tableTitleFont.actionWeight).toBe(tableTitleFont.tileWeight);
+  await expect(page.getByTestId('setup-opponents')).toHaveText(/Choose opponentsName each AI & set difficulty/);
   await shot(page, 'game-setup-02-table');
-  await page.getByTestId('setup-size-2').tap();
-  await page.getByTestId('setup-continue').tap();
+  await page.getByTestId('setup-opponents').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'docs/screenshots/setup-table-size-actions-dpr3.png' });
+  await page.getByTestId('setup-opponents').screenshot({ path: 'docs/screenshots/setup-table-size-action-crop-dpr3.png' });
+  await page.getByTestId('setup-size-4').tap();
+  await page.getByTestId('setup-opponents').tap();
   await expect(page.getByTestId('setup-ai-card-0')).toBeVisible();
+  await expect(page.getByTestId('setup-start')).toHaveText(/Pick reagents4 wizards at the table/);
   await shot(page, 'game-setup-03-ais');
+  await page.getByTestId('setup-start').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'docs/screenshots/setup-ai-seats-actions-dpr3.png' });
+  await page.getByTestId('setup-start').screenshot({ path: 'docs/screenshots/setup-ai-seats-action-crop-dpr3.png' });
   await page.getByTestId('setup-ai-0-hard').tap();
   await page.getByTestId('setup-start').tap();
   await expect(page.getByTestId('new-game-hand')).toBeVisible({ timeout: 60_000 });
+  const newGameStart = page.getByTestId('new-game-start');
+  await expect(newGameStart).toBeDisabled();
+  await expect(newGameStart).toHaveText(/Begin the gamePick 2 reagents/);
+  await page.getByTestId('pick-Eye_of_Newt').tap();
+  await page.getByTestId('pick-Horn').tap();
+  await expect(newGameStart).toBeEnabled();
+  await expect(newGameStart).toHaveText('Begin the gameStarting with Eye of Newt & Horn');
+  await newGameStart.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'docs/screenshots/setup-newgame-start-dpr3.png' });
+  await newGameStart.screenshot({ path: 'docs/screenshots/setup-newgame-start-action-crop-dpr3.png' });
+  await newGameStart.tap();
+  await page.waitForFunction(() => {
+    const v = window.lwDebug.view();
+    const me = v.players.find((p) => p.you);
+    return v.round === 1 && !v.game_over && me.tok.includes('Eye_of_Newt') && me.tok.includes('Horn');
+  });
   const raw = await page.evaluate(() => localStorage.getItem('lw.setup.v1'));
   const cfg = JSON.parse(raw);
   expect(cfg.human_name).toBe('Rex');
-  expect(cfg.player_count).toBe(2);
+  expect(cfg.player_count).toBe(4);
   expect(cfg.ais[0].level).toBe('hard');
 });
 

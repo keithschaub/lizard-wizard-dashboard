@@ -18,7 +18,10 @@ async function finishDeal(page) {
   await picks.nth(0).tap();
   await picks.nth(1).tap();
   await page.getByTestId('new-game-start').tap();
-  await expect.poll(() => page.evaluate(() => window.lwDebug.view().round)).toBe(1);
+  await page.waitForFunction(() => {
+    const v = window.lwDebug.view();
+    return v.round === 1 && !v.game_over;
+  });
   const view = await page.evaluate(() => window.lwDebug.view());
   expect(view.game_over).toBe(false);
   return view;
@@ -33,7 +36,7 @@ test('setup, Quick start, and Play again always deal a fresh game', async ({ pag
   await page.getByTestId('setup-name-input').fill('Rex');
   await page.getByTestId('setup-custom-game').tap();
   await page.getByTestId('setup-size-4').tap();
-  await page.getByTestId('setup-continue').tap();
+  await page.getByTestId('setup-opponents').tap();
   for (const [i, name] of ['Newt2', 'Gecko2', 'Iggy2'].entries()) {
     await page.getByTestId(`setup-ai-${i}-name`).fill(name);
   }
