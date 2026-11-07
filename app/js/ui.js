@@ -940,7 +940,7 @@ export async function effectChooser(g) {
   const pick = (choice) => () => { g.sfx('select'); done(choice); };
   const kind = pd.kind;
   const playerData = (name) => g.v.players.find((p) => p.name === name);
-  if (['flame_bolt', 'disintegrate', 'earthquake', 'charm', 'creation'].includes(kind)) {
+  if (['flame_bolt', 'disintegrate', 'earthquake', 'charm', 'creation', 'demonic_possession'].includes(kind)) {
     const byP = {};
     for (const o of opts) (byP[o.player || 'Available'] ||= []).push(o);
     for (const [pl, os] of Object.entries(byP)) {
@@ -949,7 +949,7 @@ export async function effectChooser(g) {
       appendNodes(grid, h('div', { class: 'group-label' }, labelContent));
       os.forEach((o, i) => appendNodes(grid, h('button', { class: 'opt-card', 'data-testid': `target-${pl}-${o.card}`, onclick: pick(o) }, h('img', { src: art(o.card), alt: o.card }), h('span', { class: 'oc-label' }, nice(o.kind)))));
     }
-  } else if (kind === 'mana_drain') {
+  } else if (kind === 'mana_drain' || kind === 'obscure') {
     appendNodes(grid, ...opts.map((o) => {
       const pData = playerData(o.player);
       return h('button', { class: 'chip player-chip', 'data-testid': `target-${o.player}`, onclick: pick(o) },

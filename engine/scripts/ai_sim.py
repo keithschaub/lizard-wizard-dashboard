@@ -63,6 +63,19 @@ def resolve_effect(s, me, key, prm=None):
     elif k == 'Spell_Time_Shift.jpg' and prm.get('deck'): SE.time_shift(s, me, prm['deck'])
     elif k == 'Spell_Energy_Pulse.jpg': SE.energy_pulse(s, me)
     elif k == 'Spell_Swapo.jpg' and prm.get('target'): SE.swapo(s, me, prm['target'], prm['mine'], prm['theirs'], prm['kind'])
+    elif k == 'Spell_Trap.jpg': SE.add_trap_to_dungeon(s, me)
+    elif k == 'Spell_Obscure.jpg' and prm.get('target'):
+        if prm.get('blocked'): A.shield_blocks(s, prm['target']); A.log(s, {'r': s['meta']['round'], 'who': me, 'act': 'obscure_blocked', 'target': prm['target']})
+        else: SE.obscure(s, me, prm['target'])
+    elif k == 'Spell_Demonic_Possession.jpg' and prm.get('target'):
+        if prm.get('blocked'):
+            A.shield_blocks(s, prm['target']); A.log(s, {'r': s['meta']['round'], 'who': me, 'act': 'demonic_possession_blocked', 'target': prm['target']})
+        elif prm.get('card'):
+            fam = prm['card'] if str(prm['card']).startswith('assets/') else 'assets/' + prm['card'] + ('' if str(prm['card']).endswith('.jpg') else '.jpg')
+            bn = os.path.basename(fam)
+            pool = [f for f in P(s, prm['target']).get('familiars', []) if os.path.basename(f) == bn]
+            if pool and SE.demonic_possession(s, me, prm['target'], pool[0]):
+                SE.immediate_familiar_score(s, me, pool[0])
     return prm
 
 ATTACKS = ('Flame_Bolt', 'Disintegrate', 'Earthquake', 'Charm', 'Mana_Drain', 'Swapo', 'Invisibility_Potion')
@@ -114,7 +127,9 @@ def apply_action(s, me, act, trace, mix):
     elif t == 'summon':
         mix['familiar'] += 1; use = act['use']
         if use == 'score': A.summon_familiar(s, me, act['familiar'], 'score')
-        elif use == 'dungeon': A.summon_familiar(s, me, act['familiar'], 'dungeon', cont=delve_cont(s, me)); mix['dungeon'] += 1
+        elif use == 'dungeon':
+            if SE.try_obscure_dungeon(s, me): mix['dungeon'] += 1
+            else: A.summon_familiar(s, me, act['familiar'], 'dungeon', cont=delve_cont(s, me)); mix['dungeon'] += 1
         elif use == 'research':
             A.summon_familiar(s, me, act['familiar'], 'research', choose=lambda st: AI.pick_new_research(AI.public_view(st, me), me)); mix['research'] += 1
         else:
@@ -123,7 +138,9 @@ def apply_action(s, me, act, trace, mix):
             for c in act.get('cast', []):
                 mix['cast'] += 1; resolve_effect(s, me, c['spell'], c)
                 if is_attack(c['spell']): mix['attack'] += 1
-    elif t == 'dungeon': SE.dungeon_delve(s, me, delve_cont(s, me)); mix['dungeon'] += 1
+    elif t == 'dungeon':
+        if not SE.try_obscure_dungeon(s, me): SE.dungeon_delve(s, me, delve_cont(s, me))
+        mix['dungeon'] += 1
     return None
 
 def take_turn(s, me, trace, mix):

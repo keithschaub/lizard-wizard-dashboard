@@ -191,3 +191,60 @@ def invisibility_potion(s, caster, target, x):
         A.log(s, {'r': s['meta'].get('round'), 'who': caster, 'act': 'invisibility_potion_blocked', 'target': target, 'x': x}); return 0
     t = A.P(s, target); g = min(x, t.get('gold', 0)); t['gold'] = t.get('gold', 0) - g; a['gold'] = a.get('gold', 0) + g
     A.log(s, {'r': s['meta'].get('round'), 'who': caster, 'act': 'invisibility_potion', 'target': target, 'x': x, 'gold': g}); return g
+
+
+def add_trap_to_dungeon(s, who):
+    """Trap! spell: shuffle one Trap card (2 hits) into the Dungeon deck."""
+    trap = {'type': 'Trap', 'name': "It's a Trap!", 'hits': 2}
+    deck = A.ensure_dungeon(s)
+    rng = random.Random(f"{s.get('board_seed')}-trap-{len(s.get('meta', {}).get('log', []))}")
+    deck.insert(rng.randrange(len(deck) + 1), trap)
+    s['dungeon_list'] = deck
+    s['dungeon_deck'] = len(deck)
+    A.log(s, {'r': s['meta'].get('round'), 'who': who, 'act': 'trap_spell'}); return True
+
+
+def obscure(s, caster, target):
+    """Obscure: target cannot enter the Dungeon on their next attempt (flag consumed then). Shield blocks."""
+    if A.shield_blocks(s, target):
+        A.log(s, {'r': s['meta'].get('round'), 'who': caster, 'act': 'obscure_blocked', 'target': target}); return False
+    A.P(s, target)['obscured'] = True
+    A.log(s, {'r': s['meta'].get('round'), 'who': caster, 'act': 'obscure', 'target': target}); return True
+
+
+def demonic_possession(s, caster, target, fam_img):
+    """Demonic Possession: steal a familiar; returns the asset path or False if Spell Shield blocks."""
+    if A.shield_blocks(s, target):
+        A.log(s, {'r': s['meta'].get('round'), 'who': caster, 'act': 'demonic_possession_blocked', 'target': target}); return False
+    tp = A.P(s, target)
+    bn = os.path.basename(fam_img)
+    fam = next(f for f in tp.get('familiars', []) if os.path.basename(f) == bn)
+    tp['familiars'].remove(fam)
+    A.P(s, caster).setdefault('familiars', []).append(fam)
+    A.log(s, {'r': s['meta'].get('round'), 'who': caster, 'act': 'demonic_possession', 'target': target, 'familiar': bn})
+    return fam
+
+
+def immediate_familiar_score(s, name, fam_img):
+    """Score use for a familiar already on your mat (Possession / Rise), no summon mana."""
+    p = A.P(s, name); b = os.path.basename(fam_img); sc = _fam_school(fam_img)
+    helper = powerful_helper_bonus(p, sc)
+    n = school_count(p, sc) + helper
+    p['gold'] = p.get('gold', 0) + n
+    out = {'gold': n}
+    if helper: out['powerful_helper'] = helper
+    A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'summon', 'familiar': b, 'cost': 0, 'use': 'score', 'possessed': True, **out})
+    return n
+
+
+def _fam_school(fam_img):
+    import carddb as CD
+    return CD.school(fam_img) or school(fam_img)
+
+
+def try_obscure_dungeon(s, name):
+    """If obscured, consume flag, log, return True (caller skips entering)."""
+    p = A.P(s, name)
+    if not p.get('obscured'): return False
+    p.pop('obscured', None)
+    A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'obscure_dungeon'}); return True

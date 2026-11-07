@@ -209,8 +209,19 @@ def effect_feedback(e):
     if a == 'mana_drain':
         n = int(e.get('n') or 0)
         return f'{t} had no mana, nothing to steal' if n == 0 else f'Stole {n} mana from {t}'
-    if a in ('mana_drain_blocked', 'flame_bolt_blocked', 'disintegrate_blocked', 'earthquake_blocked', 'charm_blocked', 'swapo_blocked'):
+    if a in ('mana_drain_blocked', 'flame_bolt_blocked', 'disintegrate_blocked', 'earthquake_blocked', 'charm_blocked', 'swapo_blocked',
+             'demonic_possession_blocked', 'obscure_blocked'):
         return f"Blocked by {t}'s Spell Shield"
+    if a == 'demonic_possession' and e.get('empty'):
+        return 'No familiars to take'
+    if a == 'demonic_possession':
+        return f"Took {CD.display(e.get('familiar'))} from {e.get('target')}"
+    if a == 'trap_spell':
+        return 'Trap added to the Dungeon'
+    if a == 'obscure':
+        return f"{t} cannot enter the Dungeon on their next attempt"
+    if a == 'obscure_dungeon':
+        return "Obscured: can't enter the Dungeon this time"
     if a in ('flame_bolt', 'disintegrate', 'earthquake'):
         if e.get('secret_society'):
             return f"Secret Society: destroyed {CD.display(e.get('card'))} (aimed at {CD.display(e.get('aimed'))})"
@@ -607,6 +618,7 @@ def act_summon(familiar, use, casts=(), discard=None):
             return _after_action(s, n, list(casts))
         if use == 'dungeon':
             if not TP.treasure_left(s): raise Refused('no treasure left in the Dungeon')
+            if SE.try_obscure_dungeon(s, n): return _after_action(s, n, [])
             s['meta']['web_pending'] = dict(type='dungeon', via=key(fam), draws=0); return 'pending'
         if use == 'research':
             t = copy.deepcopy(s)
@@ -622,6 +634,7 @@ def act_divination():
         n = me(); _start_action(s, n)
         if not SE.has_cast(P(s, n), 'Divination'): raise Refused('Divination is not cast')
         if not TP.treasure_left(s): raise Refused('no treasure left in the Dungeon')
+        if SE.try_obscure_dungeon(s, n): return _after_action(s, n, [])
         s['meta']['web_pending'] = dict(type='dungeon', via='divination', draws=0); return 'pending'
     return _commit(run)
 
@@ -696,7 +709,7 @@ def dungeon_cancel():
 TARGETED = ('Spell_Flame_Bolt', 'Spell_Disintegrate', 'Spell_Earthquake', 'Spell_Charm', 'Spell_Mana_Drain', 'Spell_Swapo')
 SCRY = {'Spell_Scry_Wizard': 'wizards', 'Spell_Scry_Tower': 'towers', 'Spell_Scry_Familiar': 'familiars', 'Spell_Scribe': 'spells'}
 DECKS = {'wizards': 'wiz_list', 'towers': 'tow_list', 'familiars': 'fam_list', 'spells': 'spell_list'}
-NOT_AUTOMATED = ('Spell_Demonic_Possession', 'Spell_Trap', 'Spell_Obscure')
+NOT_AUTOMATED = ()
 
 
 def _effect_kind(k):
@@ -705,7 +718,8 @@ def _effect_kind(k):
     if k in SCRY: return 'scry'
     return {'Spell_Creation': 'creation', 'Spell_Wand_Tax': 'wand_tax', 'Spell_Time_Shift': 'time_shift',
             'Spell_Transmute': 'transmute', 'Spell_Scry_Dungeon': 'auto', 'Spell_Energy_Pulse': 'auto',
-            'Spell_Haste': 'haste', 'Spell_Evolve': 'evolve', 'Spell_Rise': 'rise'}.get(k)
+            'Spell_Haste': 'haste', 'Spell_Evolve': 'evolve', 'Spell_Rise': 'rise',
+            'Spell_Trap': 'trap', 'Spell_Demonic_Possession': 'demonic_possession', 'Spell_Obscure': 'obscure'}.get(k)
 
 
 def effect_options(s, k):
@@ -717,6 +731,9 @@ def effect_options(s, k):
     if kind == 'earthquake': return [dict(player=q['name'], kind='towers', card=key(c)) for q in opp for c in q.get('towers', [])]
     if kind == 'charm': return [dict(player=q['name'], kind='wizards', card=key(c)) for q in opp for c in q.get('wizards', [])]
     if kind == 'mana_drain': return [dict(player=q['name']) for q in opp]
+    if kind == 'obscure': return [dict(player=q['name']) for q in opp]
+    if kind == 'demonic_possession':
+        return [dict(player=q['name'], kind='familiars', card=key(f)) for q in opp for f in q.get('familiars', [])]
     if kind == 'swapo':
         return [dict(player=q['name'], kind=kd, card=key(c), mine=key(m)) for q in opp for kd in ('wizards', 'towers')
                 for c in q.get(kd, []) for m in p.get(kd, [])]
@@ -744,6 +761,8 @@ def _effect_auto(s, n, k):
         return True
     if kind == 'haste':
         s['meta']['web_bonus'] = True; return True
+    if kind == 'trap':
+        SE.add_trap_to_dungeon(s, n); return True
     if kind is None:
         c = CD.get(jpg(k))
         if c and c.get('duration') == '1x' and not k.startswith('Spell_Spell_Shield'):
@@ -760,7 +779,11 @@ def _run_queue(s, n, queue):
         if _effect_auto(s, n, k): queue.pop(0); continue
         opts = effect_options(s, k)
         if not opts:
-            A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'web_note', 'text': f"{n} cast {CD.display(jpg(k))}: no legal target, no effect"})
+            ek = _effect_kind(k)
+            if ek == 'demonic_possession':
+                A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'demonic_possession', 'empty': True})
+            else:
+                A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'web_note', 'text': f"{n} cast {CD.display(jpg(k))}: no legal target, no effect"})
             queue.pop(0); continue
         s['meta']['web_pending'] = dict(type='effect', spell=k, kind=_effect_kind(k), queue=list(queue[1:]))
         return False
@@ -829,6 +852,16 @@ def resolve_effect(choice):
             elif kind == 'earthquake': A.earthquake(s, n, o['player'], [c for c in P(s, o['player'])['towers'] if key(c) == o['card']][0])
             elif kind == 'charm': A.charm(s, n, o['player'], [c for c in P(s, o['player'])['wizards'] if key(c) == o['card']][0])
             elif kind == 'mana_drain': A.mana_drain(s, n, o['player'])
+            elif kind == 'obscure': SE.obscure(s, n, o['player'])
+            elif kind == 'demonic_possession':
+                fam = [f for f in P(s, o['player']).get('familiars', []) if key(f) == o['card']][0]
+                taken = SE.demonic_possession(s, n, o['player'], fam)
+                if taken:
+                    c = CD.get(taken)
+                    s['meta']['web_pending'] = dict(type='rise', familiar=taken, school=c['school'],
+                                                    reagent=A.norm(c['reagent']), collect=c['collect'],
+                                                    score_gold=SE.familiar_score_gold(P(s, n), c['school']))
+                    return 'pending'
             elif kind == 'swapo':
                 th = [c for c in P(s, o['player'])[o['kind']] if key(c) == o['card']][0]
                 mn = [c for c in P(s, n)[o['kind']] if key(c) == o['mine']][0]
@@ -895,6 +928,9 @@ def rise_use(use, casts=(), discard=None):
             return _after_action(s, n, [])
         elif use == 'dungeon':
             if not TP.treasure_left(s): raise Refused('no treasure left in the Dungeon')
+            if SE.try_obscure_dungeon(s, n):
+                s['meta']['web_pending'] = None
+                return _after_action(s, n, [])
             A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'dungeon'})
             s['meta']['web_pending'] = dict(type='dungeon', via=key(familiar_img), draws=0)
             return 'pending'

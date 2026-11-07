@@ -609,5 +609,61 @@ newt_pub = [p for p in W.view()['players'] if p['name'] == 'Newt'][0]
 exp_newt = S.score(A.P(W.st(), 'Newt'), W.st()) - 14 // 7
 check(newt_pub['vp'] == exp_newt, 'opponent VP hides Hoard Mana mana bonus only')
 
+print('\n=== 18. Stub spells: Trap, Obscure, Demonic Possession ===')
+def m18trap(s):
+    k = A.P(s, 'Keith')
+    k['mana'] = 30
+    k['tok'] = ['Sulphur', 'Sulphur', 'Mandrake', 'Foxglove']
+    s['spell_face'][0] = 'assets/Spell_Trap.jpg'
+setup(m18trap)
+d0 = len(W.st()['dungeon_list'])
+r = call('act_research', spell='Spell_Trap', cast=True)
+check(r['ok'] and not r['view'].get('pending'), 'Trap resolves without a picker')
+check(len(W.st()['dungeon_list']) == d0 + 1 and any(c.get('type') == 'Trap' for c in W.st()['dungeon_list']), 'Trap card shuffled into dungeon')
+fb = [e for e in r.get('entries', []) if e.get('feedback')]
+check(fb and 'Trap added' in fb[0]['feedback'], 'Trap toast text')
+
+def m18obs(s):
+    k = A.P(s, 'Keith')
+    k['mana'] = 30
+    k['tok'] = ['Toadstool', 'Toadstool', 'Foxglove']
+    k.setdefault('spells', []).append({'img': 'assets/Spell_Divination.jpg', 'cast': True})
+    s['spell_face'][0] = 'assets/Spell_Obscure.jpg'
+setup(m18obs)
+r = call('act_research', spell='Spell_Obscure', cast=True)
+r = call('resolve_effect', choice={'player': 'Newt'})
+check(r['ok'] and A.P(W.st(), 'Newt').get('obscured'), 'Obscure flags the target')
+setup(m18obs)
+A.P(W.st(), 'Keith')['obscured'] = True
+r = call('act_divination')
+check(r['ok'] and not A.P(W.st(), 'Keith').get('obscured') and not r['view'].get('pending'), 'Obscure blocks dungeon: action spent, no delve')
+check(any(e.get('act') == 'obscure_dungeon' for e in W.st()['meta']['log'][-3:]), 'Obscure dungeon log')
+
+_IMP = 'assets/Familiar_25_Imp.jpg'
+def m18dem(s):
+    k = A.P(s, 'Keith')
+    k['mana'] = 40
+    k['tok'] = ['Nightshade', 'Nightshade', 'Mandrake', 'Foxglove']
+    s['spell_face'][0] = 'assets/Spell_Demonic_Possession.jpg'
+    A.P(s, 'Newt')['familiars'] = [_IMP]
+setup(m18dem)
+fk = W.key(_IMP)
+r = call('act_research', spell='Spell_Demonic_Possession', cast=True)
+r = call('resolve_effect', choice={'player': 'Newt', 'kind': 'familiars', 'card': fk})
+check(r['ok'] and r['view']['pending']['type'] == 'rise', 'Possession opens familiar use picker')
+check(fk in [W.key(x) for x in P('Keith')['familiars']] and _IMP not in P('Newt')['familiars'], 'Familiar moved to caster')
+r = call('rise_use', use='score')
+check(r['ok'] and P('Keith').get('gold', 0) > 0, 'Immediate score use pays Gold')
+
+def m18empty(s):
+    k = A.P(s, 'Keith'); k['mana'] = 40; k['tok'] = ['Nightshade', 'Nightshade', 'Mandrake']
+    s['spell_face'][0] = 'assets/Spell_Demonic_Possession.jpg'
+    for q in s['players']:
+        if q['name'] != 'Keith': q['familiars'] = []
+setup(m18empty)
+r = call('act_research', spell='Spell_Demonic_Possession', cast=True)
+check(r['ok'] and not r['view'].get('pending'), 'Demonic with no targets finishes cast')
+check(any(e.get('feedback') == 'No familiars to take' for e in r.get('entries', [])), 'empty demonic possession feedback')
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)
