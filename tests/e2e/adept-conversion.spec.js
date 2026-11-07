@@ -12,7 +12,8 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
     const r = await fetch('engine/game/g8_state.json');
     const s = await r.json();
     const k = s.players.find((p) => p.name === 'Keith');
-    k.tok = ['Toadstool', 'Toadstool', 'Horn', 'Horn', 'Mandrake', 'Eye_of_Newt', 'Foxglove', 'Nightshade', 'Sulphur'];
+    k.tok = ['Toadstool', 'Toadstool', 'Horn', 'Horn', 'Mandrake', 'Eye_of_Newt', 'Foxglove',
+      ...Array(12).fill('Nightshade'), 'Sulphur'];
     k.spells = k.spells || [];
     k.spells.push({ img: 'Spell_Adept_Conversion.jpg', cast: true });
     s.tracks.Toadstool = 4;
@@ -45,6 +46,8 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
   await expect(page.getByTestId('convert-adept-type2-Foxglove')).toBeVisible();
   await expect(page.getByTestId('convert-adept-type2-Nightshade')).toBeVisible();
   await expect(page.getByTestId('convert-adept-type2-Sulphur')).toBeVisible();
+  await expect(page.getByTestId('convert-held-count')).toHaveText('You have 2');
+  await expect(page.getByTestId('convert-count-Nightshade')).toHaveText('×12');
   const nightshadeRightPadding = await page.getByTestId('convert-adept-type2-Nightshade').evaluate((el) => {
     const chip = el.getBoundingClientRect();
     const name = el.querySelector('.reagent-choice-name').getBoundingClientRect();
@@ -52,14 +55,14 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
   });
   expect(nightshadeRightPadding).toBeGreaterThanOrEqual(10);
   await page.waitForTimeout(500);
-  await page.screenshot({ path: 'docs/screenshots/adept-conversion-v2-none-dpr3.png', fullPage: true });
-  await page.screenshot({ path: 'docs/screenshots/adept-conversion-v2-many-dpr3.png', fullPage: true });
+  await page.getByTestId('convert').screenshot({ path: 'docs/screenshots/adept-counts-none-dpr3.png' });
+  await page.getByTestId('convert').screenshot({ path: 'docs/screenshots/adept-counts-many-dpr3.png' });
   // Sheet defaults n to full holdings; sell 1 of each type for the assertion below.
   await page.getByTestId('convert-minus').tap();
   await page.getByTestId('convert-adept-type2-Horn').tap();
   await expect(page.getByTestId('convert-stepper2')).toBeVisible();
   await expect(page.getByTestId('convert-adept-type2-Horn')).toHaveClass(/on/);
-  await page.screenshot({ path: 'docs/screenshots/adept-conversion-v2-selected-dpr3.png', fullPage: true });
+  await page.getByTestId('convert').screenshot({ path: 'docs/screenshots/adept-counts-selected-dpr3.png' });
   await page.getByTestId('convert-adept-type2-Horn').tap();
   await expect(page.getByTestId('convert-stepper2')).toBeHidden();
   await page.getByTestId('convert-adept-type2-Horn').tap();
