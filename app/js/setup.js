@@ -49,6 +49,7 @@ function levelPicker(g, seat, level, onChange) {
 export function runSetupWizard(g) {
   return new Promise((resolve) => {
     const draft = Store.defaultSetup();
+    const savedSetup = Store.loadSetup();
     let step = 0;
     const ov = openOverlay('setup-wizard', { onScrim: (o) => { o.close(); resolve(null); }, testid: 'game-setup' });
     const body = h('div', { class: 'setup-body' });
@@ -87,7 +88,7 @@ export function runSetupWizard(g) {
       appendNodes(body,
         h('p', { class: 'setup-lead' }, 'One player on this device — choose your wizard name.'),
         inp,
-        h('button', {
+        savedSetup ? h('button', {
           type: 'button',
           class: 'act setup-quick',
           'data-testid': 'setup-quick-start',
@@ -97,13 +98,13 @@ export function runSetupWizard(g) {
             Store.saveSetup(cfg);
             finish(cfg);
           },
-        }, 'Quick start', h('span', { class: 'setup-quick-sub' }, 'Last saved setup · 3 players · 2 Adept AIs')),
+        }, 'Quick start', h('span', { class: 'setup-quick-sub' }, 'Last saved setup · 3 players · 2 Adept AIs')) : null,
         h('button', {
           type: 'button',
-          class: 'act',
-          'data-testid': 'setup-continue',
+          class: 'act setup-custom',
+          'data-testid': 'setup-custom-game',
           onclick: () => { g.sfx('tap'); go(1); },
-        }, 'Continue'));
+        }, 'Custom game', h('span', { class: 'setup-quick-sub' }, 'Choose players, AI names & difficulty')));
     };
 
     const paintSize = () => {

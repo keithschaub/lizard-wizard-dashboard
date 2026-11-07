@@ -31,7 +31,7 @@ test('setup, Quick start, and Play again always deal a fresh game', async ({ pag
   await page.getByTestId('btn-menu').tap();
   await page.getByTestId('menu-new-game').tap();
   await page.getByTestId('setup-name-input').fill('Rex');
-  await page.getByTestId('setup-continue').tap();
+  await page.getByTestId('setup-custom-game').tap();
   await page.getByTestId('setup-size-4').tap();
   await page.getByTestId('setup-continue').tap();
   for (const [i, name] of ['Newt2', 'Gecko2', 'Iggy2'].entries()) {
