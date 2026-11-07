@@ -135,14 +135,14 @@ class Playtest {
   async checkCardDetail(label) {
     const ov = this.page.getByTestId('expanded').last();
     await expect(ov).toBeVisible();
-    const imgEl = ov.getByTestId('expanded-img');
+    const imgEl = ov.getByTestId('expanded-img').first();
     if (await imgEl.count()) {
       await imgEl.evaluate((i) => i.decode().catch(() => {}));
     }
     await this.page.waitForTimeout(450);
     await ov.evaluate((el) => { el.scrollTop = 0; });
     const L = await this.limits();
-    const m = await ov.getByTestId('expanded-card').evaluate((frame) => {
+    const m = await ov.getByTestId('expanded-card').first().evaluate((frame) => {
       const img = frame.querySelector('img');
       const f = frame.getBoundingClientRect();
       const close = frame.closest('.overlay').querySelector('[data-testid=ov-close]').getBoundingClientRect();
@@ -324,18 +324,13 @@ class Playtest {
   // so the art is decoded and laid out first.
   async tapKeep(i) {
     const page = this.page;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const before = await page.evaluate(() => document.querySelector('[data-testid=keep-counter]')?.textContent || null);
-      if (before === null) return;
-      await page.getByTestId(`hot-gather-${i}`).tap();
-      const ok = await page.waitForFunction(([b, idx]) => {
-        const c = document.querySelector('[data-testid=keep-counter]');
-        return !c || c.textContent !== b || document.querySelector(`[data-testid=hot-gather-${idx}]`)?.classList.contains('on');
-      }, [before, i], { timeout: 2000 }).then(() => true).catch(() => false);
-      if (ok) return;
-      this.notes.push(`keep tap on icon ${i} did not register (attempt ${attempt + 1}); retried`);
-    }
-    throw new Error(`keep icon ${i} never registered`);
+    const before = await page.evaluate(() => document.querySelector('[data-testid=keep-counter]')?.textContent || null);
+    if (before === null) return;
+    await page.getByTestId(`hot-gather-${i}`).click();
+    await page.waitForFunction(([b, idx]) => {
+      const c = document.querySelector('[data-testid=keep-counter]');
+      return !c || c.textContent !== b || document.querySelector(`[data-testid=hot-gather-${idx}]`)?.classList.contains('on');
+    }, [before, i]);
   }
 
   async gather(handIndex, g, keep, { unselect = false, cast = null, protect = [] } = {}) {
@@ -349,7 +344,7 @@ class Playtest {
     if (unselect && idx.length >= 2) {
       await page.getByTestId(`hot-gather-${idx[0]}`).tap();
       await expect(page.getByTestId('keep-counter')).toHaveText(`1 / ${idx.length}`);
-      await page.getByTestId(`hot-gather-${idx[0]}`).tap();                         // unselect
+      await page.getByTestId(`hot-gather-${idx[0]}`).click();                       // unselect
       await expect(page.getByTestId('keep-counter')).toHaveText(`0 / ${idx.length}`);
       this.mark('gatherUnselect');
     }
@@ -416,6 +411,7 @@ class Playtest {
       const sk = fixedResearch.sort((a, b) => L.research[a].mana - L.research[b].mana)[0];
       if (p.mana >= L.research[sk].mana + 5) {
         await tapSlot(`spell_${v.board.spell_face.indexOf(sk)}`);
+        await expect(page.getByTestId('research-only')).toBeVisible();
         await page.getByTestId('research-only').tap();
         await page.waitForFunction((n) => window.lwDebug.view().players.find((q) => q.you).spells.length > n, p.spells.length, { timeout: 20_000 });
         this.mark('research'); return;
@@ -547,6 +543,9 @@ class Playtest {
     await expect(page.getByTestId('dock-scores')).toBeVisible();
     await this.checkMats(false);
     await this.checkMenu('menu-final-scores');
+    await this.page.getByTestId('btn-menu').tap();
+    await this.page.getByTestId('menu').getByTestId('menu-final-scores').tap();
+    await expect(this.page.getByTestId('game-over')).toBeVisible();
     await page.getByTestId('go-play-again').tap();
     await expect(page.getByTestId('new-game-hand').locator('img')).toHaveCount(3);
     await page.getByTestId('pick-Sulphur').tap(); await page.getByTestId('pick-Toadstool').tap();
