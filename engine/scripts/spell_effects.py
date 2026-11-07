@@ -201,7 +201,7 @@ def add_trap_to_dungeon(s, who):
     deck.insert(rng.randrange(len(deck) + 1), trap)
     s['dungeon_list'] = deck
     s['dungeon_deck'] = len(deck)
-    A.log(s, {'r': s['meta'].get('round'), 'who': who, 'act': 'trap_spell', 'spell': 'Spell_Trap.jpg'}); return True
+    A.log(s, {'r': s['meta'].get('round'), 'who': who, 'act': 'trap_spell'}); return True
 
 
 def obscure(s, caster, target):
