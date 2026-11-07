@@ -1411,6 +1411,24 @@ function gatherBanner(g, e) {
       h('div', { class: 'bgather-tracks' }, ...(data.tracks || []).map(track))));
 }
 
+function sellBanner(g, e) {
+  const data = e.sell;
+  if (!data) return null;
+  const chip = (sale) => h('span', { class: 'bsell-chip', 'data-testid': 'ai-sell-reagent' },
+    h('img', { src: reagentIcon(sale.reagent), alt: nice(sale.reagent) }),
+    h('span', { class: 'bsell-chip-copy' },
+      h('span', {}, `${sale.n} ${nice(sale.reagent)}`),
+      sale.value ? h('small', {}, `${sale.value} each`) : null));
+  return h('div', { 'data-testid': 'ai-banner-text' },
+    h('div', { class: 'bsell', 'data-testid': 'ai-sell-structured' },
+      h('div', { class: 'bsell-headline' }, `${e.who || 'AI'} sold`),
+      h('div', { class: 'bsell-row' },
+        h('div', { class: 'bsell-chips' }, ...(data.sales || []).map(chip)),
+        h('div', { class: 'bsell-gain', 'data-testid': 'ai-sell-mana' },
+          h('span', { class: 'orb sell-mana-orb', 'aria-hidden': 'true' }),
+          h('span', {}, `+${data.mana} mana`)))));
+}
+
 export async function banner(g, e, i = 0, n = 1) {
   if (g.skip) return;
   const layer = document.getElementById('banner-layer');
@@ -1425,7 +1443,7 @@ export async function banner(g, e, i = 0, n = 1) {
     avatar(e.who || '?'),
     h('div', { class: 'btext' },
       h('div', { class: 'bhead' }, `${e.who || 'AI'}'s turn${n > 1 ? ` · move ${i + 1} of ${n}` : ''}`),
-      gatherBanner(g, e) || h('div', { 'data-testid': 'ai-banner-text' }, e.text), extra,
+      gatherBanner(g, e) || sellBanner(g, e) || h('div', { 'data-testid': 'ai-banner-text' }, e.text), extra,
       h('div', { class: 'bfoot' }, h('span', { class: 'skiphint' }, i + 1 < n ? 'tap anywhere: next move' : 'tap anywhere to continue'),
         h('button', { class: 'bskip', 'data-testid': 'ai-skip', onclick: () => { g.skip = true; } }, 'Skip ⏭'))),
     imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null,

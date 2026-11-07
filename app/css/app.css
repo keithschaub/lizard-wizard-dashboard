@@ -227,6 +227,16 @@ img { -webkit-user-drag: none; user-select: none; }
 .banner .bgather-tracks-label { display: inline; color: #c9b878; font-size: 10.5px; font-weight: 700; margin-right: 5px; }
 .banner .bgather-tracks { display: inline-flex; vertical-align: middle; gap: 5px 8px; }
 .banner .bgather-track { font-size: 10.5px; color: #d8d4c4; }
+.banner .bsell { min-width: 0; }
+.banner .bsell-headline { color: var(--gold-hi); font-family: var(--display); font-size: 17px; font-weight: 700; line-height: 1.1; }
+.banner .bsell-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; min-width: 0; }
+.banner .bsell-chips { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; flex: 1; }
+.banner .bsell-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px 3px 3px; border: 1px solid rgba(214, 180, 90, .55); border-radius: 14px; background: rgba(255, 255, 255, .06); font-size: 12px; line-height: 1.05; }
+.banner .bsell-chip img { width: 23px; height: 23px; object-fit: contain; flex: none; }
+.banner .bsell-chip-copy { display: flex; flex-direction: column; white-space: nowrap; }
+.banner .bsell-chip-copy small { color: var(--muted); font-size: 9px; margin-top: 2px; }
+.banner .bsell-gain { display: inline-flex; align-items: center; gap: 5px; flex: none; color: #9fd0ff; font-size: 16px; font-weight: 700; white-space: nowrap; }
+.banner .sell-mana-orb { width: 24px; height: 24px; flex: none; background: radial-gradient(circle at 35% 30%, #9fd0ff, #2b6ee0 60%, #173a8a); box-shadow: 0 0 9px rgba(90, 162, 255, .8); border-radius: 50%; }
 .banner .bfoot { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
 .banner .skiphint { font-size: 11px; color: #6f7ca5; flex: 1; }
 .banner .bskip { flex: none; height: 26px; padding: 0 10px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255, 255, 255, .06); color: inherit; font-size: 12.5px; font-weight: 700; }
