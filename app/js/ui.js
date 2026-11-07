@@ -601,21 +601,31 @@ export async function gatherFlow(g, cid) {
 }
 
 // ------------------------------------------------------------------ summon / research / build / recruit / convert
-export function summonFlow(g, fk) {
-  const L = g.v.legal.summon[fk];
-  const uses = new Set(L.uses);
-  const act = (use) => async () => {
-    if (use === 'gather') { await summonGather(g, fk); return; }
-    const from = slotRectOf(fk);
-    const r = await g.act('act_summon', { familiar: fk, use }, { sound: use === 'score' ? 'coin' : 'select' });
-    if (r) { fly(art(fk), from, dockTarget()); g.afterAction(); }
-  };
-  expandCard(g, fk, { actions: [
-    { label: `Summon to Score`, sub: `${L.cost} mana · +${L.score_gold} Gold`, testid: 'summon-score', disabled: !uses.has('score'), onClick: act('score') },
-    { label: `Summon to Gather`, sub: [`${L.cost} mana · `, ...Array.from({ length: L.collect }, () => h('img', { src: reagentIcon(L.reagent), alt: '' }))], testid: 'summon-gather', disabled: !uses.has('gather'), onClick: act('gather') },
-    { label: 'Enter the Dungeon', sub: `${L.cost} mana`, testid: 'summon-dungeon', disabled: !uses.has('dungeon'), onClick: act('dungeon') },
-    { label: 'New Research', sub: `${L.cost} mana`, testid: 'summon-research', disabled: !uses.has('research'), onClick: act('research') },
-  ] });
+export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
+  const famGroup = (group && group.length ? group : (g.v.board.fam_face || []).filter(Boolean));
+  const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : famGroup.indexOf(fk);
+  const startIdx = resolvedIdx < 0 ? 0 : resolvedIdx;
+  expandCard(g, fk, {
+    group: famGroup,
+    groupIndex: startIdx,
+    actions: (k) => {
+      const L = (g.v.legal.summon || {})[k];
+      if (!L) return [];
+      const uses = new Set(L.uses);
+      const act = (use) => async () => {
+        if (use === 'gather') { await summonGather(g, k); return; }
+        const from = slotRectOf(k);
+        const r = await g.act('act_summon', { familiar: k, use }, { sound: use === 'score' ? 'coin' : 'select' });
+        if (r) { fly(art(k), from, dockTarget()); g.afterAction(); }
+      };
+      return [
+        { label: 'Summon to Score', sub: `${L.cost} mana · +${L.score_gold} Gold`, testid: 'summon-score', disabled: !uses.has('score'), onClick: act('score') },
+        { label: 'Summon to Gather', sub: [`${L.cost} mana · `, ...Array.from({ length: L.collect }, () => h('img', { src: reagentIcon(L.reagent), alt: '' }))], testid: 'summon-gather', disabled: !uses.has('gather'), onClick: act('gather') },
+        { label: 'Enter the Dungeon', sub: `${L.cost} mana`, testid: 'summon-dungeon', disabled: !uses.has('dungeon'), onClick: act('dungeon') },
+        { label: 'New Research', sub: `${L.cost} mana`, testid: 'summon-research', disabled: !uses.has('research'), onClick: act('research') },
+      ];
+    },
+  });
 }
 
 async function summonGather(g, fk) {
@@ -645,36 +655,62 @@ async function summonGather(g, fk) {
   if (r) { if (casts.length) g.sfx('cast'); g.afterAction(); }
 }
 
-export function researchFlow(g, sk) {
-  const L = g.v.legal.research[sk];
-  const cost = Object.entries(g.cards[sk]?.cost?.reagents || {}).flatMap(([r, n]) => (n === 'X' ? [r] : Array.from({ length: n }, () => r)));
-  expandCard(g, sk, { actions: [
-    { label: 'Research', sub: `${L.mana} mana`, testid: 'research-only', onClick: async () => { const from = slotRectOf(sk); const r = await g.act('act_research', { spell: sk, cast: false }, { sound: 'select' }); if (r) { fly(art(sk), from, dockTarget()); g.afterAction(); } } },
-    { label: 'Research & Cast', sub: [`${L.mana} mana + `, ...costIcons(cost), L.x ? '×X' : ''], testid: 'research-cast', disabled: !L.castable, onClick: async (ov) => {
-      let x = null, target = null;
-      if (L.x) {
-        ov.el.innerHTML = ''; ov.el.classList.add('gather');
-        const eyes = g.me_().tok.filter((t) => t === 'Eye_of_Newt').length;
-        const xt = await xTargetPicker(g, ov.el, eyes); x = xt.x; target = xt.target;
-      }
-      const from = slotRectOf(sk);
-      const r = await g.act('act_research', { spell: sk, cast: true, x, target }, { sound: 'cast' });
-      if (r) { fly(art(sk), from, dockTarget()); g.afterAction(); }
-    } },
-  ] });
+export function researchFlow(g, sk, { group = null, groupIndex = 0 } = {}) {
+  const spellGroup = (group && group.length ? group : (g.v.board.spell_face || []).filter(Boolean));
+  const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : spellGroup.indexOf(sk);
+  const startIdx = resolvedIdx < 0 ? 0 : resolvedIdx;
+  expandCard(g, sk, {
+    group: spellGroup,
+    groupIndex: startIdx,
+    actions: (k) => {
+      const L = (g.v.legal.research || {})[k];
+      if (!L) return [];
+      const cost = Object.entries(g.cards[k]?.cost?.reagents || {}).flatMap(([r, n]) => (n === 'X' ? [r] : Array.from({ length: n }, () => r)));
+      return [
+        { label: 'Research', sub: `${L.mana} mana`, testid: 'research-only', onClick: async () => {
+          const from = slotRectOf(k);
+          const r = await g.act('act_research', { spell: k, cast: false }, { sound: 'select' });
+          if (r) { fly(art(k), from, dockTarget()); g.afterAction(); }
+        } },
+        { label: 'Research & Cast', sub: [`${L.mana} mana + `, ...costIcons(cost), L.x ? '×X' : ''], testid: 'research-cast', disabled: !L.castable, onClick: async (overlay) => {
+          let x = null, target = null;
+          if (L.x) {
+            overlay.el.innerHTML = ''; overlay.el.classList.add('gather');
+            const eyes = g.me_().tok.filter((t) => t === 'Eye_of_Newt').length;
+            const xt = await xTargetPicker(g, overlay.el, eyes); x = xt.x; target = xt.target;
+          }
+          const from = slotRectOf(k);
+          const r = await g.act('act_research', { spell: k, cast: true, x, target }, { sound: 'cast' });
+          if (r) { fly(art(k), from, dockTarget()); g.afterAction(); }
+        } },
+      ];
+    },
+  });
 }
 
-export function buildFlow(g) {
+export function buildFlow(g, towerKey = null, { group = null, groupIndex = 0 } = {}) {
   const B = g.v.legal.build;
-  const build = async (pay) => {
-    const from = slotRectOf(B.tower);
-    const r = await g.act('act_build', { pay }, { sound: 'build' });
-    if (r) { fly(art(B.tower), from, dockTarget()); g.afterAction(); }
-  };
-  expandCard(g, B.tower, { actions: [
-    B.reagent ? { label: 'Build with reagents', sub: costIcons(Array.from({ length: B.reagent.n }, () => B.reagent.reagent)), testid: 'build-reagent', onClick: () => build('reagent') } : null,
-    B.gold ? { label: 'Build with Gold', sub: `${B.gold.n} Gold`, testid: 'build-gold', onClick: () => build('gold') } : null,
-  ].filter(Boolean) });
+  const tower = towerKey || B?.tower || g.v.board.tower_face;
+  const towerGroup = (group && group.length ? group : [g.v.board.tower_face].filter(Boolean));
+  const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : towerGroup.indexOf(tower);
+  const startIdx = resolvedIdx < 0 ? 0 : resolvedIdx;
+  expandCard(g, tower, {
+    group: towerGroup,
+    groupIndex: startIdx,
+    actions: (k) => {
+      const buildLegal = g.v.legal.build;
+      if (!buildLegal || buildLegal.tower !== k) return [];
+      const build = async (pay) => {
+        const from = slotRectOf(k);
+        const r = await g.act('act_build', { pay }, { sound: 'build' });
+        if (r) { fly(art(k), from, dockTarget()); g.afterAction(); }
+      };
+      return [
+        buildLegal.reagent ? { label: 'Build with reagents', sub: costIcons(Array.from({ length: buildLegal.reagent.n }, () => buildLegal.reagent.reagent)), testid: 'build-reagent', onClick: () => build('reagent') } : null,
+        buildLegal.gold ? { label: 'Build with Gold', sub: `${buildLegal.gold.n} Gold`, testid: 'build-gold', onClick: () => build('gold') } : null,
+      ].filter(Boolean);
+    },
+  });
 }
 
 export function divinationFlow(g) {

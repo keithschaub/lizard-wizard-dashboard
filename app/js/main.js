@@ -219,10 +219,19 @@ class Game {
       if (slot === 'dungeon_deck' && L.divination) { UI.divinationFlow(this); return; }
       UI.openMats(this); return;
     }
-    if (slot === 'tower_face' && L.build) return UI.buildFlow(this);
+    if (slot === 'tower_face' && L.build) {
+      const group = [v.board.tower_face].filter(Boolean);
+      return UI.buildFlow(this, key, { group, groupIndex: 0 });
+    }
     if (slot?.startsWith('wiz_') && (L.recruit || []).includes(key)) return UI.arena(this, { mode: 'open', wizard: key }).then(() => this.settle());
-    if (slot?.startsWith('fam_') && (L.summon || {})[key]) return UI.summonFlow(this, key);
-    if (slot?.startsWith('spell_') && (L.research || {})[key]) return UI.researchFlow(this, key);
+    if (slot?.startsWith('fam_') && (L.summon || {})[key]) {
+      const group = v.board.fam_face.filter((k) => k);
+      return UI.summonFlow(this, key, { group, groupIndex: group.indexOf(key) });
+    }
+    if (slot?.startsWith('spell_') && (L.research || {})[key]) {
+      const group = v.board.spell_face.filter((k) => k);
+      return UI.researchFlow(this, key, { group, groupIndex: group.indexOf(key) });
+    }
     
     // Determine card group for swipeable navigation
     let group = null, groupIndex = 0;
