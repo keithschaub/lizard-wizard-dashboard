@@ -24,6 +24,11 @@ export function appendNodes(parent, ...nodes) {
   }
 }
 
+/** Like Element.replaceChildren but skips null/undefined/false (native API stringifies null as "null"). */
+export function replaceChildren(parent, ...nodes) {
+  parent.replaceChildren(...nodes.flat(Infinity).filter((x) => x !== null && x !== undefined && x !== false));
+}
+
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

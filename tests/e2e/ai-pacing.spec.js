@@ -46,6 +46,7 @@ test('AI moves are paced and readable; tap = next move; Skip finishes the AI tur
   // 1) Hands off: each move stays on screen for its full time, inside one banner per AI turn.
   await keithBuilds(page);
   await expect(page.getByTestId('ai-banner-text')).toContainText('LizWiz summoned', { timeout: 20_000 });
+  await expect(page.getByTestId('ai-banner')).not.toContainText('null');
   await shot(page, '15-ai-move-banner');
   await untilKeith(page, 60_000);
   const log = await banners(page);
