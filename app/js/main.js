@@ -146,6 +146,7 @@ class Game {
 
   setView(v) {
     const prev = this.v; this.v = v;
+    if (v.next !== this.me) UI.closeExpandOverlays();
     this.board.render(v);
     this.renderDock(prev);
     this.renderTop();
@@ -286,6 +287,7 @@ class Game {
   }
 
   async aiStep() {
+    UI.closeExpandOverlays();
     this.aiRunning = true; this.renderDock(this.v);
     try {
       const r = await this.call('ai_step');
@@ -302,6 +304,7 @@ class Game {
   }
 
   async showMoves(moves) {
+    UI.closeExpandOverlays();
     for (const [i, e] of moves.entries()) {
       const slot = this.slotFor(e);
       if (slot && !this.skip) this.board.focus(slot);
