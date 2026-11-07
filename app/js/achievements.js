@@ -7,6 +7,12 @@ const SAMPLE_ART = {
   Spells: 'Spell_Scribe',
 };
 
+function shortBoardLabel(card = {}) {
+  const l = card.tile_label || card.name || '';
+  if (l.endsWith(' Cards')) return l.slice(0, -6);
+  return l;
+}
+
 export function achievementIcon(card = {}) {
   const kind = card.tile_icon;
   if (kind === 'Gold') return h('span', { class: 'ach-tile-orb gold', 'aria-hidden': 'true' });
@@ -21,18 +27,20 @@ export function achievementIcon(card = {}) {
   return h('span', { class: 'ach-tile-orb gold', 'aria-hidden': 'true' });
 }
 
-/** One achievement face used on the board column, zoom view, and mini chips on mats. */
+/** One achievement face: board column (compact row), zoom (portrait), mat chips. */
 export function achievementTile(card = {}, { size = 'board' } = {}) {
   const vp = card.vp ?? 10;
   const count = card.tile_count ?? '';
-  const label = card.tile_label || card.name || '';
-  const showHeader = size !== 'board' && size !== 'chip';
-  return h('div', { class: `ach-tile ach-tile-${size}`, 'data-testid': 'achievement-tile' },
-    showHeader ? h('div', { class: 'ach-tile-h' }, 'ACHIEVEMENT') : null,
-    h('div', { class: 'ach-tile-vp' }, String(vp)),
+  const label = size === 'board' || size === 'chip' ? shortBoardLabel(card) : (card.tile_label || card.name || '');
+  const body = h('div', { class: 'ach-tile-body' },
     h('div', { class: 'ach-tile-icon' }, achievementIcon(card)),
-    h('div', { class: 'ach-tile-count' }, count),
-    h('div', { class: 'ach-tile-label' }, label));
+    h('div', { class: 'ach-tile-text' },
+      h('div', { class: 'ach-tile-count' }, count),
+      label ? h('div', { class: 'ach-tile-label' }, label) : null));
+  return h('div', { class: `ach-tile ach-tile-${size}`, 'data-testid': 'achievement-tile' },
+    size === 'zoom' ? h('div', { class: 'ach-tile-h' }, 'ACHIEVEMENT') : null,
+    h('div', { class: 'ach-tile-vp' }, String(vp)),
+    body);
 }
 
 export function achievementBadge(card = {}) {
