@@ -182,6 +182,29 @@ def auction_view(s):
                 tail=[list(x) for x in a['tail']], active=list(a['active']), waiting=T.auction_waiting_on(s, a))
 
 
+def effect_feedback(e):
+    """Short player-facing result line after resolving a targeted / negative spell effect."""
+    a = e.get('act'); t = e.get('target')
+    if a == 'mana_drain':
+        n = int(e.get('n') or 0)
+        return f'{t} had no mana, nothing to steal' if n == 0 else f'Stole {n} mana from {t}'
+    if a in ('mana_drain_blocked', 'flame_bolt_blocked', 'disintegrate_blocked', 'earthquake_blocked', 'charm_blocked', 'swapo_blocked'):
+        return f"Blocked by {t}'s Spell Shield"
+    if a in ('flame_bolt', 'disintegrate', 'earthquake'):
+        return f"Destroyed {CD.display(e.get('card'))} ({t})"
+    if a == 'charm':
+        return f"Took {CD.display(e.get('wizard'))} from {t}"
+    if a == 'swapo':
+        return f"Swapped with {t}: gave {CD.display(e.get('gave'))}, took {CD.display(e.get('got'))}"
+    if a == 'wand_tax':
+        g = int(e.get('gold') or 0)
+        sc = e.get('school', '')
+        return f'No {sc} cards in your collection — no Gold from Wand Tax' if g == 0 else f'+{g} Gold from Wand Tax ({sc})'
+    if a == 'creation':
+        return f"Took {CD.display(e.get('card'))} for free"
+    return None
+
+
 def log_text(e):
     a = e.get('act'); w = e.get('who')
     try:
@@ -252,6 +275,9 @@ def public_log(s, viewer):
             item['hits'] = e.get('hits'); item['success'] = e.get('success')
         if a == 'time_shift':
             item['deck'] = e.get('deck'); item['remaining'] = e.get('remaining')
+        fb = effect_feedback(e)
+        if fb:
+            item['feedback'] = fb
         if a == 'gather':
             item['got'] = list(e.get('got', [])) + list(e.get('bonus', [])); item['inc'] = list(e.get('inc', []))
         out.append(item)
