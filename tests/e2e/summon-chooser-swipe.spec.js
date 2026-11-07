@@ -37,8 +37,8 @@ test('Summon chooser closes without state change and swipes market familiars', a
   const track = page.getByTestId('familiar-action-card-track');
   const firstSrc = await track.locator('img').getAttribute('src');
   const firstDetail = await page.getByTestId('summon-gather').textContent();
-  await track.dispatchEvent('touchstart', { touches: [{ clientX: 320, clientY: 300 }] });
-  await track.dispatchEvent('touchend', { changedTouches: [{ clientX: 180, clientY: 300 }] });
+  await track.dispatchEvent('touchstart', { touches: [{ identifier: 1, clientX: 320, clientY: 300 }] });
+  await track.dispatchEvent('touchend', { changedTouches: [{ identifier: 1, clientX: 180, clientY: 300 }] });
   await expect.poll(() => track.locator('img').getAttribute('src')).not.toBe(firstSrc);
   await expect.poll(() => page.getByTestId('summon-gather').textContent()).not.toBe(firstDetail);
   await chooser.screenshot({ path: 'docs/screenshots/summon-chooser-close-swipe-after-dpr3.png' });

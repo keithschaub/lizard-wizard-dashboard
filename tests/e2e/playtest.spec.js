@@ -142,7 +142,7 @@ class Playtest {
     await this.page.waitForTimeout(450);
     await ov.evaluate((el) => { el.scrollTop = 0; });
     const L = await this.limits();
-    const m = await ov.getByTestId('expanded-card').evaluate((frame) => {
+    const m = await ov.getByTestId('expanded-card').first().evaluate((frame) => {
       const img = frame.querySelector('img');
       const f = frame.getBoundingClientRect();
       const close = frame.closest('.overlay').querySelector('[data-testid=ov-close]').getBoundingClientRect();

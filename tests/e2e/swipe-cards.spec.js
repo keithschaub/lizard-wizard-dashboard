@@ -20,7 +20,7 @@ async function checkCardVisible(page) {
   // Just check that the expanded card is visible and not clipped
   const expanded = page.getByTestId('expanded');
   await expect(expanded).toBeVisible();
-  const img = page.getByTestId('expanded-img');
+  const img = page.getByTestId('expanded-img').first();
   await expect(img).toBeVisible();
 }
 
@@ -117,7 +117,7 @@ test('Swipe through board spell offer', async ({ page }) => {
   await shot(page, 'swipe-spells-01-next');
   
   // Close
-  await page.getByTestId('ov-close').click();
+  await page.getByTestId('expanded').getByTestId('ov-close').click();
 });
 
 test('Swipe through mat wizards', async ({ page }) => {
@@ -166,7 +166,7 @@ test('Swipe through mat wizards', async ({ page }) => {
   expect(parseFloat(opacity)).toBeLessThan(1);
   
   // Close
-  await page.getByTestId('ov-close').click();
+  await page.getByTestId('expanded').getByTestId('ov-close').click();
 });
 
 test('Keyboard arrow navigation works', async ({ page }) => {
@@ -202,7 +202,7 @@ test('Keyboard arrow navigation works', async ({ page }) => {
   const activeDot2 = await indicator.locator('.dot.active').getAttribute('data-index');
   expect(activeDot2).toBe('0');
   
-  await page.getByTestId('ov-close').click();
+  await page.getByTestId('expanded').getByTestId('ov-close').click();
 });
 
 test('Vertical scroll in card info does not trigger swipe', async ({ page }) => {
@@ -226,11 +226,8 @@ test('Vertical scroll in card info does not trigger swipe', async ({ page }) => 
   const box = await overlay.boundingBox();
   
   // Vertical swipe should not change card
-  await page.touchscreen.swipe(
-    { x: box.x + box.width / 2, y: box.y + 100 },
-    { x: box.x + box.width / 2, y: box.y + 300 },
-    { steps: 5 }
-  );
+  await overlay.dispatchEvent('touchstart', { touches: [{ identifier: 1, clientX: box.x + box.width / 2, clientY: box.y + 100 }] });
+  await overlay.dispatchEvent('touchend', { changedTouches: [{ identifier: 1, clientX: box.x + box.width / 2, clientY: box.y + 300 }] });
   
   await page.waitForTimeout(300);
   
@@ -238,7 +235,7 @@ test('Vertical scroll in card info does not trigger swipe', async ({ page }) => 
   const finalIndicator = await page.getByTestId('card-indicator').textContent();
   expect(finalIndicator).toBe(initialIndicator);
   
-  await page.getByTestId('ov-close').click();
+  await page.getByTestId('expanded').getByTestId('ov-close').click();
 });
 
 test('Card frame has no clipping on iPhone dimensions', async ({ page }) => {
@@ -263,5 +260,5 @@ test('Card frame has no clipping on iPhone dimensions', async ({ page }) => {
   // Take screenshot
   await shot(page, 'swipe-iphone-no-clip');
   
-  await page.getByTestId('ov-close').click();
+  await page.getByTestId('expanded').getByTestId('ov-close').click();
 });
