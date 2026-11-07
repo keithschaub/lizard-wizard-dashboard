@@ -1,4 +1,4 @@
-import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenChip, costIcons, sleep, appendNodes } from './dom.js';
+import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenChip, costIcons, sleep, appendNodes, replaceChildren } from './dom.js';
 
 // ------------------------------------------------------------------ overlay plumbing
 export function openOverlay(cls, { onScrim = null, testid = null } = {}) {
@@ -1284,10 +1284,11 @@ export async function banner(g, e, i = 0, n = 1) {
   const extra = e.cast && g.cards[e.cast] ? h('div', { style: { fontSize: '12.5px', color: '#d8ccff', marginTop: '3px' } }, `“${g.cards[e.cast].effect}”`) : null;
   const dur = aiMoveMs(e);
   let el = layer.querySelector('.banner:not(.out)');
-  if (!el) { el = h('div', { class: 'banner', 'data-testid': 'ai-banner' }); layer.replaceChildren(el); }
+  if (!el) { el = h('div', { class: 'banner', 'data-testid': 'ai-banner' }); replaceChildren(layer, el); }
   else { el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap'); }
   el.dataset.move = `${i + 1}/${n}`;
-  el.replaceChildren(avatar(e.who || '?'),
+  replaceChildren(el,
+    avatar(e.who || '?'),
     h('div', { class: 'btext' },
       h('div', { class: 'bhead' }, `${e.who || 'AI'}'s turn${n > 1 ? ` · move ${i + 1} of ${n}` : ''}`),
       h('div', { 'data-testid': 'ai-banner-text' }, e.text), extra,
