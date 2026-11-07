@@ -48,6 +48,8 @@ test('Scry Familiar immediately opens the summon-use chooser', async ({ page }) 
   await expect(page.getByTestId('rise-gather')).toBeVisible();
   await expect(page.getByTestId('rise-research')).toBeVisible();
   await expect(page.getByTestId('rise-dungeon')).toBeVisible();
+  const afterScry = await page.evaluate(() => window.lwDebug.view());
+  expect(afterScry.players.find((p) => p.you).familiars).toContain('Familiar_10_Imp');
   await page.getByTestId('rise-use').screenshot({ path: 'docs/screenshots/familiar-actions-scry-dpr3.png' });
   await page.evaluate(() => {
     const panel = document.querySelector('[data-testid="rise-use"]');

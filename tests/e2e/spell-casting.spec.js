@@ -253,11 +253,13 @@ test('Demonic Possession: Research & Cast shows opponent familiars and rise pick
   await page.getByTestId('target-Newt-Familiar_25_Imp').tap();
 
   await expect(page.getByTestId('rise-use')).toBeVisible();
+  const goldBefore = Number((await page.getByTestId('my-gold').textContent()).trim());
   await page.getByTestId('rise-score').tap();
   await page.waitForFunction(() => {
     const me = window.lwDebug.view().players.find((p) => p.you);
     return me.familiars.includes('Familiar_25_Imp');
   });
+  await expect.poll(async () => Number((await page.getByTestId('my-gold').textContent()).trim())).toBeGreaterThan(goldBefore);
 
   expect(errors, errors.join('\n')).toEqual([]);
 });
