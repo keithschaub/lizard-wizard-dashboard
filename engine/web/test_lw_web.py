@@ -129,6 +129,36 @@ r = call('act_research', spell='Spell_Haste', cast=True)
 check(r['ok'] and r['result'] == 'bonus' and r['view']['next'] == 'Keith' and r['view']['legal'], 'Haste: Keith takes a bonus action')
 r = call('act_convert', reagent='Sulphur', n=1)
 check(r['ok'] and r['view']['next'] == 'Newt', 'after the bonus action the turn passes')
+
+print('\n=== 6b. Creation: take face-up wizard or tower (UI keys, engine paths) ===')
+def m6cr(s):
+    k = A.P(s, 'Keith')
+    k['tok'] = ['Horn'] * 4 + ['Eye_of_Newt', 'Eye_of_Newt']
+    k['mana'] = 25
+    face = list(s.get('spell_face') or ['', '', ''])
+    face[0] = 'assets/Spell_Creation.jpg'
+    s['spell_face'] = face
+setup(m6cr)
+st = W.st()
+wiz_key = W.key(st['wiz_face'][0])
+wz0 = len(st['wiz_list'])
+r = call('act_research', spell='Spell_Creation', cast=True)
+check(r['ok'] and r['view']['pending']['kind'] == 'creation', 'Creation opens the picker')
+r = call('resolve_effect', choice={'kind': 'wizards', 'card': wiz_key})
+check(r['ok'] and W.key(P('Keith')['wizards'][-1]) == wiz_key and len(W.st()['wiz_list']) == wz0 - 1, 'Creation takes a face-up wizard')
+check(any(e.get('act') == 'creation' and e.get('kind') == 'wizards' for e in W.st()['meta']['log']), 'creation wizard logged')
+setup(m6cr)
+st = W.st()
+tow_key = W.key(st['tower_face'])
+tlist0 = len(st['tow_list'])
+r = call('act_research', spell='Spell_Creation', cast=True)
+r = call('resolve_effect', choice={'kind': 'towers', 'card': tow_key})
+check(r['ok'] and W.key(P('Keith')['towers'][-1]) == tow_key and len(W.st()['tow_list']) == tlist0 - 1, 'Creation takes the face-up tower')
+setup(m6cr)
+r = call('act_research', spell='Spell_Creation', cast=True)
+before = W.dump()
+r = call('resolve_effect', choice={'kind': 'wizards', 'card': 'Wizard_Not_On_Face'})
+check(not r['ok'] and W.dump() == before and W.pend(W.st())['kind'] == 'creation', 'failed Creation leaves state and pending unchanged')
 def m6ts(s):
     k = A.P(s, 'Keith')
     k['tok'] = ['Foxglove', 'Mandrake', 'Mandrake']

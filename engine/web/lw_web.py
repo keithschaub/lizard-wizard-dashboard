@@ -46,6 +46,22 @@ def key(path):
 def jpg(k): return k if k.endswith('.jpg') else k + '.jpg'
 
 
+def face_asset(s, card_key, kind):
+    """Resolve a UI card key to the face-up asset path engine actions expect (with .jpg)."""
+    ck = key(card_key) or card_key
+    if kind == 'wizards':
+        for x in s.get('wiz_face', []):
+            if x and key(x) == ck:
+                return x
+        raise Refused(f'{ck} is not a face-up wizard')
+    if kind == 'towers':
+        tf = s.get('tower_face')
+        if tf and key(tf) == ck:
+            return tf
+        raise Refused(f'{ck} is not the face-up tower')
+    raise Refused(f'Creation cannot take from {kind}')
+
+
 def _crystal_ball_refill(s, name):
     """If Crystal Ball was just cast, immediately draw cards up to hand size 5."""
     p = A.P(s, name)
@@ -802,7 +818,7 @@ def resolve_effect(choice):
                 th = [c for c in P(s, o['player'])[o['kind']] if key(c) == o['card']][0]
                 mn = [c for c in P(s, n)[o['kind']] if key(c) == o['mine']][0]
                 SE.swapo(s, n, o['player'], mn, th, o['kind'])
-            elif kind == 'creation': A.creation(s, n, o['card'], o['kind'])
+            elif kind == 'creation': A.creation(s, n, face_asset(s, o['card'], o['kind']), o['kind'])
             elif kind == 'wand_tax': SE.wand_tax(s, n, o['school'])
             elif kind == 'time_shift': SE.time_shift(s, n, o['deck'])
             elif kind == 'evolve':

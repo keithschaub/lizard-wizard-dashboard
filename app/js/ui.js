@@ -969,6 +969,7 @@ export async function effectChooser(g) {
   const choice = await p;
   const r = await g.act('resolve_effect', { choice }, { sound: 'cast' });
   ov.close();
+  if (!r) return null;
   announceSpellEffectResults(g, r?.entries);
   const ts = (r?.entries || []).find((e) => e.act === 'time_shift');
   if (ts) {
