@@ -180,3 +180,64 @@ test('Player target picker: shows actual mana and VP from game state', async ({ 
   
   expect(errors).toEqual([]);
 });
+
+const IMP = 'assets/Familiar_25_Imp.jpg';
+
+async function loadDemonic(page, { withFams = true } = {}) {
+  await page.evaluate(async ({ withFams, imp }) => {
+    const r = await fetch('engine/game/g8_state.json');
+    const s = await r.json();
+    const k = s.players.find((p) => p.name === 'Keith');
+    k.mana = 40;
+    k.tok = ['Nightshade', 'Nightshade', 'Mandrake', 'Foxglove', 'Horn', 'Horn', 'Horn', 'Horn', 'Horn', 'Horn'];
+    s.spell_face = ['assets/Spell_Demonic_Possession.jpg', '', '', ''];
+    for (const q of s.players) {
+      if (q.name !== 'Keith') q.familiars = withFams ? [imp] : [];
+    }
+    s.next = 'Keith';
+    s.meta.web_pending = null;
+    s.meta.pending = null;
+    const out = await window.lwDebug._g.call('load', { text: JSON.stringify(s) });
+    if (!out.ok) throw new Error(out.error);
+    window.lwDebug._g.setView(out.result);
+  }, { withFams, imp: IMP });
+}
+
+test('Demonic Possession: Research & Cast shows opponent familiars and rise picker', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/');
+  await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 60_000 });
+  await loadDemonic(page, { withFams: true });
+
+  await page.getByTestId('slot-spell_0').tap();
+  await expect(page.getByTestId('expanded')).toBeVisible();
+  await page.getByTestId('research-cast').tap();
+
+  await expect(page.getByTestId('effect')).toBeVisible();
+  await expect(page.getByTestId('expanded')).toHaveCount(0);
+  await expect(page.getByTestId('target-Newt-Familiar_25_Imp')).toBeVisible();
+  await page.getByTestId('target-Newt-Familiar_25_Imp').tap();
+
+  await expect(page.getByTestId('rise-use')).toBeVisible();
+  await page.getByTestId('rise-score').tap();
+  await page.waitForFunction(() => {
+    const me = window.lwDebug.view().players.find((p) => p.you);
+    return me.familiars.includes('Familiar_25_Imp');
+  });
+
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('Demonic Possession: toast when no opponent familiars', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/');
+  await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 60_000 });
+  await loadDemonic(page, { withFams: false });
+
+  await page.getByTestId('slot-spell_0').tap();
+  await page.getByTestId('research-cast').tap();
+
+  await expect(page.getByTestId('toast')).toContainText('No familiars to take');
+  await expect(page.getByTestId('effect')).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

@@ -128,6 +128,7 @@ class Game {
     if (!r.ok) { this.sfx('error'); this.toast(r.error); return null; }
     if (sound) this.sfx(sound);
     if (r.view) this.setView(r.view);
+    UI.announceSpellEffectResults(this, r.entries);
     this.queueMoves(r.entries);
     await this.autosave();
     return r;
@@ -141,7 +142,7 @@ class Game {
   }
   async autosave() { const d = await this.call('dump'); if (d.ok) Store.saveLocal(d.result); }
 
-  afterAction() { this.settle(); }
+  afterAction() { return this.settle(); }
 
   setView(v) {
     const prev = this.v; this.v = v;

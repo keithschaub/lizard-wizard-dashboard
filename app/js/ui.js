@@ -711,7 +711,7 @@ export function researchFlow(g, sk, { group = null, groupIndex = 0 } = {}) {
         { label: 'Research', sub: `${L.mana} mana`, testid: 'research-only', onClick: async () => {
           const from = slotRectOf(k);
           const r = await g.act('act_research', { spell: k, cast: false }, { sound: 'select' });
-          if (r) { fly(art(k), from, dockTarget()); g.afterAction(); }
+          if (r) { fly(art(k), from, dockTarget()); await g.afterAction(); }
         } },
         { label: 'Research & Cast', sub: [`${L.mana} mana + `, ...costIcons(cost), L.x ? '×X' : ''], testid: 'research-cast', disabled: !L.castable, onClick: async (overlay) => {
           let x = null, target = null;
@@ -722,7 +722,12 @@ export function researchFlow(g, sk, { group = null, groupIndex = 0 } = {}) {
           }
           const from = slotRectOf(k);
           const r = await g.act('act_research', { spell: k, cast: true, x, target }, { sound: 'cast' });
-          if (r) { fly(art(k), from, dockTarget()); g.afterAction(); }
+          if (r) {
+            fly(art(k), from, dockTarget());
+            overlay.close();
+            await g.afterAction();
+            return true;
+          }
         } },
       ];
     },
@@ -960,6 +965,7 @@ export function showTimeShiftRemoved(g, entry) {
 
 // ------------------------------------------------------------------ pending steps: spell effects, New Research, dungeon
 export async function effectChooser(g) {
+  closeAll(); // e.g. Research & Cast leaves expand open while settle runs; don't block the target picker underneath
   const pd = g.v.pending; const k = pd.spell; const info = g.cards[k] || {};
   const ov = openOverlay('gather', { testid: 'effect' });
   const [p, done] = wait();
@@ -977,7 +983,8 @@ export async function effectChooser(g) {
       const pData = pl !== 'Available' ? playerData(pl) : null;
       const labelContent = pData ? [pl, ' ', h('span', { class: 'stat mana mini', 'data-testid': `${pl}-mana` }, h('span', { class: 'orb' }), pData.mana === null ? '?' : pData.mana), h('span', { class: 'stat vp mini', 'data-testid': `${pl}-vp` }, `${pData.vp} VP`)] : pl;
       appendNodes(grid, h('div', { class: 'group-label' }, labelContent));
-      os.forEach((o, i) => appendNodes(grid, h('button', { class: 'opt-card', 'data-testid': `target-${pl}-${o.card}`, onclick: pick(o) }, h('img', { src: art(o.card), alt: o.card }), h('span', { class: 'oc-label' }, nice(o.kind)))));
+      const cardLabel = (o) => g.cards[o.card]?.display || g.cards[o.card]?.name || nice(o.card);
+      os.forEach((o) => appendNodes(grid, h('button', { class: 'opt-card', 'data-testid': `target-${pl}-${o.card}`, onclick: pick(o) }, h('img', { src: art(o.card), alt: o.card }), h('span', { class: 'oc-label' }, cardLabel(o)))));
     }
   } else if (kind === 'mana_drain' || kind === 'obscure') {
     appendNodes(grid, ...opts.map((o) => {
