@@ -162,18 +162,22 @@ export function attachSwipe(el, { onBegin = null, onDrag = null, onSwipe, onCanc
   el.addEventListener('mouseup', () => { if (!('PointerEvent' in window)) end(); });
 }
 
-export function expandCard(g, key, { actions = [], extra = null, group = null, groupIndex = 0, title = null, titleTestid = null } = {}) {
+export function expandCard(g, key, {
+  actions = [], extra = null, group = null, groupIndex = 0, title = null, titleTestid = null,
+  subtitle = null, actionPrompt = null, actionLayout = 'actions', testid = 'expanded', closeTestid = 'ov-close',
+} = {}) {
   // group: array of card keys for swipeable navigation, groupIndex: current card index in group
   const cards = (group && group.length ? group : [key]).filter(Boolean);
   const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : cards.indexOf(key);
   let currentIndex = Math.min(Math.max(0, resolvedIdx < 0 ? 0 : resolvedIdx), cards.length - 1);
   
-  const ov = openOverlay('expand', { onScrim: (o) => o.close(), testid: 'expanded' });
+  const ov = openOverlay('expand', { onScrim: (o) => o.close(), testid });
+  if (actionLayout === 'tiles') ov.el.classList.add('tiles');
   
   // Container for all card frames (for swipe animation)
   const cardTrack = h('div', { class: 'card-track', 'data-testid': 'card-track' });
   const cardinfoContainer = h('div', { class: 'cardinfo-container', 'data-testid': 'cardinfo-container' });
-  const actionsContainer = h('div', { class: 'actions-container', 'data-testid': 'expanded-actions' });
+  const actionsContainer = h('div', { class: `actions-container ${actionLayout === 'tiles' ? 'familiar-action-grid' : ''}`, 'data-testid': 'expanded-actions' });
   const scrollInner = h('div', { class: 'expand-inner', 'data-testid': 'expand-inner' });
   
   // Position indicator (dots or "2 / 4")
@@ -237,6 +241,15 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
 
     const actBtn = (a) => {
       const sub = a.sub == null ? null : (Array.isArray(a.sub) ? h('span', { class: 'sub' }, ...a.sub) : h('span', { class: 'sub' }, a.sub));
+      if (actionLayout === 'tiles') {
+        return h('button', {
+          class: `familiar-action-tile ${a.disabled ? 'disabled' : ''}`, disabled: a.disabled || null, 'data-testid': a.testid,
+          onclick: async (e) => { e.stopPropagation(); g.sfx(a.use === 'score' ? 'coin' : 'select'); const keep = await a.onClick(ov); if (!keep) ov.close(); },
+        }, h('span', { class: 'familiar-action-icon' }, familiarActionIcon(a.use, a.reagent)),
+        h('span', { class: 'familiar-action-copy' }, h('span', { class: 'familiar-action-title' }, a.label),
+          h('span', { class: 'familiar-action-detail' }, a.detail ?? sub),
+          a.note ? h('span', { class: 'familiar-action-note' }, a.note) : null));
+      }
       return h('button', {
         class: `act ${a.cls || ''}`, disabled: a.disabled || null, 'data-testid': a.testid,
         onclick: async (e) => { e.stopPropagation(); g.sfx('tap'); const keep = await a.onClick(ov); if (!keep) ov.close(); },
@@ -313,9 +326,15 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
     ov.el.focus();
   }
   
-  const titleEl = title ? h('div', { class: 'ov-title', 'data-testid': titleTestid || 'expand-title' }, title) : null;
-  appendNodes(scrollInner, titleEl, cardTrack, indicator, actionsContainer, cardinfoContainer);
-  appendNodes(ov.el, closeBtn(() => ov.close()), prevBtn, nextBtn, scrollInner);
+  const titleEl = title ? h('div', { class: `ov-title ${actionLayout === 'tiles' ? 'phase-title' : ''}`, 'data-testid': titleTestid || 'expand-title' }, title) : null;
+  const subtitleEl = subtitle ? h('div', { class: 'ov-sub familiar-action-subtitle' }, subtitle) : null;
+  const promptEl = actionPrompt ? h('div', { class: 'familiar-action-pick' }, actionPrompt) : null;
+  if (actionLayout === 'tiles') {
+    appendNodes(scrollInner, cardTrack, indicator, titleEl, subtitleEl, promptEl, actionsContainer, cardinfoContainer);
+  } else {
+    appendNodes(scrollInner, titleEl, subtitleEl, cardTrack, indicator, promptEl, actionsContainer, cardinfoContainer);
+  }
+  appendNodes(ov.el, closeBtn(() => ov.close(), closeTestid), prevBtn, nextBtn, scrollInner);
 
   // Initial render
   updateContent(currentIndex, false);
@@ -602,27 +621,43 @@ export async function gatherFlow(g, cid) {
 export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
   const L = (g.v.legal.summon || {})[fk];
   if (!L) return;
-  familiarActionChooser(g, {
-    familiar: fk,
-    group: group && group.length ? group : [fk],
+  const familiarGroup = group && group.length ? group : [fk];
+  expandCard(g, fk, {
+    group: familiarGroup,
     groupIndex,
     title: 'Summon',
     subtitle: 'Choose how to use this familiar',
-    cancel: true,
-    testPrefix: 'summon',
-    onUse: async (use, currentFamiliar) => {
-      const current = (g.v.legal.summon || {})[currentFamiliar];
-      if (!current) return null;
-      if (use === 'gather') return summonGather(g, currentFamiliar);
-      const from = slotRectOf(currentFamiliar);
-      const r = await g.act('act_summon', { familiar: currentFamiliar, use }, { sound: use === 'score' ? 'coin' : 'select' });
-      if (r) {
-        const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
-        if (hit?.feedback) g.toast(hit.feedback);
-        await fly(art(currentFamiliar), from, dockTarget());
-        await g.afterAction();
-      }
-      return r;
+    actionPrompt: 'Pick one action',
+    actionLayout: 'tiles',
+    testid: 'summon-use',
+    closeTestid: 'summon-cancel',
+    actions: (currentFamiliar) => {
+      const current = (g.v.legal.summon || {})[currentFamiliar] || {};
+      const available = new Set(current.uses || []);
+      const action = (use, label, detail, reason = `${label} unavailable`) => ({
+        use, label, detail: available.has(use) ? detail : reason, disabled: !available.has(use), reagent: current.reagent,
+        note: use === 'score' && current.powerful_helper ? 'Powerful Helper' : null,
+        testid: `summon-${use}`, onClick: async (overlay) => {
+          overlay.close();
+          if (!available.has(use)) return null;
+          if (use === 'gather') return summonGather(g, currentFamiliar);
+          const from = slotRectOf(currentFamiliar);
+          const r = await g.act('act_summon', { familiar: currentFamiliar, use }, { sound: use === 'score' ? 'coin' : 'select' });
+          if (r) {
+            const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
+            if (hit?.feedback) g.toast(hit.feedback);
+            await fly(art(currentFamiliar), from, dockTarget());
+            await g.afterAction();
+          }
+          return r;
+        },
+      });
+      return [
+        action('score', 'Score', `+${(current.score_gold || 0) + (current.powerful_helper || 0)} Gold`),
+        action('gather', 'Gather', current.collect ? `${current.collect} ${nice(current.reagent)}` : 'Gather unavailable'),
+        action('dungeon', 'Dungeon', 'draw until treasure'),
+        action('research', 'Research', 'reveal spells'),
+      ];
     },
   });
 }
@@ -1057,98 +1092,13 @@ function familiarActionIcon(use, reagent) {
   return h('span', { class: 'familiar-action-scroll', html: SPELL_SCROLL_ICON, 'aria-hidden': 'true' });
 }
 
-function familiarActionChooser(g, {
-  familiar, title, subtitle, scoreDetail, scoreNote = null, gatherDetail, reagent, disabled = {},
-  group = null, groupIndex = 0, testPrefix = 'rise', onUse, cancel = false,
-}) {
-  const ov = openOverlay('sheet', { onScrim: cancel ? (o) => o.close() : null, testid: `${testPrefix}-use` });
-  const cards = (group && group.length ? group : [familiar]).filter(Boolean);
-  let currentIndex = Math.min(Math.max(0, groupIndex), cards.length - 1);
-  const uses = [
-    { use: 'score', label: 'Score', detail: scoreDetail, note: scoreNote, reason: 'Scoring unavailable' },
-    { use: 'gather', label: 'Gather', detail: gatherDetail, reason: 'Gathering unavailable' },
-    { use: 'dungeon', label: 'Dungeon', detail: 'draw until treasure', reason: 'Dungeon unavailable' },
-    { use: 'research', label: 'Research', detail: 'reveal spells', reason: 'Research unavailable' },
-  ];
-  const actionGrid = h('div', { class: 'familiar-action-grid' });
-  const track = h('div', { class: 'familiar-action-card-track', 'data-testid': 'familiar-action-card-track' });
-  const indicator = cards.length > 1 ? h('div', { class: 'card-indicator', 'data-testid': 'card-indicator' }, cards.map((_, i) => h('span', { class: i === currentIndex ? 'dot active' : 'dot', 'data-index': i }))) : null;
-  const prev = cards.length > 1 ? h('button', { class: 'familiar-action-nav prev', 'aria-label': 'Previous card', 'data-testid': 'nav-prev', onclick: () => navigate(currentIndex - 1) }, '‹') : null;
-  const next = cards.length > 1 ? h('button', { class: 'familiar-action-nav next', 'aria-label': 'Next card', 'data-testid': 'nav-next', onclick: () => navigate(currentIndex + 1) }, '›') : null;
-  const carouselRow = h('div', { class: 'familiar-action-carousel-row' }, track, prev, next);
-  const panel = h('div', { class: 'familiar-action-panel' },
-    carouselRow, indicator,
-    h('div', { class: 'phase-title' }, title),
-    h('div', { class: 'ov-sub familiar-action-subtitle' }, subtitle),
-    h('div', { class: 'familiar-action-pick' }, 'Pick one action'),
-    actionGrid,
-    cancel ? closeBtn(() => ov.close(), 'summon-cancel') : null);
-  appendNodes(ov.el, panel);
-  let activeImg = null; let animating = false;
-  function render(idx) {
-    const key = cards[idx]; const l = (g.v.legal.summon || {})[key] || {};
-    activeImg = h('img', { class: 'familiar-action-card', src: art(key), alt: key, draggable: 'false' });
-    replaceChildren(track, activeImg);
-    activeImg.style.transition = 'none';
-    activeImg.style.transform = 'translateX(0)';
-    replaceChildren(actionGrid);
-    uses.forEach((a) => {
-      const isDisabled = testPrefix === 'summon' ? !new Set(l.uses || []).has(a.use) : !!disabled[a.use];
-      const detail = isDisabled ? a.reason : testPrefix === 'summon'
-        ? (a.use === 'score' ? `+${l.score_gold + (l.powerful_helper || 0)} Gold` : a.use === 'gather' ? `${l.collect} ${nice(l.reagent)}` : a.detail)
-        : a.detail;
-      appendNodes(actionGrid, h('button', {
-        class: `familiar-action-tile ${isDisabled ? 'disabled' : ''}`, disabled: isDisabled,
-        'data-testid': `${testPrefix}-${a.use}`,
-        onclick: async () => { g.sfx(a.use === 'score' ? 'coin' : 'select'); ov.close(); await onUse(a.use, key); },
-      }, h('span', { class: 'familiar-action-icon' }, familiarActionIcon(a.use, testPrefix === 'summon' ? l.reagent : reagent)),
-      h('span', { class: 'familiar-action-copy' }, h('span', { class: 'familiar-action-title' }, a.label),
-        h('span', { class: 'familiar-action-detail' }, detail),
-        a.note ? h('span', { class: 'familiar-action-note' }, a.note) : null)));
-    });
-    indicator?.querySelectorAll('.dot').forEach((dot, i) => dot.classList.toggle('active', i === idx));
-    if (prev) prev.style.opacity = idx > 0 ? '1' : '.4';
-    if (next) next.style.opacity = idx < cards.length - 1 ? '1' : '.4';
-  }
-  function navigate(idx, direction = 0) {
-    if (idx < 0 || idx >= cards.length || animating) {
-      if (activeImg && !animating) {
-        activeImg.style.transition = 'transform .3s cubic-bezier(.4, 0, .2, 1)';
-        activeImg.style.transform = 'translateX(0)';
-      }
-      return;
-    }
-    if (!direction || !activeImg) { currentIndex = idx; render(idx); return; }
-    animating = true; currentIndex = idx;
-    activeImg.style.transition = 'transform .3s cubic-bezier(.4, 0, .2, 1)';
-    activeImg.style.transform = `translateX(${direction * 100}%)`;
-    setTimeout(() => { animating = false; render(idx); }, 300);
-  }
-  if (cards.length > 1) {
-    attachSwipe(carouselRow, {
-      onBegin: () => !animating,
-      onDrag: (dx) => {
-        if (!activeImg) return;
-        let x = dx;
-        if ((currentIndex === 0 && dx > 0) || (currentIndex === cards.length - 1 && dx < 0)) x *= .3;
-        activeImg.style.transition = 'none'; activeImg.style.transform = `translateX(${x}px)`;
-      },
-      onSwipe: (dx) => navigate(currentIndex + (dx < 0 ? 1 : -1), dx < 0 ? -1 : 1),
-      onCancel: () => { if (activeImg) { activeImg.style.transition = 'transform .3s cubic-bezier(.4, 0, .2, 1)'; activeImg.style.transform = 'translateX(0)'; } },
-    });
-  }
-  render(currentIndex);
-  return ov;
-}
-
 export async function riseUseChooser(g) {
   const pd = g.v.pending;
   return new Promise((resolve) => {
-    familiarActionChooser(g, {
-      familiar: pd.familiar, title: pd.title || 'Rise', subtitle: pd.subtitle || 'Use this familiar',
-      scoreDetail: `+${pd.score_gold} Gold`, gatherDetail: `${pd.collect} ${nice(pd.reagent)}`,
-      reagent: pd.reagent, testPrefix: 'rise',
-      onUse: async (use) => {
+    const action = (use, label, detail) => ({
+      use, label, detail, reagent: pd.reagent, testid: `rise-${use}`,
+      onClick: async (overlay) => {
+        overlay.close();
         if (use === 'gather') return resolve(await riseGather(g, pd));
         const r = await g.act('rise_use', { use }, { sound: use === 'score' ? 'coin' : 'select' });
         if (use === 'dungeon' && r) await dungeonFlow(g);
@@ -1156,6 +1106,19 @@ export async function riseUseChooser(g) {
         resolve(r);
         return r;
       },
+    });
+    expandCard(g, pd.familiar, {
+      title: pd.title || 'Rise',
+      subtitle: pd.subtitle || 'Use this familiar',
+      actionPrompt: 'Pick one action',
+      actionLayout: 'tiles',
+      testid: 'rise-use',
+      actions: [
+        action('score', 'Score', `+${pd.score_gold} Gold`),
+        action('gather', 'Gather', `${pd.collect} ${nice(pd.reagent)}`),
+        action('dungeon', 'Dungeon', 'draw until treasure'),
+        action('research', 'Research', 'reveal spells'),
+      ],
     });
   });
 }
