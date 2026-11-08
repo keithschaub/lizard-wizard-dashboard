@@ -110,6 +110,44 @@ export function cardInfo(g, key) {
 
 const TIME_SHIFT_DECK_LABEL = { wizards: 'Wizards', towers: 'Towers', familiars: 'Familiars', spells: 'Spells' };
 
+// Shared horizontal card-carousel gesture. Track the originating touch so a
+// second finger cannot steal the gesture.
+export function attachSwipe(el, { onBegin = null, onDrag = null, onSwipe, onCancel = null, threshold = 50 } = {}) {
+  let startX = 0; let startY = 0; let currentX = 0; let currentY = 0;
+  let active = false; let moved = false; let touchId = null;
+  const start = (x, y) => { startX = x; startY = y; currentX = x; currentY = y; active = true; moved = false; onBegin?.(x, y); };
+  const move = (x, y) => {
+    if (!active) return;
+    const dx = x - startX; const dy = y - startY;
+    if (!moved && Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) { active = false; onCancel?.(); return; }
+    moved = true; currentX = x; currentY = y; onDrag?.(dx, dy);
+  };
+  const end = () => {
+    if (!active) return;
+    active = false;
+    const dx = currentX - startX; const dy = Math.abs(currentY - startY);
+    if (moved && Math.abs(dx) > threshold && Math.abs(dx) > dy) onSwipe?.(dx);
+    else onCancel?.();
+    touchId = null;
+  };
+  const point = (list) => [...list].find((t) => touchId === null || t.identifier === touchId);
+  el.addEventListener('touchstart', (e) => {
+    const t = e.changedTouches[0]; if (!t) return;
+    touchId = t.identifier; start(t.clientX, t.clientY);
+  }, { passive: true });
+  el.addEventListener('touchmove', (e) => {
+    const t = point(e.touches); if (t) move(t.clientX, t.clientY);
+  }, { passive: true });
+  el.addEventListener('touchend', (e) => {
+    const t = point(e.changedTouches); if (t) { currentX = t.clientX; currentY = t.clientY; end(); }
+  }, { passive: true });
+  el.addEventListener('touchcancel', end, { passive: true });
+  el.addEventListener('mousedown', (e) => { start(e.clientX, e.clientY); e.preventDefault(); });
+  el.addEventListener('mousemove', (e) => { if (active) { move(e.clientX, e.clientY); e.preventDefault(); } });
+  el.addEventListener('mouseup', end);
+  el.addEventListener('mouseleave', end);
+}
+
 export function expandCard(g, key, { actions = [], extra = null, group = null, groupIndex = 0, title = null, titleTestid = null } = {}) {
   // group: array of card keys for swipeable navigation, groupIndex: current card index in group
   const cards = (group && group.length ? group : [key]).filter(Boolean);
@@ -283,37 +321,19 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
       }
     };
     
-    // Touch events
-    cardTrack.addEventListener('touchstart', (e) => {
-      const touch = e.touches[0];
-      onStart(touch.clientX, touch.clientY);
-    }, { passive: true });
-    
-    cardTrack.addEventListener('touchmove', (e) => {
-      if (isDragging) {
-        const touch = e.touches[0];
-        onMove(touch.clientX, touch.clientY);
-      }
-    }, { passive: true });
-    
-    cardTrack.addEventListener('touchend', onEnd, { passive: true });
-    cardTrack.addEventListener('touchcancel', onEnd, { passive: true });
-    
-    // Mouse events for desktop
-    cardTrack.addEventListener('mousedown', (e) => {
-      onStart(e.clientX, e.clientY);
-      e.preventDefault();
+    attachSwipe(cardTrack, {
+      onBegin: onStart,
+      onDrag: (deltaX, deltaY) => {
+        currentX = startX + deltaX;
+        currentY = startY + deltaY;
+        onMove(currentX, currentY);
+      },
+      onSwipe: (deltaX) => {
+        currentX = startX + deltaX;
+        onEnd();
+      },
+      onCancel: onEnd,
     });
-    
-    cardTrack.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        onMove(e.clientX, e.clientY);
-        e.preventDefault();
-      }
-    });
-    
-    cardTrack.addEventListener('mouseup', onEnd);
-    cardTrack.addEventListener('mouseleave', onEnd);
     
     // Keyboard navigation
     const keyHandler = (e) => {
@@ -1124,11 +1144,7 @@ function familiarActionChooser(g, {
   }
   function navigate(idx) { if (idx < 0 || idx >= cards.length) return; currentIndex = idx; render(idx); }
   if (cards.length > 1) {
-    let sx = 0;
-    track.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
-    track.addEventListener('touchend', (e) => { const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) navigate(currentIndex + (dx < 0 ? 1 : -1)); }, { passive: true });
-    track.addEventListener('pointerdown', (e) => { sx = e.clientX; });
-    track.addEventListener('pointerup', (e) => { const dx = e.clientX - sx; if (Math.abs(dx) > 50) navigate(currentIndex + (dx < 0 ? 1 : -1)); });
+    attachSwipe(track, { onSwipe: (dx) => navigate(currentIndex + (dx < 0 ? 1 : -1)) });
   }
   render(currentIndex);
   return ov;
