@@ -3,18 +3,34 @@ import { boot, view } from './helpers.js';
 
 test.use({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 });
 
-async function seed(page) {
+async function seed(page, next = 'Keith') {
   await boot(page);
-  return page.evaluate(async () => {
+  return page.evaluate(async (nextSeat) => {
     const s = await (await fetch('engine/game/g8_state.json')).json();
     const p = s.players.find((q) => q.name === 'Keith');
     p.mana = 50; p.gold = 0; p.wizards = []; p.familiars = []; p.spells = [];
-    s.next = 'Keith'; s.meta.web_pending = null;
+    s.next = nextSeat; s.meta.web_pending = null;
     const r = await window.lwDebug._g.call('load', { text: JSON.stringify(s) });
     if (!r.ok) throw new Error(r.error);
     window.lwDebug._g.setView(r.result);
     return r.result;
-  });
+  }, next);
+}
+
+async function swipeFromImage(page, image, dx) {
+  const box = await image.boundingBox();
+  await page.evaluate(({ x, y, dx: delta }) => {
+    const target = document.elementFromPoint(x, y);
+    const touch = (clientX) => ({ identifier: 41, clientX, clientY: y, screenX: clientX, screenY: y, pageX: clientX, pageY: y, target });
+    const send = (type, touches, changedTouches) => {
+      const e = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperties(e, { touches: { value: touches }, changedTouches: { value: changedTouches } });
+      target.dispatchEvent(e);
+    };
+    const start = touch(x); send('touchstart', [start], [start]);
+    const move = touch(x + delta * .55); send('touchmove', [move], [move]);
+    const end = touch(x + delta); send('touchend', [], [end]);
+  }, { x: box.x + box.width / 2, y: box.y + box.height / 2, dx });
 }
 
 test('Summon chooser closes without state change and swipes market familiars', async ({ page }) => {
@@ -37,25 +53,34 @@ test('Summon chooser closes without state change and swipes market familiars', a
   const track = page.getByTestId('familiar-action-card-track');
   const firstSrc = await track.locator('img').getAttribute('src');
   const firstDetail = await page.getByTestId('summon-gather').textContent();
-  await track.dispatchEvent('touchstart', { touches: [{ identifier: 7, clientX: 320, clientY: 300 }], changedTouches: [{ identifier: 7, clientX: 320, clientY: 300 }] });
-  await track.dispatchEvent('touchmove', { touches: [{ identifier: 7, clientX: 240, clientY: 300 }] });
-  await track.dispatchEvent('touchend', { changedTouches: [{ identifier: 7, clientX: 180, clientY: 300 }] });
+  await swipeFromImage(page, track.locator('img'), -140);
   await expect.poll(() => track.locator('img').getAttribute('src')).not.toBe(firstSrc);
   await expect.poll(() => page.getByTestId('summon-gather').textContent()).not.toBe(firstDetail);
   await chooser.screenshot({ path: 'docs/screenshots/summon-chooser-close-swipe-after-dpr3.png' });
 
   expect(await track.locator('img').getAttribute('src')).toBe(`art/cards/${group[1]}.webp`);
   const secondDetail = await page.getByTestId('summon-gather').textContent();
-  await track.dispatchEvent('touchstart', { touches: [{ identifier: 8, clientX: 180, clientY: 300 }], changedTouches: [{ identifier: 8, clientX: 180, clientY: 300 }] });
-  await track.dispatchEvent('touchmove', { touches: [{ identifier: 8, clientX: 260, clientY: 300 }] });
-  await track.dispatchEvent('touchend', { changedTouches: [{ identifier: 8, clientX: 320, clientY: 300 }] });
+  await swipeFromImage(page, track.locator('img'), 140);
   await expect.poll(() => track.locator('img').getAttribute('src')).toBe(firstSrc);
   await expect.poll(() => page.getByTestId('summon-gather').textContent()).not.toBe(secondDetail);
-  await track.dispatchEvent('touchstart', { touches: [{ identifier: 9, clientX: 320, clientY: 300 }], changedTouches: [{ identifier: 9, clientX: 320, clientY: 300 }] });
-  await track.dispatchEvent('touchmove', { touches: [{ identifier: 9, clientX: 240, clientY: 300 }] });
-  await track.dispatchEvent('touchend', { changedTouches: [{ identifier: 9, clientX: 180, clientY: 300 }] });
+  await swipeFromImage(page, track.locator('img'), -140);
   await expect.poll(() => track.locator('img').getAttribute('src')).toBe(`art/cards/${group[1]}.webp`);
   await page.getByTestId('summon-score').tap();
   await expect.poll(async () => (await view(page)).players.find((p) => p.you).familiars).toContain(group[1]);
   await expect.poll(async () => (await view(page)).players.find((p) => p.you).mana).toBe(45);
+});
+
+test('market familiar expand uses the same iOS carousel', async ({ page }) => {
+  const v = await seed(page, 'Newt');
+  const group = v.board.fam_face.filter(Boolean);
+  await page.getByTestId(`slot-fam_${v.board.fam_face.indexOf(group[0])}`).tap();
+  const expanded = page.getByTestId('expanded');
+  await expect(expanded).toBeVisible();
+  const first = expanded.locator('[data-testid=expanded-img]').first();
+  const firstSrc = await first.getAttribute('src');
+  await swipeFromImage(page, first, -140);
+  await expect.poll(async () => {
+    const active = expanded.locator('[data-testid=card-indicator] .dot.active').getAttribute('data-index');
+    return expanded.locator(`[data-testid=expanded-card][data-index="${await active}"] [data-testid=expanded-img]`).getAttribute('src');
+  }).not.toBe(firstSrc);
 });
