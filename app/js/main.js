@@ -150,8 +150,8 @@ class Game {
 
   afterAction() { return this.settle(); }
 
-  setView(v) {
-    const prev = this.v; this.v = v;
+  setView(v, { fresh = false } = {}) {
+    const prev = fresh ? null : this.v; this.v = v;
     if (v.next !== this.me) UI.closeExpandOverlays();
     const you = v.players?.find((p) => p.you);
     if (you) this.me = you.name;
@@ -174,7 +174,7 @@ class Game {
 
   renderDock(prev) {
     const v = this.v; const p = this.me_(); const L = v.legal || {};
-    const prevHand = prev ? prev.players.find((q) => q.name === this.me).hand : p.hand;
+    const prevHand = prev?.players?.find((q) => q.name === this.me)?.hand ?? p.hand;
     const tok = counts(p.tok);
     const status = v.game_over ? `Game over · ${UI.ranking(v).text}` : (v.next === this.me && !v.auction ? (v.pending ? 'Finish your move' : 'Your move') : (this.aiRunning ? `${v.next} is playing…` : `${v.next}'s turn`));
     this.dock.innerHTML = '';
@@ -348,12 +348,12 @@ class Game {
     const text = await Store.pickFile(); if (!text) return;
     const r = await this.call('load', { text });
     if (!r.ok) { this.toast(`Not a valid save: ${r.error}`); return; }
-    Store.saveLocal(text); UI.closeAll(); this.setView(r.result); this.toast('Save loaded'); this.settle();
+    Store.saveLocal(text); UI.closeAll(); this.setView(r.result, { fresh: true }); this.toast('Save loaded'); this.settle();
   }
   async startedNewGame(view) {
     this.overShown = null; this.lastTurnRound = null;
     Store.clearLocal();
-    this.setView(view);
+    this.setView(view, { fresh: true });
     await this.autosave();
     this.toast('New game: round 1, your move');
     this.settle();
@@ -362,7 +362,7 @@ class Game {
   async restart() {
     const text = await (await fetch('engine/game/g8_state.json')).text();
     const r = await this.call('load', { text });
-    if (r.ok) { this.overShown = null; Store.saveLocal(text); UI.closeAll(); this.setView(r.result); this.toast('Game g8 restored'); this.settle(); }
+    if (r.ok) { this.overShown = null; Store.saveLocal(text); UI.closeAll(); this.setView(r.result, { fresh: true }); this.toast('Game g8 restored'); this.settle(); }
   }
 }
 
