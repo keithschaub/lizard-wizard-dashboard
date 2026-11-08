@@ -751,13 +751,18 @@ def bid_limit(view, me, card, kind='wizards'):
     lim = bid_breakdown(view, me, card, kind)['limit']
     lim = int(lim * LV()['bid_mult'])                        # EASY: ~half the limit (gives up early)
     return min(P(view, me)['mana'], lim)
+def _two_player(view):
+    meta = view.get('meta') or {}
+    order = meta.get('seat_order') or view.get('seat_order') or []
+    return len(order) == 2 or meta.get('num_players') == 2 or view.get('num_players') == 2
 def opening_bid(view, me, card, kind='wizards'):
-    """No minimum bid in the rulebook: open at 1 (0 = don't open if it's worthless to me)."""
-    if LV().get('skip_bid', 0) and bid_limit(view, me, card, kind) >= 1:
+    """Open at my limit in a two-player duel; otherwise use the normal 1-mana opener."""
+    limit = bid_limit(view, me, card, kind)
+    if LV().get('skip_bid', 0) and limit >= 1:
         rng = random.Random(f"{view['meta'].get('ai_seed', 0)}-open-{me}-{b(card)}")
         if rng.random() < LV()['skip_bid']:
             return 0
-    return 1 if bid_limit(view, me, card, kind) >= 1 else 0
+    return limit if _two_player(view) else (1 if limit >= 1 else 0)
 def raise_bid(view, me, card, high, kind='wizards'):
     """(d) Raise by the minimum (+1) while that stays within my limit; otherwise pass (None). Never pass below the limit."""
     lim = bid_limit(view, me, card, kind)
@@ -953,7 +958,15 @@ def _candidates(v, me):
         bd = _bid_breakdown(v, me, wz)
         if bd['limit'] < 1: continue
         rl = {n: _bid_breakdown(v, n, wz)['limit'] for n in others(v, me)}
-        comp = max(list(rl.values()) + [0]); price = min(bd['limit'], comp + 1)
+        comp = max(list(rl.values()) + [0])
+        two_player = _two_player(v)
+        my_limit = bid_limit(v, me, wz) if two_player else bd['limit']
+        if two_player and my_limit < 1: continue
+        price = my_limit if two_player else min(bd['limit'], comp + 1)
+        if two_player and comp >= my_limit:
+            # The opener must commit its full limit and cannot answer a raise.
+            # Do not select an auction the rival can meet or exceed.
+            continue
         val = bd['gain'] + bd['future'] + bd['gather'] + bd['deny'] * pw['deny'] - (tw0 - holdings(v, me, p['tok'], p['mana'] - price))
         if comp == bd['limit'] and comp >= 1:
             # Tie at the top: +1 raises reach my limit first about half the time (seat order). Price = my limit.
