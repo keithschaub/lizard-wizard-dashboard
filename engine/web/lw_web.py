@@ -270,6 +270,9 @@ def _log_text(e):
             return f"{w} cast Scry Dungeon and kept {', '.join(c.get('name') or str(c.get('gold')) + ' Gold' for c in e.get('kept', [])) or 'nothing'}"
         if a and a.startswith('scry_') and a != 'scry_dungeon':
             deck = a[5:]
+            if deck == 'spells' and e.get('cast'):
+                if e.get('empty'): return f"{w} cast Scribe, but the Spell deck was empty"
+                return f"{w} cast Scribe and freely cast {CD.display(e['took'])}"
             return f"{w} scried the {deck.title()} deck" + (f" and took {CD.display(e['took'])}" if e.get('took') else '')
         if a == 'convert' and e.get('parts'):
             bits = []
@@ -298,6 +301,8 @@ def _log_text(e):
         if a == 'demonic_possession_blocked': return f"{w}'s Demonic Possession was blocked by a Spell Shield"
         if a == 'obscure_blocked': return f"{w}'s Obscure was blocked by a Spell Shield"
         if a == 'web_note': return e.get('text', '')
+        if a == 'spell_no_effect':
+            return f"{w} cast {CD.display(e.get('spell'))}, but it had no legal options ({e.get('reason', 'no effect')})"
         if a == 'summon' and e.get('use') == 'gather':
             return f"{w} summoned {CD.display(e['familiar'])} for {e['cost']} mana: gathered {', '.join(T.nice(r) for r in e.get('got', []))}" + \
                    (f", cast {', '.join(CD.display(jpg(spell_key_of(x))) for x in e.get('cast', []))}" if e.get('cast') else '')
@@ -489,6 +494,8 @@ def public_log(s, viewer):
             item['structured'] = structured
         if a == 'research' and e.get('cast') or a == 'cast':
             item['cast'] = key(e['spell'])
+        if a == 'scry_spells' and e.get('cast') and e.get('took'):
+            item['cast'] = key(e['took'])
         if a == 'auction': item['bids'] = e.get('bids_tail'); item['price'] = e.get('price')
         if a == 'dungeon':
             item['drawn'] = [dungeon_key(c) for c in e.get('drawn', [])]

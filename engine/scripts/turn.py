@@ -545,6 +545,11 @@ def describe(e, viewer='Keith'):
         return f"{w}'s {sp['display'] if sp else a[:-8].replace('_', ' ').title()} on {e['target']} was blocked by a Spell Shield"
     if a == 'trigger': return f"{w} gained {e.get('gain')} mana from {disp('Spell_' + e['spell'] + '.jpg')}"
     if a == 'shield_used': return f"{w}'s {disp(e['spell'])} absorbed the attack and is out of play"
+    if a == 'scry_spells':
+        if e.get('empty'): return f"{w} cast Scribe, but the Spell deck was empty"
+        return f"{w} cast Scribe and freely cast {disp(e['took'])}"
+    if a == 'spell_no_effect':
+        return f"{w} cast {disp(e['spell'])}, but it had no legal options ({e.get('reason', 'no effect')})"
     if a == 'summon': return f"{w} summoned {disp(e['familiar'])} for {e['cost']} mana ({e['use']})" + (f": +{e['gold']} Gold" if 'gold' in e else '')
     if a == 'achievement': return f"{w} claimed achievement '{e['tile']}' (+10 VP)"
     if a == 'scry_dungeon':

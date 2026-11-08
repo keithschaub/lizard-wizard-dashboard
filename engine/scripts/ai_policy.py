@@ -143,7 +143,11 @@ def public_view(state, me, tokens_public=TOKENS_PUBLIC):
         p['_estimated'] = True
     for e in v['meta'].get('log', []):
         if e.get('act') == 'scry_dungeon' and e.get('who') != me: e.pop('seen', None)
-        if str(e.get('act', '')).startswith('scry_') and e.get('act') != 'scry_dungeon' and e.get('who') != me: e.pop('took', None)
+        if str(e.get('act', '')).startswith('scry_') and e.get('act') != 'scry_dungeon' and e.get('who') != me:
+            # A Scribe choice is private only until it is cast. Once the free cast is
+            # logged, the resulting spell is public and must remain visible in the
+            # history/banner for the other seats.
+            if not (e.get('act') == 'scry_spells' and e.get('cast')): e.pop('took', None)
     pv = PublicView(v); pv.viewer = me; pv.sealed = True
     return pv
 
