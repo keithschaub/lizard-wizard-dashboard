@@ -20,7 +20,7 @@ names = a.players.split(','); hum = [h for h in a.humans.split(',') if h]
 assert all(h in names for h in hum), 'every human must be a seat'
 lv = kv(a.levels); pf = kv(a.profiles); ais = [n for n in names if n not in hum]
 assert set(lv) <= set(ais) and set(pf) <= set(ais), 'levels/profiles are for AI seats only'
-assert all(l in ('easy', 'normal', 'hard') for l in lv.values())
+assert all(l in ('easy', 'normal', 'hard', 'master') for l in lv.values())
 ai_seed = a.ai_seed if a.ai_seed is not None else secrets.randbelow(10**6)
 r = subprocess.run([sys.executable, os.path.join(HERE, 'deal4.py'), 'hands', '--seed', str(seed), '--ai-seed', str(ai_seed), '--players', a.players,
                     '--humans', ','.join(hum) or 'nobody', '--coach', a.coach or 'game/coaching_log_g4.md'],

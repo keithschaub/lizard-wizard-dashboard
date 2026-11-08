@@ -15,7 +15,7 @@ export function defaultSetup() {
   const ais = (saved?.ais?.length === player_count - 1 ? saved.ais : DEFAULT_AIS.slice(0, player_count - 1))
     .map((a, i) => ({
       name: (a?.name || DEFAULT_AIS[i].name).trim() || DEFAULT_AIS[i].name,
-      level: ['easy', 'normal', 'hard'].includes(a?.level) ? a.level : 'normal',
+      level: ['easy', 'normal', 'hard', 'master'].includes(a?.level) ? a.level : 'normal',
     }));
   return { human_name: human, player_count, ais };
 }
