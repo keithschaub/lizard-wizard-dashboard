@@ -59,8 +59,8 @@
   </div>
   <!-- Optional deploy-time config (no process.env in the browser). E2E sets LW_RELAY_URL via Playwright initScript. -->
   <script>
-    window.LW_RELAY_URL = window.LW_RELAY_URL || '';
-    window.LW_COMMIT_SHA = window.LW_COMMIT_SHA || 'dev';
+    window.LW_RELAY_URL = window.LW_RELAY_URL ?? 'https://lw-bug-relay.keithschaub.workers.dev';
+    window.LW_COMMIT_SHA = window.LW_COMMIT_SHA ?? 'dev';
   </script>
   <script type="module" src="app/js/main.js"></script>
 </body>

@@ -19,19 +19,19 @@ async function open(page, text, relayUrl = '') {
   await page.addStyleTag({ content: `:root { --safe-t: ${INSET.top}px !important; --safe-b: ${INSET.bottom}px !important; --chrome-b: ${INSET.chrome}px !important; }` });
 }
 
-const RELAY_TEST = 'https://lw-bug-relay.test/report';
+const RELAY_TEST = 'https://lw-bug-relay.test';
 
 // Mock relay for testing
 async function setupMockRelay(page) {
-  await page.route('**/report', async route => {
+  await page.route('https://lw-bug-relay.test', async route => {
     // Simulate successful submission
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        success: true,
-        issueNumber: 123,
-        message: 'Bug report submitted successfully',
+        ok: true,
+        issue_url: 'https://github.com/keithschaub/lizard-wizard-dashboard/issues/123',
+        number: 123,
       }),
     });
   });
@@ -39,7 +39,7 @@ async function setupMockRelay(page) {
 
 // Mock offline relay (network error)
 async function setupOfflineRelay(page) {
-  await page.route('**/report', async route => {
+  await page.route('https://lw-bug-relay.test', async route => {
     await route.abort('failed');
   });
 }
@@ -105,7 +105,7 @@ test('Bug report submits successfully with mock relay', async ({ page }) => {
   
   // Should show success toast
   await expect(page.getByTestId('bug-toast')).toBeVisible({ timeout: 5000 });
-  await expect(page.getByTestId('bug-toast')).toContainText('sent');
+  await expect(page.getByTestId('bug-toast')).toContainText('Report sent — issue #123');
   
   await shot(page, 'bug-report-03-success-toast');
   
@@ -116,7 +116,7 @@ test('Bug report submits successfully with mock relay', async ({ page }) => {
 test('Bug report captures game state in background', async ({ page }) => {
   let capturedPostData = null;
   
-  await page.route('**/report', async route => {
+  await page.route('https://lw-bug-relay.test', async route => {
     // Capture the form data
     const request = route.request();
     capturedPostData = request.postData();
@@ -124,7 +124,7 @@ test('Bug report captures game state in background', async ({ page }) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ success: true, issueNumber: 123 }),
+      body: JSON.stringify({ ok: true, issue_url: 'https://github.com/keithschaub/lizard-wizard-dashboard/issues/123', number: 123 }),
     });
   });
   
@@ -142,7 +142,11 @@ test('Bug report captures game state in background', async ({ page }) => {
   
   // Multipart submission: Playwright exposes raw post body, not JSON
   expect(capturedPostData).toBeTruthy();
+  expect(capturedPostData).toContain('Content-Disposition: form-data; name="description"');
+  expect(capturedPostData).toContain('Content-Disposition: form-data; name="metadata"');
   expect(capturedPostData).toContain('Content-Disposition: form-data; name="gameState"');
+  expect(capturedPostData).toContain('"humanName"');
+  expect(capturedPostData).toContain('"round"');
 });
 
 test('Bug report queues offline and shows retry message', async ({ page }) => {

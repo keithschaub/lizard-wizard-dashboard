@@ -4,12 +4,8 @@
  * Receives bug reports from the Lizard Wizard web app and files GitHub issues.
  * Reports include description, game state JSON, screenshots, and metadata.
  * 
- * Rate limiting: 10 reports per IP per hour
- * Size limit: 25MB per report
- * 
- * Required secrets (set via wrangler secret put):
- * - GITHUB_TOKEN: Personal access token with repo scope for keithschaub/lizard-wizard-dashboard
- * - RELAY_SECRET: Shared secret to prevent spam (optional but recommended)
+ * POST multipart/form-data to the deployed worker URL with description, metadata,
+ * gameState, and image_0..N files. GITHUB_TOKEN is a Worker secret.
  */
 
 const GITHUB_OWNER = 'keithschaub';
@@ -17,14 +13,20 @@ const GITHUB_REPO = 'lizard-wizard-dashboard';
 const GITHUB_BRANCH = 'bug-reports';
 const RATE_LIMIT = 10; // reports per hour per IP
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB
+const ORIGINS = new Set(['https://keithschaub.github.io', 'http://localhost:8000', 'http://127.0.0.1:8000']);
 
 export default {
   async fetch(request, env) {
+    const origin = request.headers.get('Origin') || '';
+    if (origin && !ORIGINS.has(origin)) {
+      return new Response(JSON.stringify({ error: 'origin not allowed' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    }
     // CORS headers
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Origin': ORIGINS.has(origin) ? origin : 'https://keithschaub.github.io',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
       'Access-Control-Allow-Headers': 'Content-Type',
+      'Vary': 'Origin',
     };
 
     if (request.method === 'OPTIONS') {
@@ -33,10 +35,6 @@ export default {
 
     if (request.method !== 'POST') {
       return new Response('Method not allowed', { status: 405, headers: corsHeaders });
-    }
-
-    if (!request.url.endsWith('/report')) {
-      return new Response('Not found', { status: 404, headers: corsHeaders });
     }
 
     try {
@@ -102,9 +100,9 @@ export default {
       }
 
       return new Response(JSON.stringify({
-        success: true,
-        issueNumber,
-        message: 'Bug report submitted successfully',
+        ok: true,
+        issue_url: `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${issueNumber}`,
+        number: issueNumber,
       }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -130,12 +128,12 @@ async function createGitHubIssue(env, report) {
   const { description, metadata, gameState, images, ip } = report;
 
   // Format issue body
-  const timestamp = new Date(metadata.timestamp).toLocaleString();
+  const timestamp = new Date(metadata.timestamp || Date.now()).toLocaleString();
   const issueBody = `## Bug Report
 
 **Reported:** ${timestamp}
-**Round:** ${metadata.game.round} | **Phase:** ${metadata.game.phase} | **Next:** ${metadata.game.next}
-**Commit:** \`${metadata.commitSHA}\`
+**Build:** \`${metadata.build || 'unknown'}\` · **SHA:** \`${metadata.sha || metadata.commitSHA || 'unknown'}\`
+**Round:** ${metadata.round ?? 'unknown'} | **Current player:** ${metadata.currentPlayer || 'unknown'} | **Human:** ${metadata.humanName || 'unknown'}
 
 ### Description
 
@@ -144,7 +142,7 @@ ${description}
 ### Metadata
 
 - **User Agent:** ${metadata.userAgent}
-- **Viewport:** ${metadata.viewport.width}×${metadata.viewport.height} @ ${metadata.viewport.devicePixelRatio}x
+- **Viewport:** ${typeof metadata.viewport === 'string' ? metadata.viewport : `${metadata.viewport?.width || '?'}×${metadata.viewport?.height || '?'}`}
 - **URL:** ${metadata.url}
 - **IP:** ${ip}
 
@@ -182,7 +180,7 @@ ${images.length} screenshot(s) attached
       body: JSON.stringify({
         title: `🐛 ${description.slice(0, 80)}${description.length > 80 ? '...' : ''}`,
         body: issueBody,
-        labels: ['bug-report'],
+        labels: ['bug', 'in-game-report'],
       }),
     }
   );
@@ -211,7 +209,7 @@ ${images.length} screenshot(s) attached
  * Upload game state and screenshots to bug-reports branch
  */
 async function uploadToBugReportsBranch(env, issueNumber, gameState, images) {
-  const reportDir = `report-${issueNumber}`;
+  const reportDir = `reports/${issueNumber}`;
 
   // Get the SHA of the bug-reports branch
   const branchResponse = await fetch(
