@@ -260,9 +260,13 @@ export function expandCard(g, key, {
     const acts = typeof actions === 'function' ? actions(k, idx) : actions;
     replaceChildren(actionsContainer);
     if (acts?.length) {
-      const row = h('div', { class: 'actions' });
-      acts.forEach((a) => appendNodes(row, actBtn(a)));
-      replaceChildren(actionsContainer, row);
+      if (actionLayout === 'tiles') {
+        replaceChildren(actionsContainer, ...acts.map(actBtn));
+      } else {
+        const row = h('div', { class: 'actions' });
+        acts.forEach((a) => appendNodes(row, actBtn(a)));
+        replaceChildren(actionsContainer, row);
+      }
     }
     
     // Update indicator

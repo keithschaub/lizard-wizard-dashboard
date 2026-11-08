@@ -51,6 +51,20 @@ test('Summon chooser closes without state change and swipes market familiars', a
 
   await page.getByTestId(`slot-fam_${v.board.fam_face.indexOf(first)}`).tap();
   const track = page.getByTestId('card-track');
+  const tileGrid = page.getByTestId('expanded-actions');
+  const tileLayout = await tileGrid.evaluate((el) => {
+    const buttons = [...el.querySelectorAll('button')].map((b) => b.getBoundingClientRect());
+    const styles = getComputedStyle(el);
+    return {
+      columns: styles.gridTemplateColumns.split(' ').filter(Boolean).length,
+      rows: buttons.map((b) => Math.round(b.top)),
+      inViewport: buttons.length === 4 && buttons.every((b) => b.top >= 0 && b.bottom <= innerHeight),
+    };
+  });
+  expect(tileLayout.columns).toBe(2);
+  expect(tileLayout.inViewport).toBe(true);
+  expect(tileLayout.rows[0]).toBe(tileLayout.rows[1]);
+  expect(tileLayout.rows[2]).toBe(tileLayout.rows[3]);
   const firstImage = track.locator('[data-testid="expanded-card"][data-index="0"] img');
   const firstSrc = await firstImage.getAttribute('src');
   const firstDetail = await page.getByTestId('summon-gather').textContent();
