@@ -1,0 +1,21 @@
+# Lizard Wizard regression checklist
+
+Run the relevant Playwright project on both Chromium and `webkit-iphone` where noted; use a real touch gesture starting on the card image.
+
+| Area | Manual check | Automated coverage |
+| --- | --- | --- |
+| Familiar chooser swipe | Summon, Rise, and Scry familiar views use the shared expand carousel; swipe both directions, verify dots, arrows, and action details update. | `tests/e2e/summon-chooser-swipe.spec.js` |
+| Spell-card swipe | Open Research from the board spell row and swipe between face-up spells; the research action follows the shown card. | `tests/e2e/board-spell-swipe.spec.js` |
+| New-game stale board | Start a game with a different human name and confirm Round 1 and the new reagent dock replace the old game without a render exception. | `tests/e2e/new-game-render.spec.js` |
+| Restart | Use “Load the paused game g8” and confirm the board, overlays, and shared card carousel still work. | `tests/e2e/familiar-swipe-regression.spec.js` |
+| Report Bug upload | Open and close Report Bug, then swipe a card; submit a stubbed multipart report and verify state, metadata, compression, timeout feedback, and success toast. | `tests/e2e/bug-report.spec.js` |
+| Report Bug toast/overlay | On iPhone-sized layout, successful submission closes the dialog and leaves the success toast visible above the overlay. | `tests/e2e/bug-report.spec.js` |
+| Two-player auction opener | In a two-seat duel the AI starter opens at its limit, the human can outbid, and the AI gets at most one extra action after losing. | Python auction tests in `engine/scripts/test_turn_process.py` |
+| Sell banner layout | Sell banners show reagent, count, value, and total without clipping or overlapping controls. | `tests/e2e/banner-log-format.spec.js` |
+| Gather banner layout | Gather banners show the gathered reagent details and tracks clearly. | `tests/e2e/banner-log-format.spec.js` |
+| Setup button labels | New-game setup action titles and subtitles remain readable and consistent across name, table-size, AI, and reagent steps. | `tests/e2e/game-setup.spec.js` |
+| Scribe history | An AI or human Scribe cast logs the selected free spell, resolves its follow-up, and reports an empty deck/no legal option explicitly. | `engine/web/test_lw_web.py` |
+| Grand Sorcerer | The setup picker offers the top AI difficulty with “Plays to win from turn one”; existing levels remain unchanged. | `tests/e2e/game-setup.spec.js`, `engine/scripts/test_ai_policy.py` |
+| Safari cache busting | A Pages deploy stamps HTML, CSS, module imports, and runtime engine URLs with the build/SHA token; a new tab does not reuse the old module graph. | `tools/test_version_stamp.py` |
+
+For every carousel check, also verify X close, scrim close, vertical sheet scrolling, and that tapping an action tile performs the real state change.

@@ -116,6 +116,11 @@ export function attachSwipe(el, { onBegin = null, onDrag = null, onSwipe, onCanc
   let startX = 0; let startY = 0; let currentX = 0; let currentY = 0;
   let active = false; let moved = false; let horizontal = false; let touchId = null;
   let pointerId = null; let touchActive = false;
+  // iOS WebKit can emit PointerEvents and TouchEvents for the same finger. On
+  // touch-capable devices use the non-passive TouchEvent path so horizontal
+  // intent can call preventDefault before the sheet starts scrolling. Keep
+  // PointerEvents for mouse/pen input on desktop.
+  const touchPrimary = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const start = (x, y) => {
     if (onBegin?.(x, y) === false) return false;
     startX = x; startY = y; currentX = x; currentY = y;
@@ -138,13 +143,15 @@ export function attachSwipe(el, { onBegin = null, onDrag = null, onSwipe, onCanc
     touchId = null; pointerId = null;
   };
   const point = (list) => [...list].find((t) => touchId === null || t.identifier === touchId);
-  el.addEventListener('pointerdown', (e) => {
-    if (!e.isPrimary || touchActive || !start(e.clientX, e.clientY)) return;
-    pointerId = e.pointerId; el.setPointerCapture?.(e.pointerId);
-  });
-  el.addEventListener('pointermove', (e) => { if (e.pointerId === pointerId) move(e.clientX, e.clientY, e); });
-  el.addEventListener('pointerup', (e) => { if (e.pointerId === pointerId) end(); });
-  el.addEventListener('pointercancel', (e) => { if (e.pointerId === pointerId) end(true); });
+  if (!touchPrimary) {
+    el.addEventListener('pointerdown', (e) => {
+      if (!e.isPrimary || touchActive || !start(e.clientX, e.clientY)) return;
+      pointerId = e.pointerId; el.setPointerCapture?.(e.pointerId);
+    });
+    el.addEventListener('pointermove', (e) => { if (e.pointerId === pointerId) move(e.clientX, e.clientY, e); });
+    el.addEventListener('pointerup', (e) => { if (e.pointerId === pointerId) end(); });
+    el.addEventListener('pointercancel', (e) => { if (e.pointerId === pointerId) end(true); });
+  }
   el.addEventListener('touchstart', (e) => {
     if (pointerId !== null || active) return;
     const t = e.changedTouches[0]; if (!t || !start(t.clientX, t.clientY)) return;
@@ -157,9 +164,9 @@ export function attachSwipe(el, { onBegin = null, onDrag = null, onSwipe, onCanc
     const t = point(e.changedTouches); if (t) { currentX = t.clientX; currentY = t.clientY; end(); touchActive = false; }
   }, { passive: false });
   el.addEventListener('touchcancel', () => { end(true); touchActive = false; }, { passive: false });
-  el.addEventListener('mousedown', (e) => { if (!('PointerEvent' in window)) { start(e.clientX, e.clientY); e.preventDefault(); } });
-  el.addEventListener('mousemove', (e) => { if (!('PointerEvent' in window) && active) { move(e.clientX, e.clientY, e); } });
-  el.addEventListener('mouseup', () => { if (!('PointerEvent' in window)) end(); });
+  el.addEventListener('mousedown', (e) => { if (!touchPrimary && !('PointerEvent' in window)) { start(e.clientX, e.clientY); e.preventDefault(); } });
+  el.addEventListener('mousemove', (e) => { if (!touchPrimary && !('PointerEvent' in window) && active) { move(e.clientX, e.clientY, e); } });
+  el.addEventListener('mouseup', () => { if (!touchPrimary && !('PointerEvent' in window)) end(); });
 }
 
 export function expandCard(g, key, {
