@@ -1,6 +1,14 @@
-# Bug Report Relay (Cloudflare Worker)
+# Bug Report Relay
 
-This Cloudflare Worker receives bug reports from the Lizard Wizard web app and automatically files GitHub issues with attached game state and screenshots.
+Source of record for the deployed Worker at
+`https://lw-bug-relay.keithschaub.workers.dev`.
+
+The app POSTs `multipart/form-data` with `description`, JSON `metadata`,
+`gameState`, and optional `image_0..N` files. The Worker creates a labelled
+GitHub issue and stores the state/screenshots on `bug-reports`. Configure only
+the `GITHUB_TOKEN` Worker secret; never commit it.
+
+The remaining notes document the original one-time deployment setup.
 
 ## Features
 

@@ -1,9 +1,10 @@
 // Bug reporting: capture game state, screenshots, and submit to relay
 import { h } from './dom.js';
+import { BUILD, SHA } from './version.js';
 
 // Configuration — set on `window` at deploy time (see index.html / server); no `process` in the browser
 export const RELAY_URL = window.LW_RELAY_URL || '';
-export const COMMIT_SHA = window.LW_COMMIT_SHA || 'dev';
+export const COMMIT_SHA = window.LW_COMMIT_SHA || SHA || 'dev';
 
 const HTML2CANVAS_SRC = 'app/vendor/html2canvas.min.js';
 let html2canvasLoadPromise = null;
@@ -141,21 +142,19 @@ async function captureScreenshots(game) {
  */
 function gatherMetadata(game) {
   const v = game.v || {};
+  const human = v.players?.find((p) => p.you);
   return {
+    build: BUILD,
+    sha: SHA,
     commitSHA: COMMIT_SHA,
     timestamp: new Date().toISOString(),
     userAgent: navigator.userAgent,
-    viewport: {
-      width: window.innerWidth,
-      height: window.innerHeight,
-      devicePixelRatio: window.devicePixelRatio || 1,
-    },
-    game: {
-      round: v.round,
-      phase: v.phase,
-      next: v.next,
-      gameOver: v.game_over,
-    },
+    viewport: `${window.innerWidth}x${window.innerHeight} @${window.devicePixelRatio || 1}x`,
+    round: v.round,
+    currentPlayer: v.next,
+    humanName: human?.name || game.me || '',
+    phase: v.phase || '',
+    gameOver: !!v.game_over,
     url: window.location.href,
   };
 }
@@ -219,7 +218,7 @@ async function submitReport(reportPackage) {
     const response = await fetch(RELAY_URL, {
       method: 'POST',
       body: formData,
-      signal: AbortSignal.timeout(10000), // 10 second timeout
+      signal: AbortSignal.timeout(45000), // screenshots may upload through GitHub
       // Don't set Content-Type, let browser set it with boundary for FormData
     });
     
@@ -441,8 +440,9 @@ export function openBugReportDialog(game) {
           return;
         }
         try {
-          await submitReport(reportPackage);
-          showToast('✓ Report sent! Thank you.');
+          const result = await submitReport(reportPackage);
+          const issue = result?.number == null ? '' : ` — issue #${result.number}`;
+          showToast(`Report sent${issue}`);
           overlay.remove();
         } catch (err) {
           console.error('[bug-report] Submit failed:', err);
