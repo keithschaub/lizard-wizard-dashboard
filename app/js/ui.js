@@ -3,7 +3,7 @@ import { versionLabel } from './version.js';
 import * as Store from './store.js';
 import { achievementTile, achievementBadge, achievementTitle, achievementFromText, SPELL_SCROLL_ICON } from './achievements.js';
 
-const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage' };
+const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage', master: 'Grand Sorcerer' };
 
 function diffBadge(level) {
   if (!level) return null;

@@ -999,7 +999,7 @@ def main():
     ap.add_argument('--out'); ap.add_argument('--coach')
     ap.add_argument('--no-render', action='store_true'); ap.add_argument('--no-ai', action='store_true'); ap.add_argument('--note', default='')
     ap.add_argument('--brief', action='store_true'); ap.add_argument('--coach-rating', dest='coach_rating'); ap.add_argument('--preview', action='store_true')
-    ap.add_argument('--level', help="AI difficulty: easy|normal|hard for every AI seat, or per seat 'Newt=hard,Gecko=easy' (saved in meta.ai_levels)")
+    ap.add_argument('--level', help="AI difficulty: easy|normal|hard|master for every AI seat, or per seat 'Newt=hard,Gecko=easy' (saved in meta.ai_levels)")
     ap.add_argument('who'); ap.add_argument('action', nargs=argparse.REMAINDER)
     o, extra = ap.parse_known_args()
     for flag in ('--level', '--game', '--state'):
@@ -1024,7 +1024,7 @@ def main():
     n0 = len(s['meta'].get('log', [])); notes = []; status = 'human'; desc = None; backup = None; coach_line = None
     verb = (argv[0].lower() if argv else 'show')
     first_owner = '(setup)' if s['meta'].get('phase') == 'picks' else s['next']
-    LEVELS = ('easy', 'normal', 'hard')
+    LEVELS = ('easy', 'normal', 'hard', 'master')
     ais_ = [n for n in s['meta']['seat_order'] if n not in humans(s)]
     if verb not in ('options', 'status', 'show', 'ai', 'level') and me not in humans(s):
         raise SystemExit(f"ERROR: {me} is not a human seat; humans are {humans(s)}")

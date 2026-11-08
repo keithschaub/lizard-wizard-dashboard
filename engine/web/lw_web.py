@@ -1210,7 +1210,7 @@ def _norm_config(config):
     for i, a in enumerate(ais[:count - 1]):
         name = str(a.get('name') or defaults[i]['name']).strip() or defaults[i]['name']
         lvl = str(a.get('level') or 'normal').lower()
-        if lvl not in ('easy', 'normal', 'hard'): lvl = 'normal'
+        if lvl not in ('easy', 'normal', 'hard', 'master'): lvl = 'normal'
         if name == human: raise Refused('AI names must differ from your name')
         out_ais.append(dict(name=name, level=lvl))
     names = {a['name'] for a in out_ais}

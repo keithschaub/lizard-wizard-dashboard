@@ -152,6 +152,10 @@ LEVELS = {
     'easy':   dict(tau=1.6, margin=5.0, shallow=True, bid_mult=0.5, attack_w=0.35, end=False, spend=False, lookahead=0, epsilon=0.35, skip_bid=0.65),
     'normal': dict(tau=0.5, margin=1.0, shallow=False, bid_mult=1.0, attack_w=1.0, end=True, spend=True, lookahead=0, epsilon=0.0, skip_bid=0.0),
     'hard':   dict(tau=0.12, margin=0.4, shallow=False, bid_mult=1.0, attack_w=1.0, end=True, spend=True, lookahead=3, epsilon=0.0, skip_bid=0.0),
+    # Grand Sorcerer: deterministic tempo play, with a bounded two-ply
+    # lookahead. The existing levels deliberately retain their old values.
+    'master':  dict(tau=0.05, margin=0.15, shallow=False, bid_mult=1.0, attack_w=1.2, end=True, spend=True,
+                    lookahead=6, lookahead_depth=2, epsilon=0.0, skip_bid=0.0, master=True),
     'hard0':  dict(tau=0.12, margin=0.4, shallow=False, bid_mult=1.0, attack_w=1.0, end=True, spend=True, lookahead=0),   # ablation (tests only)
 }
 _CTX = {'level': 'normal'}
@@ -204,6 +208,14 @@ def profile_weights(v, me):
     mine = [e for e in v['meta'].get('log', []) if e.get('who') == me or e.get('won') == me][-6:]
     if fav and len(mine) >= 6 and not any(_act_cat(e) in fav for e in mine): fade *= 0.75; why.append('plan stalled')
     w = {c: 1 + (x - 1) * fade for c, x in w.items()}
+    if LV().get('master'):
+        # The save showed the Archmages gathering too long and paying for too
+        # many marginal wizards. Favor converting, scoring familiars and
+        # efficient recruits/builds while keeping the leader-denial pressure.
+        for cat, boost in {'gather': 0.78, 'convert': 1.28, 'recruit': 1.12,
+                           'familiar': 1.18, 'build': 1.10, 'build_gold': 1.10,
+                           'research': 1.08, 'cast': 1.12}.items():
+            w[cat] *= boost
     if gap < -25: w['attack'] = max(w['attack'], 1.3); w['deny'] = max(w['deny'], 1.2)
     if LV()['shallow']: w['deny'] = 0.0; w['attack'] = w['attack'] * LV()['attack_w']   # EASY: no denial, rare attacks
     return w, name, why
@@ -1179,7 +1191,7 @@ def _lookahead(v, me, C, k, seed):
     """Re-rank my top-k candidates: apply each on a determinized copy, let every opponent answer once with the NORMAL
     policy (their public view of that copy), and compare my resulting margin. Adds the margin difference to the value."""
     import time as _t
-    t0 = _t.time(); top = C[:k]; rng = random.Random(seed + '-la'); res = []
+    t0 = _t.time(); top = C[:k]; depth = LV().get('lookahead_depth', 1); rng = random.Random(seed + '-la'); res = []
     # Replies from the two players who matter most: the next seat (acts right after me) and my strongest rival.
     _, rival, _ = threat_weights(v, me); order = v['meta']['seat_order']; i = order.index(me)
     nxt = (order[i + 1:] + order[:i])[0]; responders = [n for n in order[i + 1:] + order[:i] if n in (nxt, rival)]
@@ -1195,6 +1207,11 @@ def _lookahead(v, me, C, k, seed):
                 _sim_apply(s, me, c[3])
                 for n in responders:
                     a2, _ = choose_action(public_view(s, n), n); _sim_apply(s, n, a2)
+                if depth > 1:
+                    # One deterministic follow-up of my own after the likely
+                    # replies catches gather-then-convert and research timing.
+                    a3, _ = choose_action(public_view(s, me), me)
+                    _sim_apply(s, me, a3)
                 tot += _margin(s, me) + _next_best(s, me)
             except Exception:
                 tot += -50.0

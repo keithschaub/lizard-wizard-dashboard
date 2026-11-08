@@ -23,6 +23,7 @@ const LEVELS = [
   { id: 'easy', title: 'Apprentice', hint: 'Looser play, shy auctions' },
   { id: 'normal', title: 'Adept', hint: 'Standard opponent' },
   { id: 'hard', title: 'Archmage', hint: 'Ruthless endgame play' },
+  { id: 'master', title: 'Grand Sorcerer', hint: 'Plays to win from turn one' },
 ];
 
 const DEFAULT_AIS = ['Newt', 'LizWiz', 'Gecko'];
@@ -170,7 +171,7 @@ export function runSetupWizard(g) {
               player_count: draft.player_count,
               ais: draft.ais.map((a, i) => ({
                 name: (a.name || DEFAULT_AIS[i]).trim() || DEFAULT_AIS[i],
-                level: ['easy', 'normal', 'hard'].includes(a.level) ? a.level : 'normal',
+                level: ['easy', 'normal', 'hard', 'master'].includes(a.level) ? a.level : 'normal',
               })),
             };
             if (cfg.ais.some((a) => a.name === cfg.human_name)) {
