@@ -73,7 +73,9 @@ def test_ai_starter_gets_one_extra_action_after_human_wins():
     wizard = next(x for x in state['wiz_face'] if x)
     auction = T.start_auction(
         state, 'Newt', wizard, 1,
-        resume={'actor': 'Newt', 'attempt': 0, 'bonus': 0},
+        # A skipped opener has already incremented ai_turn's general attempt
+        # counter, but has not used the separate lost-auction retry.
+        resume={'actor': 'Newt', 'attempt': 1, 'bonus': 0},
     )
     T.human_answer(state, auction, 'Keith', '2')
     status, winner = T.auction_run(state, auction)
@@ -81,19 +83,23 @@ def test_ai_starter_gets_one_extra_action_after_human_wins():
 
     before = A.P(state, 'Newt')['mana']
     original_choose = T.AI.choose_action
+    original_opening = T.AI.opening_bid
     original_apply = T.SIM.apply_action
     reagent = A.P(state, 'Newt')['tok'][0]
+    choices = iter((
+        {'type': 'recruit', 'wizard': next(x for x in state['wiz_face'] if x)},
+        {'type': 'convert', 'reagent': reagent, 'n': 1},
+    ))
     try:
-        T.AI.choose_action = lambda view, me: (
-            {'type': 'convert', 'reagent': reagent, 'n': 1},
-            'test retry convert',
-        )
+        T.AI.choose_action = lambda view, me: (next(choices), 'test retry action')
+        T.AI.opening_bid = lambda *args: 0  # skipped opener; must not consume lost-auction retry
         result = T.after_auction(state, auction, winner, [])
     finally:
         T.AI.choose_action = original_choose
+        T.AI.opening_bid = original_opening
         T.SIM.apply_action = original_apply
     check(result == 'human' and state['next'] == 'Keith', 'resumed AI action ends with the human turn')
-    check(A.P(state, 'Newt')['mana'] > before, 'resumed AI action is visible as a real convert')
+    check(A.P(state, 'Newt')['mana'] > before, 'skipped opener does not consume the resumed convert action')
     check(any(e.get('act') == 'convert' and e.get('who') == 'Newt' for e in state['meta']['log']),
           'resumed AI action is logged')
 
@@ -112,7 +118,7 @@ def test_second_lost_auction_is_capped():
         T.AI.choose_action = lambda *_: (_ for _ in ()).throw(AssertionError('third auction attempted'))
         result = T.after_auction(
             state,
-            {'starter': 'Newt', 'resume': {'actor': 'Newt', 'attempt': 1, 'bonus': 0}},
+            {'starter': 'Newt', 'resume': {'actor': 'Newt', 'attempt': 1, 'bonus': 0, 'retried': True}},
             'Keith',
             [],
         )

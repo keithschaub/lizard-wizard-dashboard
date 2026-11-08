@@ -297,7 +297,7 @@ def _apply_fallback(s, me, act, events):
     elif t == 'pass': events.append(f'{me} passed (no legal action)')
     else: events.append(f'NOTE: turn.py does not know AI action type {t!r}; {me} did nothing')
     return None
-def ai_turn(s, me, attempt=0, events=None, bonus=0):
+def ai_turn(s, me, attempt=0, events=None, bonus=0, auction_retry=False):
     """Mirrors ai_sim.take_turn (6 attempts, Haste bonus, illegal -> end turn) but pauses auctions for Keith.
     Returns 'paused' (auction needs Keith) or 'done'."""
     if attempt == 0: claim_all(s, me)
@@ -307,7 +307,8 @@ def ai_turn(s, me, attempt=0, events=None, bonus=0):
         if t == 'recruit':
             ob = AI.opening_bid(view(s, me), me, act['wizard']) if AI else 1
             if not ob: attempt += 1; continue            # starter would open at 0: no auction (same as ai_sim)
-            a = start_auction(s, me, act['wizard'], ob, resume={'actor': me, 'attempt': attempt, 'bonus': bonus})
+            a = start_auction(s, me, act['wizard'], ob,
+                              resume={'actor': me, 'attempt': attempt, 'bonus': bonus, 'retried': auction_retry})
             st, who = auction_run(s, a)
             if st == 'need':
                 # Auction paused for human: increment attempt NOW before returning, so when we
@@ -353,12 +354,12 @@ def after_auction(s, a, winner, events):
     # the turn instead of recursively opening unlimited auctions.
     resume = a.get('resume') or {}
     attempt = int(resume.get('attempt', 0))
-    if attempt >= 1:
+    if resume.get('retried', False):
         events.append(f'{st} lost the auction but has already retried once this turn; turn ends.')
         claim_all(s, st); A.check_end(s)
         advance(s, events); return run_ais(s, events)
     events.append(f'{st} lost the auction, so {st} takes another action.')
-    r = ai_turn(s, st, attempt + 1, events, int(resume.get('bonus', 0)))
+    r = ai_turn(s, st, attempt + 1, events, int(resume.get('bonus', 0)), auction_retry=True)
     if r == 'paused': return 'auction'
     claim_all(s, st); A.check_end(s)
     advance(s, events); return run_ais(s, events)
