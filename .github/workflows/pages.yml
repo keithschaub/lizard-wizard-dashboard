@@ -42,6 +42,10 @@ jobs:
           } > app/js/version.js
       - name: Assemble the static site
         run: tools/build_site.sh _site
+      - name: Stamp Pages asset URLs
+        run: |
+          SHA="${GITHUB_SHA::7}"
+          python3 tools/stamp_pages_assets.py _site "${{ github.run_number }}-${SHA}"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
