@@ -41,7 +41,7 @@ test('Summon chooser closes without state change and swipes market familiars', a
   const chooser = page.getByTestId('summon-use');
   await expect(chooser).toBeVisible();
   await expect(page.getByTestId('summon-cancel')).toBeVisible();
-  await chooser.screenshot({ path: 'docs/screenshots/summon-chooser-close-swipe-dpr3.png' });
+  await chooser.screenshot({ path: 'docs/screenshots/summon-expand-card-iphone.png' });
   const before = await view(page);
   await page.getByTestId('summon-cancel').tap();
   await expect(chooser).toHaveCount(0);
@@ -50,21 +50,37 @@ test('Summon chooser closes without state change and swipes market familiars', a
   expect(afterCancel.players.find((p) => p.you).familiars).toEqual(before.players.find((p) => p.you).familiars);
 
   await page.getByTestId(`slot-fam_${v.board.fam_face.indexOf(first)}`).tap();
-  const track = page.getByTestId('familiar-action-card-track');
-  const firstSrc = await track.locator('img').getAttribute('src');
+  const track = page.getByTestId('card-track');
+  const tileGrid = page.getByTestId('expanded-actions');
+  const tileLayout = await tileGrid.evaluate((el) => {
+    const buttons = [...el.querySelectorAll('button')].map((b) => b.getBoundingClientRect());
+    const styles = getComputedStyle(el);
+    return {
+      columns: styles.gridTemplateColumns.split(' ').filter(Boolean).length,
+      rows: buttons.map((b) => Math.round(b.top)),
+      inViewport: buttons.length === 4 && buttons.every((b) => b.top >= 0 && b.bottom <= innerHeight),
+    };
+  });
+  expect(tileLayout.columns).toBe(2);
+  expect(tileLayout.inViewport).toBe(true);
+  expect(tileLayout.rows[0]).toBe(tileLayout.rows[1]);
+  expect(tileLayout.rows[2]).toBe(tileLayout.rows[3]);
+  const firstImage = track.locator('[data-testid="expanded-card"][data-index="0"] img');
+  const firstSrc = await firstImage.getAttribute('src');
   const firstDetail = await page.getByTestId('summon-gather').textContent();
-  await swipeFromImage(page, track.locator('img'), -140);
-  await expect.poll(() => track.locator('img').getAttribute('src')).not.toBe(firstSrc);
+  await swipeFromImage(page, firstImage, -140);
+  const secondImage = track.locator('[data-testid="expanded-card"][data-index="1"] img');
+  await expect.poll(() => secondImage.getAttribute('src')).not.toBe(firstSrc);
   await expect.poll(() => page.getByTestId('summon-gather').textContent()).not.toBe(firstDetail);
-  await chooser.screenshot({ path: 'docs/screenshots/summon-chooser-close-swipe-after-dpr3.png' });
+  await chooser.screenshot({ path: 'docs/screenshots/summon-expand-card-iphone-after-swipe.png' });
 
-  expect(await track.locator('img').getAttribute('src')).toBe(`art/cards/${group[1]}.webp`);
+  expect(await secondImage.getAttribute('src')).toBe(`art/cards/${group[1]}.webp`);
   const secondDetail = await page.getByTestId('summon-gather').textContent();
-  await swipeFromImage(page, track.locator('img'), 140);
-  await expect.poll(() => track.locator('img').getAttribute('src')).toBe(firstSrc);
+  await swipeFromImage(page, secondImage, 140);
+  await expect.poll(() => firstImage.getAttribute('src')).toBe(firstSrc);
   await expect.poll(() => page.getByTestId('summon-gather').textContent()).not.toBe(secondDetail);
-  await swipeFromImage(page, track.locator('img'), -140);
-  await expect.poll(() => track.locator('img').getAttribute('src')).toBe(`art/cards/${group[1]}.webp`);
+  await swipeFromImage(page, firstImage, -140);
+  await expect.poll(() => secondImage.getAttribute('src')).toBe(`art/cards/${group[1]}.webp`);
   await page.getByTestId('summon-score').tap();
   await expect.poll(async () => (await view(page)).players.find((p) => p.you).familiars).toContain(group[1]);
   await expect.poll(async () => (await view(page)).players.find((p) => p.you).mana).toBe(45);
