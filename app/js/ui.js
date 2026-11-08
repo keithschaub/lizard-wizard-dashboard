@@ -110,42 +110,56 @@ export function cardInfo(g, key) {
 
 const TIME_SHIFT_DECK_LABEL = { wizards: 'Wizards', towers: 'Towers', familiars: 'Familiars', spells: 'Spells' };
 
-// Shared horizontal card-carousel gesture. Track the originating touch so a
-// second finger cannot steal the gesture.
+// Shared horizontal carousel gesture. Pointer Events are primary on iOS; the
+// touch fallback also supports element-dispatched WebKit TouchEvents.
 export function attachSwipe(el, { onBegin = null, onDrag = null, onSwipe, onCancel = null, threshold = 50 } = {}) {
   let startX = 0; let startY = 0; let currentX = 0; let currentY = 0;
-  let active = false; let moved = false; let touchId = null;
-  const start = (x, y) => { startX = x; startY = y; currentX = x; currentY = y; active = true; moved = false; onBegin?.(x, y); };
-  const move = (x, y) => {
+  let active = false; let moved = false; let horizontal = false; let touchId = null;
+  let pointerId = null; let touchActive = false;
+  const start = (x, y) => {
+    if (onBegin?.(x, y) === false) return false;
+    startX = x; startY = y; currentX = x; currentY = y;
+    active = true; moved = false; horizontal = false; return true;
+  };
+  const move = (x, y, e = null) => {
     if (!active) return;
     const dx = x - startX; const dy = y - startY;
-    if (!moved && Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) { active = false; onCancel?.(); return; }
+    if (!horizontal && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) horizontal = true;
+    if (horizontal && e?.cancelable) e.preventDefault();
+    if (!moved && !horizontal && Math.abs(dy) > 10) { active = false; onCancel?.(); return; }
     moved = true; currentX = x; currentY = y; onDrag?.(dx, dy);
   };
-  const end = () => {
+  const end = (cancelled = false) => {
     if (!active) return;
     active = false;
     const dx = currentX - startX; const dy = Math.abs(currentY - startY);
-    if (moved && Math.abs(dx) > threshold && Math.abs(dx) > dy) onSwipe?.(dx);
+    if ((cancelled && horizontal && Math.abs(dx) > threshold) || (!cancelled && moved && Math.abs(dx) > threshold && Math.abs(dx) > dy)) onSwipe?.(dx);
     else onCancel?.();
-    touchId = null;
+    touchId = null; pointerId = null;
   };
   const point = (list) => [...list].find((t) => touchId === null || t.identifier === touchId);
+  el.addEventListener('pointerdown', (e) => {
+    if (!e.isPrimary || touchActive || !start(e.clientX, e.clientY)) return;
+    pointerId = e.pointerId; el.setPointerCapture?.(e.pointerId);
+  });
+  el.addEventListener('pointermove', (e) => { if (e.pointerId === pointerId) move(e.clientX, e.clientY, e); });
+  el.addEventListener('pointerup', (e) => { if (e.pointerId === pointerId) end(); });
+  el.addEventListener('pointercancel', (e) => { if (e.pointerId === pointerId) end(true); });
   el.addEventListener('touchstart', (e) => {
-    const t = e.changedTouches[0]; if (!t) return;
-    touchId = t.identifier; start(t.clientX, t.clientY);
-  }, { passive: true });
+    if (pointerId !== null || active) return;
+    const t = e.changedTouches[0]; if (!t || !start(t.clientX, t.clientY)) return;
+    touchId = t.identifier; touchActive = true;
+  }, { passive: false });
   el.addEventListener('touchmove', (e) => {
-    const t = point(e.touches); if (t) move(t.clientX, t.clientY);
-  }, { passive: true });
+    const t = point(e.touches); if (t) move(t.clientX, t.clientY, e);
+  }, { passive: false });
   el.addEventListener('touchend', (e) => {
-    const t = point(e.changedTouches); if (t) { currentX = t.clientX; currentY = t.clientY; end(); }
-  }, { passive: true });
-  el.addEventListener('touchcancel', end, { passive: true });
-  el.addEventListener('mousedown', (e) => { start(e.clientX, e.clientY); e.preventDefault(); });
-  el.addEventListener('mousemove', (e) => { if (active) { move(e.clientX, e.clientY); e.preventDefault(); } });
-  el.addEventListener('mouseup', end);
-  el.addEventListener('mouseleave', end);
+    const t = point(e.changedTouches); if (t) { currentX = t.clientX; currentY = t.clientY; end(); touchActive = false; }
+  }, { passive: false });
+  el.addEventListener('touchcancel', () => { end(true); touchActive = false; }, { passive: false });
+  el.addEventListener('mousedown', (e) => { if (!('PointerEvent' in window)) { start(e.clientX, e.clientY); e.preventDefault(); } });
+  el.addEventListener('mousemove', (e) => { if (!('PointerEvent' in window) && active) { move(e.clientX, e.clientY, e); } });
+  el.addEventListener('mouseup', () => { if (!('PointerEvent' in window)) end(); });
 }
 
 export function expandCard(g, key, { actions = [], extra = null, group = null, groupIndex = 0, title = null, titleTestid = null } = {}) {
@@ -198,7 +212,7 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
       class: 'big-frame',
       'data-testid': 'expanded-card',
       'data-index': idx,
-    }, h('img', { class: 'big', src: art(k), alt: k, 'data-testid': 'expanded-img' }));
+    }, h('img', { class: 'big', src: art(k), alt: k, draggable: 'false', 'data-testid': 'expanded-img' }));
   }
   
   function updateContent(idx, animate = true) {
@@ -263,76 +277,25 @@ export function expandCard(g, key, { actions = [], extra = null, group = null, g
   
   // Swipe gesture handling
   if (cards.length > 1) {
-    let startX = 0, startY = 0, currentX = 0, currentY = 0, isDragging = false, hasMoved = false;
-    const threshold = 50; // minimum swipe distance
-    const verticalThreshold = 30; // max vertical movement to still count as horizontal swipe
-    
-    const onStart = (x, y) => {
-      startX = x; startY = y; currentX = x; isDragging = true; hasMoved = false;
-    };
-    
-    const onMove = (x, y) => {
-      if (!isDragging) return;
-      const deltaX = x - startX;
-      const deltaY = y - startY;
-      
-      // Check if this is a vertical scroll (let it through)
-      if (!hasMoved && Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 10) {
-        isDragging = false;
-        return;
-      }
-      
-      hasMoved = true;
-      currentX = x;
-      currentY = y;
-      
-      // Apply transform to current card frame with rubber-band at edges
+    attachSwipe(cardTrack, {
+      onDrag: (deltaX) => {
       const frames = cardTrack.querySelectorAll('.big-frame');
       const activeFrame = Array.from(frames).find(f => parseInt(f.dataset.index) === currentIndex);
       if (activeFrame) {
         let translateX = deltaX;
-        // Rubber-band effect at edges
         if ((currentIndex === 0 && deltaX > 0) || (currentIndex === cards.length - 1 && deltaX < 0)) {
           translateX = deltaX * 0.3; // reduced movement at bounds
         }
         activeFrame.style.transition = 'none';
         activeFrame.style.transform = `translateX(${translateX}px)`;
       }
-    };
-    
-    const onEnd = () => {
-      if (!isDragging) return;
-      isDragging = false;
-      
-      const deltaX = currentX - startX;
-      const deltaY = Math.abs(currentY - startY);
-      
-      // Only swipe if horizontal movement dominates and exceeds threshold
-      if (hasMoved && Math.abs(deltaX) > threshold && Math.abs(deltaX) > deltaY) {
-        if (deltaX > 0 && currentIndex > 0) {
-          navigateTo(currentIndex - 1); // swipe right = previous
-        } else if (deltaX < 0 && currentIndex < cards.length - 1) {
-          navigateTo(currentIndex + 1); // swipe left = next
-        } else {
-          updateContent(currentIndex); // snap back
-        }
-      } else {
-        updateContent(currentIndex); // snap back
-      }
-    };
-    
-    attachSwipe(cardTrack, {
-      onBegin: onStart,
-      onDrag: (deltaX, deltaY) => {
-        currentX = startX + deltaX;
-        currentY = startY + deltaY;
-        onMove(currentX, currentY);
       },
       onSwipe: (deltaX) => {
-        currentX = startX + deltaX;
-        onEnd();
+        const next = deltaX > 0 ? currentIndex - 1 : currentIndex + 1;
+        if (next < 0 || next >= cards.length) updateContent(currentIndex);
+        else navigateTo(next);
       },
-      onCancel: onEnd,
+      onCancel: () => updateContent(currentIndex),
     });
     
     // Keyboard navigation
@@ -1112,17 +1075,22 @@ function familiarActionChooser(g, {
   const indicator = cards.length > 1 ? h('div', { class: 'card-indicator', 'data-testid': 'card-indicator' }, cards.map((_, i) => h('span', { class: i === currentIndex ? 'dot active' : 'dot', 'data-index': i }))) : null;
   const prev = cards.length > 1 ? h('button', { class: 'familiar-action-nav prev', 'aria-label': 'Previous card', 'data-testid': 'nav-prev', onclick: () => navigate(currentIndex - 1) }, '‹') : null;
   const next = cards.length > 1 ? h('button', { class: 'familiar-action-nav next', 'aria-label': 'Next card', 'data-testid': 'nav-next', onclick: () => navigate(currentIndex + 1) }, '›') : null;
+  const carouselRow = h('div', { class: 'familiar-action-carousel-row' }, track, prev, next);
   const panel = h('div', { class: 'familiar-action-panel' },
-    track, prev, next, indicator,
+    carouselRow, indicator,
     h('div', { class: 'phase-title' }, title),
     h('div', { class: 'ov-sub familiar-action-subtitle' }, subtitle),
     h('div', { class: 'familiar-action-pick' }, 'Pick one action'),
     actionGrid,
     cancel ? closeBtn(() => ov.close(), 'summon-cancel') : null);
   appendNodes(ov.el, panel);
+  let activeImg = null; let animating = false;
   function render(idx) {
     const key = cards[idx]; const l = (g.v.legal.summon || {})[key] || {};
-    replaceChildren(track, h('img', { class: 'familiar-action-card', src: art(key), alt: key }));
+    activeImg = h('img', { class: 'familiar-action-card', src: art(key), alt: key, draggable: 'false' });
+    replaceChildren(track, activeImg);
+    activeImg.style.transition = 'none';
+    activeImg.style.transform = 'translateX(0)';
     replaceChildren(actionGrid);
     uses.forEach((a) => {
       const isDisabled = testPrefix === 'summon' ? !new Set(l.uses || []).has(a.use) : !!disabled[a.use];
@@ -1142,9 +1110,32 @@ function familiarActionChooser(g, {
     if (prev) prev.style.opacity = idx > 0 ? '1' : '.4';
     if (next) next.style.opacity = idx < cards.length - 1 ? '1' : '.4';
   }
-  function navigate(idx) { if (idx < 0 || idx >= cards.length) return; currentIndex = idx; render(idx); }
+  function navigate(idx, direction = 0) {
+    if (idx < 0 || idx >= cards.length || animating) {
+      if (activeImg && !animating) {
+        activeImg.style.transition = 'transform .3s cubic-bezier(.4, 0, .2, 1)';
+        activeImg.style.transform = 'translateX(0)';
+      }
+      return;
+    }
+    if (!direction || !activeImg) { currentIndex = idx; render(idx); return; }
+    animating = true; currentIndex = idx;
+    activeImg.style.transition = 'transform .3s cubic-bezier(.4, 0, .2, 1)';
+    activeImg.style.transform = `translateX(${direction * 100}%)`;
+    setTimeout(() => { animating = false; render(idx); }, 300);
+  }
   if (cards.length > 1) {
-    attachSwipe(track, { onSwipe: (dx) => navigate(currentIndex + (dx < 0 ? 1 : -1)) });
+    attachSwipe(carouselRow, {
+      onBegin: () => !animating,
+      onDrag: (dx) => {
+        if (!activeImg) return;
+        let x = dx;
+        if ((currentIndex === 0 && dx > 0) || (currentIndex === cards.length - 1 && dx < 0)) x *= .3;
+        activeImg.style.transition = 'none'; activeImg.style.transform = `translateX(${x}px)`;
+      },
+      onSwipe: (dx) => navigate(currentIndex + (dx < 0 ? 1 : -1), dx < 0 ? -1 : 1),
+      onCancel: () => { if (activeImg) { activeImg.style.transition = 'transform .3s cubic-bezier(.4, 0, .2, 1)'; activeImg.style.transform = 'translateX(0)'; } },
+    });
   }
   render(currentIndex);
   return ov;
