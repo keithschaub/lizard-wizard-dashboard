@@ -395,6 +395,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .bug-files-label { font-size: 13px; color: var(--muted); padding: 8px 12px; background: rgba(0, 0, 0, 0.3); 
   border-radius: 6px; }
 .bug-info { font-size: 13px; color: var(--muted); margin-top: 12px; line-height: 1.4; }
+.bug-submit-status { min-height: 18px; padding: 5px 0 0; color: var(--gold-hi); font-size: 12px; text-align: center; }
 
 /* Bug toast notification */
 .bug-toast { position: fixed; bottom: calc(var(--safe-b) + 20px); left: 50%; transform: translateX(-50%) translateY(100px);
