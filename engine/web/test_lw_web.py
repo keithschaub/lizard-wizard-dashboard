@@ -454,16 +454,17 @@ for _ in range(3):
     r = call('act_bid', n=W.view()['auction']['high'] + 1)
     check(r['ok'] and A.P(W.st(), 'Keith')['mana'] == k0 and r['view']['auction']['high'] > r['view']['auction']['tail'][-2][1] - 1, f"raise to {r['view']['auction']['tail'][-3][1] if len(r['view']['auction']['tail']) > 2 else '?'}: AIs answer, Keith's mana unchanged ({k0})")
 r = call('act_pass')
-# BUG FIX: After Keith passes, LizWiz's turn ends (they lost the auction they started).
-# The old behavior was to start another auction, which was the round-27 four-auctions bug.
-# Now: AI's turn ends after a single auction when a human participated.
-check(r['ok'] and not r['view'].get('auction'), 'after Keith passes, the auction resolves and LizWiz\'s turn ends (no second auction)')
+# Rulebook: when the AI starter loses, it receives one more action. This
+# action can itself be a recruit and therefore pause for another human bid.
+check(r['ok'] and r['view'].get('auction') and r['view']['auction']['starter'] == 'LizWiz',
+      'after Keith passes, the AI starter resumes and a second recruit can pause for Keith')
 entries = r.get('entries', [])
 auctions = [e for e in entries if e.get('act') == 'auction']
 check(len(auctions) == 1 and auctions[0].get('who') == 'Newt' and auctions[0].get('price') == 13, f"the call reports the resolved auction in entries (Newt won at 13)")
 check(A.P(W.st(), 'Keith')['mana'] == k0, 'losing an auction costs Keith nothing')
-# LizWiz's turn ended, next player is Newt or Keith
-check(r['view']['next'] != 'LizWiz', 'LizWiz\'s turn ended (no multiple auctions per turn)')
+r = call('act_pass')
+check(r['ok'] and not r['view'].get('auction') and r['view']['next'] != 'LizWiz',
+      'after the retry auction resolves, LizWiz\'s turn ends')
 def m14(s):
     A.P(s, 'Keith')['mana'] = 89; A.P(s, 'Newt')['mana'] = 120; A.P(s, 'LizWiz')['mana'] = 120
 setup(m14)
