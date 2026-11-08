@@ -147,6 +147,12 @@ test('Bug report captures game state in background', async ({ page }) => {
   expect(capturedPostData).toContain('Content-Disposition: form-data; name="gameState"');
   expect(capturedPostData).toContain('"humanName"');
   expect(capturedPostData).toContain('"round"');
+  const statePart = capturedPostData.match(/name="gameState"\r\n\r\n([\s\S]*?)\r\n--/);
+  expect(statePart).toBeTruthy();
+  const postedState = JSON.parse(statePart[1]);
+  expect(postedState.players).toBeTruthy();
+  expect(postedState.meta).toBeTruthy();
+  expect(capturedPostData).not.toContain('commitSHA');
 });
 
 test('Bug report queues offline and shows retry message', async ({ page }) => {

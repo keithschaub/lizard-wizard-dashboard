@@ -4,7 +4,6 @@ import { BUILD, SHA } from './version.js';
 
 // Configuration — set on `window` at deploy time (see index.html / server); no `process` in the browser
 export const RELAY_URL = window.LW_RELAY_URL || '';
-export const COMMIT_SHA = window.LW_COMMIT_SHA || SHA || 'dev';
 
 const HTML2CANVAS_SRC = 'app/vendor/html2canvas.min.js';
 let html2canvasLoadPromise = null;
@@ -44,11 +43,57 @@ const hasSpeechRecognition = 'webkitSpeechRecognition' in window || 'SpeechRecog
  */
 async function captureGameState(game) {
   try {
-    const state = game.exportState ? game.exportState() : game.st();
-    return JSON.stringify(state, null, 2);
+    const state = game.exportState ? await game.exportState() : await game.st();
+    return typeof state === 'string' ? state : JSON.stringify(state, null, 2);
   } catch (err) {
     console.error('[bug-report] Failed to capture state:', err);
     return JSON.stringify({ error: 'Failed to capture state', message: err.message });
+  }
+}
+
+async function jpegFromCanvas(canvas, maxEdge, quality) {
+  let source = canvas;
+  const edge = Math.max(canvas.width, canvas.height);
+  if (edge > maxEdge) {
+    const scale = maxEdge / edge;
+    source = document.createElement('canvas');
+    source.width = Math.max(1, Math.round(canvas.width * scale));
+    source.height = Math.max(1, Math.round(canvas.height * scale));
+    source.getContext('2d').drawImage(canvas, 0, 0, source.width, source.height);
+  }
+  return new Promise((resolve, reject) => {
+    source.toBlob((blob) => blob ? resolve(blob) : reject(new Error('JPEG encoding failed')), 'image/jpeg', quality);
+  });
+}
+
+async function compressUserImage(file) {
+  try {
+    const url = URL.createObjectURL(file);
+    let image;
+    try {
+      image = await createImageBitmap(file);
+    } catch {
+      image = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+    const width = image.width || image.naturalWidth;
+    const height = image.height || image.naturalHeight;
+    const scale = Math.min(1, 1600 / Math.max(width, height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await jpegFromCanvas(canvas, 1600, .8);
+    image.close?.();
+    URL.revokeObjectURL(url);
+    return { name: `${file.name.replace(/\.[^.]+$/, '')}.jpg`, blob };
+  } catch (err) {
+    console.warn('[bug-report] Could not compress user image:', err);
+    return { name: file.name, blob: file };
   }
 }
 
@@ -68,24 +113,11 @@ async function captureElementScreenshot(element, label) {
     if (window.html2canvas) {
       const canvas = await window.html2canvas(element, {
         backgroundColor: '#070a18',
-        scale: window.devicePixelRatio || 1,
+        scale: Math.min(window.devicePixelRatio || 1, 1280 / Math.max(element.scrollWidth || 1, element.scrollHeight || 1)),
         logging: false,
         useCORS: true,
       });
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
-      
-      if (blob.size > MAX_IMAGE_SIZE) {
-        // Re-compress at lower quality if too large
-        const canvas2 = await window.html2canvas(element, {
-          backgroundColor: '#070a18',
-          scale: 1,
-          logging: false,
-          useCORS: true,
-        });
-        return await new Promise(resolve => canvas2.toBlob(resolve, 'image/jpeg', 0.6));
-      }
-      
-      return blob;
+      return await jpegFromCanvas(canvas, 1280, .7);
     }
     
     // Fallback: no screenshot capability
@@ -146,7 +178,6 @@ function gatherMetadata(game) {
   return {
     build: BUILD,
     sha: SHA,
-    commitSHA: COMMIT_SHA,
     timestamp: new Date().toISOString(),
     userAgent: navigator.userAgent,
     viewport: `${window.innerWidth}x${window.innerHeight} @${window.devicePixelRatio || 1}x`,
@@ -177,7 +208,8 @@ async function createReportPackage(game, description, userImages) {
       console.warn(`[bug-report] User image ${file.name} too large (${(file.size / 1024 / 1024).toFixed(1)}MB), skipping`);
       continue;
     }
-    allImages.push({ name: `user-${i}-${file.name}`, blob: file });
+    const compressed = await compressUserImage(file);
+    allImages.push({ name: `user-${i}-${compressed.name}`, blob: compressed.blob });
   }
   
   // Check total size
@@ -416,6 +448,8 @@ export function openBugReportDialog(game) {
   }
   
   const hasRelay = !!(RELAY_URL && RELAY_URL !== 'undefined');
+  const submitStatus = h('div', { class: 'bug-submit-status', 'data-testid': 'bug-submit-status', 'aria-live': 'polite' }, '');
+  const setSubmitStatus = (text) => { submitStatus.textContent = text; };
 
   async function packageFromForm() {
     const description = textarea.value.trim();
@@ -431,20 +465,31 @@ export function openBugReportDialog(game) {
     'data-testid': 'bug-submit',
     onclick: async () => {
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting…';
+      setSubmitStatus('Capturing…');
+      submitBtn.textContent = 'Capturing…';
+      let stillUploadingTimer = null;
       try {
         const reportPackage = await packageFromForm();
         if (!reportPackage) {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Submit Report';
+          setSubmitStatus('');
           return;
         }
+        setSubmitStatus('Uploading…');
+        submitBtn.textContent = 'Uploading…';
+        stillUploadingTimer = setTimeout(() => {
+          setSubmitStatus('Still uploading…');
+          submitBtn.textContent = 'Still uploading…';
+        }, 8000);
         try {
           const result = await submitReport(reportPackage);
+          clearTimeout(stillUploadingTimer);
+          overlay.remove();
           const issue = result?.number == null ? '' : ` — issue #${result.number}`;
           showToast(`Report sent${issue}`);
-          overlay.remove();
         } catch (err) {
+          clearTimeout(stillUploadingTimer);
           console.error('[bug-report] Submit failed:', err);
           const relayNotConfigured = err.message.includes('not configured');
           try {
@@ -454,12 +499,14 @@ export function openBugReportDialog(game) {
             showToast('Could not save report locally. Use Save report.');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit Report';
+            setSubmitStatus('Could not save report locally.');
             return;
           }
           if (relayNotConfigured) {
             showToast('Relay unavailable. Report queued locally. Use Save report to download.', 5000);
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit Report';
+            setSubmitStatus('Relay unavailable; report queued.');
           } else {
             showToast('Report queued (offline). Will retry when online.');
             overlay.remove();
@@ -470,6 +517,9 @@ export function openBugReportDialog(game) {
         showToast('Failed to create report. Try Save report.');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Submit Report';
+        setSubmitStatus('Report failed. Please try again.');
+      } finally {
+        if (stillUploadingTimer) clearTimeout(stillUploadingTimer);
       }
     },
   }, 'Submit Report') : null;
@@ -551,7 +601,8 @@ export function openBugReportDialog(game) {
       fileInput,
       selectedFiles,
       h('div', { class: 'bug-info' }, 
-        'Game state and screenshots will be captured automatically')),
+        'Game state and screenshots will be captured automatically'),
+      submitStatus),
     h('div', { class: 'actions' }, ...[submitBtn, saveBtn, downloadSecondary, cancelBtn].filter(Boolean))));
   
   overlay.addEventListener('click', (e) => {
