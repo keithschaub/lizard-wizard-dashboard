@@ -74,11 +74,16 @@ def scry_deck(s, name, deck, choose, cast_free=False):
     of the top 5 Spell Cards for free'. Only the CASTER sees the 5 (they are passed to choose(list) -> card)."""
     L = {'wizards': 'wiz_list', 'towers': 'tow_list', 'familiars': 'fam_list', 'spells': 'spell_list'}[deck]
     top = s[L][:5]
-    if not top: return None
+    if not top:
+        A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'scry_' + deck, 'empty': True,
+                  'cast': bool(cast_free)})
+        return None
     pick = choose(list(top)); s[L].remove(pick); p = A.P(s, name)
     if deck == 'spells': p.setdefault('spells', []).append({'img': pick, 'cast': bool(cast_free)})
     else: p.setdefault(deck, []).append(pick)
-    _recount(s); A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'scry_' + deck, 'took': os.path.basename(pick)})
+    _recount(s)
+    A.log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'scry_' + deck,
+              'took': os.path.basename(pick), 'cast': bool(cast_free), 'free': bool(cast_free)})
     return pick
 def transmute(s, name, reagents):
     """Transmute (Alchemy 1x): 'Transmute any number of Reagents to Gold at a 2:1 ratio'."""

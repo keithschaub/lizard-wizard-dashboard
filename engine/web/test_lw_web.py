@@ -201,6 +201,44 @@ nmid = len(W.st()['spell_list'])
 r = call('resolve_effect', choice={'deck': 'spells'})
 ent = [e for e in W.st()['meta']['log'] if e.get('act') == 'time_shift'][-1]
 check(r['ok'] and ent['n'] == 5 and ent['remaining'] == nmid - 5, 'Scribe then Time Shift removes 5 from spell deck')
+
+def m6ai_scribe(s):
+    s['next'] = 'Newt'
+    s['meta']['humans'] = ['Keith']
+    s['meta']['web_pending'] = None
+    p = A.P(s, 'Newt')
+    p['mana'] = 20
+    p['tok'] = ['Eye_of_Newt'] * 5
+    p['spells'] = []
+    s['spell_face'][0] = 'assets/Spell_Scribe.jpg'
+    s['spell_list'] = ['assets/Spell_Scry_Dungeon.jpg'] + [x for x in s['spell_list'] if x != 'assets/Spell_Scry_Dungeon.jpg']
+    s['spell_deck'] = len(s['spell_list'])
+
+setup(m6ai_scribe)
+old_choose = W.T.AI.choose_action
+W.T.AI.choose_action = lambda view, me: (
+    {'type': 'research', 'spell': 'Spell_Scribe', 'cast': ['Eye_of_Newt']},
+    'test: force Scribe'
+)
+try:
+    r = call('ai_step')
+finally:
+    W.T.AI.choose_action = old_choose
+scribe = [e for e in W.st()['meta']['log'] if e.get('act') == 'scry_spells'][-1]
+picked = scribe['took'].replace('.jpg', '')
+newt_spells = A.P(W.st(), 'Newt')['spells']
+check(r['ok'] and scribe.get('cast') and scribe.get('free') and picked == 'Spell_Scry_Dungeon',
+      'AI Scribe chooses a top-five spell and logs the free cast')
+check(any(CD.key(x['img']).replace('.jpg', '') == picked and x.get('cast') for x in newt_spells) and
+      any(e.get('act') == 'scry_dungeon' and e.get('who') == 'Newt' for e in W.st()['meta']['log']),
+      'AI Scribe marks the chosen spell cast and resolves its effect')
+check(any(e.get('act') == 'scry_spells' and e.get('cast') == picked for e in r['result']['entries']),
+      'AI Scribe banner exposes the freely cast spell')
+W.st()['spell_list'] = []
+SE.scry_deck(W.st(), 'Newt', 'spells', lambda top: top[0], cast_free=True)
+check(any(e.get('act') == 'scry_spells' and e.get('empty') for e in W.st()['meta']['log']),
+      'Scribe with an empty Spell deck logs the unavailable free cast')
+
 def m6c(s):
     k = A.P(s, 'Keith'); k['tok'] = ['Foxglove', 'Foxglove', 'Mandrake', 'Mandrake', 'Mandrake']; add_spell(s, 'Keith', 'Spell_Charm')
     A.P(s, 'Newt')['spells'] = []

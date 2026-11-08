@@ -58,7 +58,17 @@ def resolve_effect(s, me, key, prm=None):
                 pk = pk[:-4]
             img = pick if str(pick).startswith('assets/') else 'assets/' + (pk if pk.endswith('.jpg') else pk + '.jpg')
             _, prm2 = AI.effect_value(AI.public_view(s, me), me, img)
-            resolve_effect(s, me, pk, prm2)
+            needs_choice = (
+                pk.startswith(('Spell_Flame_Bolt', 'Spell_Disintegrate', 'Spell_Earthquake',
+                               'Spell_Charm', 'Spell_Mana_Drain', 'Spell_Swapo',
+                               'Spell_Demonic_Possession', 'Spell_Obscure')) or
+                pk in ('Spell_Creation', 'Spell_Time_Shift', 'Spell_Transmute')
+            )
+            if prm2 is None and needs_choice:
+                A.log(s, {'r': s['meta']['round'], 'who': me, 'act': 'spell_no_effect',
+                          'spell': pk + '.jpg', 'reason': 'no legal options'})
+            else:
+                resolve_effect(s, me, pk, prm2)
     elif k == 'Spell_Scry_Dungeon.jpg': A.scry_dungeon(s, me)
     elif k == 'Spell_Time_Shift.jpg' and prm.get('deck'): SE.time_shift(s, me, prm['deck'])
     elif k == 'Spell_Energy_Pulse.jpg': SE.energy_pulse(s, me)
