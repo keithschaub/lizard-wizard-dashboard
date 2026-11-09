@@ -107,6 +107,22 @@ def test_public_log_removes_gold_word_and_exposes_swap_schools():
     assert result[1]['schools'] == ['Enchantment', 'Sorcery']
 
 
+def test_public_log_derives_schools_for_taken_scryed_created_and_destroyed_cards():
+    entries = [
+        {'act': 'new_research', 'who': 'Newt', 'took': 'Spell_Mana_Fountain.jpg'},
+        {'act': 'scry_spells', 'who': 'Newt', 'took': 'Spell_Mana_Fountain.jpg'},
+        {'act': 'creation', 'who': 'Newt', 'card': 'Tower_T1_Ivory_Spire.jpg'},
+        {'act': 'disintegrate', 'who': 'Newt', 'card': 'Wizard_Anguis_Magicus.jpg'},
+    ]
+    old_public_view = lw_web.AI.public_view
+    lw_web.AI.public_view = lambda state, viewer: {'meta': {'log': entries}}
+    try:
+        result = lw_web.public_log({}, 'Newt')
+    finally:
+        lw_web.AI.public_view = old_public_view
+    assert [entry.get('school') for entry in result] == ['Thaumaturgy', 'Thaumaturgy', 'Thaumaturgy', 'Sorcery']
+
+
 def test_chronicle_values_use_signed_numeric_facts():
     assert lw_web.chronicle_values({'act': 'auction', 'price': 8}) == [{'kind': 'mana', 'value': -8}]
     assert lw_web.chronicle_values({'act': 'convert', 'gain': 32}) == [{'kind': 'mana', 'value': 32}]

@@ -537,7 +537,7 @@ def public_log(s, viewer):
         if a == 'summon' and e.get('use'):
             item['use'] = e['use']
         item['cards'] = log_cards(e)
-        school_card = e.get('tower') or e.get('spell') or e.get('familiar')
+        school_card = e.get('tower') or e.get('spell') or e.get('familiar') or e.get('took') or e.get('card')
         if a == 'auction' and e.get('item'):
             school_card = 'Wizard_' + e['item'] + '.jpg'
         school = CD.school(school_card) if school_card else hardcoded_schools.get(str(a).lower())
