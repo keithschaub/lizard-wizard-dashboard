@@ -531,6 +531,8 @@ def public_log(s, viewer):
             item['text'] = f"{e.get('who')} {verb} {CD.display(e['familiar'])}"
         elif a in ('convert', 'convert1'):
             item['text'] = f"{e.get('who')} sold"
+        elif a == 'build' and e.get('paid') == 'gold':
+            item['text'] = log_text(e).replace(' paying Gold', ' paying')
         else: item['text'] = log_text(e)
         if a == 'summon' and e.get('use'):
             item['use'] = e['use']
@@ -545,6 +547,10 @@ def public_log(s, viewer):
             item['school'] = school
             if school_card and str(school_card).startswith('Tower_'):
                 item['tier'] = CD.tower_info(school_card)[0]
+        if a == 'swapo':
+            schools = [CD.school(card) for card in (e.get('gave'), e.get('got')) if card and CD.school(card)]
+            if schools:
+                item['schools'] = schools
         if a == 'gather':
             item['gather'] = gather_banner_data(e)
         values = chronicle_values(e)

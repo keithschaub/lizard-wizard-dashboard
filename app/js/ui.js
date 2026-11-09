@@ -527,20 +527,21 @@ function logValueChip({ kind, value }) {
 }
 
 function logInlineReagents(text, reagents, bonus = [], school = null, tier = null, values = [], options = {}) {
-  const schoolNode = school ? logSchoolChip(school, tier) : null;
+  const schoolList = options.schools || (school ? [school] : []);
+  const schoolNodes = schoolList.map((name) => logSchoolChip(name, name === school ? tier : null));
   const reagentNode = reagents?.length ? logReagentRow(reagents, bonus) : null;
   const valueNodes = (values || []).map(logValueChip);
   if (options.summonGather) {
     return h('div', { class: 'log-inline' },
-      h('span', { class: 'log-inline-text' }, text), schoolNode,
+      h('span', { class: 'log-inline-text' }, text), ...schoolNodes,
       valueNodes.length ? h('span', { class: 'log-inline-separator' }, ' paying ') : null,
       ...valueNodes,
       reagentNode ? h('span', { class: 'log-inline-separator' }, ' gathered ') : null, reagentNode);
   }
   return h('div', { class: 'log-inline' },
     options.schoolBeforePaying && text.endsWith(' paying')
-      ? [h('span', { class: 'log-inline-text' }, text.slice(0, -7)), schoolNode, ' paying ']
-      : [h('span', { class: 'log-inline-text' }, text), schoolNode],
+      ? [h('span', { class: 'log-inline-text' }, text.slice(0, -7)), ...schoolNodes, ' paying ']
+      : [h('span', { class: 'log-inline-text' }, text), ...schoolNodes],
     reagentNode,
     options.valueLead && valueNodes.length ? h('span', { class: 'log-inline-separator' }, options.valueLead) : null,
     ...valueNodes);
@@ -548,8 +549,11 @@ function logInlineReagents(text, reagents, bonus = [], school = null, tier = nul
 
 function chronicleText(e) {
   let text = e.text;
-  if (e.school) {
-    const schoolPart = e.tier ? new RegExp(`\\s+T${e.tier}\\s+\\(${e.school}\\)`) : new RegExp(`\\s+\\(${e.school}\\)`);
+  const schools = e.schools || (e.school ? [e.school] : []);
+  for (const school of schools) {
+    const schoolPart = e.tier && school === e.school
+      ? new RegExp(`\\s+T${e.tier}\\s+\\(${school}\\)`, 'g')
+      : new RegExp(`\\s+\\(${school}\\)`, 'g');
     text = text.replace(schoolPart, '');
   }
   if (e.values?.length) {
@@ -581,11 +585,12 @@ export async function openLog(g) {
       h('div', {}, h('div', { class: 'lc-name' }, g.cards[e.cast].display), h('div', { class: 'lc-text' }, g.cards[e.cast].effect))) : null;
     const gatherBlock = e.act === 'gather' && e.gather ? h('div', { class: 'log-gather-details' },
       logInlineReagents(`${e.who} gathered`, e.gather.reagents, e.gather.bonus, e.school, e.tier, e.values), logTracksRow(e.gather.tracks)) : null;
-    const inlineReagents = !gatherBlock && (e.reagents?.length || e.school)
+    const inlineReagents = !gatherBlock && (e.reagents?.length || e.school || e.schools?.length)
       ? logInlineReagents(chronicleText(e), e.reagents, [], e.school, e.tier, e.values, {
         schoolBeforePaying: e.act === 'build',
         summonGather: e.act === 'summon' && e.use === 'gather',
         valueLead: (e.act === 'convert' || e.act === 'convert1') ? ' for ' : null,
+        schools: e.schools,
       })
       : null;
     const inlineValues = !gatherBlock && !inlineReagents && e.values?.length
