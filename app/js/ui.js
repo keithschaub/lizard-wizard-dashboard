@@ -562,10 +562,10 @@ function chronicleText(e) {
   let text = e.text;
   const schools = e.schools || (e.school ? [e.school] : []);
   for (const school of schools) {
-    const schoolPart = e.tier && school === e.school
-      ? new RegExp(`\\s+T${e.tier}\\s+\\(${school}\\)`, 'g')
-      : new RegExp(`\\s+\\(${school}\\)`, 'g');
-    text = text.replace(schoolPart, '');
+    if (e.tier && school === e.school) {
+      text = text.replace(new RegExp(`\\s+T${e.tier}\\s+\\(${school}\\)`, 'g'), '');
+    }
+    text = text.replace(new RegExp(`\\s+\\(${school}\\)`, 'g'), '');
   }
   if (e.tier) text = text.replace(new RegExp(`\\s+T${e.tier}(?=\\s|$)`), '');
   if (e.values?.length) {
