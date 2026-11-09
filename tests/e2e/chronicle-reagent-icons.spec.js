@@ -41,7 +41,8 @@ test('Chronicle renders structured reagent icons for gather, build, and cast ent
   await expect(log.locator('.log-item').nth(0).locator('.log-inline-text')).toHaveText('Keith gathered');
   await expect(log.locator('.log-item').nth(0).locator('.log-inline .log-reagent-chip')).toHaveCount(1);
   await expect(log.locator('.log-item').nth(0).locator('.log-inline .log-reagent-count')).toHaveText('×3');
-  await expect(log.locator('.log-item').nth(1)).toContainText('Keith built Obelisk of Puzzles paying');
+  await expect(log.locator('.log-item').nth(1).locator('.log-inline-text')).toHaveText('Keith built Obelisk of Puzzles');
+  await expect(log.locator('.log-item').nth(1)).toContainText('paying');
   await expect(log.locator('.log-item').nth(1).locator('.log-school-chip')).toContainText('T2 Thaumaturgy');
   await expect(log.locator('.log-item').nth(1).locator('.log-reagent-chip')).toHaveCount(1);
   await expect(log.locator('.log-item').nth(2)).toContainText('Keith cast Mana Fountain');
@@ -66,4 +67,45 @@ test('Chronicle renders structured reagent icons for gather, build, and cast ent
   const gatherChipBox = await log.locator('.log-item').nth(0).locator('.log-inline .log-reagent-chip').first().boundingBox();
   expect(Math.abs(gatherTextBox.y - gatherChipBox.y)).toBeLessThan(12);
   await log.screenshot({ path: 'docs/screenshots/chronicle-reagent-icons-430x775.png' });
+});
+
+test('Chronicle action lines keep schools and values in the approved chip order', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(async () => {
+    const g = window.lwDebug._g;
+    g.call = async () => ({
+      result: [
+        {
+          r: 24, who: 'Gecko', act: 'summon', use: 'gather',
+          text: 'Gecko summoned Vulpes', school: 'Conjuring',
+          reagents: ['Horn', 'Horn', 'Horn', 'Horn', 'Horn'],
+          values: [{ kind: 'mana', value: -15 }],
+        },
+        {
+          r: 24, who: 'Newt', act: 'convert', text: 'Newt sold',
+          reagents: Array(9).fill('Mandrake'), values: [{ kind: 'mana', value: 63 }],
+        },
+        {
+          r: 24, who: 'LizWiz', act: 'build',
+          text: 'LizWiz built Obelisk of Puzzles paying',
+          reagents: ['Sulphur', 'Sulphur'], school: 'Thaumaturgy', tier: 2,
+        },
+      ],
+    });
+    await window.ui.openLog(g);
+  });
+  const items = page.getByTestId('log-item');
+  await expect(items).toHaveCount(3);
+  await expect(items.nth(0)).toContainText('Gecko summoned Vulpes');
+  await expect(items.nth(0)).toContainText('gathered');
+  await expect(items.nth(0).locator('.log-reagent-count')).toHaveText('×5');
+  await expect(items.nth(0).locator('.log-value-number')).toHaveText('−15');
+  await expect(items.nth(1)).toContainText('Newt sold');
+  await expect(items.nth(1)).toContainText('for');
+  await expect(items.nth(1).locator('.log-reagent-count')).toHaveText('×9');
+  await expect(items.nth(1).locator('.log-value-number')).toHaveText('63');
+  await expect(items.nth(2).locator('.log-school-chip')).toContainText('T2 Thaumaturgy');
+  await expect(items.nth(2).locator('.log-inline-text')).toHaveText('LizWiz built Obelisk of Puzzles');
+  await expect(items.nth(2)).toContainText('paying');
+  await page.getByTestId('log').screenshot({ path: 'docs/screenshots/chronicle-lines-430x775.png' });
 });

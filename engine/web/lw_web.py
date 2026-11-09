@@ -518,7 +518,14 @@ def public_log(s, viewer):
         elif a == 'setup_picks': item['text'] = 'Starting reagents: ' + '; '.join(f"{n} {', '.join(T.nice(r) for r in v)}" for n, v in e['picks'].items())
         elif a == 'auction' and e.get('item'):
             item['text'] = f"{e.get('won') or e.get('who')} won the auction for {CD.display('Wizard_' + e['item'] + '.jpg')}"
+        elif a == 'summon' and e.get('familiar'):
+            verb = 'scored' if e.get('use') == 'score' else 'summoned'
+            item['text'] = f"{e.get('who')} {verb} {CD.display(e['familiar'])}"
+        elif a in ('convert', 'convert1'):
+            item['text'] = f"{e.get('who')} sold"
         else: item['text'] = log_text(e)
+        if a == 'summon' and e.get('use'):
+            item['use'] = e['use']
         item['cards'] = log_cards(e)
         school_card = e.get('tower') or e.get('spell') or e.get('familiar')
         if a == 'auction' and e.get('item'):
@@ -539,6 +546,12 @@ def public_log(s, viewer):
             item['reagents'] = list(e.get('paid', []))
         elif a in ('cast', 'research') and e.get('cast_paid'):
             item['reagents'] = list(e.get('cast_paid', []))
+        elif a == 'summon' and e.get('use') == 'gather':
+            item['reagents'] = list(e.get('got', []))
+        elif a == 'convert':
+            item['reagents'] = [e['reagent']] * int(e.get('n') or 0) if e.get('reagent') else []
+        elif a == 'convert1':
+            item['reagents'] = list(e.get('reagents', []))
         if a in ('convert', 'convert1'):
             item['sell'] = sell_banner_data(e)
         structured = structured_banner_data(e)
