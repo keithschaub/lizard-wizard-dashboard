@@ -506,6 +506,12 @@ function logTracksRow(tracks) {
       ...countsByReagent.keys().map((r) => logReagentChip(r, { track: countsByReagent.get(r) }))));
 }
 
+function logInlineReagents(text, reagents, bonus = []) {
+  return h('div', { class: 'log-inline' },
+    h('span', { class: 'log-inline-text' }, text),
+    logReagentRow(reagents, bonus));
+}
+
 function chronicleText(e) {
   if (e.act === 'build' && e.reagents?.length) return e.text.replace(/\s+paying.*$/, ' paying');
   if ((e.act === 'cast' || e.act === 'research') && e.reagents?.length) return e.text.replace(/\s+\([^()]*\)$/, '');
@@ -527,12 +533,13 @@ export async function openLog(g) {
       h('img', { src: art(e.cast), alt: e.cast, onclick: () => expandCard(g, e.cast) }),
       h('div', {}, h('div', { class: 'lc-name' }, g.cards[e.cast].display), h('div', { class: 'lc-text' }, g.cards[e.cast].effect))) : null;
     const gatherBlock = e.act === 'gather' && e.gather ? h('div', { class: 'log-gather-details' },
-      logReagentRow(e.gather.reagents, e.gather.bonus), logTracksRow(e.gather.tracks)) : null;
-    const reagentBlock = !gatherBlock && e.reagents?.length ? logReagentRow(e.reagents) : null;
+      logInlineReagents(`${e.who} gathered`, e.gather.reagents, e.gather.bonus), logTracksRow(e.gather.tracks)) : null;
+    const inlineReagents = !gatherBlock && e.reagents?.length
+      ? logInlineReagents(chronicleText(e), e.reagents)
+      : null;
     appendNodes(list, h('div', { class: 'log-item', 'data-testid': 'log-item' },
       h('span', { class: 'dot', style: { background: DOT[e.who] || '#9aa6cc' } }),
-      h('div', { style: { flex: 1 } }, h('div', {}, gatherBlock ? `${e.who} gathered` : chronicleText(e)),
-        gatherBlock, reagentBlock,
+      h('div', { style: { flex: 1 } }, gatherBlock, inlineReagents || (!gatherBlock ? h('div', {}, chronicleText(e)) : null),
         thumbs.length ? h('div', { class: 'thumbs' }, thumbs.slice(0, 8).map((k) => h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }))) : null,
         castBlock)));
   }
