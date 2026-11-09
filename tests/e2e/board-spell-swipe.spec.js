@@ -18,6 +18,8 @@ test('board spell research: swipe changes card and research button targets the n
   await expect(ov).toBeVisible();
   await expect(page.getByTestId('card-indicator').locator('.dot')).toHaveCount(spells.length);
   await expect(page.getByTestId('nav-next')).toBeVisible();
+  await expect(ov.locator('.cardinfo-container .log-school-chip')).toBeVisible();
+  await expect(ov.locator('.cardinfo-container .log-value-chip')).toBeVisible();
 
   const spellAt = async () => {
     const idx = Number(await ov.locator('[data-testid=card-indicator] .dot.active').getAttribute('data-index'));
