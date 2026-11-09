@@ -522,12 +522,24 @@ function logValueChip({ kind, value }) {
     h('span', { class: `log-value-orb ${kind}`, 'aria-hidden': 'true' }));
 }
 
-function logInlineReagents(text, reagents, bonus = [], school = null, tier = null, values = []) {
+function logInlineReagents(text, reagents, bonus = [], school = null, tier = null, values = [], options = {}) {
+  const schoolNode = school ? logSchoolChip(school, tier) : null;
+  const reagentNode = reagents?.length ? logReagentRow(reagents, bonus) : null;
+  const valueNodes = (values || []).map(logValueChip);
+  if (options.summonGather) {
+    return h('div', { class: 'log-inline' },
+      h('span', { class: 'log-inline-text' }, text), schoolNode,
+      valueNodes.length ? h('span', { class: 'log-inline-separator' }, ' paying ') : null,
+      ...valueNodes,
+      reagentNode ? h('span', { class: 'log-inline-separator' }, ' gathered ') : null, reagentNode);
+  }
   return h('div', { class: 'log-inline' },
-    h('span', { class: 'log-inline-text' }, text),
-    school ? logSchoolChip(school, tier) : null,
-    reagents?.length ? logReagentRow(reagents, bonus) : null,
-    ...(values || []).map(logValueChip));
+    options.schoolBeforePaying && text.endsWith(' paying')
+      ? [h('span', { class: 'log-inline-text' }, text.slice(0, -7)), schoolNode, ' paying ']
+      : [h('span', { class: 'log-inline-text' }, text), schoolNode],
+    reagentNode,
+    options.valueLead && valueNodes.length ? h('span', { class: 'log-inline-separator' }, options.valueLead) : null,
+    ...valueNodes);
 }
 
 function chronicleText(e) {
@@ -541,6 +553,7 @@ function chronicleText(e) {
       .replace(/\s+for\s+\d+\s+mana\b/g, '')
       .replace(/\s+into\s+\d+\s+Gold\b/g, '')
       .replace(/:\s*[+-]\d+\s+(?:mana|Gold)(?:\s+total)?/g, '')
+      .replace(/\s*\(?[+\u2212-]\d+\s+(?:mana|Gold)(?:\s+total)?\)?/gi, '')
       .replace(/\s+\(\+[0-9]+\s+mana\s+total\)/g, '');
   }
   if (e.act === 'build' && e.reagents?.length) return text.replace(/\s+paying.*$/, ' paying');
@@ -565,7 +578,11 @@ export async function openLog(g) {
     const gatherBlock = e.act === 'gather' && e.gather ? h('div', { class: 'log-gather-details' },
       logInlineReagents(`${e.who} gathered`, e.gather.reagents, e.gather.bonus, e.school, e.tier, e.values), logTracksRow(e.gather.tracks)) : null;
     const inlineReagents = !gatherBlock && (e.reagents?.length || e.school)
-      ? logInlineReagents(chronicleText(e), e.reagents, [], e.school, e.tier, e.values)
+      ? logInlineReagents(chronicleText(e), e.reagents, [], e.school, e.tier, e.values, {
+        schoolBeforePaying: e.act === 'build',
+        summonGather: e.act === 'summon' && e.use === 'gather',
+        valueLead: (e.act === 'convert' || e.act === 'convert1') ? ' for ' : null,
+      })
       : null;
     const inlineValues = !gatherBlock && !inlineReagents && e.values?.length
       ? logInlineReagents(chronicleText(e), [], [], e.school, e.tier, e.values)
