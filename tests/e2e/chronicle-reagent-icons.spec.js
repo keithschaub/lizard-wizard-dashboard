@@ -32,11 +32,16 @@ test('Chronicle renders structured reagent icons for gather, build, and cast ent
   await expect(log.locator('.log-track-label')).toHaveText('TRACKS UP');
   await expect(log.locator('.log-track-chip')).toHaveCount(2);
   await expect(log.locator('.log-gather-details .log-reagent-chip.bonus')).toHaveCount(1);
+  await expect(log.locator('.log-item').nth(0).locator('.log-inline-text')).toHaveText('Keith gathered');
+  await expect(log.locator('.log-item').nth(0).locator('.log-inline .log-reagent-chip')).toHaveCount(2);
   await expect(log.locator('.log-item').nth(1)).toContainText('Keith built Obelisk of Puzzles T2 (Thaumaturgy) paying');
   await expect(log.locator('.log-item').nth(1).locator('.log-reagent-chip')).toHaveCount(2);
   await expect(log.locator('.log-item').nth(2)).toContainText('Keith cast Mana Fountain (Thaumaturgy)');
   await expect(log.locator('.log-item').nth(2)).not.toContainText('Foxglove, Foxglove');
   await expect(log.locator('.log-item').nth(2).locator('.log-reagent-chip')).toHaveCount(4);
   await expect(log.locator('.log-reagent-chip').first()).toHaveAttribute('aria-label', 'Sulphur');
+  const gatherTextBox = await log.locator('.log-item').nth(0).locator('.log-inline-text').boundingBox();
+  const gatherChipBox = await log.locator('.log-item').nth(0).locator('.log-inline .log-reagent-chip').first().boundingBox();
+  expect(Math.abs(gatherTextBox.y - gatherChipBox.y)).toBeLessThan(12);
   await log.screenshot({ path: 'docs/screenshots/chronicle-reagent-icons-430x775.png' });
 });
