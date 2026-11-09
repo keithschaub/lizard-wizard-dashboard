@@ -381,9 +381,14 @@ def structured_banner_data(e):
     """Compact banner facts; log_text remains the plain-text history fallback."""
     a = e.get('act'); w = e.get('who') or e.get('won')
     def card(label, key_value=None):
-        return {'label': label, **({'card': key(key_value)} if key_value else {})}
-    def reagent(label, key):
-        return {'label': label, 'reagent': key}
+        out = {'label': label, **({'card': key(key_value)} if key_value else {})}
+        if key_value:
+            out['school'] = CD.school(key_value)
+            if str(key_value).startswith('Tower_'):
+                out['tier'] = CD.tower_info(key_value)[0]
+        return out
+    def reagent(label, key, count=None):
+        return {'label': label, 'reagent': key, **({'count': count} if count else {})}
     def mana(label, value):
         return {'label': label, 'mana': value}
     def gold(label, value):
@@ -406,15 +411,15 @@ def structured_banner_data(e):
     if a == 'summon':
         fam = e.get('familiar')
         chips = [card(CD.display(fam), fam)] if fam else []
-        if e.get('cost') is not None: chips.append({'label': f"-{e['cost']} mana"})
-        if e.get('gold') is not None: chips.append({'label': f"+{e['gold']} Gold"})
+        if e.get('cost') is not None: chips.append(mana(f"-{e['cost']} mana", -e['cost']))
+        if e.get('gold') is not None: chips.append(gold(f"+{e['gold']} Gold", e['gold']))
         return data('summoned', chips, [fam] if fam else [])
     if a == 'build':
         tower = e.get('tower')
         paid = e.get('paid')
         if isinstance(paid, list) and paid:
             from collections import Counter
-            costs = [reagent(f"-{n} {T.nice(r)}", r) for r, n in Counter(paid).items()]
+            costs = [reagent(f"-{n} {T.nice(r)}", r, n) for r, n in Counter(paid).items()]
         elif paid == 'gold':
             costs = [gold(f"-{e.get('tier_paid', 0)} Gold", -e.get('tier_paid', 0))]
         else:
@@ -422,7 +427,10 @@ def structured_banner_data(e):
         return data('built', ([card(CD.display(tower), tower)] if tower else []) + costs, [tower] if tower else [])
     if a == 'auction':
         item = 'Wizard_' + e['item'] if e.get('item') else None
-        return data('won the auction', [card(CD.display(item), item), {'label': f"-{e['price']} mana"}] if item else [], [item] if item else [])
+        chips = [card(CD.display(item), item)] if item else []
+        if item and e.get('price') is not None:
+            chips.append(mana(f"-{e['price']} mana", -e['price']))
+        return data('won the auction', chips, [item] if item else [])
     if a == 'auction_nobid':
         item = 'Wizard_' + e['item'] if e.get('item') else None
         return data('passed on the auction', [card(CD.display(item), item)] if item else [], [item] if item else [])
@@ -439,7 +447,7 @@ def structured_banner_data(e):
         return data('sold', [{'label': f"-{len(e.get('reagents', []))} reagents"}, {'label': f"+{e.get('gain', len(e.get('reagents', [])))} mana"}])
     if a == 'transmute':
         from collections import Counter
-        sold = [{'label': f"-{n} {T.nice(r)}", 'reagent': r} for r, n in Counter(e.get('reagents', [])).items()]
+        sold = [reagent(f"-{n} {T.nice(r)}", r, n) for r, n in Counter(e.get('reagents', [])).items()]
         return data('transmuted', sold + [gold(f"+{e.get('gold', 0)} Gold", e.get('gold', 0))])
     if a == 'transform':
         return data('transformed', [{'label': ' + '.join(T.nice(r) for r in step.get('from', [])) + f" → {T.nice(step.get('to'))}"} for step in e.get('steps', [])[:2]])

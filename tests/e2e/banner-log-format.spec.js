@@ -75,7 +75,8 @@ test('structured long gather banner wraps four reagents and tracks without clipp
     tracks: ['Sulphur', 'Mandrake', 'Horn', 'Eye_of_Newt'],
   });
   await expect(page.getByTestId('ai-gather-reagent')).toHaveCount(4);
-  await expect(page.getByTestId('ai-gather-bonus')).toContainText('bonus');
+  await expect(page.getByTestId('ai-gather-reagent').filter({ hasText: '×2' })).toHaveCount(1);
+  await expect(page.getByTestId('ai-gather-bonus')).toHaveCount(0);
   await expect(page.getByTestId('ai-gather-track')).toHaveCount(4);
   const banner = page.getByTestId('ai-banner');
   await expect(banner).toBeVisible();
@@ -90,8 +91,9 @@ test('structured single-type sell banner shows reagent and mana gain', async ({ 
   await page.goto('/');
   await waitForBoard(page);
   await showSell(page, { sales: [{ reagent: 'Mandrake', n: 2, value: 12 }], mana: 24 });
-  await expect(page.getByTestId('ai-sell-reagent')).toContainText('2 Mandrake');
-  await expect(page.getByTestId('ai-sell-mana')).toContainText('+24 mana');
+  await expect(page.getByTestId('ai-sell-reagent')).toContainText('Mandrake');
+  await expect(page.getByTestId('ai-sell-reagent')).toContainText('×2');
+  await expect(page.getByTestId('ai-sell-mana').locator('.log-value-number')).toHaveText('24');
   await expect(page.getByTestId('ai-sell-structured')).not.toContainText('track now');
   await page.getByTestId('ai-banner').screenshot({ path: 'docs/screenshots/banner-sell-single-dpr3.png' });
 });
@@ -107,9 +109,28 @@ test('structured multi-type sell banner uses one chip per type and one total gai
     mana: 32,
   });
   await expect(page.getByTestId('ai-sell-reagent')).toHaveCount(2);
-  await expect(page.getByTestId('ai-sell-mana')).toContainText('+32 mana');
+  await expect(page.getByTestId('ai-sell-mana').locator('.log-value-number')).toHaveText('32');
   await expect(page.getByTestId('ai-sell-structured')).not.toContainText('track now');
   await page.getByTestId('ai-banner').screenshot({ path: 'docs/screenshots/banner-sell-multi-dpr3.png' });
+});
+
+test('structured auction and summon banners use number-first value chips', async ({ page }) => {
+  await page.goto('/');
+  await waitForBoard(page);
+  await page.evaluate(() => {
+    const g = window.lwDebug._g;
+    g.skipMove = true;
+    window.ui.banner(g, {
+      r: 10, who: 'Newt', act: 'auction', text: 'Newt won the auction',
+      structured: {
+        headline: 'Newt won the auction',
+        chips: [{ label: '−8 mana', mana: -8 }, { label: '+120 Gold', gold: 120 }],
+        cards: [],
+      },
+    }, 0, 1);
+  });
+  await expect(page.getByTestId('ai-structured').locator('.log-value-number')).toHaveText(['−8', '120']);
+  await expect(page.getByTestId('ai-structured').locator('img[src*="mana-orb"], img[src*="gold-token"]')).toHaveCount(0);
 });
 
 test('all structured AI banner types fit on iPhone at DPR3', async ({ page }) => {
