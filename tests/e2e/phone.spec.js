@@ -114,17 +114,27 @@ test('mats: no card is cropped, overlapped or clipped; every card scrolls fully 
   const L = await limits(page);
   expect(await ov.evaluate((el) => el.scrollHeight > el.clientHeight), 'three mats do not fit one phone screen: the overlay must scroll').toBe(true);
 
-  // Every card image shows whole: its box has the card's own proportions (no object-fit crop of title or border).
-  const crops = await ov.evaluate((el) => [...el.querySelectorAll('.mcard img')].map((i) => {
-    const r = i.getBoundingClientRect();
-    return { src: i.getAttribute('src'), loaded: i.complete && i.naturalWidth > 0, box: r.height / r.width, art: i.naturalHeight / i.naturalWidth };
+  // Every card has the same frame, while contain keeps scans with different
+  // intrinsic proportions whole (no title or border is cropped).
+  const crops = await ov.evaluate((el) => [...el.querySelectorAll('.mcard')].map((card) => {
+    const frame = card.getBoundingClientRect();
+    const image = card.querySelector('img');
+    return {
+      src: image?.getAttribute('src'),
+      loaded: !image || (image.complete && image.naturalWidth > 0),
+      frame: { width: frame.width, height: frame.height },
+      fit: image && getComputedStyle(image).objectFit,
+    };
   }));
   expect(crops.length).toBeGreaterThanOrEqual(6);
+  const frame = crops.find((c) => c.src)?.frame;
   for (const c of crops) {
     expect(c.loaded, `${c.src} loaded`).toBe(true);
-    expect(Math.abs(c.box / c.art - 1), `${c.src} is shown whole (box ${c.box.toFixed(3)} vs art ${c.art.toFixed(3)})`).toBeLessThan(0.02);
+    expect(c.frame.width).toBeCloseTo(frame.width, 1);
+    expect(c.frame.height).toBeCloseTo(frame.height, 1);
+    if (c.src) expect(c.fit, `${c.src} is contained`).toBe('contain');
   }
-  const obelisk = crops.find((c) => c.src.includes('Obelisk_of_Puzzles'));
+  const obelisk = crops.find((c) => c.src?.includes('Obelisk_of_Puzzles'));
   expect(obelisk, "Keith's Obelisk of Puzzles is on his mat").toBeTruthy();
 
   // No card overlaps another card or the empty wizard slot above it.
