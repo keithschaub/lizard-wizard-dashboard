@@ -12,6 +12,7 @@ Run the relevant Playwright project on both Chromium and `webkit-iphone` where n
 | Report Bug upload | Open and close Report Bug, then swipe a card; submit a stubbed multipart report and verify state, metadata, compression, timeout feedback, and success toast. | `tests/e2e/bug-report.spec.js` |
 | Report Bug toast/overlay | On iPhone-sized layout, successful submission closes the dialog and leaves the success toast visible above the overlay. | `tests/e2e/bug-report.spec.js` |
 | Two-player auction opener | In a two-seat duel the AI starter opens at its limit, the human can outbid, and the AI gets at most one extra action after losing. | Python auction tests in `engine/scripts/test_turn_process.py` |
+| Repeated human auction losses | In a two-seat duel, let the human start and lose two wizard auctions; the human receives another action after each loss instead of the turn ending early. | `engine/scripts/test_two_player_auction.py::test_human_can_continue_after_repeated_lost_opening_auctions` |
 | Sell banner layout | Sell banners show reagent, count, value, and total without clipping or overlapping controls. | `tests/e2e/banner-log-format.spec.js` |
 | Gather banner layout | Gather banners show the gathered reagent details and tracks clearly. | `tests/e2e/banner-log-format.spec.js` |
 | Setup button labels | New-game setup action titles and subtitles remain readable and consistent across name, table-size, AI, and reagent steps. | `tests/e2e/game-setup.spec.js` |

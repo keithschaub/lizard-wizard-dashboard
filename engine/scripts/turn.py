@@ -132,26 +132,17 @@ def check_turn_invariants(s, seat):
     #   - 1 auction won by starter (turn ends)
     #   - 1 auction lost by starter + 1 more action (could be another auction or build/gather/etc)
     # 
-    # ILLEGAL pattern (the round-27 bug):
-    #   - Multiple consecutive auctions where the starter keeps losing and starting new ones
-    #     This happens when after_auction recursively calls ai_turn, bypassing attempt limits.
-    
-    # The key insight: if you LOSE an auction, you get ONE more action. Not unlimited.
-    # So you can have at most: lost, lost, won (2 lost + 1 won = 3 auctions max)
-    # But the round-27 bug had: lost, lost, lost, won (3 lost + 1 won = 4 auctions)
-    
-    # Simpler rule: total auctions per turn <= 2 (one initial + one retry if lost)
-    # OR: count sequences where seat loses then tries again
-    
-    # Even simpler: Multiple auctions in one turn is ONLY legal if it's:
-    #   - 1 lost auction followed by 1 more auction (won or lost)
-    # So max 2 auctions per turn.
-    
-    if len(auctions_started) > 2:
+    # AI turns are capped separately in after_auction: an automated AI may
+    # retry one lost auction, but must not recursively open auctions forever.
+    # Humans choose each follow-up action themselves, so a human may lose an
+    # auction and deliberately open another one, repeatedly. The only
+    # universally illegal sequence is winning an auction and then opening
+    # another action before the turn advances.
+    if len(auctions_started) > 2 and seat not in humans(s):
         items = ', '.join(f"{item} (won by {winner})" for item, winner in auctions_started)
         raise AssertionError(
             f"INVARIANT VIOLATION: {seat} started {len(auctions_started)} auctions in round {current_round}: {items}. "
-            f"Rule: starter loses -> gets ONE retry, so max 2 auctions per turn. "
+            f"Rule: automated starter gets one retry, so max 2 auctions per turn. "
             f"This is the round-27 four-auctions bug!"
         )
     
@@ -333,16 +324,11 @@ def after_auction(s, a, winner, events):
     st = a['starter']
     if st in humans(s):
         if winner == st: advance(s, events); return run_ais(s, events)
-        
-        # BUG FIX: Track how many times this human has retried this turn to prevent unlimited auctions
-        retry_count = s['meta'].get('human_retry_count', 0)
-        if retry_count >= 1:
-            # Already retried once this turn - can't retry again!
-            events.append(f'{st} lost the auction but has already retried once this turn; turn ends.')
-            advance(s, events); return run_ais(s, events)
-        
+        # A human chooses each follow-up action explicitly. The one-retry cap
+        # exists for the automated AI loop below, where an AI could otherwise
+        # open auctions forever; it must not truncate a human's rule-legal
+        # sequence of losing auctions.
         s['meta']['again'] = True
-        s['meta']['human_retry_count'] = retry_count + 1
         events.append(f'{st} lost the auction {st} started, so {st} takes another action.')
         return 'human'
     if winner == st:
