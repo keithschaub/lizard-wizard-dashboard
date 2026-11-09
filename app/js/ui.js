@@ -567,6 +567,7 @@ function chronicleText(e) {
       : new RegExp(`\\s+\\(${school}\\)`, 'g');
     text = text.replace(schoolPart, '');
   }
+  if (e.tier) text = text.replace(new RegExp(`\\s+T${e.tier}(?=\\s|$)`), '');
   if (e.values?.length) {
     text = text
       .replace(/\s+for\s+\d+\s+mana\b/g, '')

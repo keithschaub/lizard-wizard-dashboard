@@ -122,7 +122,7 @@ test('Chronicle action lines keep schools and values in the approved chip order'
         },
         {
           r: 24, who: 'Gecko', act: 'creation',
-          text: 'Gecko took Emerald Stronghold free with Creation',
+          text: 'Gecko took Emerald Stronghold T2 free with Creation',
           school: 'Druidry', schools: ['Druidry', 'Conjuring'], tier: 2,
         },
       ],
@@ -160,5 +160,6 @@ test('Chronicle action lines keep schools and values in the approved chip order'
   expect(creationParts[3]).toBe('Conjuring');
   await expect(items.nth(10)).not.toContainText('(Druidry)');
   await expect(items.nth(10)).not.toContainText('(Conjuring)');
+  await expect(items.nth(10)).not.toContainText('Emerald Stronghold T2');
   await page.getByTestId('log').screenshot({ path: 'docs/screenshots/chronicle-lines-430x775.png' });
 });
