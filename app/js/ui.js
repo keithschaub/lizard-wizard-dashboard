@@ -87,7 +87,7 @@ export function cardInfo(g, key) {
   const meta = [];
   if (c.deck === 'Achievement') {
     meta.push(h('span', {}, `${c.vp ?? 10} VP when claimed`), achievementBadge(c));
-  } else if (c.school) meta.push(h('span', {}, c.school !== 'Wild' ? h('img', { src: schoolIcon(c.school), alt: '' }) : null, ` ${c.school}`));
+  } else if (c.school) meta.push(logSchoolChip(c.school));
   if (c.deck === 'Spell') {
     meta.push(h('span', {}, c.duration === '1x' ? 'One-time (1x)' : 'Ongoing'));
     const rg = Object.entries(c.cost?.reagents || {});
@@ -493,6 +493,8 @@ function logReagentChip(r, { bonus = false, count = 1, track = null } = {}) {
 }
 
 export function groupReagents(reagents = [], bonus = []) {
+  reagents = Array.isArray(reagents) ? reagents : [];
+  bonus = Array.isArray(bonus) ? bonus : [];
   const grouped = new Map();
   const bonusSet = new Set(bonus);
   for (const reagent of [...reagents, ...bonus]) grouped.set(reagent, (grouped.get(reagent) || 0) + 1);
@@ -530,7 +532,7 @@ function logInlineReagents(text, reagents, bonus = [], school = null, tier = nul
   const schoolList = options.schools || (school ? [school] : []);
   const schoolNodes = schoolList.map((name) => logSchoolChip(name, name === school ? tier : null));
   const reagentNode = reagents?.length ? logReagentRow(reagents, bonus) : null;
-  const valueNodes = (values || []).map(logValueChip);
+  const valueNodes = (Array.isArray(values) ? values : []).map(logValueChip);
   if (options.summonGather) {
     return h('div', { class: 'log-inline' },
       h('span', { class: 'log-inline-text' }, text), ...schoolNodes,
@@ -1527,7 +1529,7 @@ function gatherBanner(g, e) {
   const chip = ({ reagent: r, count }) => h('span', {
     class: 'bgather-chip',
     'data-testid': 'ai-gather-reagent',
-  }, h('img', { src: reagentIcon(r), alt: nice(r) }), h('span', { class: 'bgather-name' }, nice(r)),
+  }, h('img', { src: reagentIcon(r), alt: nice(r) }),
   count >= 2 ? h('span', { class: 'bgather-count' }, `×${count}`) : null);
   const track = ({ reagent: r, count }) => h('span', { class: 'bgather-track', 'data-testid': 'ai-gather-track' },
     h('img', { src: reagentIcon(r), alt: nice(r) }), h('span', { class: 'bgather-count' }, `▲+${count}`));
@@ -1546,18 +1548,20 @@ function gatherBanner(g, e) {
 function sellBanner(g, e) {
   const data = e.sell;
   if (!data) return null;
+  const sales = Array.isArray(data.sales) ? data.sales : [];
   const chip = (sale) => h('span', { class: 'bsell-chip', 'data-testid': 'ai-sell-reagent' },
     h('img', { src: reagentIcon(sale.reagent), alt: nice(sale.reagent) }),
-    h('span', { class: 'bsell-chip-copy' },
-      h('span', {}, nice(sale.reagent), sale.n >= 2 ? h('span', { class: 'bsell-count' }, `×${sale.n}`) : null),
-      sale.value ? h('small', {}, `${sale.value} each`) : null));
+    sale.n >= 2 ? h('span', { class: 'bsell-count' }, `×${sale.n}`) : null);
   return h('div', { 'data-testid': 'ai-banner-text' },
     h('div', { class: 'bsell', 'data-testid': 'ai-sell-structured' },
       h('div', { class: 'bsell-headline' }, `${e.who || 'AI'} sold`),
       h('div', { class: 'bsell-row' },
-        h('div', { class: 'bsell-chips' }, ...(data.sales || []).map(chip)),
+        h('div', { class: 'bsell-chips' }, ...sales.map(chip)),
+        h('span', { class: 'bsell-arrow', 'aria-hidden': 'true' }, '→'),
         h('div', { class: 'bsell-gain', 'data-testid': 'ai-sell-mana' },
-          logValueChip({ kind: 'mana', value: data.mana })))));
+          logValueChip({ kind: 'mana', value: data.mana }))),
+      sales.length ? h('div', { class: 'bsell-caption' },
+        sales.map((sale) => `${nice(sale.reagent)} ${sale.value} each`).join(' · ')) : null));
 }
 
 function structuredBanner(g, e) {
@@ -1585,21 +1589,23 @@ function structuredBanner(g, e) {
   return h('div', { 'data-testid': 'ai-banner-text' },
     h('div', { class: 'bstructured', 'data-testid': 'ai-structured' },
       h('div', { class: 'bstructured-headline' }, data.headline),
-      h('div', { class: 'bstructured-row' }, ...(data.chips || []).map(chip)),
+      h('div', { class: 'bstructured-row' }, ...(Array.isArray(data.chips) ? data.chips : []).map(chip)),
       data.note ? h('div', { class: 'bstructured-note' }, data.note) : null));
 }
 
 function plainBanner(g, e) {
   if (!e.text) return null;
-  const hasChips = e.school || e.values?.length || e.reagents?.length;
+  const values = Array.isArray(e.values) ? e.values : [];
+  const reagents = Array.isArray(e.reagents) ? e.reagents : [];
+  const hasChips = e.school || values.length || reagents.length;
   if (!hasChips) return null;
   return h('div', { 'data-testid': 'ai-banner-text' },
     h('div', { class: 'bstructured plain-structured', 'data-testid': 'ai-plain-structured' },
       h('div', { class: 'bstructured-headline' }, chronicleText(e)),
       h('div', { class: 'bstructured-row' },
         e.school ? logSchoolChip(e.school, e.tier) : null,
-        ...(e.reagents || []).length ? [logReagentRow(e.reagents)] : [],
-        ...(e.values || []).map(logValueChip))));
+        reagents.length ? [logReagentRow(reagents)] : [],
+        ...values.map(logValueChip))));
 }
 
 export async function banner(g, e, i = 0, n = 1) {
