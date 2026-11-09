@@ -246,7 +246,13 @@ export function expandCard(g, key, {
     }
     
     // Update info
-    replaceChildren(cardinfoContainer, cardInfo(g, k));
+    // Reagent cards are visual reference cards rather than action/info panels.
+    // Keep the shared expand carousel (track, dots, arrows and swipe) but omit
+    // the legacy Gather/Increase Value panel so the card remains centered on
+    // short phone viewports. Other card decks retain their existing details.
+    const isReagent = g.cards[k]?.deck === 'Reagent';
+    cardinfoContainer.hidden = isReagent;
+    replaceChildren(cardinfoContainer, isReagent ? null : cardInfo(g, k));
     if (actionLayout === 'tiles' && costInfo) {
       const info = typeof costInfo === 'function' ? costInfo(k, idx) : costInfo;
       if (info) {
