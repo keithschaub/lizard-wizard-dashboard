@@ -1519,11 +1519,11 @@ export const aiMoveMs = (e) => (e.cast ? AI_CAST_MS : AI_MOVE_MS);
 function gatherBanner(g, e) {
   const data = e.gather;
   if (!data) return null;
-  const chip = ({ reagent: r, count, bonus }) => h('span', {
-    class: `bgather-chip${bonus ? ' bonus' : ''}`,
+  const chip = ({ reagent: r, count }) => h('span', {
+    class: 'bgather-chip',
     'data-testid': 'ai-gather-reagent',
   }, h('img', { src: reagentIcon(r), alt: nice(r) }), h('span', { class: 'bgather-name' }, nice(r)),
-  h('span', { class: 'bgather-count' }, count >= 2 ? `×${count}` : ''));
+  count >= 2 ? h('span', { class: 'bgather-count' }, `×${count}`) : null);
   const track = ({ reagent: r, count }) => h('span', { class: 'bgather-track', 'data-testid': 'ai-gather-track' },
     h('img', { src: reagentIcon(r), alt: nice(r) }), h('span', { class: 'bgather-count' }, `▲+${count}`));
   const reagents = groupReagents(data.reagents || [], data.bonus || []);
@@ -1544,7 +1544,7 @@ function sellBanner(g, e) {
   const chip = (sale) => h('span', { class: 'bsell-chip', 'data-testid': 'ai-sell-reagent' },
     h('img', { src: reagentIcon(sale.reagent), alt: nice(sale.reagent) }),
     h('span', { class: 'bsell-chip-copy' },
-      h('span', {}, nice(sale.reagent), h('span', { class: 'bsell-count' }, sale.n >= 2 ? `×${sale.n}` : '')),
+      h('span', {}, nice(sale.reagent), sale.n >= 2 ? h('span', { class: 'bsell-count' }, `×${sale.n}`) : null),
       sale.value ? h('small', {}, `${sale.value} each`) : null));
   return h('div', { 'data-testid': 'ai-banner-text' },
     h('div', { class: 'bsell', 'data-testid': 'ai-sell-structured' },
