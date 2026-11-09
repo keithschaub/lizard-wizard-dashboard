@@ -292,6 +292,9 @@ img { -webkit-user-drag: none; user-select: none; }
 /* One vertical scroller (.expand-inner); fill the overlay (inset:0) so inner can shrink and scroll. */
 .overlay.expand {
   overflow: hidden;
+  background: var(--bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   min-height: 0;
   box-sizing: border-box;
 }
@@ -588,7 +591,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
   display: flex; flex-direction: column; gap: 12px; align-items: center; animation: sheetUp .28s cubic-bezier(.2, .9, .3, 1) both; }
 @keyframes sheetUp { from { transform: translateY(100%); } }
 .familiar-action-subtitle { margin-top: -2px; }
-.familiar-action-pick { color: var(--gold-hi); font-size: 13px; margin-top: 1px; }
+.familiar-action-pick { color: var(--gold-hi); font-family: 'Cinzel', Georgia, serif; font-size: 14px; letter-spacing: .08em; margin: 1px 0 0; text-align: center; }
 .familiar-action-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; margin-top: 2px; }
 .familiar-action-tile { min-height: 84px; padding: 7px 8px; display: flex; flex-direction: row; gap: 7px; align-items: center;
   text-align: left; border: 1px solid rgba(214, 180, 90, .7); border-radius: 12px;
@@ -615,8 +618,8 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
   color: #fff; font-family: var(--display); font-size: 22px; background: radial-gradient(circle at 35% 30%, #d8efff, #4f9cf5 48%, #1260b5);
   border: 2px solid #d9efff; box-shadow: inset 0 0 0 2px rgba(25, 85, 175, .45), 0 2px 8px rgba(29, 105, 205, .5); }
 .familiar-summon-cost-copy { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.familiar-summon-cost-title { color: #fff5d5; font-family: var(--display); font-size: 18px; line-height: 1.05; white-space: nowrap; }
-.familiar-summon-cost-detail { color: var(--gold-hi); font-family: var(--display); font-size: 14px; line-height: 1.1; white-space: nowrap; }
+.familiar-summon-cost-title { color: #fff; font-family: Georgia, serif; font-size: 19px; font-weight: 700; line-height: 1.05; white-space: nowrap; }
+.familiar-summon-cost-detail { color: #fff5d5; font-family: Georgia, serif; font-size: 15px; line-height: 1.1; white-space: nowrap; }
 .familiar-summon-cost-detail.unaffordable { color: #ffb0a8; }
 .familiar-action-cancel { margin-top: 0; }
 .stepper { display: flex; align-items: center; gap: 18px; }

@@ -359,8 +359,8 @@ export function expandCard(g, key, {
   const promptEl = actionPrompt ? h('div', { class: 'familiar-action-pick' }, actionPrompt) : null;
   if (actionLayout === 'tiles') {
     appendNodes(scrollInner, cardTrack, indicator,
-      compactTiles ? null : titleEl, compactTiles ? null : subtitleEl, compactTiles ? null : promptEl,
-      costInfo ? costContainer : null, actionsContainer);
+      compactTiles ? null : titleEl, compactTiles ? null : subtitleEl,
+      costInfo ? costContainer : null, promptEl, actionsContainer);
   } else {
     appendNodes(scrollInner, titleEl, subtitleEl, cardTrack, indicator, promptEl, actionsContainer, cardinfoContainer);
   }
@@ -657,6 +657,7 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
     groupIndex,
     actionLayout: 'tiles',
     compactTiles: true,
+    actionPrompt: 'THEN PICK ONE',
     costInfo: (currentFamiliar) => {
       const current = (g.v.legal.summon || {})[currentFamiliar];
       const mana = g.v.players.find((p) => p.you)?.mana ?? 0;

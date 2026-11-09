@@ -49,7 +49,7 @@ async function swipeFamiliar(page) {
   await expect(chooser).toBeVisible();
   await expect(page.getByTestId('summon-cost')).toContainText('Summon for');
   await expect(page.locator('.familiar-action-subtitle')).toHaveCount(0);
-  await expect(page.locator('.familiar-action-pick')).toHaveCount(0);
+  await expect(page.locator('.familiar-action-pick')).toHaveText('THEN PICK ONE');
   await expect(page.locator('.expand.tiles .cardinfo')).toHaveCount(0);
   const track = page.getByTestId('card-track');
   const first = track.locator('[data-testid="expanded-card"][data-index="0"] img');
