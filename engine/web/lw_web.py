@@ -516,6 +516,8 @@ def public_log(s, viewer):
         item = dict(i=i, r=e.get('r'), who=e.get('who') or e.get('won') or e.get('seat'), act=a)
         if a == 'turn': item['text'] = f"Round {e.get('r')}: {e.get('seat')}'s turn"
         elif a == 'setup_picks': item['text'] = 'Starting reagents: ' + '; '.join(f"{n} {', '.join(T.nice(r) for r in v)}" for n, v in e['picks'].items())
+        elif a == 'auction' and e.get('item'):
+            item['text'] = f"{e.get('won') or e.get('who')} won the auction for {CD.display('Wizard_' + e['item'] + '.jpg')}"
         else: item['text'] = log_text(e)
         item['cards'] = log_cards(e)
         school_card = e.get('tower') or e.get('spell') or e.get('familiar')
