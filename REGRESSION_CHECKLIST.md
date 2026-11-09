@@ -5,6 +5,7 @@ Run the relevant Playwright project on both Chromium and `webkit-iphone` where n
 | Area | Manual check | Automated coverage |
 | --- | --- | --- |
 | Familiar chooser swipe | Summon, Rise, and Scry familiar views use the shared expand carousel; swipe both directions, verify dots, arrows, and action details update. | `tests/e2e/summon-chooser-swipe.spec.js` |
+| Familiar chooser presentation | Summon shows the dynamic gold-bordered mana cost, current/remaining mana, four two-column actions, 16px detail text, and “draw for treasure”; no redundant description panel or instruction copy remains. | `tests/e2e/summon-chooser-swipe.spec.js`, `tests/e2e/familiar-swipe-regression.spec.js` |
 | Spell-card swipe | Open Research from the board spell row and swipe between face-up spells; the research action follows the shown card. | `tests/e2e/board-spell-swipe.spec.js` |
 | New-game stale board | Start a game with a different human name and confirm Round 1 and the new reagent dock replace the old game without a render exception. | `tests/e2e/new-game-render.spec.js` |
 | Restart | Use “Load the paused game g8” and confirm the board, overlays, and shared card carousel still work. | `tests/e2e/familiar-swipe-regression.spec.js` |

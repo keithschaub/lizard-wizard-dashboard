@@ -171,7 +171,8 @@ export function attachSwipe(el, { onBegin = null, onDrag = null, onSwipe, onCanc
 
 export function expandCard(g, key, {
   actions = [], extra = null, group = null, groupIndex = 0, title = null, titleTestid = null,
-  subtitle = null, actionPrompt = null, actionLayout = 'actions', testid = 'expanded', closeTestid = 'ov-close',
+  subtitle = null, actionPrompt = null, actionLayout = 'actions', compactTiles = false, costInfo = null,
+  testid = 'expanded', closeTestid = 'ov-close',
 } = {}) {
   // group: array of card keys for swipeable navigation, groupIndex: current card index in group
   const cards = (group && group.length ? group : [key]).filter(Boolean);
@@ -185,6 +186,7 @@ export function expandCard(g, key, {
   const cardTrack = h('div', { class: 'card-track', 'data-testid': 'card-track' });
   const cardinfoContainer = h('div', { class: 'cardinfo-container', 'data-testid': 'cardinfo-container' });
   const actionsContainer = h('div', { class: `actions-container ${actionLayout === 'tiles' ? 'familiar-action-grid' : ''}`, 'data-testid': 'expanded-actions' });
+  const costContainer = h('div', { class: 'familiar-summon-cost', 'data-testid': 'summon-cost' });
   const scrollInner = h('div', { class: 'expand-inner', 'data-testid': 'expand-inner' });
   
   // Position indicator (dots or "2 / 4")
@@ -245,6 +247,21 @@ export function expandCard(g, key, {
     
     // Update info
     replaceChildren(cardinfoContainer, cardInfo(g, k));
+    if (actionLayout === 'tiles' && costInfo) {
+      const info = typeof costInfo === 'function' ? costInfo(k, idx) : costInfo;
+      if (info) {
+        const remaining = Number(info.remaining);
+        replaceChildren(costContainer,
+          h('span', { class: 'familiar-summon-mana', 'aria-hidden': 'true' }, info.cost),
+          h('span', { class: 'familiar-summon-cost-copy' },
+            h('span', { class: 'familiar-summon-cost-title' }, `Summon for ${info.cost} mana`),
+            h('span', { class: `familiar-summon-cost-detail ${info.affordable ? '' : 'unaffordable'}` },
+              info.affordable ? `You have ${info.mana} · ${remaining} left after` : `You have ${info.mana} · not enough mana`)));
+        costContainer.hidden = false;
+      } else {
+        costContainer.hidden = true;
+      }
+    }
 
     const actBtn = (a) => {
       const sub = a.sub == null ? null : (Array.isArray(a.sub) ? h('span', { class: 'sub' }, ...a.sub) : h('span', { class: 'sub' }, a.sub));
@@ -341,7 +358,9 @@ export function expandCard(g, key, {
   const subtitleEl = subtitle ? h('div', { class: 'ov-sub familiar-action-subtitle' }, subtitle) : null;
   const promptEl = actionPrompt ? h('div', { class: 'familiar-action-pick' }, actionPrompt) : null;
   if (actionLayout === 'tiles') {
-    appendNodes(scrollInner, cardTrack, indicator, titleEl, subtitleEl, promptEl, actionsContainer, cardinfoContainer);
+    appendNodes(scrollInner, cardTrack, indicator,
+      compactTiles ? null : titleEl, compactTiles ? null : subtitleEl, compactTiles ? null : promptEl,
+      costInfo ? costContainer : null, actionsContainer);
   } else {
     appendNodes(scrollInner, titleEl, subtitleEl, cardTrack, indicator, promptEl, actionsContainer, cardinfoContainer);
   }
@@ -636,10 +655,14 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
   expandCard(g, fk, {
     group: familiarGroup,
     groupIndex,
-    title: 'Summon',
-    subtitle: 'Choose how to use this familiar',
-    actionPrompt: 'Pick one action',
     actionLayout: 'tiles',
+    compactTiles: true,
+    costInfo: (currentFamiliar) => {
+      const current = (g.v.legal.summon || {})[currentFamiliar];
+      const mana = g.v.players.find((p) => p.you)?.mana ?? 0;
+      if (!current || current.cost == null) return null;
+      return { cost: current.cost, mana, remaining: mana - current.cost, affordable: mana >= current.cost };
+    },
     testid: 'summon-use',
     closeTestid: 'summon-cancel',
     actions: (currentFamiliar) => {
@@ -666,7 +689,7 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
       return [
         action('score', 'Score', `+${(current.score_gold || 0) + (current.powerful_helper || 0)} Gold`),
         action('gather', 'Gather', current.collect ? `${current.collect} ${nice(current.reagent)}` : 'Gather unavailable'),
-        action('dungeon', 'Dungeon', 'draw until treasure'),
+        action('dungeon', 'Dungeon', 'draw for treasure'),
         action('research', 'Research', 'reveal spells'),
       ];
     },

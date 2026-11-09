@@ -604,10 +604,20 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .familiar-action-scroll { width: 32px; height: 32px; display: grid; place-items: center; }
 .familiar-action-scroll svg { width: 100%; height: 100%; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .6)); }
 .familiar-action-glyph { line-height: 1; }
-.familiar-action-title { font-family: var(--display); font-size: 14px; font-weight: 700; line-height: 1.05; }
-.familiar-action-detail { color: var(--gold-hi); font-size: 11px; line-height: 1.1; white-space: nowrap; }
+.familiar-action-title { font-family: var(--display); font-size: 16px; font-weight: 700; line-height: 1.05; }
+.familiar-action-detail { color: var(--gold-hi); font-size: 16px; line-height: 1.1; white-space: nowrap; }
 .familiar-action-copy { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
 .familiar-action-note { color: var(--muted); font-size: 10px; line-height: 1.1; margin-top: 2px; white-space: nowrap; }
+.familiar-summon-cost { width: min(92vw, 440px); min-height: 72px; box-sizing: border-box; display: flex; align-items: center; gap: 12px;
+  padding: 8px 16px; border: 3px solid var(--gold-hi); border-radius: 42px; background: rgba(17, 13, 8, .94);
+  box-shadow: 0 0 18px rgba(214, 180, 90, .35); }
+.familiar-summon-mana { flex: none; width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%;
+  color: #fff; font-family: var(--display); font-size: 22px; background: radial-gradient(circle at 35% 30%, #d8efff, #4f9cf5 48%, #1260b5);
+  border: 2px solid #d9efff; box-shadow: inset 0 0 0 2px rgba(25, 85, 175, .45), 0 2px 8px rgba(29, 105, 205, .5); }
+.familiar-summon-cost-copy { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.familiar-summon-cost-title { color: #fff5d5; font-family: var(--display); font-size: 18px; line-height: 1.05; white-space: nowrap; }
+.familiar-summon-cost-detail { color: var(--gold-hi); font-family: var(--display); font-size: 14px; line-height: 1.1; white-space: nowrap; }
+.familiar-summon-cost-detail.unaffordable { color: #ffb0a8; }
 .familiar-action-cancel { margin-top: 0; }
 .stepper { display: flex; align-items: center; gap: 18px; }
 .adept-stepper { justify-content: center; width: 100%; margin-top: 14px; }

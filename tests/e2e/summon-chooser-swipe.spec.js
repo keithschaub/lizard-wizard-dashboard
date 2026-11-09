@@ -52,6 +52,13 @@ test('Summon chooser closes without state change and swipes market familiars', a
   await page.getByTestId(`slot-fam_${v.board.fam_face.indexOf(first)}`).tap();
   const track = page.getByTestId('card-track');
   const tileGrid = page.getByTestId('expanded-actions');
+  const cost = page.getByTestId('summon-cost');
+  await expect(cost).toContainText(`Summon for ${v.legal.summon[first].cost} mana`);
+  await expect(cost).toContainText('You have');
+  await expect(page.locator('.familiar-action-subtitle')).toHaveCount(0);
+  await expect(page.locator('.familiar-action-pick')).toHaveCount(0);
+  await expect(page.locator('.expand.tiles .cardinfo')).toHaveCount(0);
+  expect(await page.locator('.familiar-action-detail').first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
   const tileLayout = await tileGrid.evaluate((el) => {
     const buttons = [...el.querySelectorAll('button')].map((b) => b.getBoundingClientRect());
     const styles = getComputedStyle(el);
@@ -76,6 +83,8 @@ test('Summon chooser closes without state change and swipes market familiars', a
 
   expect(await secondImage.getAttribute('src')).toBe(`art/cards/${group[1]}.webp`);
   const secondDetail = await page.getByTestId('summon-gather').textContent();
+  await expect(cost).toContainText(`Summon for ${v.legal.summon[group[1]].cost} mana`);
+  await expect(page.getByTestId('summon-dungeon')).toContainText('draw for treasure');
   await swipeFromImage(page, secondImage, 140);
   await expect.poll(() => firstImage.getAttribute('src')).toBe(firstSrc);
   await expect.poll(() => page.getByTestId('summon-gather').textContent()).not.toBe(secondDetail);

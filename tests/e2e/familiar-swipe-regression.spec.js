@@ -47,6 +47,10 @@ async function swipeFamiliar(page) {
   await page.getByTestId(`slot-fam_${slot}`).tap();
   const chooser = page.getByTestId('summon-use');
   await expect(chooser).toBeVisible();
+  await expect(page.getByTestId('summon-cost')).toContainText('Summon for');
+  await expect(page.locator('.familiar-action-subtitle')).toHaveCount(0);
+  await expect(page.locator('.familiar-action-pick')).toHaveCount(0);
+  await expect(page.locator('.expand.tiles .cardinfo')).toHaveCount(0);
   const track = page.getByTestId('card-track');
   const first = track.locator('[data-testid="expanded-card"][data-index="0"] img');
   const firstSrc = await first.getAttribute('src');
