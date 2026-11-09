@@ -558,6 +558,8 @@ def public_log(s, viewer):
             schools = [CD.school(card) for card in (e.get('gave'), e.get('got')) if card and CD.school(card)]
             if schools:
                 item['schools'] = schools
+        if item.get('tier'):
+            item['text'] = re.sub(rf'\s+T{item["tier"]}(?=\s|$)', '', item['text'], count=1)
         if a == 'gather':
             item['gather'] = gather_banner_data(e)
         values = chronicle_values(e)

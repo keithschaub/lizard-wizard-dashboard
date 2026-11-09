@@ -135,6 +135,7 @@ def test_creation_public_log_keeps_card_and_creation_schools_separate():
     finally:
         lw_web.AI.public_view = old_public_view
     assert result['schools'] == ['Druidry', 'Conjuring']
+    assert ' T2 ' not in result['text']
     assert '(Druidry)' not in result['text']
     assert '(Conjuring)' not in result['text']
     assert result['tier'] == 2
