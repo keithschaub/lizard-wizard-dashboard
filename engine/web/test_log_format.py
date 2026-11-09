@@ -123,6 +123,23 @@ def test_public_log_derives_schools_for_taken_scryed_created_and_destroyed_cards
     assert [entry.get('school') for entry in result] == ['Thaumaturgy', 'Thaumaturgy', 'Thaumaturgy', 'Sorcery']
 
 
+def test_creation_public_log_keeps_card_and_creation_schools_separate():
+    entry = {
+        'act': 'creation', 'who': 'Gecko',
+        'card': 'Tower_T2_Emerald_Stronghold.jpg',
+    }
+    old_public_view = lw_web.AI.public_view
+    lw_web.AI.public_view = lambda state, viewer: {'meta': {'log': [entry]}}
+    try:
+        result = lw_web.public_log({}, 'Gecko')[0]
+    finally:
+        lw_web.AI.public_view = old_public_view
+    assert result['schools'] == ['Druidry', 'Conjuring']
+    assert '(Druidry)' not in result['text']
+    assert '(Conjuring)' not in result['text']
+    assert result['tier'] == 2
+
+
 def test_chronicle_values_use_signed_numeric_facts():
     assert lw_web.chronicle_values({'act': 'auction', 'price': 8}) == [{'kind': 'mana', 'value': -8}]
     assert lw_web.chronicle_values({'act': 'convert', 'gain': 32}) == [{'kind': 'mana', 'value': 32}]

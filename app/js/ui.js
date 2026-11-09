@@ -533,6 +533,15 @@ function logInlineReagents(text, reagents, bonus = [], school = null, tier = nul
   const schoolNodes = schoolList.map((name) => logSchoolChip(name, name === school ? tier : null));
   const reagentNode = reagents?.length ? logReagentRow(reagents, bonus) : null;
   const valueNodes = (Array.isArray(values) ? values : []).map(logValueChip);
+  if (options.schoolAfterCard && schoolNodes.length >= 2) {
+    const split = text.split(' free with ');
+    if (split.length === 2) {
+      return h('div', { class: 'log-inline' },
+        h('span', { class: 'log-inline-text' }, split[0]), schoolNodes[0],
+        h('span', { class: 'log-inline-text' }, ` free with ${split[1]}`), schoolNodes[1],
+        reagentNode, ...valueNodes);
+    }
+  }
   if (options.summonGather) {
     return h('div', { class: 'log-inline' },
       h('span', { class: 'log-inline-text' }, text), ...schoolNodes,
@@ -593,6 +602,7 @@ export async function openLog(g) {
         summonGather: e.act === 'summon' && e.use === 'gather',
         valueLead: (e.act === 'convert' || e.act === 'convert1') ? ' for ' : null,
         schools: e.schools,
+        schoolAfterCard: e.act === 'creation',
       })
       : null;
     const inlineValues = !gatherBlock && !inlineReagents && e.values?.length

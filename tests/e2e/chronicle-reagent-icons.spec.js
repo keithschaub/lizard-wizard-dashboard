@@ -120,12 +120,17 @@ test('Chronicle action lines keep schools and values in the approved chip order'
           r: 24, who: 'Newt', act: 'disintegrate',
           text: 'Newt cast Disintegrate: Anguis Magicus (Sorcery) is out of play', school: 'Sorcery',
         },
+        {
+          r: 24, who: 'Gecko', act: 'creation',
+          text: 'Gecko took Emerald Stronghold free with Creation',
+          school: 'Druidry', schools: ['Druidry', 'Conjuring'], tier: 2,
+        },
       ],
     });
     await window.ui.openLog(g);
   });
   const items = page.getByTestId('log-item');
-  await expect(items).toHaveCount(10);
+  await expect(items).toHaveCount(11);
   await expect(items.nth(0)).toContainText('Gecko summoned Vulpes');
   await expect(items.nth(0)).toContainText('gathered');
   await expect(items.nth(0).locator('.log-reagent-count')).toHaveText('×5');
@@ -148,5 +153,12 @@ test('Chronicle action lines keep schools and values in the approved chip order'
     await expect(items.nth(index)).not.toContainText(/\([A-Z][^)]+\)/);
     await expect(items.nth(index).locator('.log-school-chip')).toHaveCount(1);
   }
+  const creationParts = await items.nth(10).locator('.log-inline > *').allTextContents();
+  expect(creationParts[0]).toContain('Gecko took Emerald Stronghold');
+  expect(creationParts[1]).toContain('T2 Druidry');
+  expect(creationParts[2]).toContain('free with Creation');
+  expect(creationParts[3]).toBe('Conjuring');
+  await expect(items.nth(10)).not.toContainText('(Druidry)');
+  await expect(items.nth(10)).not.toContainText('(Conjuring)');
   await page.getByTestId('log').screenshot({ path: 'docs/screenshots/chronicle-lines-430x775.png' });
 });
