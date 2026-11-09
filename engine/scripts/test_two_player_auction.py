@@ -126,9 +126,24 @@ def test_second_lost_auction_is_capped():
         T.AI.choose_action = original_choose
     check(result == 'human' and state['next'] == 'Keith', 'second lost auction ends the AI turn')
 
+def test_human_can_continue_after_repeated_lost_opening_auctions():
+    state = fresh('human-repeated-loss', ['Keith', 'Newt'])
+    state['next'] = 'Keith'
+    state['turn'] = state['meta']['seat_order'].index('Keith')
+    A.log(state, {'r': state['meta']['round'], 'act': 'turn', 'seat': 'Keith'})
+    first = T.start_auction(state, 'Keith', next(x for x in state['wiz_face'] if x), 1)
+    result = T.after_auction(state, first, 'Newt', [])
+    check(result == 'human' and state['next'] == 'Keith' and state['meta'].get('again'),
+          'first human auction loss preserves the human follow-up action')
+    second = T.start_auction(state, 'Keith', next(x for x in state['wiz_face'] if x), 1)
+    result = T.after_auction(state, second, 'Newt', [])
+    check(result == 'human' and state['next'] == 'Keith',
+          'repeated human auction losses still preserve the human turn')
+
 
 if __name__ == '__main__':
     test_opening_bid_uses_full_limit_only_in_duel()
     test_ai_starter_gets_one_extra_action_after_human_wins()
     test_second_lost_auction_is_capped()
+    test_human_can_continue_after_repeated_lost_opening_auctions()
     print('all two-player auction tests passed')
