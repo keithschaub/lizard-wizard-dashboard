@@ -488,21 +488,16 @@ function logReagentChip(r, { bonus = false, count = 1, track = null } = {}) {
     h('span', { class: 'log-reagent-count' }, suffix));
 }
 
-export function groupReagents(reagents = []) {
+export function groupReagents(reagents = [], bonus = []) {
   const grouped = new Map();
-  for (const reagent of reagents) grouped.set(reagent, (grouped.get(reagent) || 0) + 1);
-  return [...grouped.entries()].map(([reagent, count]) => ({ reagent, count }));
+  const bonusSet = new Set(bonus);
+  for (const reagent of [...reagents, ...bonus]) grouped.set(reagent, (grouped.get(reagent) || 0) + 1);
+  return [...grouped.entries()].map(([reagent, count]) => ({ reagent, count, bonus: bonusSet.has(reagent) }));
 }
 
 function logReagentRow(reagents, bonus = []) {
-  const bonusLeft = [...bonus];
   return h('div', { class: 'log-reagent-row' },
-    ...groupReagents(reagents).map(({ reagent: r, count }) => {
-      const i = bonusLeft.indexOf(r);
-      const isBonus = i >= 0;
-      if (isBonus) bonusLeft.splice(i, 1);
-      return logReagentChip(r, { bonus: isBonus, count });
-    }));
+    ...groupReagents(reagents, bonus).map(({ reagent: r, count, bonus: isBonus }) => logReagentChip(r, { bonus: isBonus, count })));
 }
 
 function logTracksRow(tracks) {
@@ -520,11 +515,19 @@ function logSchoolChip(school, tier = null) {
   return h('span', { class: `log-school-chip ${crest ? '' : 'plain'}`, title: label, 'aria-label': label }, crest, label);
 }
 
-function logInlineReagents(text, reagents, bonus = [], school = null, tier = null) {
+function logValueChip({ kind, value }) {
+  const label = `${value} ${kind}`;
+  return h('span', { class: `log-value-chip ${kind}`, title: label, 'aria-label': label },
+    h('span', { class: 'log-value-number' }, value < 0 ? `−${Math.abs(value)}` : String(value)),
+    h('span', { class: `log-value-orb ${kind}`, 'aria-hidden': 'true' }));
+}
+
+function logInlineReagents(text, reagents, bonus = [], school = null, tier = null, values = []) {
   return h('div', { class: 'log-inline' },
     h('span', { class: 'log-inline-text' }, text),
     school ? logSchoolChip(school, tier) : null,
-    reagents?.length ? logReagentRow(reagents, bonus) : null);
+    reagents?.length ? logReagentRow(reagents, bonus) : null,
+    ...(values || []).map(logValueChip));
 }
 
 function chronicleText(e) {
@@ -532,6 +535,13 @@ function chronicleText(e) {
   if (e.school) {
     const schoolPart = e.tier ? new RegExp(`\\s+T${e.tier}\\s+\\(${e.school}\\)`) : new RegExp(`\\s+\\(${e.school}\\)`);
     text = text.replace(schoolPart, '');
+  }
+  if (e.values?.length) {
+    text = text
+      .replace(/\s+for\s+\d+\s+mana\b/g, '')
+      .replace(/\s+into\s+\d+\s+Gold\b/g, '')
+      .replace(/:\s*[+-]\d+\s+(?:mana|Gold)(?:\s+total)?/g, '')
+      .replace(/\s+\(\+[0-9]+\s+mana\s+total\)/g, '');
   }
   if (e.act === 'build' && e.reagents?.length) return text.replace(/\s+paying.*$/, ' paying');
   if ((e.act === 'cast' || e.act === 'research') && e.reagents?.length) return text.replace(/\s+\([^()]*\)$/, '');
@@ -553,13 +563,16 @@ export async function openLog(g) {
       h('img', { src: art(e.cast), alt: e.cast, onclick: () => expandCard(g, e.cast) }),
       h('div', {}, h('div', { class: 'lc-name' }, g.cards[e.cast].display), h('div', { class: 'lc-text' }, g.cards[e.cast].effect))) : null;
     const gatherBlock = e.act === 'gather' && e.gather ? h('div', { class: 'log-gather-details' },
-      logInlineReagents(`${e.who} gathered`, e.gather.reagents, e.gather.bonus, e.school, e.tier), logTracksRow(e.gather.tracks)) : null;
+      logInlineReagents(`${e.who} gathered`, e.gather.reagents, e.gather.bonus, e.school, e.tier, e.values), logTracksRow(e.gather.tracks)) : null;
     const inlineReagents = !gatherBlock && (e.reagents?.length || e.school)
-      ? logInlineReagents(chronicleText(e), e.reagents, [], e.school, e.tier)
+      ? logInlineReagents(chronicleText(e), e.reagents, [], e.school, e.tier, e.values)
+      : null;
+    const inlineValues = !gatherBlock && !inlineReagents && e.values?.length
+      ? logInlineReagents(chronicleText(e), [], [], e.school, e.tier, e.values)
       : null;
     appendNodes(list, h('div', { class: 'log-item', 'data-testid': 'log-item' },
       h('span', { class: 'dot', style: { background: DOT[e.who] || '#9aa6cc' } }),
-      h('div', { style: { flex: 1 } }, gatherBlock, inlineReagents || (!gatherBlock ? h('div', {}, chronicleText(e)) : null),
+      h('div', { style: { flex: 1 } }, gatherBlock, inlineReagents || inlineValues || (!gatherBlock ? h('div', {}, chronicleText(e)) : null),
         thumbs.length ? h('div', { class: 'thumbs' }, thumbs.slice(0, 8).map((k) => h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }))) : null,
         castBlock)));
   }

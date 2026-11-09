@@ -349,6 +349,34 @@ def sell_banner_data(e):
     return None
 
 
+def chronicle_values(e):
+    """Numeric mana/gold facts rendered as number-first Chronicle chips."""
+    a = e.get('act')
+    values = []
+    if a == 'auction' and e.get('price') is not None:
+        values.append({'kind': 'mana', 'value': -e['price']})
+    elif a in ('convert', 'convert1') and e.get('gain') is not None:
+        values.append({'kind': 'mana', 'value': e['gain']})
+    elif a == 'transmute' and e.get('gold') is not None:
+        values.append({'kind': 'gold', 'value': e['gold']})
+    elif a == 'wand_tax' and e.get('gold') is not None:
+        values.append({'kind': 'gold', 'value': e['gold']})
+    elif a == 'invisibility_potion' and e.get('gold') is not None:
+        values.append({'kind': 'gold', 'value': e['gold']})
+    elif a == 'summon':
+        if e.get('cost') is not None:
+            values.append({'kind': 'mana', 'value': -e['cost']})
+        if e.get('gold') is not None:
+            values.append({'kind': 'gold', 'value': e['gold']})
+    elif a == 'research' and e.get('paid') is not None:
+        values.append({'kind': 'mana', 'value': -e['paid']})
+    elif a == 'build' and e.get('paid') == 'gold':
+        values.append({'kind': 'gold', 'value': -e.get('tier_paid', 0)})
+    elif a == 'trigger' and e.get('gain') is not None:
+        values.append({'kind': 'mana', 'value': e['gain']})
+    return values
+
+
 def structured_banner_data(e):
     """Compact banner facts; log_text remains the plain-text history fallback."""
     a = e.get('act'); w = e.get('who') or e.get('won')
@@ -502,6 +530,9 @@ def public_log(s, viewer):
                 item['tier'] = CD.tower_info(school_card)[0]
         if a == 'gather':
             item['gather'] = gather_banner_data(e)
+        values = chronicle_values(e)
+        if values:
+            item['values'] = values
         if a == 'build' and isinstance(e.get('paid'), list):
             item['reagents'] = list(e.get('paid', []))
         elif a in ('cast', 'research') and e.get('cast_paid'):
