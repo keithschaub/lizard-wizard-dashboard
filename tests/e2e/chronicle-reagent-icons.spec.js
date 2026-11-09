@@ -163,3 +163,36 @@ test('Chronicle action lines keep schools and values in the approved chip order'
   await expect(items.nth(10)).not.toContainText('Emerald Stronghold T2');
   await page.getByTestId('log').screenshot({ path: 'docs/screenshots/chronicle-lines-430x775.png' });
 });
+
+test('all school-bearing Chronicle prose keeps tiers and schools inside chips', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(async () => {
+    const g = window.lwDebug._g;
+    const lines = [
+      ['build-reagent', 'Gecko built Obelisk of Puzzles T2 (Thaumaturgy) paying', 'Thaumaturgy', 2],
+      ['build-gold', 'LizWiz built Obelisk of Puzzles T2 (Thaumaturgy) paying Gold', 'Thaumaturgy', 2],
+      ['creation', 'Gecko took Emerald Stronghold T2 (Druidry) free with Creation (Conjuring)', 'Druidry', 2, ['Druidry', 'Conjuring']],
+      ['destroy-tower', 'Newt cast Earthquake: Azure Tower T1 (Sorcery) is out of play', 'Sorcery', 1],
+      ['destroy-wizard', 'Newt cast Disintegrate: Anguis Magicus (Sorcery) is out of play', 'Sorcery'],
+      ['new-research', 'Newt took Mana Fountain (Thaumaturgy)', 'Thaumaturgy'],
+      ['scry-took', 'Newt scried spells and took Mana Fountain (Thaumaturgy)', 'Thaumaturgy'],
+      ['swap', 'Newt swapped: gave Draco Mortemus (Enchantment), took Anguis Magicus (Sorcery)', null, null, ['Enchantment', 'Sorcery']],
+      ['cast-outcome', 'Newt cast Anguis Magicus (Sorcery) is out of play', 'Sorcery'],
+    ].map(([act, text, school, tier, schools], i) => ({
+      r: 30, who: 'Newt', act, text, school, tier, schools,
+    }));
+    g.call = async () => ({ result: lines });
+    await window.ui.openLog(g);
+  });
+  const items = page.getByTestId('log-item');
+  await expect(items).toHaveCount(9);
+  for (let i = 0; i < 9; i++) {
+    const prose = await items.nth(i).locator('.log-inline').evaluate((el) => {
+      const clone = el.cloneNode(true);
+      clone.querySelectorAll('.log-school-chip').forEach((chip) => chip.remove());
+      return clone.textContent;
+    });
+    expect(prose).not.toMatch(/\sT\d\b/);
+    expect(prose).not.toMatch(/\([^)]+\)/);
+  }
+});

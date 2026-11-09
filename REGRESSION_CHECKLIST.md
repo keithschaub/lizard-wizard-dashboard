@@ -31,5 +31,6 @@ Run the relevant Playwright project on both Chromium and `webkit-iphone` where n
 | Chronicle school prose cleanup | New Research, scry-took, destroy-out-of-play, and Creation lines replace parenthesized schools with inline crest/tier school chips; expanded card and cast-panel titles remain unchanged. | `tests/e2e/chronicle-reagent-icons.spec.js`, `engine/web/test_log_format.py` |
 | Creation dual-school order | A free Creation tower shows its tower school chip immediately after the tower name and its Creation/Conjuring chip after “free with”, with no parentheses. | `tests/e2e/chronicle-reagent-icons.spec.js`, `engine/web/test_log_format.py` |
 | Chronicle tier deduplication | Tower names show no stray `T1/T2/T3` prose when the tier is already inside the school chip, across builds, Creation, and destruction lines. | `tests/e2e/chronicle-reagent-icons.spec.js`, `engine/web/test_log_format.py` |
+| Chronicle prose normalization | Table-driven school-bearing lines leave no tier or parenthesized school text outside their chips, including reagent/gold builds, free towers, destroys, research, scry, swaps, and cast outcomes. | `tests/e2e/chronicle-reagent-icons.spec.js` |
 
 For every carousel check, also verify X close, scrim close, vertical sheet scrolling, and that tapping an action tile performs the real state change.
