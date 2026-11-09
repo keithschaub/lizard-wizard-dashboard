@@ -70,6 +70,22 @@ def test_gather_banner_data_preserves_reagents_bonus_and_tracks():
     }
 
 
+def test_public_log_exposes_reagent_lists_for_chronicle_icons():
+    entries = [
+        {'act': 'build', 'who': 'Newt', 'paid': ['Sulphur', 'Sulphur'], 'tower': 'Tower_T1_Ivory_Spire.jpg'},
+        {'act': 'cast', 'who': 'Newt', 'spell': 'Spell_Mana_Fountain.jpg',
+         'cast_paid': ['Foxglove', 'Foxglove', 'Sulphur', 'Sulphur']},
+    ]
+    old_public_view = lw_web.AI.public_view
+    lw_web.AI.public_view = lambda state, viewer: {'meta': {'log': entries}}
+    try:
+        result = lw_web.public_log({}, 'Newt')
+    finally:
+        lw_web.AI.public_view = old_public_view
+    assert result[0]['reagents'] == ['Sulphur', 'Sulphur']
+    assert result[1]['reagents'] == ['Foxglove', 'Foxglove', 'Sulphur', 'Sulphur']
+
+
 def test_sell_banner_data_keeps_sales_and_total_mana_without_track_value():
     assert lw_web.sell_banner_data({
         'act': 'convert', 'reagent': 'Mandrake', 'n': 2, 'value': 12,
@@ -118,4 +134,9 @@ def test_remaining_ai_banner_actions_have_structured_data():
 
 if __name__ == '__main__':
     test_all_log_actions_are_humanized()
+    test_log_text_does_not_expose_numbered_card_ids()
+    test_gather_banner_data_preserves_reagents_bonus_and_tracks()
+    test_public_log_exposes_reagent_lists_for_chronicle_icons()
+    test_sell_banner_data_keeps_sales_and_total_mana_without_track_value()
+    test_remaining_ai_banner_actions_have_structured_data()
     print(f'OK: {len(ACTS)} log actions humanized')

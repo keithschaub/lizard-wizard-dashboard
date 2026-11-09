@@ -19,6 +19,7 @@ Run the relevant Playwright project on both Chromium and `webkit-iphone` where n
 | Scribe history | An AI or human Scribe cast logs the selected free spell, resolves its follow-up, and reports an empty deck/no legal option explicitly. | `engine/web/test_lw_web.py` |
 | Grand Sorcerer | The setup picker offers the top AI difficulty with “Plays to win from turn one”; existing levels remain unchanged. | `tests/e2e/game-setup.spec.js`, `engine/scripts/test_ai_policy.py` |
 | Safari cache busting | A Pages deploy stamps HTML, CSS, module imports, and runtime engine URLs with the build/SHA token; a new tab does not reuse the old module graph. | `tools/test_version_stamp.py` |
+| Chronicle reagent icons (#65) | Gather, build, and cast history entries show wrapped named reagent icon chips; gathers combine repeated track increases and distinguish wizard-bonus rings. | `tests/e2e/chronicle-reagent-icons.spec.js`, `engine/web/test_log_format.py` |
 | Reagent expanded card (#64) | Expand a reagent from hand, mats, and Chronicle; only the centered card, dots, arrows, and close remain, while spell/familiar info panels stay unchanged. | `tests/e2e/reagent-expand.spec.js` |
 
 For every carousel check, also verify X close, scrim close, vertical sheet scrolling, and that tapping an action tile performs the real state change.

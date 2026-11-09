@@ -487,6 +487,10 @@ def public_log(s, viewer):
         item['cards'] = log_cards(e)
         if a == 'gather':
             item['gather'] = gather_banner_data(e)
+        if a == 'build' and isinstance(e.get('paid'), list):
+            item['reagents'] = list(e.get('paid', []))
+        elif a in ('cast', 'research') and e.get('cast_paid'):
+            item['reagents'] = list(e.get('cast_paid', []))
         if a in ('convert', 'convert1'):
             item['sell'] = sell_banner_data(e)
         structured = structured_banner_data(e)
