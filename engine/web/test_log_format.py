@@ -83,7 +83,16 @@ def test_public_log_exposes_reagent_lists_for_chronicle_icons():
     finally:
         lw_web.AI.public_view = old_public_view
     assert result[0]['reagents'] == ['Sulphur', 'Sulphur']
+    assert result[0]['school'] == 'Enchantment'
+    assert result[0]['tier'] == 1
     assert result[1]['reagents'] == ['Foxglove', 'Foxglove', 'Sulphur', 'Sulphur']
+    assert result[1]['school'] == 'Thaumaturgy'
+
+
+def test_chronicle_values_use_signed_numeric_facts():
+    assert lw_web.chronicle_values({'act': 'auction', 'price': 8}) == [{'kind': 'mana', 'value': -8}]
+    assert lw_web.chronicle_values({'act': 'convert', 'gain': 32}) == [{'kind': 'mana', 'value': 32}]
+    assert lw_web.chronicle_values({'act': 'transmute', 'gold': 5}) == [{'kind': 'gold', 'value': 5}]
 
 
 def test_sell_banner_data_keeps_sales_and_total_mana_without_track_value():
@@ -137,6 +146,7 @@ if __name__ == '__main__':
     test_log_text_does_not_expose_numbered_card_ids()
     test_gather_banner_data_preserves_reagents_bonus_and_tracks()
     test_public_log_exposes_reagent_lists_for_chronicle_icons()
+    test_chronicle_values_use_signed_numeric_facts()
     test_sell_banner_data_keeps_sales_and_total_mana_without_track_value()
     test_remaining_ai_banner_actions_have_structured_data()
     print(f'OK: {len(ACTS)} log actions humanized')

@@ -349,6 +349,34 @@ def sell_banner_data(e):
     return None
 
 
+def chronicle_values(e):
+    """Numeric mana/gold facts rendered as number-first Chronicle chips."""
+    a = e.get('act')
+    values = []
+    if a == 'auction' and e.get('price') is not None:
+        values.append({'kind': 'mana', 'value': -e['price']})
+    elif a in ('convert', 'convert1') and e.get('gain') is not None:
+        values.append({'kind': 'mana', 'value': e['gain']})
+    elif a == 'transmute' and e.get('gold') is not None:
+        values.append({'kind': 'gold', 'value': e['gold']})
+    elif a == 'wand_tax' and e.get('gold') is not None:
+        values.append({'kind': 'gold', 'value': e['gold']})
+    elif a == 'invisibility_potion' and e.get('gold') is not None:
+        values.append({'kind': 'gold', 'value': e['gold']})
+    elif a == 'summon':
+        if e.get('cost') is not None:
+            values.append({'kind': 'mana', 'value': -e['cost']})
+        if e.get('gold') is not None:
+            values.append({'kind': 'gold', 'value': e['gold']})
+    elif a == 'research' and e.get('paid') is not None:
+        values.append({'kind': 'mana', 'value': -e['paid']})
+    elif a == 'build' and e.get('paid') == 'gold':
+        values.append({'kind': 'gold', 'value': -e.get('tier_paid', 0)})
+    elif a == 'trigger' and e.get('gain') is not None:
+        values.append({'kind': 'mana', 'value': e['gain']})
+    return values
+
+
 def structured_banner_data(e):
     """Compact banner facts; log_text remains the plain-text history fallback."""
     a = e.get('act'); w = e.get('who') or e.get('won')
@@ -478,6 +506,11 @@ def log_cards(e):
 def public_log(s, viewer):
     pv = AI.public_view(s, viewer)
     out = []
+    hardcoded_schools = {
+        'creation': 'Conjuring',
+        'swapo': 'Enchantment',
+        'divination': 'Sorcery',
+    }
     for i, e in enumerate(pv['meta'].get('log', [])):
         a = e.get('act')
         item = dict(i=i, r=e.get('r'), who=e.get('who') or e.get('won') or e.get('seat'), act=a)
@@ -485,8 +518,21 @@ def public_log(s, viewer):
         elif a == 'setup_picks': item['text'] = 'Starting reagents: ' + '; '.join(f"{n} {', '.join(T.nice(r) for r in v)}" for n, v in e['picks'].items())
         else: item['text'] = log_text(e)
         item['cards'] = log_cards(e)
+        school_card = e.get('tower') or e.get('spell') or e.get('familiar')
+        if a == 'auction' and e.get('item'):
+            school_card = 'Wizard_' + e['item'] + '.jpg'
+        school = CD.school(school_card) if school_card else hardcoded_schools.get(str(a).lower())
+        if a == 'wand_tax':
+            school = e.get('school') or school
+        if school:
+            item['school'] = school
+            if school_card and str(school_card).startswith('Tower_'):
+                item['tier'] = CD.tower_info(school_card)[0]
         if a == 'gather':
             item['gather'] = gather_banner_data(e)
+        values = chronicle_values(e)
+        if values:
+            item['values'] = values
         if a == 'build' and isinstance(e.get('paid'), list):
             item['reagents'] = list(e.get('paid', []))
         elif a in ('cast', 'research') and e.get('cast_paid'):
