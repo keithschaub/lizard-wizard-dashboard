@@ -547,6 +547,13 @@ def public_log(s, viewer):
             item['school'] = school
             if school_card and str(school_card).startswith('Tower_'):
                 item['tier'] = CD.tower_info(school_card)[0]
+        if a == 'creation' and school_card and school:
+            creation_school = hardcoded_schools['creation']
+            item['schools'] = [school, creation_school]
+            text = item['text']
+            for name in item['schools']:
+                text = text.replace(f" ({name})", '')
+            item['text'] = text
         if a == 'swapo':
             schools = [CD.school(card) for card in (e.get('gave'), e.get('got')) if card and CD.school(card)]
             if schools:
