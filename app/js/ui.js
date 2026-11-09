@@ -470,6 +470,42 @@ export function openMats(g) {
 
 // ------------------------------------------------------------------ log drawer
 const DOT = { Keith: '#6ff0d0', Newt: '#c49bff', LizWiz: '#ffb46b' };
+
+function logReagentChip(r, { bonus = false, track = null } = {}) {
+  const label = nice(r);
+  return h('span', {
+    class: `log-reagent-chip ${bonus ? 'bonus' : ''} ${track ? 'log-track-chip' : ''}`,
+    title: label,
+    'aria-label': label,
+  }, h('img', { src: reagentIcon(r), alt: label }), track ? `▲+${track}` : null);
+}
+
+function logReagentRow(reagents, bonus = []) {
+  const bonusLeft = [...bonus];
+  return h('div', { class: 'log-reagent-row' },
+    ...(reagents || []).map((r) => {
+      const i = bonusLeft.indexOf(r);
+      const isBonus = i >= 0;
+      if (isBonus) bonusLeft.splice(i, 1);
+      return logReagentChip(r, { bonus: isBonus });
+    }));
+}
+
+function logTracksRow(tracks) {
+  const countsByReagent = new Map();
+  (tracks || []).forEach((r) => countsByReagent.set(r, (countsByReagent.get(r) || 0) + 1));
+  return h('div', { class: 'log-track-row' },
+    h('span', { class: 'log-track-label' }, 'TRACKS UP'),
+    h('div', { class: 'log-reagent-row' },
+      ...countsByReagent.keys().map((r) => logReagentChip(r, { track: countsByReagent.get(r) }))));
+}
+
+function chronicleText(e) {
+  if (e.act === 'build' && e.reagents?.length) return e.text.replace(/\s+paying.*$/, ' paying');
+  if ((e.act === 'cast' || e.act === 'research') && e.reagents?.length) return e.text.replace(/\s+\([^()]*\)$/, '');
+  return e.text;
+}
+
 export async function openLog(g) {
   const ov = openOverlay('drawer', { onScrim: (o) => o.close(), testid: 'log' });
   const list = h('div', { class: 'log-list', 'data-testid': 'log-list' }, h('div', { class: 'none' }, 'Reading the chronicle…'));
@@ -484,9 +520,13 @@ export async function openLog(g) {
     const castBlock = e.cast && g.cards[e.cast] ? h('div', { class: 'log-cast', 'data-testid': 'log-cast' },
       h('img', { src: art(e.cast), alt: e.cast, onclick: () => expandCard(g, e.cast) }),
       h('div', {}, h('div', { class: 'lc-name' }, g.cards[e.cast].display), h('div', { class: 'lc-text' }, g.cards[e.cast].effect))) : null;
+    const gatherBlock = e.act === 'gather' && e.gather ? h('div', { class: 'log-gather-details' },
+      logReagentRow(e.gather.reagents, e.gather.bonus), logTracksRow(e.gather.tracks)) : null;
+    const reagentBlock = !gatherBlock && e.reagents?.length ? logReagentRow(e.reagents) : null;
     appendNodes(list, h('div', { class: 'log-item', 'data-testid': 'log-item' },
       h('span', { class: 'dot', style: { background: DOT[e.who] || '#9aa6cc' } }),
-      h('div', { style: { flex: 1 } }, h('div', {}, e.text),
+      h('div', { style: { flex: 1 } }, h('div', {}, gatherBlock ? `${e.who} gathered` : chronicleText(e)),
+        gatherBlock, reagentBlock,
         thumbs.length ? h('div', { class: 'thumbs' }, thumbs.slice(0, 8).map((k) => h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }))) : null,
         castBlock)));
   }
