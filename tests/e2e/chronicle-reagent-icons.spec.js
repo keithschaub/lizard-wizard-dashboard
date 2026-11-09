@@ -104,12 +104,28 @@ test('Chronicle action lines keep schools and values in the approved chip order'
           text: 'Newt swapped: gave Draco Mortemus (Enchantment), took Anguis Magicus (Sorcery)',
           schools: ['Enchantment', 'Sorcery'],
         },
+        {
+          r: 24, who: 'Newt', act: 'new_research',
+          text: 'Newt took Mana Fountain (Thaumaturgy)', school: 'Thaumaturgy',
+        },
+        {
+          r: 24, who: 'Newt', act: 'scry_spells',
+          text: 'Newt scried spells and took Mana Fountain (Thaumaturgy)', school: 'Thaumaturgy',
+        },
+        {
+          r: 24, who: 'Newt', act: 'creation',
+          text: 'Newt took Obelisk of Puzzles T1 (Thaumaturgy) for free', school: 'Thaumaturgy', tier: 1,
+        },
+        {
+          r: 24, who: 'Newt', act: 'disintegrate',
+          text: 'Newt cast Disintegrate: Anguis Magicus (Sorcery) is out of play', school: 'Sorcery',
+        },
       ],
     });
     await window.ui.openLog(g);
   });
   const items = page.getByTestId('log-item');
-  await expect(items).toHaveCount(6);
+  await expect(items).toHaveCount(10);
   await expect(items.nth(0)).toContainText('Gecko summoned Vulpes');
   await expect(items.nth(0)).toContainText('gathered');
   await expect(items.nth(0).locator('.log-reagent-count')).toHaveText('×5');
@@ -128,5 +144,9 @@ test('Chronicle action lines keep schools and values in the approved chip order'
   await expect(items.nth(5)).not.toContainText('(Enchantment)');
   await expect(items.nth(5)).not.toContainText('(Sorcery)');
   await expect(items.nth(5).locator('.log-school-chip')).toHaveCount(2);
+  for (const index of [6, 7, 8, 9]) {
+    await expect(items.nth(index)).not.toContainText(/\([A-Z][^)]+\)/);
+    await expect(items.nth(index).locator('.log-school-chip')).toHaveCount(1);
+  }
   await page.getByTestId('log').screenshot({ path: 'docs/screenshots/chronicle-lines-430x775.png' });
 });
