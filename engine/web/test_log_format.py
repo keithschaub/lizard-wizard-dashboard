@@ -83,7 +83,10 @@ def test_public_log_exposes_reagent_lists_for_chronicle_icons():
     finally:
         lw_web.AI.public_view = old_public_view
     assert result[0]['reagents'] == ['Sulphur', 'Sulphur']
+    assert result[0]['school'] == 'Enchantment'
+    assert result[0]['tier'] == 1
     assert result[1]['reagents'] == ['Foxglove', 'Foxglove', 'Sulphur', 'Sulphur']
+    assert result[1]['school'] == 'Thaumaturgy'
 
 
 def test_sell_banner_data_keeps_sales_and_total_mana_without_track_value():

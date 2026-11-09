@@ -478,6 +478,11 @@ def log_cards(e):
 def public_log(s, viewer):
     pv = AI.public_view(s, viewer)
     out = []
+    hardcoded_schools = {
+        'creation': 'Conjuring',
+        'swapo': 'Enchantment',
+        'divination': 'Sorcery',
+    }
     for i, e in enumerate(pv['meta'].get('log', [])):
         a = e.get('act')
         item = dict(i=i, r=e.get('r'), who=e.get('who') or e.get('won') or e.get('seat'), act=a)
@@ -485,6 +490,16 @@ def public_log(s, viewer):
         elif a == 'setup_picks': item['text'] = 'Starting reagents: ' + '; '.join(f"{n} {', '.join(T.nice(r) for r in v)}" for n, v in e['picks'].items())
         else: item['text'] = log_text(e)
         item['cards'] = log_cards(e)
+        school_card = e.get('tower') or e.get('spell') or e.get('familiar')
+        if a == 'auction' and e.get('item'):
+            school_card = 'Wizard_' + e['item'] + '.jpg'
+        school = CD.school(school_card) if school_card else hardcoded_schools.get(str(a).lower())
+        if a == 'wand_tax':
+            school = e.get('school') or school
+        if school:
+            item['school'] = school
+            if school_card and str(school_card).startswith('Tower_'):
+                item['tier'] = CD.tower_info(school_card)[0]
         if a == 'gather':
             item['gather'] = gather_banner_data(e)
         if a == 'build' and isinstance(e.get('paid'), list):
