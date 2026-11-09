@@ -90,12 +90,26 @@ test('Chronicle action lines keep schools and values in the approved chip order'
           text: 'LizWiz built Obelisk of Puzzles paying',
           reagents: ['Sulphur', 'Sulphur'], school: 'Thaumaturgy', tier: 2,
         },
+        {
+          r: 24, who: 'LizWiz', act: 'build',
+          text: 'LizWiz built Obelisk of Puzzles paying',
+          school: 'Thaumaturgy', tier: 2, values: [{ kind: 'gold', value: -3 }],
+        },
+        {
+          r: 24, who: 'Newt', act: 'cast',
+          text: 'Newt cast Anguis Magicus (Sorcery) is out of play', school: 'Sorcery',
+        },
+        {
+          r: 24, who: 'Newt', act: 'swapo',
+          text: 'Newt swapped: gave Draco Mortemus (Enchantment), took Anguis Magicus (Sorcery)',
+          schools: ['Enchantment', 'Sorcery'],
+        },
       ],
     });
     await window.ui.openLog(g);
   });
   const items = page.getByTestId('log-item');
-  await expect(items).toHaveCount(3);
+  await expect(items).toHaveCount(6);
   await expect(items.nth(0)).toContainText('Gecko summoned Vulpes');
   await expect(items.nth(0)).toContainText('gathered');
   await expect(items.nth(0).locator('.log-reagent-count')).toHaveText('×5');
@@ -107,5 +121,12 @@ test('Chronicle action lines keep schools and values in the approved chip order'
   await expect(items.nth(2).locator('.log-school-chip')).toContainText('T2 Thaumaturgy');
   await expect(items.nth(2).locator('.log-inline-text')).toHaveText('LizWiz built Obelisk of Puzzles');
   await expect(items.nth(2)).toContainText('paying');
+  await expect(items.nth(3)).not.toContainText('Gold');
+  await expect(items.nth(3).locator('.log-value-number')).toHaveText('−3');
+  await expect(items.nth(4)).not.toContainText('(Sorcery)');
+  await expect(items.nth(4).locator('.log-school-chip')).toContainText('Sorcery');
+  await expect(items.nth(5)).not.toContainText('(Enchantment)');
+  await expect(items.nth(5)).not.toContainText('(Sorcery)');
+  await expect(items.nth(5).locator('.log-school-chip')).toHaveCount(2);
   await page.getByTestId('log').screenshot({ path: 'docs/screenshots/chronicle-lines-430x775.png' });
 });

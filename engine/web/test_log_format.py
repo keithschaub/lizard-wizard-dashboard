@@ -89,6 +89,24 @@ def test_public_log_exposes_reagent_lists_for_chronicle_icons():
     assert result[1]['school'] == 'Thaumaturgy'
 
 
+def test_public_log_removes_gold_word_and_exposes_swap_schools():
+    entries = [
+        {'act': 'build', 'who': 'LizWiz', 'tower': 'Tower_T2_Obelisk_of_Puzzles.jpg',
+         'paid': 'gold', 'tier_paid': 3},
+        {'act': 'swapo', 'who': 'Newt', 'gave': 'Wizard_Draco_Mortemus.jpg',
+         'got': 'Wizard_Anguis_Magicus.jpg'},
+    ]
+    old_public_view = lw_web.AI.public_view
+    lw_web.AI.public_view = lambda state, viewer: {'meta': {'log': entries}}
+    try:
+        result = lw_web.public_log({}, 'Newt')
+    finally:
+        lw_web.AI.public_view = old_public_view
+    assert result[0]['text'].endswith('paying')
+    assert result[0]['values'] == [{'kind': 'gold', 'value': -3}]
+    assert result[1]['schools'] == ['Enchantment', 'Sorcery']
+
+
 def test_chronicle_values_use_signed_numeric_facts():
     assert lw_web.chronicle_values({'act': 'auction', 'price': 8}) == [{'kind': 'mana', 'value': -8}]
     assert lw_web.chronicle_values({'act': 'convert', 'gain': 32}) == [{'kind': 'mana', 'value': 32}]
