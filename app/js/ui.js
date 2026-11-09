@@ -481,11 +481,11 @@ function logReagentChip(r, { bonus = false, count = 1, track = null } = {}) {
   const label = nice(r);
   const suffix = track ? `▲+${track}` : (count >= 2 ? `×${count}` : '');
   return h('span', {
-    class: `log-reagent-chip ${bonus ? 'bonus' : ''} ${track ? 'log-track-chip' : ''}`,
+    class: `log-reagent-chip ${track ? 'log-track-chip' : ''}`,
     title: suffix ? `${label} ${suffix}` : label,
     'aria-label': suffix ? `${label} ${suffix}` : label,
   }, h('img', { src: reagentIcon(r), alt: label }),
-    h('span', { class: 'log-reagent-count' }, suffix));
+    suffix ? h('span', { class: 'log-reagent-count' }, suffix) : null);
 }
 
 export function groupReagents(reagents = [], bonus = []) {

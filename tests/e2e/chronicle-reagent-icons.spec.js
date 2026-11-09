@@ -37,7 +37,7 @@ test('Chronicle renders structured reagent icons for gather, build, and cast ent
   await expect(log.locator('.log-item')).toHaveCount(4);
   await expect(log.locator('.log-track-label')).toHaveText('TRACKS UP');
   await expect(log.locator('.log-track-chip')).toHaveCount(2);
-  await expect(log.locator('.log-gather-details .log-reagent-chip.bonus')).toHaveCount(1);
+  await expect(log.locator('.log-gather-details .log-reagent-chip.bonus')).toHaveCount(0);
   await expect(log.locator('.log-item').nth(0).locator('.log-inline-text')).toHaveText('Keith gathered');
   await expect(log.locator('.log-item').nth(0).locator('.log-inline .log-reagent-chip')).toHaveCount(1);
   await expect(log.locator('.log-item').nth(0).locator('.log-inline .log-reagent-count')).toHaveText('×3');
@@ -53,6 +53,9 @@ test('Chronicle renders structured reagent icons for gather, build, and cast ent
   await expect(log.locator('.log-item').nth(3).locator('.log-school-chip')).toContainText('Sorcery');
   await expect(log.locator('.log-item').nth(3).locator('.log-value-chip')).toHaveCount(1);
   await expect(log.locator('.log-item').nth(3).locator('.log-value-number')).toHaveText('−8');
+  await expect(log.locator('.log-item').nth(3)).toContainText('Rex won the auction for Anguis Magicus');
+  await expect(log.locator('.log-item').nth(3)).not.toContainText('auction for Anguis Magicus for 8 mana');
+  await expect(log.locator('.log-item').nth(2).locator('.log-reagent-count')).toHaveCount(2);
   const grouped = await page.evaluate(() => window.ui.groupReagents(['Sulphur', 'Foxglove', 'Sulphur'], ['Sulphur', 'Horn']));
   expect(grouped).toEqual([
     { reagent: 'Sulphur', count: 3, bonus: true },

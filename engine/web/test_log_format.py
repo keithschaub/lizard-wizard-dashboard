@@ -95,6 +95,20 @@ def test_chronicle_values_use_signed_numeric_facts():
     assert lw_web.chronicle_values({'act': 'transmute', 'gold': 5}) == [{'kind': 'gold', 'value': 5}]
 
 
+def test_public_log_shortens_auction_text_for_chips():
+    old_public_view = lw_web.AI.public_view
+    lw_web.AI.public_view = lambda state, viewer: {'meta': {'log': [{
+        'act': 'auction', 'who': 'Rex', 'won': 'Rex',
+        'item': 'Anguis_Magicus', 'price': 8,
+    }]}}
+    try:
+        entry = lw_web.public_log({}, 'Rex')[0]
+    finally:
+        lw_web.AI.public_view = old_public_view
+    assert entry['text'] == 'Rex won the auction for Anguis Magicus (Sorcery)'
+    assert entry['values'] == [{'kind': 'mana', 'value': -8}]
+
+
 def test_sell_banner_data_keeps_sales_and_total_mana_without_track_value():
     assert lw_web.sell_banner_data({
         'act': 'convert', 'reagent': 'Mandrake', 'n': 2, 'value': 12,
