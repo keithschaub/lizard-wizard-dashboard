@@ -52,6 +52,14 @@ test('Summon chooser closes without state change and swipes market familiars', a
   await page.getByTestId(`slot-fam_${v.board.fam_face.indexOf(first)}`).tap();
   const track = page.getByTestId('card-track');
   const tileGrid = page.getByTestId('expanded-actions');
+  const cost = page.getByTestId('summon-cost');
+  await expect(cost).toContainText(`Summon for ${v.legal.summon[first].cost} mana`);
+  await expect(cost).toContainText('You have');
+  await expect(page.locator('.familiar-action-subtitle')).toHaveCount(0);
+  await expect(page.locator('.familiar-action-pick')).toHaveText('THEN PICK ONE');
+  await expect(page.locator('.expand.tiles .cardinfo')).toHaveCount(0);
+  expect(await chooser.evaluate((el) => getComputedStyle(el).backgroundColor)).toMatch(/rgba?\(/);
+  expect(await page.locator('.familiar-action-detail').first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
   const tileLayout = await tileGrid.evaluate((el) => {
     const buttons = [...el.querySelectorAll('button')].map((b) => b.getBoundingClientRect());
     const styles = getComputedStyle(el);
@@ -76,6 +84,8 @@ test('Summon chooser closes without state change and swipes market familiars', a
 
   expect(await secondImage.getAttribute('src')).toBe(`art/cards/${group[1]}.webp`);
   const secondDetail = await page.getByTestId('summon-gather').textContent();
+  await expect(cost).toContainText(`Summon for ${v.legal.summon[group[1]].cost} mana`);
+  await expect(page.getByTestId('summon-dungeon')).toContainText('draw for treasure');
   await swipeFromImage(page, secondImage, 140);
   await expect.poll(() => firstImage.getAttribute('src')).toBe(firstSrc);
   await expect.poll(() => page.getByTestId('summon-gather').textContent()).not.toBe(secondDetail);
@@ -99,4 +109,38 @@ test('market familiar expand uses the same iOS carousel', async ({ page }) => {
     const active = expanded.locator('[data-testid=card-indicator] .dot.active').getAttribute('data-index');
     return expanded.locator(`[data-testid=expanded-card][data-index="${await active}"] [data-testid=expanded-img]`).getAttribute('src');
   }).not.toBe(firstSrc);
+});
+
+test.describe('approved chooser layout at 430px', () => {
+  test.use({ viewport: { width: 430, height: 932 }, deviceScaleFactor: 3 });
+
+  test('cost, prompt, backdrop, arrows, and tiles fit the iPhone viewport', async ({ page }) => {
+    const v = await seed(page);
+    const first = v.board.fam_face.find(Boolean);
+    await page.getByTestId(`slot-fam_${v.board.fam_face.indexOf(first)}`).tap();
+    const chooser = page.getByTestId('summon-use');
+    await expect(chooser).toBeVisible();
+    await expect(page.getByTestId('summon-cost')).toContainText(`Summon for ${v.legal.summon[first].cost} mana`);
+    await expect(page.locator('.familiar-action-pick')).toHaveText('THEN PICK ONE');
+    const layout = await chooser.evaluate((el) => {
+      const card = el.querySelector('[data-testid="card-track"]').getBoundingClientRect();
+      const buttons = [...el.querySelectorAll('.familiar-action-tile')].map((b) => b.getBoundingClientRect());
+      const bg = getComputedStyle(el).backgroundColor;
+      return {
+        cardTop: card.top,
+        cardBottom: card.bottom,
+        tileColumns: getComputedStyle(el.querySelector('.familiar-action-grid')).gridTemplateColumns.split(' ').length,
+        tilesFit: buttons.every((b) => b.bottom <= innerHeight),
+        darkBackdrop: bg === 'rgb(7, 10, 24)',
+      };
+    });
+    expect(layout.cardTop).toBeGreaterThan(0);
+    expect(layout.cardBottom).toBeLessThan(600);
+    expect(layout.tileColumns).toBe(2);
+    expect(layout.tilesFit).toBe(true);
+    expect(layout.darkBackdrop).toBe(true);
+    await expect(page.getByTestId('nav-prev')).toBeVisible();
+    await expect(page.getByTestId('nav-next')).toBeVisible();
+    await chooser.screenshot({ path: 'docs/screenshots/summon-chooser-430.png' });
+  });
 });
