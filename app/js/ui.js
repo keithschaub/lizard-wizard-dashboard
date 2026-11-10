@@ -969,6 +969,8 @@ export function convertSheet(g, reagent) {
   const xPick = h('div', { class: 'chips' });
   const xAdd = h('button', { class: 'chip', disabled: true, 'data-testid': 'transform-add' }, 'Transform (2:1)');
   const trackOf = (r) => (g.v.board.tracks[r] ?? 0);
+  const mana = (value) => logValueChip({ kind: 'mana', value });
+  const reagentCount = (r, count) => logReagentChip(r, { count });
   const choiceGroup = (options, selected, testPrefix, onPick) => h('div', { class: 'reagent-choice-group' },
     ...options.map((r) => {
       const b = h('button', {
@@ -1061,10 +1063,11 @@ export function convertSheet(g, reagent) {
         h('div', { class: 'ov-sub energize-track', 'data-testid': 'convert-energize-note' },
           h('b', {}, `${nice(reagent)} track ${base} + 3 Energize = ${v}${capped ? ' (capped at 12)' : ''}`)),
         h('div', { 'data-testid': 'convert-gain-math' },
-          `${n} × ${v} = `, h('b', {}, `+${n * v} mana`), ` · track ends at ${endTrack}`));
+          reagentCount(reagent, n), ' × ', mana(v), ' → ', mana(n * v)));
     } else {
       appendNodes(gain, h('div', { 'data-testid': 'convert-gain-math' },
-        `${n} × ${v} = `, h('b', {}, `+${n * v} mana`), ` · track ${v} → ${endTrack}`));
+        reagentCount(reagent, n), ' × ', mana(v), ' → ', mana(n * v)),
+      h('div', { class: 'ov-sub convert-price-drop' }, 'Price drops to ', mana(endTrack), ' each'));
     }
     if (adept && r2) {
       const c2 = L.convert[r2] || { n: countTok(r2), value: trackOf(r2) };
@@ -1072,7 +1075,7 @@ export function convertSheet(g, reagent) {
       val2.textContent = String(n2);
       const tv = trackOf(r2);
       gain2.innerHTML = '';
-      appendNodes(gain2, `${n2} × ${tv} = `, h('b', {}, `+${n2 * tv} mana`), ` · track ${tv} → ${Math.max(1, tv - n2)}`);
+      appendNodes(gain2, reagentCount(r2, n2), ' × ', mana(tv), ' → ', mana(n2 * tv));
     } else {
       gain2.innerHTML = '';
       val2.textContent = '1';
