@@ -53,7 +53,7 @@ test('Chronicle renders structured reagent icons for gather, build, and cast ent
   await expect(log.locator('.log-reagent-chip').first()).toHaveAttribute('aria-label', 'Sulphur ×3');
   await expect(log.locator('.log-item').nth(3).locator('.log-school-chip')).toContainText('Sorcery');
   await expect(log.locator('.log-item').nth(3).locator('.log-value-chip')).toHaveCount(1);
-  await expect(log.locator('.log-item').nth(3).locator('.log-value-number')).toHaveText('−8');
+  await expect(log.locator('.log-item').nth(3).locator('.log-value-number')).toHaveText('8');
   await expect(log.locator('.log-item').nth(3)).toContainText('Rex won the auction for Anguis Magicus');
   await expect(log.locator('.log-item').nth(3)).not.toContainText('auction for Anguis Magicus for 8 mana');
   await expect(log.locator('.log-item').nth(2).locator('.log-reagent-count')).toHaveCount(2);
@@ -134,7 +134,7 @@ test('Chronicle action lines keep schools and values in the approved chip order'
   await expect(items.nth(0)).toContainText('Gecko summoned Vulpes');
   await expect(items.nth(0)).toContainText('gathered');
   await expect(items.nth(0).locator('.log-reagent-count')).toHaveText('×5');
-  await expect(items.nth(0).locator('.log-value-number')).toHaveText('−15');
+  await expect(items.nth(0).locator('.log-value-number')).toHaveText('15');
   await expect(items.nth(1)).toContainText('Newt sold');
   await expect(items.nth(1)).toContainText('for');
   await expect(items.nth(1).locator('.log-reagent-count')).toHaveText('×9');
@@ -143,7 +143,7 @@ test('Chronicle action lines keep schools and values in the approved chip order'
   await expect(items.nth(2).locator('.log-inline-text')).toHaveText('LizWiz built Obelisk of Puzzles');
   await expect(items.nth(2)).toContainText('paying');
   await expect(items.nth(3)).not.toContainText('Gold');
-  await expect(items.nth(3).locator('.log-value-number')).toHaveText('−3');
+  await expect(items.nth(3).locator('.log-value-number')).toHaveText('3');
   await expect(items.nth(4)).not.toContainText('(Sorcery)');
   await expect(items.nth(4).locator('.log-school-chip')).toContainText('Sorcery');
   await expect(items.nth(5)).not.toContainText('(Enchantment)');

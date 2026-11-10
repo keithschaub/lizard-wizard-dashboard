@@ -132,7 +132,7 @@ test('structured auction and summon banners use number-first value chips', async
       },
     }, 0, 1);
   });
-  await expect(page.getByTestId('ai-structured').locator('.log-value-number')).toHaveText(['−8', '120']);
+  await expect(page.getByTestId('ai-structured').locator('.log-value-number')).toHaveText(['8', '120']);
   await expect(page.getByTestId('ai-structured').locator('img[src*="mana-orb"], img[src*="gold-token"]')).toHaveCount(0);
 });
 
