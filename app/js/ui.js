@@ -681,15 +681,22 @@ function xTargetPicker(g, host, maxX, title = 'Invisibility Potion') {
   const opp = g.v.players.filter((q) => !q.you);
   const go = h('button', { class: 'act', disabled: true, 'data-testid': 'x-confirm' }, 'Cast');
   const chips = opp.map((q) => {
-    const c = h('button', { class: 'chip', 'data-testid': `x-target-${q.name}` }, avatar(q.name, 26), `${q.name} · ${q.gold ?? '?'} Gold`);
+    const shielded = q.shielded || q.spell_shield || q.has_spell_shield;
+    const c = h('button', { class: `chip ${shielded ? 'shielded' : ''}`, disabled: shielded || null, 'data-testid': `x-target-${q.name}` },
+      avatar(q.name, 26), q.name, shielded ? h('span', { class: 'target-shield-badge' }, '🛡 Shielded') : null);
     c.onclick = () => { target = q.name; chips.forEach((z) => z.classList.remove('on')); c.classList.add('on'); go.disabled = false; };
     return c;
   });
-  appendNodes(host, h('div', { class: 'phase-title' }, `${title}: pay X Eye of Newt`),
+  appendNodes(host, h('div', { class: 'phase-title' }, title, ': pay ',
+      logValueChip({ kind: 'mana', value: 5 }), ' + ', reagentCountChip('Eye_of_Newt', maxX)),
     h('div', { class: 'stepper' }, h('button', { onclick: () => { x = Math.max(1, x - 1); val.textContent = x; } }, '−'), val, h('button', { onclick: () => { x = Math.min(maxX, x + 1); val.textContent = x; } }, '+')),
     h('div', { class: 'chips' }, chips), h('div', { class: 'actions' }, go));
   go.onclick = () => done({ x, target });
   return p;
+}
+
+function reagentCountChip(reagent, count) {
+  return logReagentChip(reagent, { count });
 }
 
 // ------------------------------------------------------------------ gather: keep taps -> cast -> put-back -> commit
@@ -888,7 +895,7 @@ export function researchFlow(g, sk, { group = null, groupIndex = 0 } = {}) {
           if (L.x) {
             overlay.el.innerHTML = ''; overlay.el.classList.add('gather');
             const eyes = g.me_().tok.filter((t) => t === 'Eye_of_Newt').length;
-            const xt = await xTargetPicker(g, overlay.el, eyes); x = xt.x; target = xt.target;
+            const xt = await xTargetPicker(g, overlay.el, eyes, g.cards[k]?.name || 'Invisibility Potion'); x = xt.x; target = xt.target;
           }
           return commitFromExpand(g, overlay, async () => {
             const from = slotRectOf(k);
