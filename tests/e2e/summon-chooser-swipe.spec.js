@@ -75,11 +75,11 @@ test('Summon chooser closes without state change and swipes market familiars', a
   expect(tileLayout.rows[2]).toBe(tileLayout.rows[3]);
   const firstImage = track.locator('[data-testid="expanded-card"][data-index="0"] img');
   const firstSrc = await firstImage.getAttribute('src');
-  const firstDetail = await page.getByTestId('summon-gather').textContent();
+  const firstDetail = await page.getByTestId('summon-gather').locator('img').getAttribute('src');
   await swipeFromImage(page, firstImage, -140);
   const secondImage = track.locator('[data-testid="expanded-card"][data-index="1"] img');
   await expect.poll(() => secondImage.getAttribute('src')).not.toBe(firstSrc);
-  await expect.poll(() => page.getByTestId('summon-gather').textContent()).not.toBe(firstDetail);
+  await expect.poll(() => page.getByTestId('summon-gather').locator('img').getAttribute('src')).not.toBe(firstDetail);
   await chooser.screenshot({ path: 'docs/screenshots/summon-expand-card-iphone-after-swipe.png' });
 
   expect(await secondImage.getAttribute('src')).toBe(`art/cards/${group[1]}.webp`);
