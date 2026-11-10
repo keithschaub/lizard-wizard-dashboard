@@ -34,7 +34,7 @@ class Game {
   sfx(n) { Audio.play(n); }
   toast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
+    t.replaceChildren(typeof msg === 'string' ? document.createTextNode(msg) : msg);
     t.setAttribute('data-testid', 'toast');
     t.classList.add('show');
     clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 2600);
@@ -191,7 +191,11 @@ class Game {
         h('div', { class: 'tokens', 'data-testid': 'tokens' }, tok.size ? [...tok].map(([r, n]) => {
           const legal = !!(L.convert || {})[r];
           const el = h('button', { class: `tokchip ${legal ? 'legal' : ''}`, 'data-testid': `token-${r}`, 'aria-label': `${n} ${nice(r)}` }, h('img', { src: reagentIcon(r), alt: '' }), `×${n}`);
-          el.onclick = () => { this.sfx('tap'); if (legal) UI.convertSheet(this, r); else this.toast(`${nice(r)}: track value ${v.board.tracks[r]}`); };
+          el.onclick = () => {
+            this.sfx('tap');
+            if (legal) UI.convertSheet(this, r);
+            else this.toast(h('span', {}, UI.logReagentChip(r), ' price is ', UI.logValueChip({ kind: 'mana', value: v.board.tracks[r] }), ' each'));
+          };
           return el;
         }) : h('div', { class: 'empty-note' }, 'No reagent tokens')),
         h('div', { class: 'hand', 'data-testid': 'hand' }, p.hand.map((k, i) => {

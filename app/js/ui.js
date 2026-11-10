@@ -495,7 +495,7 @@ export function openMats(g) {
 // ------------------------------------------------------------------ log drawer
 const DOT = { Keith: '#6ff0d0', Newt: '#c49bff', LizWiz: '#ffb46b' };
 
-function logReagentChip(r, { bonus = false, count = 1, track = null } = {}) {
+export function logReagentChip(r, { bonus = false, count = 1, track = null } = {}) {
   const label = nice(r);
   const suffix = track ? `▲+${track}` : (count >= 2 ? `×${count}` : '');
   return h('span', {
@@ -535,7 +535,7 @@ function logSchoolChip(school, tier = null) {
   return h('span', { class: `log-school-chip ${crest ? '' : 'plain'}`, title: label, 'aria-label': label }, crest, label);
 }
 
-function logValueChip({ kind, value }) {
+export function logValueChip({ kind, value }) {
   const label = `${value} ${kind}`;
   return h('span', { class: `log-value-chip ${kind}`, title: label, 'aria-label': label },
     h('span', { class: 'log-value-number' }, String(Math.abs(value))),
