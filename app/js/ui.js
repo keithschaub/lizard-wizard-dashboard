@@ -1477,18 +1477,21 @@ export async function arena(g, { mode, wizard = null }) {
     const out = h('div', { class: 'bidval', 'data-testid': 'bid-value', 'data-min': min, 'data-max': max }, String(val), h('small', {}, ` / ${max} mana`));
     const bidBtn = h('button', { class: 'act', 'data-testid': 'bid-go', onclick: () => { val = clamp(val); done({ bid: val }); } }, opening ? 'Open bid' : 'Bid');
     const passBtn = h('button', { class: 'act secondary', 'data-testid': opening ? 'bid-cancel' : 'bid-pass', onclick: () => done(opening ? { cancel: true } : { pass: true }) }, opening ? 'Cancel' : 'Pass');
-    const mana = h('div', { class: 'bid-mana', 'data-testid': 'bid-mana' }, `Your mana: ${max}`, opening ? '' : ` · high bid ${min - 1}${lead ? ` (${lead})` : ''}`);
+    const yourBid = h('span', {}, `${val}/${max} `, logValueChip({ kind: 'mana', value: max }));
+    const bidSummary = h('div', { class: 'bid-summary', 'data-testid': 'bid-summary' },
+      h('div', { class: 'bid-summary-row' }, h('b', {}, 'High bid'), h('span', {}, logValueChip({ kind: 'mana', value: Math.max(0, min - 1) }), lead ? ` ${lead}` : '')),
+      h('div', { class: 'bid-summary-row' }, h('b', {}, 'Your bid'), yourBid));
     if (min === max) {
       // A range input with min == max is degenerate (iOS Safari lets the thumb report values outside it): offer the one bid.
       out.firstChild.textContent = String(val);
-      appendNodes(bar, out, mana, h('div', { class: 'ov-sub', style: { margin: 0 } }, `${val} is all your mana`), h('div', { class: 'bidbtns' }, passBtn, bidBtn));
+      appendNodes(bar, bidSummary, h('div', { class: 'ov-sub', style: { margin: 0 } }, `${val} is all your mana`), h('div', { class: 'bidbtns' }, passBtn, bidBtn));
       return p;
     }
     const sl = h('input', { type: 'range', class: 'slider', min, max, value: val, step: 1, 'data-testid': 'bid-slider' });
-    const show = () => { sl.value = val; out.firstChild.textContent = String(val); };
+    const show = () => { sl.value = val; out.firstChild.textContent = String(val); yourBid.firstChild.textContent = `${val}/${max} `; };
     sl.oninput = () => { val = clamp(sl.value); show(); };
     const step = (d) => () => { val = clamp(val + d); show(); g.sfx('tap'); };
-    appendNodes(bar, out, mana, h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+    appendNodes(bar, bidSummary, h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
       h('button', { class: 'tb-btn', 'data-testid': 'bid-minus', onclick: step(-1) }, '−'), sl, h('button', { class: 'tb-btn', 'data-testid': 'bid-plus', onclick: step(1) }, '+')),
       h('div', { class: 'bidbtns' }, passBtn, bidBtn));
     return p;
