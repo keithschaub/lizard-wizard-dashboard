@@ -37,4 +37,16 @@ Run the relevant Playwright project on both Chromium and `webkit-iphone` where n
 | Chronicle prose normalization | Table-driven school-bearing lines leave no tier or parenthesized school text outside their chips, including reagent/gold builds, free towers, destroys, research, scry, swaps, and cast outcomes. | `tests/e2e/chronicle-reagent-icons.spec.js` |
 | Research action value chips | Research and Research & Cast action rows use positive number-then-mana chips, with reagents left of a right-anchored mana chip. | `tests/e2e/board-spell-swipe.spec.js` |
 
+### Round 2 follow-up surfaces
+| Surface | Regression coverage |
+|---|---|
+| 03 Convert mixed | Sell-a-mix title, button, and footer use number-first mana-orb chips without word-form mana. | `tests/e2e/adept-conversion.spec.js` |
+| 86 Invisibility Potion target picker | Correct spell title, positive cost chips, hidden opponent gold, and public Shielded marker. | `tests/e2e/spell-casting.spec.js` |
+| 87 Auction bid | High bid / Your bid rows retain aligned mana chips and the slider. | `tests/e2e/playtest.spec.js` |
+| 88 AI sell caption | Reagent count, unit price, arrow, and total mana are one line. | `tests/e2e/banner-log-format.spec.js` |
+| 89 Summon | Oval summon cost uses aligned summon/current/remaining mana chips; square tiles remain unchanged. | `tests/e2e/summon-chooser-swipe.spec.js` |
+| 90 Transmute | Trade-first summary and live current/after gold chips precede the button. | `tests/e2e/spell-casting.spec.js` |
+| 91 Reagent price pop-up | Reagent icon and number-first mana price chip are shown together. | `tests/e2e/convert-sheet.spec.js` |
+| 92 Dungeon/Auction/Wand values | Result surfaces use positive number-first gold/mana chips. | `tests/e2e/spell-casting.spec.js`, `tests/e2e/playtest.spec.js` |
+
 For every carousel check, also verify X close, scrim close, vertical sheet scrolling, and that tapping an action tile performs the real state change.
