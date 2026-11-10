@@ -29,7 +29,7 @@ test('board spell research: swipe changes card and research button targets the n
   const t0 = await spellAt();
   const img0 = await t0.img.getAttribute('src');
   const mana0 = legal[t0.key]?.mana;
-  await expect(page.getByTestId('research-only')).toContainText(`${mana0} mana`);
+  await expect(page.getByTestId('research-only').locator('.log-value-number')).toHaveText(String(mana0));
 
   await page.getByTestId('nav-next').tap();
   await page.waitForTimeout(350);
@@ -41,7 +41,7 @@ test('board spell research: swipe changes card and research button targets the n
 
   const L1 = legal[t1.key];
   if (L1) {
-    await expect(page.getByTestId('research-only')).toContainText(`${L1.mana} mana`);
+    await expect(page.getByTestId('research-only').locator('.log-value-number')).toHaveText(String(L1.mana));
     await expect(page.getByTestId('research-cast')).toBeVisible();
   } else {
     await expect(page.getByTestId('research-only')).toHaveCount(0);

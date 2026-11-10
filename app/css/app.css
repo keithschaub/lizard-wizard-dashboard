@@ -483,6 +483,8 @@ img { -webkit-user-drag: none; user-select: none; }
 .log-value-orb { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none; }
 .log-value-orb.mana { background: radial-gradient(circle at 35% 30%, #9fd0ff, #2b6ee0 60%, #173a8a); }
 .log-value-orb.gold { background: radial-gradient(circle at 35% 30%, #fff1b0, #e0a92e 60%, #8a5a12); }
+.action-chip-row { display: flex; align-items: center; justify-content: flex-end; gap: 4px; width: 100%; }
+.action-chip-row .log-value-chip { margin-left: auto; }
 .log-school-chip { display: inline-flex; align-items: center; gap: 4px; min-height: 25px; padding: 2px 8px 2px 4px;
   border: 1px solid rgba(255, 220, 137, .82); border-radius: 14px; background: rgba(88, 67, 24, .32);
   color: var(--gold-hi); font-family: var(--display); font-size: 11px; font-variant-caps: small-caps;

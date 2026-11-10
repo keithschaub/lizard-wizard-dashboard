@@ -93,8 +93,7 @@ export function cardInfo(g, key) {
     const rg = Object.entries(c.cost?.reagents || {});
     const spellCost = rg.flatMap(([r, n]) => n === 'X' ? [r] : Array.from({ length: n }, () => r));
     meta.push(h('span', { class: 'card-cost-row' },
-      logValueChip({ kind: 'mana', value: -(c.cost?.mana ?? 5) }),
-      h('span', {}, '+'),
+      logValueChip({ kind: 'mana', value: c.cost?.mana ?? 5 }),
       h('span', { class: 'card-cost-reagents' }, ...groupReagents(spellCost).map(({ reagent: r, count }) => logReagentChip(r, { count })))));
   } else if (c.deck === 'Tower') {
     meta.push(h('span', {}, `Tier ${c.cost?.tier}`), h('span', {}, `Cost ${c.cost?.reagent_count} `, h('img', { src: reagentIcon(c.cost?.reagent), alt: '' }), ` or ${c.cost?.gold} Gold`));
@@ -861,15 +860,15 @@ export function researchFlow(g, sk, { group = null, groupIndex = 0 } = {}) {
       if (!L) return [];
       const cost = Object.entries(g.cards[k]?.cost?.reagents || {}).flatMap(([r, n]) => (n === 'X' ? [r] : Array.from({ length: n }, () => r)));
       return [
-        { label: 'Research', sub: `${L.mana} mana`, testid: 'research-only', onClick: (overlay) => commitFromExpand(g, overlay, async () => {
+        { label: 'Research', sub: logValueChip({ kind: 'mana', value: L.mana }), testid: 'research-only', onClick: (overlay) => commitFromExpand(g, overlay, async () => {
           const from = slotRectOf(k);
           const r = await g.act('act_research', { spell: k, cast: false }, { sound: 'select' });
           if (r) fly(art(k), from, dockTarget());
           return r;
         }) },
         { label: 'Research & Cast', sub: h('span', { class: 'action-chip-row' },
-          logValueChip({ kind: 'mana', value: -L.mana }),
-          ...groupReagents(cost).map(({ reagent: r, count }) => logReagentChip(r, { count }))), testid: 'research-cast', disabled: !L.castable, onClick: async (overlay) => {
+          ...groupReagents(cost).map(({ reagent: r, count }) => logReagentChip(r, { count })),
+          logValueChip({ kind: 'mana', value: L.mana })), testid: 'research-cast', disabled: !L.castable, onClick: async (overlay) => {
           let x = null, target = null;
           if (L.x) {
             overlay.el.innerHTML = ''; overlay.el.classList.add('gather');
