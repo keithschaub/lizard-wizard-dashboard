@@ -102,7 +102,20 @@ export function cardInfo(g, key) {
   }
   let text;
   if (c.deck === 'Achievement') text = c.effect || '';
-  else if (c.deck === 'Familiar' && c.effect) text = c.effect.split('||').map((part) => h('div', {}, part.trim().replace(' | ', ' · ')));
+  else if (c.deck === 'Familiar' && c.effect) text = c.effect.split('||').map((part) => {
+    const line = part.trim().replace(' | ', ' · ');
+    const collect = line.match(/^(.*?Collect)\s+(\d+)\s+([A-Za-z_]+)(.*)$/);
+    if (collect) {
+      const reagent = collect[3];
+      return h('div', {}, `${collect[1]} `, logReagentChip(reagent, { count: Number(collect[2]) }), collect[4]);
+    }
+    const dungeon = line.match(/^(.*?)(\d+)\s+Gold\s+\/\s+([A-Za-z-]+)\s+Card(.*)$/);
+    if (dungeon) {
+      return h('div', {}, dungeon[1], logValueChip({ kind: 'gold', value: Number(dungeon[2]) }), ' / ',
+        logSchoolChip(dungeon[3]), ' card', dungeon[4]);
+    }
+    return h('div', {}, line);
+  });
   else if (c.deck === 'Reagent') text = [h('div', {}, 'Gather: ', ...costIcons(c.gather_icons || [])), h('div', {}, 'Increase Value: ', ...costIcons(c.increase_icons || []))];
   else text = c.effect || '';
   return h('div', { class: 'cardinfo', 'data-testid': 'card-info' },
@@ -813,7 +826,9 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
       });
       return [
         action('score', 'Score', `+${(current.score_gold || 0) + (current.powerful_helper || 0)} Gold`),
-        action('gather', 'Gather', current.collect ? `${current.collect} ${nice(current.reagent)}` : 'Gather unavailable'),
+        action('gather', 'Gather', current.collect
+          ? h('span', { class: 'familiar-action-chip-detail' }, logReagentChip(current.reagent, { count: current.collect }))
+          : 'Gather unavailable'),
         action('dungeon', 'Dungeon', 'draw for treasure'),
         action('research', 'Research', 'reveal spells'),
       ];
