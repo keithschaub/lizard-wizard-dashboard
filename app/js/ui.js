@@ -1216,7 +1216,8 @@ export async function effectChooser(g) {
             h('span', { class: 'stat vp mini', 'data-testid': `${o.player}-vp` }, `${pData?.vp ?? '?'} VP`))));
     }));
   } else if (kind === 'wand_tax') {
-    appendNodes(grid, ...opts.map((o) => h('button', { class: 'chip', 'data-testid': `school-${o.school}`, onclick: pick(o) }, h('img', { src: schoolIcon(o.school), alt: '' }), `${o.school} · +${o.gold} Gold`)));
+    appendNodes(grid, ...opts.map((o) => h('button', { class: 'chip', 'data-testid': `school-${o.school}`, onclick: pick(o) },
+      h('img', { src: schoolIcon(o.school), alt: '' }), o.school, logValueChip({ kind: 'gold', value: o.gold }))));
   } else if (kind === 'time_shift') {
     appendNodes(grid, ...opts.map((o) => h('button', { class: 'chip', 'data-testid': `deck-${o.deck}`, onclick: pick(o) }, `${nice(o.deck)} · remove ${o.n}`)));
   } else if (kind === 'scry') {
@@ -1407,7 +1408,8 @@ export async function dungeonFlow(g) {
         const items = kept.filter((c) => c.subtype === 'Item').map((c) => c.name);
         ov.el.innerHTML = '';
         const loot = h('div', { class: 'drawn' }, was.kept.map((k) => h('div', { class: 'dc new' }, h('img', { src: art(k), alt: k }))));
-        appendNodes(ov.el, h('div', { class: 'ov-title' }, 'The Dungeon'), h('div', { class: 'result good', 'data-testid': 'dungeon-result' }, `Collected ${gold} Gold${items.length ? ' + ' + items.join(', ') : ''}`), loot);
+        appendNodes(ov.el, h('div', { class: 'ov-title' }, 'The Dungeon'), h('div', { class: 'result good', 'data-testid': 'dungeon-result' },
+          'Collected ', logValueChip({ kind: 'gold', value: gold }), items.length ? ` + ${items.join(', ')}` : ''), loot);
         await sleep(700);
         const gt = document.querySelector('[data-testid=my-gold]');
         loot.querySelectorAll('img').forEach((im, i) => setTimeout(() => { fly(im.src, im.getBoundingClientRect(), gt); g.sfx('coin'); }, i * 140));
@@ -1505,7 +1507,7 @@ export async function arena(g, { mode, wizard = null }) {
       seats[w]?.classList.add('winner');
       const ci = ringEl.querySelector('.arena-center img');
       if (ci && seats[w]) fly(art(card), ci.getBoundingClientRect(), seats[w].querySelector('.avatar'), { w: 40, hgt: 56 });
-      msg.textContent = `${w === me ? 'You win' : w + ' wins'} ${g.cards[card]?.name || ''} for ${e.price} mana`;
+      replaceChildren(msg, `${w === me ? 'You win' : w + ' wins'} ${g.cards[card]?.name || ''} for `, logValueChip({ kind: 'mana', value: e.price }));
       msg.setAttribute('data-testid', 'arena-winner');
       g.sfx(w === me ? 'win' : 'coin');
     } else msg.textContent = 'Nobody bid';
