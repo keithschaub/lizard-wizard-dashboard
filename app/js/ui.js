@@ -524,7 +524,7 @@ function logSchoolChip(school, tier = null) {
 function logValueChip({ kind, value }) {
   const label = `${value} ${kind}`;
   return h('span', { class: `log-value-chip ${kind}`, title: label, 'aria-label': label },
-    h('span', { class: 'log-value-number' }, value < 0 ? `−${Math.abs(value)}` : String(value)),
+    h('span', { class: 'log-value-number' }, String(Math.abs(value))),
     h('span', { class: `log-value-orb ${kind}`, 'aria-hidden': 'true' }));
 }
 
@@ -910,7 +910,7 @@ export function buildFlow(g, towerKey = null, { group = null, groupIndex = 0 } =
         buildLegal.reagent ? { label: 'Build with reagents', sub: h('span', { class: 'action-chip-row' },
           ...groupReagents(Array.from({ length: buildLegal.reagent.n }, () => buildLegal.reagent.reagent))
             .map(({ reagent: r, count }) => logReagentChip(r, { count }))), testid: 'build-reagent', onClick: build('reagent') } : null,
-        buildLegal.gold ? { label: 'Build with Gold', sub: `${buildLegal.gold.n} Gold`, testid: 'build-gold', onClick: build('gold') } : null,
+        buildLegal.gold ? { label: 'Build with Gold', sub: logValueChip({ kind: 'gold', value: buildLegal.gold.n }), testid: 'build-gold', onClick: build('gold') } : null,
       ].filter(Boolean);
     },
   });
