@@ -737,6 +737,9 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
   .dock-main { gap: 14px; }
   .tokens { flex-wrap: wrap; height: auto; justify-content: flex-start; }
   .hand { flex-wrap: wrap; justify-content: flex-start; gap: 10px; }
+.transmute-summary { display: grid; gap: 8px; padding: 14px; text-align: left; }
+.transmute-trade { display: flex; align-items: center; gap: 8px; font-size: 26px; color: var(--gold-hi); }
+.transmute-gold { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--gold-hi); }
   .hcard { width: 108px; height: 150px; }
   #banner-layer { bottom: 24px; right: 380px; }
   #toast { bottom: 24px; }
