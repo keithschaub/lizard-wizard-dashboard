@@ -1240,7 +1240,19 @@ export async function effectChooser(g) {
   } else if (kind === 'transmute') {
     const tok = opts[0].tok; const sel = new Set();
     const go = h('button', { class: 'act', disabled: true, 'data-testid': 'transmute-go' }, 'Transmute');
-    appendNodes(grid, ...tok.map((r, i) => { const b = h('button', { class: 'tokbtn', 'data-testid': `transmute-${i}` }, h('img', { src: reagentIcon(r), alt: '' })); b.onclick = () => { if (sel.has(i)) { sel.delete(i); b.classList.remove('on'); } else { sel.add(i); b.classList.add('on'); } go.disabled = sel.size < 2 || sel.size % 2; go.textContent = `Transmute ${sel.size} → ${Math.floor(sel.size / 2)} Gold`; }; return b; }));
+    const goldBefore = g.me_().gold ?? 0;
+    const summary = h('div', { class: 'transmute-summary', 'data-testid': 'transmute-summary' },
+      h('div', { class: 'transmute-trade' }, h('b', {}, 'Transmute'), h('span', {}, '⚗ ×0 → '), logValueChip({ kind: 'gold', value: 0 })),
+      h('div', { class: 'transmute-gold' }, h('b', {}, 'Your gold'), logValueChip({ kind: 'gold', value: goldBefore }), ' → ', logValueChip({ kind: 'gold', value: goldBefore })));
+    const updateSummary = () => {
+      const gain = Math.floor(sel.size / 2);
+      summary.querySelector('.transmute-trade span').textContent = `⚗ ×${sel.size} → `;
+      const values = summary.querySelectorAll('.transmute-trade .log-value-number, .transmute-gold .log-value-number');
+      values[0].textContent = String(gain);
+      values[2].textContent = String(goldBefore + gain);
+    };
+    appendNodes(grid, summary);
+    appendNodes(grid, ...tok.map((r, i) => { const b = h('button', { class: 'tokbtn', 'data-testid': `transmute-${i}` }, h('img', { src: reagentIcon(r), alt: '' })); b.onclick = () => { if (sel.has(i)) { sel.delete(i); b.classList.remove('on'); } else { sel.add(i); b.classList.add('on'); } updateSummary(); go.disabled = sel.size < 2 || sel.size % 2; go.textContent = `Transmute ${sel.size} → ${Math.floor(sel.size / 2)} Gold`; }; return b; }));
     appendNodes(grid, h('div', { class: 'actions' }, go));
     go.onclick = () => done({ reagents: [...sel].map((i) => tok[i]) });
   } else if (kind === 'evolve' || kind === 'rise') {
