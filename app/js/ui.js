@@ -1622,7 +1622,7 @@ function sellBanner(g, e) {
         sales.length ? logValueChip({ kind: 'mana', value: sales[0].value }) : null,
         h('span', { class: 'bsell-arrow', 'aria-hidden': 'true' }, '→'),
         h('div', { class: 'bsell-gain', 'data-testid': 'ai-sell-mana' },
-          logValueChip({ kind: 'mana', value: data.mana }))));
+          logValueChip({ kind: 'mana', value: data.mana })))));
 }
 
 function structuredBanner(g, e) {
