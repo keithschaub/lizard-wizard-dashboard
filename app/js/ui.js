@@ -1585,11 +1585,10 @@ function sellBanner(g, e) {
       h('div', { class: 'bsell-headline' }, `${e.who || 'AI'} sold`),
       h('div', { class: 'bsell-row' },
         h('div', { class: 'bsell-chips' }, ...sales.map(chip)),
+        sales.length ? logValueChip({ kind: 'mana', value: sales[0].value }) : null,
         h('span', { class: 'bsell-arrow', 'aria-hidden': 'true' }, '→'),
         h('div', { class: 'bsell-gain', 'data-testid': 'ai-sell-mana' },
-          logValueChip({ kind: 'mana', value: data.mana }))),
-      sales.length ? h('div', { class: 'bsell-caption' },
-        sales.map((sale) => `${nice(sale.reagent)} ${sale.value} each`).join(' · ')) : null));
+          logValueChip({ kind: 'mana', value: data.mana }))));
 }
 
 function structuredBanner(g, e) {
