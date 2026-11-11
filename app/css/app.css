@@ -650,9 +650,13 @@ img { -webkit-user-drag: none; user-select: none; }
 .arena-center .card-frame { width: clamp(84px, calc(var(--ring-h) * .29), 136px); padding: 6% 3% 3%; border-radius: 12px; background: #110d0c; box-shadow: 0 0 40px rgba(120, 150, 255, .55), 0 16px 40px rgba(0, 0, 0, .8), 0 0 0 1px rgba(214, 180, 90, .35); animation: zoomIn .4s both; }
 .arena-center .card-frame img { display: block; width: 100%; height: auto; border-radius: 5px; }
 .bid-mana { text-align: center; font-size: 13px; color: var(--muted); margin-top: -4px; }
-.bid-summary { display: grid; gap: 4px; margin: 8px 0; }
-.bid-summary-row { display: grid; grid-template-columns: 1fr auto; align-items: center; font: 700 30px var(--sans); color: var(--gold-hi); }
-.bid-summary-row > span { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.bid-summary { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; column-gap: 10px; row-gap: 4px; margin: 4px 0 8px; font: 700 30px var(--sans); color: var(--gold-hi); }
+.bid-summary-row { display: contents; }
+.bid-summary-row > b { font-weight: 700; }
+.bid-summary-num { justify-self: end; font-variant-numeric: tabular-nums; }
+.bid-summary .log-value-orb { width: 28px; height: 28px; }
+.bid-summary-who { min-width: 0; }
+.overlay.arena:has([data-testid=bid-summary]) [data-testid=arena-high] { display: none; }
 .arena-center .high { font-family: var(--display); font-size: 15px; color: var(--gold-hi); text-align: center; }
 .seat { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 96px; transform: translate(-50%, -50%); transition: transform .3s; }
 .seat .sname { font-weight: 700; font-size: 14px; }
