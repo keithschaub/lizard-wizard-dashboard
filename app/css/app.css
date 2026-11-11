@@ -423,6 +423,12 @@ img { -webkit-user-drag: none; user-select: none; }
 .act:active:not(:disabled) { transform: scale(.98); }
 .act.secondary { background: rgba(255, 255, 255, .05); border-color: var(--line); color: var(--ink); box-shadow: none; }
 .act.danger { border-color: rgba(255, 107, 107, .6); color: #ffd0d0; background: rgba(60, 12, 16, .9); box-shadow: none; }
+.build-expand [data-testid=expanded-actions] { width: calc(100% - 8px); max-width: 800px; box-sizing: border-box; padding: 12px 10px; border: 2px solid rgba(214, 180, 90, .7); border-radius: 16px; background: rgba(7, 9, 17, .72); margin-bottom: 12px; }
+.build-expand [data-testid=expanded-actions] .actions { width: 100%; }
+.build-expand [data-testid=expanded-actions] .act { min-height: 58px; font-size: 17px; border-radius: 18px; }
+.build-expand [data-testid=expanded-actions] .log-value-chip, .build-expand [data-testid=expanded-actions] .log-reagent-chip { height: 32px; border-radius: 16px; }
+.build-expand [data-testid=expanded-actions] .log-value-orb { width: 28px; height: 28px; }
+.build-expand [data-testid=expanded-actions] .log-reagent-chip img { width: 24px; height: 24px; }
 
 /* mats */
 .mats { padding: calc(8px + var(--safe-t)) 10px 14px; align-items: stretch; gap: 10px; }
@@ -794,9 +800,3 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .sname .diff-badge { display: block; margin: 4px auto 0; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-.build-expand [data-testid=expanded-actions] { width: calc(100% - 8px); max-width: 800px; box-sizing: border-box; padding: 12px 10px; border: 2px solid rgba(214, 180, 90, .7); border-radius: 16px; background: rgba(7, 9, 17, .72); margin-bottom: 12px; }
-.build-expand [data-testid=expanded-actions] .actions { width: 100%; }
-.build-expand [data-testid=expanded-actions] .act { min-height: 58px; font-size: 17px; border-radius: 18px; }
-.build-expand [data-testid=expanded-actions] .log-value-chip, .build-expand [data-testid=expanded-actions] .log-reagent-chip { height: 32px; border-radius: 16px; }
-.build-expand [data-testid=expanded-actions] .log-value-orb { width: 28px; height: 28px; }
-.build-expand [data-testid=expanded-actions] .log-reagent-chip img { width: 24px; height: 24px; }
