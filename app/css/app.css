@@ -623,6 +623,8 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .sheet { justify-content: flex-start; padding-top: calc(var(--safe-t) + 10px); }
 /* Bottom-anchored while it fits; a taller panel starts at the top (flex-end would push it out of reach above). */
 .sheet > .sheet-panel { margin-top: auto; position: relative; }
+.convert-mixed-title { display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; }
+.convert-mixed-panel .actions .act { justify-content: center; }
 .sheet-close { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: rgba(255, 255, 255, .06); font-size: 20px; line-height: 1; z-index: 2; }
 .sheet::after { display: none; }
 .sheet-panel { width: min(100%, 520px); background: linear-gradient(180deg, #121a40, #0a0f26); border-top: 1px solid rgba(214, 180, 90, .5); border-radius: 18px 18px 0 0; padding: 16px 16px calc(16px + var(--clear-b));

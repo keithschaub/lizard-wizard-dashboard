@@ -1173,8 +1173,8 @@ function convertMixed(g) {
     return b;
   }));
   go.onclick = async () => { const r = await g.act('act_convert1', { reagents: [...sel].map((i) => me.tok[i]) }, { sound: 'coin' }); ov.close(); if (r) g.afterAction(); };
-  appendNodes(ov.el, h('div', { class: 'sheet-panel' },
-    h('div', { class: 'phase-title' }, 'Sell any mix at ', logValueChip({ kind: 'mana', value: 1 }), ' each'),
+  appendNodes(ov.el, h('div', { class: 'sheet-panel convert-mixed-panel' },
+    h('div', { class: 'phase-title convert-mixed-title' }, 'Sell any mix at ', logValueChip({ kind: 'mana', value: 1 }), ' each'),
     grid, h('div', { class: 'actions' }, go)));
 }
 
