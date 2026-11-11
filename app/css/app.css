@@ -521,8 +521,19 @@ img { -webkit-user-drag: none; user-select: none; }
 .log-value-orb.gold { background: radial-gradient(circle at 35% 30%, #fff1b0, #e0a92e 60%, #8a5a12); }
 .action-chip-row { display: flex; align-items: center; justify-content: flex-end; gap: 4px; width: 100%; }
 .action-chip-row .log-value-chip { margin-left: auto; }
-.target-shield-badge { color: var(--gold-hi); font-size: 11px; font-weight: 700; }
-.chip.shielded { opacity: .5; border-color: var(--gold); }
+.x-target-title { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 20px; white-space: nowrap; }
+.x-target-eye { width: 44px; height: 34px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .6)); }
+.x-target-frame { width: min(96vw, 520px); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 14px; margin: auto 0;
+  padding: 16px 8px 18px; border: 1px solid rgba(214, 180, 90, .7); border-radius: 18px; background: rgba(7, 9, 17, .78); }
+.x-target-stepper { justify-content: center; align-self: center; }
+.x-target-chips { gap: 8px; justify-content: center; flex-wrap: wrap; width: 100%; }
+.x-target-chip { gap: 8px; padding: 4px 14px 4px 4px; font-size: 16px; font-weight: 700; }
+.x-target-who { display: inline-flex; align-items: center; gap: 8px; }
+.x-target-chip.shielded { opacity: 1; }
+.x-target-chip.shielded .x-target-who { opacity: .45; filter: grayscale(.4); }
+.target-shield-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border: 1px solid rgba(214, 180, 90, .6); border-radius: 12px;
+  color: #c9b78a; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.target-shield-icon { width: 12px; height: 14px; background: #b39a5a; clip-path: polygon(50% 0, 100% 18%, 92% 62%, 50% 100%, 8% 62%, 0 18%); }
 .log-school-chip { display: inline-flex; align-items: center; gap: 4px; min-height: 25px; padding: 2px 8px 2px 4px;
   border: 1px solid rgba(255, 220, 137, .82); border-radius: 14px; background: rgba(88, 67, 24, .32);
   color: var(--gold-hi); font-family: var(--display); font-size: 11px; font-variant-caps: small-caps;
