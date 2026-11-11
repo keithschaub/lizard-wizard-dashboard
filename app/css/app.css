@@ -909,3 +909,5 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 @supports (height: 100dvh) {
   .expand:has(.research-action-frame) { --expand-slot: max(200px, calc(100dvh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
 }
+.banner .bsub { margin-top: 4px; font-size: 13px; }
+.banner .bsub .log-reagent-row { display: inline-flex; }
