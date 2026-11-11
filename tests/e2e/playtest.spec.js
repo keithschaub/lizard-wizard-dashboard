@@ -229,8 +229,8 @@ class Playtest {
     const st = await page.evaluate(() => {
       const v = window.lwDebug.view(); const a = v.auction; const k = v.players.find((p) => p.name === 'Keith');
       const ar = document.querySelector('[data-testid=arena]:not(.out)');
-      const val = ar.querySelector('[data-testid=bid-value]'); const go = ar.querySelector('[data-testid=bid-go]');
-      return { mana: k.mana, a, min: val && +val.dataset.min, max: val && +val.dataset.max, manaText: ar.querySelector('[data-testid=bid-mana]')?.textContent,
+      const val = ar.querySelector('[data-testid=bid-value]'); const sl = ar.querySelector('[data-testid=bid-slider]'); const go = ar.querySelector('[data-testid=bid-go]');
+      return { mana: k.mana, a, min: val ? +val.dataset.min : sl && +sl.min, max: val ? +val.dataset.max : sl && +sl.max, bidSummary: ar.querySelector('[data-testid=bid-summary]')?.textContent,
         high: ar.querySelector('[data-testid=arena-high]').textContent, card: ar.querySelector('[data-testid=arena-card] img').getAttribute('src'),
         go: !!go && !go.disabled, arenas: document.querySelectorAll('[data-testid=arena]:not(.out)').length };
     });
@@ -242,7 +242,7 @@ class Playtest {
     if (st.go) {
       expect(st.max, 'auction panel mana = engine mana').toBe(st.mana);
       expect(st.min).toBe(st.a.high + 1);
-      expect(st.manaText).toContain(`Your mana: ${st.mana}`);
+      expect(st.bidSummary).toContain(`Your bid${st.a.high + 1}/${st.mana}`);
     }
     const id = `${st.a.card}|${st.a.starter}|${JSON.stringify(st.a.tail[0])}`;
     if (!this.auctionSeen.has(id)) {
@@ -489,8 +489,8 @@ class Playtest {
       await expect(page.getByTestId('bid-go')).toBeVisible();
       await page.waitForTimeout(500);                                    // past the board's ghost-click guard
       await this.checkArenaLayout().catch(() => {});
-      const st = await page.getByTestId('bid-mana').textContent();
-      expect(st).toContain(`Your mana: ${p.mana}`);
+      const st = await page.getByTestId('bid-summary').textContent();
+      expect(st).toContain(`Your bid${p.mana}`);
       await page.getByTestId('bid-go').tap();
       this.mark('auctionOpen');
       await page.waitForFunction(() => !document.querySelector('[data-testid=bid-cancel]'), null, { timeout: 20_000 });
