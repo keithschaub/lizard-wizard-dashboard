@@ -263,9 +263,21 @@ def _clean_card_ids(text):
                   text)
 
 
+def _blocked_spell_name(a):
+    base = a[:-len('_blocked')]
+    base = re.sub(r'_[a-z]$', '', base)          # card variants: flame_bolt_d -> flame_bolt
+    return base.replace('_', ' ').title()
+
+
 def _log_text(e):
     a = e.get('act'); w = e.get('who')
     try:
+        if a and a.endswith('_blocked') and e.get('shield'):
+            return f"{e.get('target')}'s Spell Shield blocked {w}'s {_blocked_spell_name(a)} and is used up"
+        if a == 'achievement':
+            return f"{w} claimed an achievement"
+        if a == 'trigger':
+            return f"{w} gets {e.get('gain', 0)} mana from {CD.display(jpg('Spell_' + str(e.get('spell', '')).replace('Spell_', '')))}"
         if a == 'scry_dungeon' and 'seen' not in e:
             return f"{w} cast Scry Dungeon and kept {', '.join(c.get('name') or str(c.get('gold')) + ' Gold' for c in e.get('kept', [])) or 'nothing'}"
         if a and a.startswith('scry_') and a != 'scry_dungeon':
@@ -479,8 +491,8 @@ def structured_banner_data(e):
         if a == 'shield_used':
             return {'headline': f"{w}'s Spell Shield blocked it", 'chips': [], 'cards': []}
         if a == 'trigger':
-            spell = spell or 'Spell_Trigger.jpg'
-            return data('cast Trigger', [card('Trigger', spell), mana(f"+{e.get('gain', 0)} mana", e.get('gain', 0))], [spell])
+            src = re.sub(r'\s*\([^()]*\)$', '', CD.display(jpg('Spell_' + str(spell or '').replace('Spell_', ''))))
+            return data('gets', [mana(f"{e.get('gain', 0)} mana", e.get('gain', 0)), {'label': f'from {src}'}])
         versus = {'label': f"vs {e.get('target')}", 'target': e.get('target')} if e.get('target') else None
         if a == 'mana_drain':
             outcome = {'label': f"{e.get('n', 0)} mana drained", 'mana': -e.get('n', 0)}
@@ -521,6 +533,7 @@ def public_log(s, viewer):
     }
     for i, e in enumerate(pv['meta'].get('log', [])):
         a = e.get('act')
+        if a == 'shield_used' and e.get('folded'): continue   # shown on the *_blocked line it precedes
         item = dict(i=i, r=e.get('r'), who=e.get('who') or e.get('won') or e.get('seat'), act=a)
         if a == 'turn': item['text'] = f"Round {e.get('r')}: {e.get('seat')}'s turn"
         elif a == 'setup_picks': item['text'] = 'Starting reagents: ' + '; '.join(f"{n} {', '.join(T.nice(r) for r in v)}" for n, v in e['picks'].items())
@@ -595,6 +608,12 @@ def public_log(s, viewer):
             item['feedback'] = fb
         if a == 'gather':
             item['got'] = list(e.get('got', [])) + list(e.get('bonus', [])); item['inc'] = list(e.get('inc', []))
+        if a == 'achievement':
+            item['ach'] = e.get('tile'); item['vp'] = 10
+        if a == 'trigger':
+            item['by'] = e.get('by'); item['gain'] = e.get('gain'); item['from'] = re.sub(r'\s*\([^()]*\)$', '', CD.display(jpg('Spell_' + str(e.get('spell', '')).replace('Spell_', ''))))
+        if a and a.endswith('_blocked') and e.get('shield'):
+            item['shield'] = key(e['shield']); item['cards'] = [key(e['shield'])]; item['blocked_spell'] = _blocked_spell_name(a); item['target'] = e.get('target')
         out.append(item)
     return out
 
@@ -915,8 +934,11 @@ def choose_new_research(spell):
         wp = pend(s); n = me()
         if not wp or wp['type'] != 'new_research': raise Refused('no New Research waiting')
         if spell not in wp['four']: raise Refused('pick one of the four new spells')
-        fam = [f for f in s['fam_face'] if f and key(f) == key(wp['familiar'])][0]
         s['meta']['web_pending'] = None
+        if wp.get('rise'):
+            SE.new_research(s, n, lambda x: spell)
+            return _after_action(s, n, wp.get('queue', []))
+        fam = [f for f in s['fam_face'] if f and key(f) == key(wp['familiar'])][0]
         A.summon_familiar(s, n, fam, 'research', choose=lambda x: spell)
         return _after_action(s, n, [])
     return _commit(run)
@@ -928,6 +950,8 @@ def _dungeon_run(s, wp, draws):
     n = me(); cont = lambda h, d: len(d) < draws
     if wp['via'] == 'divination':
         A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'web_note', 'text': f'{n} entered the Dungeon with Divination (Sorcery)'})
+        return SE.dungeon_delve(s, n, cont)
+    if wp.get('rise'):   # Rise uses a familiar the player already owns; its 'rise' entry is already logged
         return SE.dungeon_delve(s, n, cont)
     fam = [f for f in s['fam_face'] if f and key(f) == wp['via']][0]
     return A.summon_familiar(s, n, fam, 'dungeon', cont=cont)
@@ -964,7 +988,7 @@ def dungeon_stop():
         if wp['draws'] < 1: raise Refused('flip at least one card first')
         s['meta']['web_pending'] = None
         _dungeon_run(s, wp, wp['draws'])
-        return _after_action(s, n, [])
+        return _after_action(s, n, wp.get('queue', []))
     return _commit(run)
 
 
@@ -1207,7 +1231,7 @@ def rise_use(use, casts=(), discard=None):
             s['meta']['web_pending'] = None
             return _after_action(s, n, wp.get('queue', []))
         elif use == 'gather':
-            r = A.norm(c['reagent']); p['tok'] += [r] * int(c['collect']); casted = []
+            r = A.norm(c['reagent']); n0 = A.mark(s); p['tok'] += [r] * int(c['collect']); casted = []
             T.auto_claim(s, n)
             for k, cost in [(k, spell_cost(k)) for k in casts]:
                 A.cast_spell(s, n, k, cost); casted.append(k)
@@ -1216,7 +1240,7 @@ def rise_use(use, casts=(), discard=None):
             if over > 0:
                 if not discard or len(discard) < over: raise Refused(f'over storage by {over}; pass discard')
                 for d in discard: p['tok'].remove(d)
-            A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'gather', 'got': [r] * int(c['collect']), 'cast': casted})
+            A.log_at(s, n0, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'gather', 'got': [r] * int(c['collect']), 'cast': casted})
             s['meta']['web_pending'] = None
             return _after_action(s, n, wp.get('queue', []))
         elif use == 'dungeon':
@@ -1225,7 +1249,7 @@ def rise_use(use, casts=(), discard=None):
                 s['meta']['web_pending'] = None
                 return _after_action(s, n, wp.get('queue', []))
             A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'dungeon'})
-            s['meta']['web_pending'] = dict(type='dungeon', via=key(familiar_img), draws=0)
+            s['meta']['web_pending'] = dict(type='dungeon', via=key(familiar_img), draws=0, rise=True, queue=wp.get('queue', []))
             return 'pending'
         elif use == 'research':
             t = copy.deepcopy(s)
@@ -1233,7 +1257,7 @@ def rise_use(use, casts=(), discard=None):
             t['spell_face'] = [t['spell_list'].pop(0) if t['spell_list'] else None for _ in range(4)]
             four = [key(x) for x in t['spell_face'] if x]
             A.log(s, {'r': s['meta'].get('round'), 'who': n, 'act': 'rise', 'familiar': b(familiar_img), 'use': 'research'})
-            s['meta']['web_pending'] = dict(type='new_research', familiar=familiar_img, four=four)
+            s['meta']['web_pending'] = dict(type='new_research', familiar=familiar_img, four=four, rise=True, queue=wp.get('queue', []))
             return 'pending'
         else: raise Refused('use must be score, gather, dungeon, or research')
     return _commit(run)
@@ -1280,7 +1304,7 @@ def ai_step():
         if r != 'paused': T.advance(t, ev)
         return r
     r = _commit(run)
-    entries = public_log(st(), me())[n0:]
+    entries = [e for e in public_log(st(), me()) if e['i'] >= n0]
     return dict(status='paused' if r == 'paused' else 'done', who=n, entries=entries)
 
 
@@ -1414,7 +1438,7 @@ def call(fn, args_json='{}'):
         if fn in MUTATING:
             out['view'] = view()
             # moves the engine made inside this call (e.g. AI turns after an auction), so the UI can announce them
-            out['entries'] = public_log(st(), me())[n0:] if n0 is not None and fn != 'new_game_start' else []
+            out['entries'] = [e for e in public_log(st(), me()) if e['i'] >= n0] if n0 is not None and fn != 'new_game_start' else []
     except Refused as e:
         out = dict(ok=False, error=str(e))
     except (ValueError, AssertionError, KeyError, IndexError, TypeError) as e:

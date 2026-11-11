@@ -4,7 +4,17 @@ Usage: python3 scripts/actions.py STATE convert PLAYER REAGENT COUNT
 """
 import json,sys
 def P(s,name): return [p for p in s['players'] if p['name']==name][0]
-def log(s,e): s['meta'].setdefault('log',[]).append(e)
+def log(s,e):
+    L=s['meta'].setdefault('log',[])
+    if str(e.get('act','')).endswith('_blocked') and L and L[-1].get('act')=='shield_used' and not L[-1].get('folded'):
+        # One line, after the attack: 'X's Spell Shield blocked Y's spell'. shield_used stays in the log (marked folded)
+        # so its length, which seeds the dungeon/Trap/AI RNGs, is the same as before.
+        sh=L.pop(); sh['folded']=True; e['shield']=sh['spell']; e.setdefault('target',sh['who']); L.append(e); L.append(sh)
+    else: L.append(e)
+def mark(s): return len(s['meta'].setdefault('log',[]))
+def log_at(s,n0,e):
+    """Parent-first logging: the action's own entry goes BEFORE anything it caused (triggers, claims, casts, reshuffles)."""
+    s['meta'].setdefault('log',[]).insert(n0,e)
 def convert_adept(s,name,parts,energize_first=False):
     """Adept Conversion (ongoing): one main action, sell two different reagent types at each track value; each track drops
     by count sold (floor 1). Optional Energize: +3 (cap 12) to the FIRST type's track only, before that part's sale."""
@@ -99,7 +109,7 @@ def gather(s,name,card,keep=None,discard=None,bloom=None,spend=None):
     """Rulebook: take the card's gather reagents (if 4-5 icons, choose 3 via keep), +1 per wizard bonus icon,
     raise every 'Increase Value' icon's track by 1 (cap 12), discard the card, draw a new one (top = pop(0)).
     Storage over capacity raises unless discard lists the tokens to return."""
-    R,W=_cards();p=P(s,name);T=s['tracks']
+    R,W=_cards();p=P(s,name);T=s['tracks'];n0=mark(s)
     import os
     card=os.path.basename(str(card)).replace('.jpg','')
     cid=card if card.startswith('Reagent_') else 'Reagent_%02d'%int(card)
@@ -145,7 +155,7 @@ def gather(s,name,card,keep=None,discard=None,bloom=None,spend=None):
         if not s['reag_list']: break
         p['hand'].append(s['reag_list'].pop(0))
     s['reag_deck']=len(s['reag_list'])
-    log(s,{'r':s['meta'].get('round'),'who':name,'act':'gather','card':cid,'got':got,'bonus':bonus,'inc':inc})
+    log_at(s,n0,{'r':s['meta'].get('round'),'who':name,'act':'gather','card':cid,'got':got,'bonus':bonus,'inc':inc})
     return got+bonus,inc
 def reshuffle_reagents(s):
     """Reagent deck is NOT a game-end trigger (only Wizard/Tower/Spell/Familiar decks are). When it runs out,
@@ -195,7 +205,7 @@ def tower_cost(p,img,pay='reagent'):
     return n
 def build_tower(s,name,pay='reagent'):
     """Rulebook: pay the tower's reagent cost OR its gold cost (tower_cost). Builds the face-up tower and reveals the next (pop(0))."""
-    import os;p=P(s,name);img=s['tower_face']
+    import os;p=P(s,name);img=s['tower_face'];n0=mark(s)
     if not img: raise ValueError('no tower on offer (tower supply depleted)')
     import carddb as CD
     _t,r,_sc=CD.tower_info(img);r=norm(r)
@@ -208,7 +218,7 @@ def build_tower(s,name,pay='reagent'):
         for _ in range(tier): p['tok'].remove(r)
     p.setdefault('towers',[]).append(img);s['tower_face']=s['tow_list'].pop(0) if s['tow_list'] else None;s['tower_deck']=len(s['tow_list'])
     import spell_effects as _SE; _SE.mana_triggers(s,'Mana_Fountain',name)   # Mana Fountain: "+5 Mana when any player builds a Tower"
-    log(s,{'r':s['meta'].get('round'),'who':name,'act':'build','tower':os.path.basename(img),'paid':pay if pay=='gold' else [r]*tier,'tier_paid':tier})
+    log_at(s,n0,{'r':s['meta'].get('round'),'who':name,'act':'build','tower':os.path.basename(img),'paid':pay if pay=='gold' else [r]*tier,'tier_paid':tier})
 
 
 # ---- Dungeon deck (added Nov 2, 2026) ----
@@ -265,7 +275,7 @@ def recruit(s,name,wiz_img,price,starter=None,bids=None):
     w=slot[0]; i=s['wiz_face'].index(w)
     # Wizard conservation check before mutation
     _wiz_before = sum(len([x for x in q.get('wizards', [])]) for q in s['players']) + len([x for x in s['wiz_face'] if x]) + len(s.get('wiz_list', []))
-    p['mana']-=price; p['wizards'].append(w)
+    n0=mark(s); p['mana']-=price; p['wizards'].append(w)
     if s['wiz_list']: s['wiz_face'][i]=s['wiz_list'].pop(0)
     else: s['wiz_face'].pop(i)
     s['wiz_deck']=len(s['wiz_list'])
@@ -273,7 +283,7 @@ def recruit(s,name,wiz_img,price,starter=None,bids=None):
     _wiz_after = sum(len([x for x in q.get('wizards', [])]) for q in s['players']) + len([x for x in s['wiz_face'] if x]) + len(s.get('wiz_list', []))
     assert _wiz_before == _wiz_after, f'WIZARD CONSERVATION VIOLATED: {_wiz_before} wizards before auction, {_wiz_after} after (won by {name}: {w})'
     import spell_effects as _SE; _SE.mana_triggers(s,'Mana_Leak',name)    # Mana Leak: "+5 Mana when any player recruits a Wizard"
-    log(s,{'r':s['meta'].get('round'),'act':'auction','won':name,'item':w.split('/')[-1][7:-4],'price':price,'starter':starter,'bids_tail':bids})
+    log_at(s,n0,{'r':s['meta'].get('round'),'act':'auction','won':name,'item':w.split('/')[-1][7:-4],'price':price,'starter':starter,'bids_tail':bids})
     return w
 def cast_spell(s,name,spell_key,cost):
     """Cast an already-researched (uncast) spell, paying its reagents (read cost from the real card image)."""
@@ -405,10 +415,10 @@ def summon_familiar(s,name,fam_img,use,cast=None,discard=None,cont=None,choose=N
     i=s['fam_face'].index(slot[0]); p['mana']-=fcost; p.setdefault('familiars',[]).append(slot[0])
     if s['fam_list']: s['fam_face'][i]=s['fam_list'].pop(0)
     else: s['fam_face'].pop(i)
-    s['fam_deck']=len(s['fam_list']); out={}
+    s['fam_deck']=len(s['fam_list']); out={}; n0=mark(s)
     _SE.mana_triggers(s,'Energy_Circle',name)
     if use in ('dungeon','research'):
-        log(s,{'r':s['meta'].get('round'),'who':name,'act':'summon','familiar':b,'cost':fcost,'use':use})
+        log_at(s,n0,{'r':s['meta'].get('round'),'who':name,'act':'summon','familiar':b,'cost':fcost,'use':use})
         return _SE.dungeon_delve(s,name,cont) if use=='dungeon' else {'took':_SE.new_research(s,name,choose)}
     if use=='score':
         sc = f['school']
@@ -430,7 +440,7 @@ def summon_familiar(s,name,fam_img,use,cast=None,discard=None,cont=None,choose=N
             for d in discard[:over]: p['tok'].remove(norm(d))
         out={'got':[r]*int(f['collect']),'cast':casted}
     else: raise ValueError('use must be score or gather')
-    log(s,{'r':s['meta'].get('round'),'who':name,'act':'summon','familiar':b,'cost':fcost,'use':use,**out})
+    log_at(s,n0,{'r':s['meta'].get('round'),'who':name,'act':'summon','familiar':b,'cost':fcost,'use':use,**out})
     return out
 def achievement_met(p,text):
     """Achievement tiles (cards.json, 20 tiles). Ruling: uncast spells do not count."""
