@@ -414,6 +414,10 @@ img { -webkit-user-drag: none; user-select: none; }
 .cardinfo .ci-meta { color: var(--muted); font-size: 13.5px; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
 .cardinfo .ci-meta img { width: 16px; height: 16px; vertical-align: -3px; }
 .cardinfo .ci-text { margin-top: 8px; font-size: 16px; line-height: 1.35; }
+.expand:has(.cardinfo .ci-effect-line) { --expand-slot: max(200px, calc(100vh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
+@supports (height: 100dvh) {
+  .expand:has(.cardinfo .ci-effect-line) { --expand-slot: max(200px, calc(100dvh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
+}
 .cardinfo .ci-effect-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 4px 0; min-height: 34px; }
 .cardinfo .ci-effect-line .log-value-chip, .cardinfo .ci-effect-line .log-reagent-chip, .cardinfo .ci-meta .log-value-chip { height: 32px; border-radius: 16px; }
 .cardinfo .ci-effect-line .log-value-orb, .cardinfo .ci-meta .log-value-orb { width: 28px; height: 28px; }
