@@ -1393,14 +1393,16 @@ async function riseGather(g, pd) {
 
 export function renderDungeonResult(ov, was) {
   const kept = was.drawn_cards.filter((c) => c.type === 'Treasure');
-  const gold = kept.reduce((s, c) => s + (c.gold || 0), 0) + (was.bonus_gold || 0);
+  const cardGold = kept.reduce((s, c) => s + (c.gold || 0), 0);
+  const bonus = was.bonus_gold || 0;
   const items = kept.filter((c) => c.subtype !== 'Gold' && !c.gold).map((c) => c.name || c.title).filter(Boolean);
   ov.el.innerHTML = '';
   const loot = h('div', { class: 'drawn dungeon-loot' }, was.kept.map((k) => h('div', { class: 'dc new' }, h('img', { src: art(k), alt: k }))));
   appendNodes(ov.el, h('div', { class: 'dungeon-result-panel', 'data-testid': 'dungeon-result-panel' },
     h('div', { class: 'ov-title' }, 'The Dungeon'),
     h('div', { class: 'result good dungeon-result-line', 'data-testid': 'dungeon-result' },
-      'Collected', logValueChip({ kind: 'gold', value: gold }), ...items.map((name) => `+ ${name}`)),
+      'Collected', logValueChip({ kind: 'gold', value: cardGold }), ...items.map((name) => `+ ${name}`)),
+    bonus ? h('div', { class: 'dungeon-result-bonus', 'data-testid': 'dungeon-bonus' }, 'Spell bonus', logValueChip({ kind: 'gold', value: bonus })) : null,
     loot));
   return loot;
 }
