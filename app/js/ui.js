@@ -1391,6 +1391,20 @@ async function riseGather(g, pd) {
   return r;
 }
 
+export function renderDungeonResult(ov, was) {
+  const kept = was.drawn_cards.filter((c) => c.type === 'Treasure');
+  const gold = kept.reduce((s, c) => s + (c.gold || 0), 0) + (was.bonus_gold || 0);
+  const items = kept.filter((c) => c.subtype === 'Item').map((c) => c.name);
+  ov.el.innerHTML = '';
+  const loot = h('div', { class: 'drawn dungeon-loot' }, was.kept.map((k) => h('div', { class: 'dc new' }, h('img', { src: art(k), alt: k }))));
+  appendNodes(ov.el, h('div', { class: 'dungeon-result-panel', 'data-testid': 'dungeon-result-panel' },
+    h('div', { class: 'ov-title' }, 'The Dungeon'),
+    h('div', { class: 'result good dungeon-result-line', 'data-testid': 'dungeon-result' },
+      'Collected', logValueChip({ kind: 'gold', value: gold }), ...items.map((name) => `+ ${name}`)),
+    loot));
+  return loot;
+}
+
 export async function dungeonFlow(g) {
   const ov = openOverlay('dungeon', { testid: 'dungeon' });
   let shown = 0;
@@ -1432,13 +1446,7 @@ export async function dungeonFlow(g) {
       const was = pd;
       const r = await g.act('dungeon_stop', {}, { sound: was.success ? 'coin' : 'hit' });
       if (r && was.success) {
-        const kept = was.drawn_cards.filter((c) => c.type === 'Treasure');
-        const gold = kept.reduce((s, c) => s + (c.gold || 0), 0) + (was.bonus_gold || 0);
-        const items = kept.filter((c) => c.subtype === 'Item').map((c) => c.name);
-        ov.el.innerHTML = '';
-        const loot = h('div', { class: 'drawn' }, was.kept.map((k) => h('div', { class: 'dc new' }, h('img', { src: art(k), alt: k }))));
-        appendNodes(ov.el, h('div', { class: 'ov-title' }, 'The Dungeon'), h('div', { class: 'result good', 'data-testid': 'dungeon-result' },
-          'Collected ', logValueChip({ kind: 'gold', value: gold }), items.length ? ` + ${items.join(', ')}` : ''), loot);
+        const loot = renderDungeonResult(ov, was);
         await sleep(700);
         const gt = document.querySelector('[data-testid=my-gold]');
         loot.querySelectorAll('img').forEach((im, i) => setTimeout(() => { fly(im.src, im.getBoundingClientRect(), gt); g.sfx('coin'); }, i * 140));

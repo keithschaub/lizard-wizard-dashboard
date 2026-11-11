@@ -794,3 +794,11 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .sname .diff-badge { display: block; margin: 4px auto 0; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+.dungeon:has(.dungeon-result-panel) { justify-content: center; }
+.dungeon-result-panel { width: min(94vw, 520px); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px 12px 20px;
+  border: 1px solid rgba(214, 180, 90, .7); border-radius: 18px; background: rgba(28, 12, 14, .82); }
+.dungeon-result-line { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 22px; white-space: nowrap; }
+.dungeon-result-line .log-value-chip { height: 36px; border-radius: 18px; font-size: 17px; }
+.dungeon-result-line .log-value-orb { width: 32px; height: 32px; }
+.dungeon-loot { flex-wrap: nowrap; gap: 16px; min-height: 0; }
+.dungeon-loot .dc { width: 96px; }
