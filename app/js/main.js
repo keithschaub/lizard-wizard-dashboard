@@ -4,6 +4,7 @@ import { h, art, reagentIcon, nice, counts, sleep } from './dom.js';
 import * as UI from './ui.js';
 import * as Audio from './audio.js';
 import * as Store from './store.js';
+import * as Archive from './game-archive.js';
 import { versionLabel } from './version.js';
 
 const T_START = performance.now();
@@ -123,6 +124,7 @@ class Game {
       document.getElementById('loader').classList.add('done');
       document.body.dataset.ready = '1';
       this.ready = true;
+      Archive.retryPending().catch(() => {});
       this.settle();
     } catch (e) {
       this.loadFailed(e.message || String(e), e.stage);
@@ -158,6 +160,7 @@ class Game {
 
   setView(v, { fresh = false } = {}) {
     const prev = fresh ? null : this.v; this.v = v;
+    Archive.noteView(this, v);
     if (v.next !== this.me) UI.closeExpandOverlays();
     const you = v.players?.find((p) => p.you);
     if (you) this.me = you.name;
