@@ -350,8 +350,11 @@ img { -webkit-user-drag: none; user-select: none; }
 
 .expand .big { display: block; width: 100%; height: auto; border-radius: 6px; user-select: none; -webkit-user-select: none;
   -webkit-user-drag: none; -webkit-touch-callout: none; pointer-events: none; }
-.research-action-frame { width: min(94vw, 800px); box-sizing: border-box; padding: 14px 16px 8px; border: 2px solid rgba(214, 180, 90, .7); border-radius: 16px; background: rgba(7, 9, 17, .72); }
+.research-action-frame { width: calc(100% - 8px); max-width: 800px; min-width: 0; box-sizing: border-box; padding: 14px 16px 8px; border: 2px solid rgba(214, 180, 90, .7); border-radius: 16px; background: rgba(7, 9, 17, .72); }
 .research-action-frame .act { border-radius: 18px; }
+.research-action-frame .actions { width: 100%; min-width: 0; }
+.research-action-frame .act { min-width: 0; gap: 6px; }
+.research-action-frame .act .sub { min-width: 0; }
 
 /* Navigation arrows */
 .nav-arrow { position: absolute; top: calc(var(--expand-pad-t) + 8px + min(78vw, calc(var(--expand-slot) / 1.62), 420px) / 2);
