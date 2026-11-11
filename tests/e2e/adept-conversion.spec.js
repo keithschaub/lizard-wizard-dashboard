@@ -53,7 +53,10 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
     expect(v.legal.convert[r].value).toBe(price);
     await expect(page.getByTestId(`convert-adept-type2-${r}`).locator('.log-value-number')).toHaveText(String(price));
   }
-  await expect(page.getByTestId('convert-gain2')).toContainText('Total');
+  await expect(page.getByTestId('convert-gain2')).toHaveCount(1);
+  await expect(page.getByTestId('convert-gain2')).toBeHidden();
+  await expect(page.getByTestId('convert-result')).toContainText('You get');
+  await expect(page.getByTestId('convert-result').locator('.convert-result-num')).toHaveText('8');
   await page.waitForTimeout(500);
   await page.getByTestId('convert').screenshot({ path: 'docs/screenshots/adept-counts-none-dpr3.png' });
   await page.getByTestId('convert').screenshot({ path: 'docs/screenshots/adept-counts-many-dpr3.png' });
@@ -66,6 +69,7 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
   await page.getByTestId('convert-adept-type2-Horn').tap();
   await expect(page.getByTestId('convert-stepper2')).toBeHidden();
   await page.getByTestId('convert-adept-type2-Horn').tap();
+  await expect(page.getByTestId('convert-result').locator('.convert-result-num')).toHaveText('7');
   await page.getByTestId('convert-go').tap();
   await waitOverlayGone(page, 'convert');
 
