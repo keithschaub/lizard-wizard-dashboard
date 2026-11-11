@@ -1181,20 +1181,21 @@ function convertMixed(g) {
   const me = g.me_(); const sel = new Set();
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'convert1' });
   const go = h('button', { class: 'act', disabled: true, 'data-testid': 'convert1-go' }, 'Sell');
+  const result = h('div', { class: 'convert-result-wrap', 'data-testid': 'convert1-total' }, convertResult(0));
   const grid = h('div', { class: 'chips' }, me.tok.map((r, i) => {
     const b = h('button', { class: 'tokbtn', 'data-testid': `mix-${i}` }, h('img', { src: reagentIcon(r), alt: nice(r) }));
     b.onclick = () => {
       if (sel.has(i)) sel.delete(i); else sel.add(i);
       b.classList.toggle('on', sel.has(i));
       go.disabled = !sel.size;
-      replaceChildren(go, `Sell ${sel.size} for `, logValueChip({ kind: 'mana', value: sel.size }));
+      replaceChildren(result, convertResult(sel.size));
     };
     return b;
   }));
   go.onclick = async () => { const r = await g.act('act_convert1', { reagents: [...sel].map((i) => me.tok[i]) }, { sound: 'coin' }); ov.close(); if (r) g.afterAction(); };
-  appendNodes(ov.el, h('div', { class: 'sheet-panel' },
-    h('div', { class: 'phase-title' }, 'Sell any mix at ', logValueChip({ kind: 'mana', value: 1 }), ' each'),
-    grid, h('div', { class: 'actions' }, go)));
+  appendNodes(ov.el, h('div', { class: 'sheet-panel convert-mixed-panel' },
+    h('div', { class: 'phase-title convert-mixed-title' }, 'Sell any mix at ', logValueChip({ kind: 'mana', value: 1 }), ' each'),
+    grid, result, h('div', { class: 'actions' }, go)));
 }
 
 export function announceSpellEffectResults(g, entries) {
