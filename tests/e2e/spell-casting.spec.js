@@ -79,9 +79,9 @@ test('Energize: convert sheet shows base track before boosted math', async ({ pa
   await page.getByTestId('token-Horn').tap();
   await expect(page.getByTestId('convert')).toBeVisible();
   await expect(page.getByTestId('convert-energize-note')).toContainText('Horn track 4 + 3 Energize = 7');
-  await expect(page.getByTestId('convert-gain-math')).toContainText('3 × 7 =');
-  await expect(page.getByTestId('convert-gain-math')).toContainText('+21 mana');
-  await expect(page.getByTestId('convert-gain-math')).toContainText('track ends at 4');
+  await expect(page.getByTestId('convert-gain-math').locator('.log-reagent-count')).toHaveText('×3');
+  await expect(page.getByTestId('convert-gain-math').locator('.log-value-number')).toHaveText('7');
+  await expect(page.getByTestId('convert-result').locator('.convert-result-num')).toHaveText('21');
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
