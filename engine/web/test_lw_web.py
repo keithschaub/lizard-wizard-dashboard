@@ -722,5 +722,20 @@ for use in ('dungeon', 'research'):
     log = W.st()['meta']['log']; ri = max(i for i, e in enumerate(log) if e.get('act') == 'rise')
     check(not any(e.get('act') in ('summon',) for e in log[ri:]), f'Rise {use} does not summon a face-up familiar')
 
+def m117(spells):
+    def mut(s):
+        k = A.P(s, 'Keith'); k['gold'] = 0; k['tok'] = ['Foxglove']
+        k['spells'] = [x for x in k.get('spells', []) if 'Perfect_Reagent' not in x['img'] and 'Inexpensive' not in x['img']]
+        k['spells'] += [{'img': f'assets/Spell_{x}.jpg', 'cast': True} for x in spells]
+        s['tower_face'] = 'assets/Tower_T2_Ivory_Spire.jpg'
+    return mut
+setup(m117([]))
+tc = W.view()['tower_cost']
+check(tc == dict(tower='Tower_T2_Ivory_Spire', reagent='Mandrake', n=2, gold=2, perfect_reagent=False, inexpensive=False), f'tower cost view: printed cost with no discount ({tc})')
+setup(m117(['Perfect_Reagent', 'Inexpensive']))
+tc = W.view()['tower_cost']
+check(tc['n'] == 1 and tc['gold'] == 1 and tc['perfect_reagent'] and tc['inexpensive'], f'tower cost view: Perfect Reagent and Inexpensive take 1 off ({tc})')
+check(tc['n'] == A.tower_cost(A.P(W.st(), 'Keith'), W.st()['tower_face'], 'reagent'), 'tower cost view matches the engine build cost')
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)

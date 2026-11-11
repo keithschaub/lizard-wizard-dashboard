@@ -85,6 +85,7 @@ const slotRectOf = (key) => { const el = document.querySelector(`#board [data-ke
 export function cardInfo(g, key) {
   const c = g.cards[key] || {};
   const meta = [];
+  let towerCost = null;
   if (c.deck === 'Achievement') {
     meta.push(h('span', {}, `${c.vp ?? 10} VP when claimed`), achievementBadge(c));
   } else if (c.school) meta.push(logSchoolChip(c.school));
@@ -96,7 +97,17 @@ export function cardInfo(g, key) {
       logValueChip({ kind: 'mana', value: c.cost?.mana ?? 5 }),
       h('span', { class: 'card-cost-reagents' }, ...groupReagents(spellCost).map(({ reagent: r, count }) => logReagentChip(r, { count })))));
   } else if (c.deck === 'Tower') {
-    meta.push(h('span', {}, `Tier ${c.cost?.tier}`), h('span', {}, `Cost ${c.cost?.reagent_count} `, h('img', { src: reagentIcon(c.cost?.reagent), alt: '' }), ` or ${c.cost?.gold} Gold`));
+    // Face-up tower: the engine's cost for this player (Perfect Reagent / Inexpensive applied), cause line first.
+    // When a Build button is showing it already carries the cost, so the panel shows only the cause.
+    const tc = g.v?.tower_cost?.tower === key ? g.v.tower_cost : null;
+    const buildShown = g.v?.legal?.build?.tower === key;
+    meta.push(h('span', {}, `Tier ${c.cost?.tier}`));
+    const why = [tc?.perfect_reagent ? 'Perfect Reagent: 1 fewer reagent' : null, tc?.inexpensive ? 'Inexpensive: 1 fewer Gold' : null].filter(Boolean);
+    const rN = tc ? tc.n : c.cost?.reagent_count; const gN = tc ? tc.gold : c.cost?.gold; const rg = tc?.reagent || c.cost?.reagent;
+    towerCost = h('div', { class: 'ci-tower-cost', 'data-testid': 'tower-cost' },
+      ...why.map((t) => h('div', { class: 'ci-tower-why' }, t)),
+      buildShown ? null : h('div', { class: 'card-cost-row' },
+        h('span', {}, 'Cost'), logReagentChip(rg, { count: rN, showCount: true }), h('span', {}, 'or'), logValueChip({ kind: 'gold', value: gN })));
   } else if (c.deck === 'Familiar') {
     meta.push(logValueChip({ kind: 'mana', value: c.cost?.mana }));
   }
@@ -129,6 +140,7 @@ export function cardInfo(g, key) {
   return h('div', { class: 'cardinfo', 'data-testid': 'card-info' },
     h('div', { class: 'ci-name' }, c.deck === 'Achievement' ? achievementTitle(c) : (c.deck === 'Familiar' ? (c.name || c.display || key) : (c.display || c.name || key))),
     meta.length ? h('div', { class: 'ci-meta' }, meta) : null,
+    towerCost,
     text ? h('div', { class: 'ci-text', 'data-testid': 'card-text' }, text) : null);
 }
 

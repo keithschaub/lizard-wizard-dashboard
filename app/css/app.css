@@ -429,6 +429,20 @@ img { -webkit-user-drag: none; user-select: none; }
 .cardinfo .ci-meta { color: var(--muted); font-size: 13.5px; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
 .cardinfo .ci-meta img { width: 16px; height: 16px; vertical-align: -3px; }
 .cardinfo .ci-text { margin-top: 8px; font-size: 16px; line-height: 1.35; }
+.cardinfo .ci-tower-cost { margin-top: 4px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.cardinfo .ci-tower-cost .card-cost-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; color: var(--muted); }
+.cardinfo .ci-tower-why { color: var(--gold-hi); font-size: 14px; }
+.cardinfo .ci-tower-cost .log-value-chip, .cardinfo .ci-tower-cost .log-reagent-chip { height: 30px; min-height: 30px; box-sizing: border-box; border-radius: 15px; font-size: 14px; }
+.cardinfo .ci-tower-cost .log-value-chip { padding: 1px 2px 1px 8px; gap: 4px; }
+.cardinfo .ci-tower-cost .log-reagent-chip { padding: 2px 9px 2px 3px; gap: 3px; font-weight: 700; }
+.cardinfo .ci-tower-cost .log-value-orb { width: 24px; height: 24px; }
+.cardinfo .ci-tower-cost .log-reagent-chip img { width: 24px; height: 24px; }
+/* Face-up tower: shrink the card so card, Build button and cost panel all fit without scrolling */
+.expand:has(.ci-tower-cost) { --expand-slot: max(200px, calc(100vh - var(--expand-pad-t) - var(--clear-b) - var(--tower-extra, 200px))); }
+.expand:has(.ci-tower-cost):has([data-testid=build-reagent], [data-testid=build-gold]) { --tower-extra: 330px; }
+@supports (height: 100dvh) {
+  .expand:has(.ci-tower-cost) { --expand-slot: max(200px, calc(100dvh - var(--expand-pad-t) - var(--clear-b) - var(--tower-extra, 200px))); }
+}
 .expand:has(.cardinfo .ci-fx-grid) { --expand-slot: max(200px, calc(100vh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
 @supports (height: 100dvh) {
   .expand:has(.cardinfo .ci-fx-grid) { --expand-slot: max(200px, calc(100dvh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
