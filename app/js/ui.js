@@ -98,21 +98,20 @@ export function cardInfo(g, key) {
   } else if (c.deck === 'Tower') {
     meta.push(h('span', {}, `Tier ${c.cost?.tier}`), h('span', {}, `Cost ${c.cost?.reagent_count} `, h('img', { src: reagentIcon(c.cost?.reagent), alt: '' }), ` or ${c.cost?.gold} Gold`));
   } else if (c.deck === 'Familiar') {
-    meta.push(h('span', {}, `${c.cost?.mana} mana`));
+    meta.push(logValueChip({ kind: 'mana', value: c.cost?.mana }));
   }
   let text;
   if (c.deck === 'Achievement') text = c.effect || '';
   else if (c.deck === 'Familiar' && c.effect) text = c.effect.split('||').map((part) => {
     const line = part.trim().replace(' | ', ' · ');
-    const collect = line.match(/^(.*?Collect)\s+(\d+)\s+([A-Za-z_]+)(.*)$/);
+    const collect = line.match(/^(.*?)Collect\s+(\d+)\s+([A-Za-z_]+)(.*)$/);
     if (collect) {
-      const reagent = collect[3];
-      return h('div', {}, `${collect[1]} `, logReagentChip(reagent, { count: Number(collect[2]) }), collect[4]);
+      return h('div', { class: 'ci-effect-line' }, collect[1].trim(), logReagentChip(collect[3], { count: Number(collect[2]) }), collect[4].trim());
     }
     const dungeon = line.match(/^(.*?)(\d+)\s+Gold\s+\/\s+([A-Za-z-]+)\s+Card(.*)$/);
     if (dungeon) {
-      return h('div', {}, dungeon[1], logValueChip({ kind: 'gold', value: Number(dungeon[2]) }), ' / ',
-        logSchoolChip(dungeon[3]), ' card', dungeon[4]);
+      return h('div', { class: 'ci-effect-line' }, dungeon[1].trim(), logValueChip({ kind: 'gold', value: Number(dungeon[2]) }), '/',
+        logSchoolChip(dungeon[3]), 'card', dungeon[4].trim());
     }
     return h('div', {}, line);
   });
