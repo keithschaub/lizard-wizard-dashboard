@@ -194,7 +194,7 @@ class Game {
           el.onclick = () => {
             this.sfx('tap');
             if (legal) UI.convertSheet(this, r);
-            else this.toast(h('span', {}, UI.logReagentChip(r), ' price is ', UI.logValueChip({ kind: 'mana', value: v.board.tracks[r] }), ' each'));
+            else this.toast(h('span', { class: 'price-toast', 'data-testid': 'price-toast' }, UI.logReagentChip(r), 'price is', UI.logValueChip({ kind: 'mana', value: v.board.tracks[r] }), 'each'));
           };
           return el;
         }) : h('div', { class: 'empty-note' }, 'No reagent tokens')),
