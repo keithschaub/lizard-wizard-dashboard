@@ -594,7 +594,7 @@ img { -webkit-user-drag: none; user-select: none; }
 .bid-summary { display: grid; gap: 4px; margin: 8px 0; }
 .bid-summary-row { display: grid; grid-template-columns: 1fr auto; align-items: center; font: 700 30px var(--sans); color: var(--gold-hi); }
 .bid-summary-row > span { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; }
-.arena-center .high { font-family: var(--display); font-size: 15px; color: var(--gold-hi); text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+.arena-center .high { font-family: var(--display); font-size: 15px; color: var(--gold-hi); text-align: center; }
 .seat { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 96px; transform: translate(-50%, -50%); transition: transform .3s; }
 .seat .sname { font-weight: 700; font-size: 14px; }
 .seat .bid { min-width: 46px; text-align: center; padding: 3px 10px; border-radius: 12px; font-weight: 700; font-size: 16px; background: rgba(255, 255, 255, .08); border: 1px solid var(--line); }
@@ -618,6 +618,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .bidbtns { display: flex; gap: 8px; }
 .bidbtns .act { flex: 1; justify-content: center; }
 .winner-banner { font-family: var(--display); font-weight: 700; font-size: 16px; color: var(--teal); text-align: center; padding: 0 8px 14px; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+.arena-center .high:has(.log-value-chip) { display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
 .auction-settled { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, .04); color: var(--muted); font-size: 13px; text-align: center; }
 
 /* convert sheet + menus */
