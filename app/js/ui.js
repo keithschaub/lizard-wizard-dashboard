@@ -972,7 +972,7 @@ export function convertSheet(g, reagent) {
   const heldCount = h('div', { class: 'convert-held-count', 'data-testid': 'convert-held-count' });
   const val2 = h('span', { class: 'val', 'data-testid': 'convert-n2' }, '1');
   const gain = h('div', { class: 'gain' });
-  const gain2 = h('div', { class: 'gain', 'data-testid': 'convert-gain2' });
+  const gain2 = h('div', { class: 'gain convert-total', 'data-testid': 'convert-gain2' });
   const secondRow = h('div', { class: 'stepper adept-stepper', style: { display: 'none' }, 'data-testid': 'convert-stepper2' });
   const xQueued = h('div', { class: 'chips', 'data-testid': 'transform-queue' });
   const xPick = h('div', { class: 'chips' });
@@ -1082,13 +1082,13 @@ export function convertSheet(g, reagent) {
       const c2 = L.convert[r2] || { n: countTok(r2), value: trackOf(r2) };
       n2 = Math.min(Math.max(1, n2), countTok(r2));
       val2.textContent = String(n2);
-      const tv = trackOf(r2);
-      gain2.innerHTML = '';
-      appendNodes(gain2, reagentCount(r2, n2), ' × ', mana(tv), ' → ', mana(n2 * tv));
     } else {
-      gain2.innerHTML = '';
       val2.textContent = '1';
       n2 = 1;
+    }
+    if (adept) {
+      const total = n * v + (r2 ? n2 * trackOf(r2) : 0);
+      replaceChildren(gain2, h('b', {}, 'Total'), mana(total));
     }
   };
   const type2Pick = h('div', { class: 'reagent-choice-group', 'data-testid': 'convert-adept-type2' });
@@ -1115,8 +1115,7 @@ export function convertSheet(g, reagent) {
       h('span', { class: 'reagent-choice-medallion' },
         h('img', { src: reagentIcon(r), alt: '' }),
         h('span', { class: 'reagent-choice-count', 'data-testid': `convert-count-${r}` }, `×${countTok(r)}`)),
-      h('span', { class: 'reagent-choice-copy' }, h('span', { class: 'reagent-choice-name' }, nice(r)),
-        h('span', { class: 'reagent-choice-price' }, `${trackOf(r)} mana each`)));
+      h('span', { class: 'reagent-choice-price', 'aria-label': `${nice(r)} ${trackOf(r)} mana each` }, mana(trackOf(r)), 'each'));
       return b;
     }));
   };
@@ -1140,7 +1139,6 @@ export function convertSheet(g, reagent) {
       xTarget,
       xAdd,
       xQueued) : null,
-    adept ? h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-banner' }, 'Adept Conversion: you may also sell a second type.') : null,
     h('div', { class: 'stepper' }, h('button', { 'data-testid': 'convert-minus', onclick: () => { n = Math.max(1, n - 1); upd(); g.sfx('tap'); } }, '−'), val,
       h('button', { 'data-testid': 'convert-plus', onclick: () => { n = Math.min(countTok(reagent), n + 1); upd(); g.sfx('tap'); } }, '+')),
     gain,
