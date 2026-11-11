@@ -553,6 +553,8 @@ img { -webkit-user-drag: none; user-select: none; }
 .log-track-chip { padding-right: 7px; }
 .log-item .thumbs { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 4px; }
 .log-item .thumbs img { width: 30px; height: 42px; border-radius: 3px; object-fit: contain; }
+.log-inline-and-cast { width: 100%; margin-top: 2px; }
+.log-cast-list { display: flex; flex-direction: column; gap: 6px; }
 .log-cast { display: flex; gap: 10px; margin-top: 6px; padding: 8px; border-radius: 10px; background: rgba(90, 60, 160, .2); border: 1px solid rgba(196, 155, 255, .35); }
 .log-cast img { width: 64px; height: 92px; border-radius: 5px; object-fit: contain; flex: none; }
 .log-cast .lc-name { font-family: var(--display); font-weight: 700; color: var(--gold-hi); font-size: 14px; }
