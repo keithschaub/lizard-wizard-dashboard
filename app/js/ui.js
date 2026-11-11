@@ -102,23 +102,32 @@ export function cardInfo(g, key) {
   }
   let text;
   if (c.deck === 'Achievement') text = c.effect || '';
-  else if (c.deck === 'Familiar' && c.effect) text = c.effect.split('||').map((part) => {
-    const line = part.trim().replace(' | ', ' · ');
-    const collect = line.match(/^(.*?)Collect\s+(\d+)\s+([A-Za-z_]+)(.*)$/);
-    if (collect) {
-      return h('div', { class: 'ci-effect-line' }, collect[1].trim(), logReagentChip(collect[3], { count: Number(collect[2]) }), collect[4].trim());
-    }
-    const dungeon = line.match(/^(.*?)(\d+)\s+Gold\s+\/\s+([A-Za-z-]+)\s+Card(.*)$/);
-    if (dungeon) {
-      return h('div', { class: 'ci-effect-line' }, dungeon[1].trim(), logValueChip({ kind: 'gold', value: Number(dungeon[2]) }), '/',
-        logSchoolChip(dungeon[3]), 'card', dungeon[4].trim());
-    }
-    return h('div', {}, line);
-  });
+  else if (c.deck === 'Familiar' && c.effect) {
+    // Trigger | effect grid, same structure as the printed card. The school
+    // crest stands alone here because the school chip sits in the row above.
+    const rows = c.effect.split('||').map((part) => {
+      const [trigger, ...rest] = part.split(' | ');
+      const effect = rest.join(' | ').trim();
+      const cell = h('div', { class: 'ci-fx-effect' });
+      const collect = effect.match(/^Collect\s+(\d+)\s+(.+?)\s*(&.*)?$/);
+      const dungeon = effect.match(/^(\d+)\s+Gold\s+\/\s+([A-Za-z-]+)\s+Card$/i);
+      if (collect) {
+        appendNodes(cell, logReagentChip(collect[2].trim().replaceAll(' ', '_'), { count: Number(collect[1]) }),
+          collect[3] ? h('span', { class: 'ci-fx-text' }, collect[3].trim()) : null);
+      } else if (dungeon) {
+        appendNodes(cell, logValueChip({ kind: 'gold', value: Number(dungeon[1]) }),
+          h('span', { class: 'ci-fx-text' }, 'per'),
+          h('span', { class: 'ci-fx-crest', title: dungeon[2], 'aria-label': dungeon[2] }, h('img', { src: schoolIcon(dungeon[2]), alt: '' })),
+          h('span', { class: 'ci-fx-text' }, 'card'));
+      } else appendNodes(cell, h('span', { class: 'ci-fx-text' }, effect));
+      return [h('div', { class: 'ci-fx-trigger' }, trigger.trim()), cell];
+    });
+    text = h('div', { class: 'ci-fx-grid', 'data-testid': 'familiar-effects' }, ...rows.flat());
+  }
   else if (c.deck === 'Reagent') text = [h('div', {}, 'Gather: ', ...costIcons(c.gather_icons || [])), h('div', {}, 'Increase Value: ', ...costIcons(c.increase_icons || []))];
   else text = c.effect || '';
   return h('div', { class: 'cardinfo', 'data-testid': 'card-info' },
-    h('div', { class: 'ci-name' }, c.deck === 'Achievement' ? achievementTitle(c) : (c.display || c.name || key)),
+    h('div', { class: 'ci-name' }, c.deck === 'Achievement' ? achievementTitle(c) : (c.deck === 'Familiar' ? (c.name || c.display || key) : (c.display || c.name || key))),
     meta.length ? h('div', { class: 'ci-meta' }, meta) : null,
     text ? h('div', { class: 'ci-text', 'data-testid': 'card-text' }, text) : null);
 }
