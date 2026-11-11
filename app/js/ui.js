@@ -691,7 +691,7 @@ export function xTargetPicker(g, host, maxX, title = 'Invisibility Potion') {
     return c;
   });
   appendNodes(host, h('div', { class: 'x-target-frame', 'data-testid': 'x-target-frame' },
-    h('div', { class: 'phase-title x-target-title' }, `${title}: pay X`, logReagentChip('Eye_of_Newt')),
+    h('div', { class: 'phase-title x-target-title' }, `${title}: pay X`, h('img', { class: 'x-target-eye', src: reagentIcon('Eye_of_Newt'), alt: 'Eye of Newt', 'data-testid': 'x-target-eye' })),
     h('div', { class: 'stepper x-target-stepper' }, h('button', { onclick: () => { x = Math.max(1, x - 1); val.textContent = x; } }, '−'), val, h('button', { onclick: () => { x = Math.min(maxX, x + 1); val.textContent = x; } }, '+')),
     h('div', { class: 'chips x-target-chips' }, chips)));
   return p;
