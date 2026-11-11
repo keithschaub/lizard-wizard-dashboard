@@ -794,3 +794,9 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .sname .diff-badge { display: block; margin: 4px auto 0; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+.wand-tax-effect { justify-content: center; }
+.wand-tax-effect .opt-grid { box-sizing: border-box; padding: 14px 6px; gap: 10px 8px; border: 1px solid rgba(214, 180, 90, .7); border-radius: 16px; background: rgba(7, 9, 17, .72); }
+.wand-tax-effect .chip { gap: 6px; padding: 4px 6px 4px 4px; font-size: 16px; font-weight: 700; border-radius: 26px; }
+.wand-tax-effect .chip > img { width: 34px; height: 34px; }
+.wand-tax-effect .chip .log-value-chip { height: 32px; border-radius: 16px; font-size: 14px; }
+.wand-tax-effect .chip .log-value-orb { width: 28px; height: 28px; }
