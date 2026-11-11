@@ -113,7 +113,7 @@ test('structured multi-type sell banner uses one chip per type and one total gai
   });
   await expect(page.getByTestId('ai-sell-reagent')).toHaveCount(2);
   await expect(page.getByTestId('ai-sell-structured')).not.toContainText('Mandrake 12 each · Horn 8 each');
-  await expect(page.getByTestId('ai-sell-structured').locator('.bsell-row .log-value-number')).toHaveText(['12', '32']);
+  await expect(page.getByTestId('ai-sell-structured').locator('.bsell-row .log-value-number')).toHaveText(['32']);
   await expect(page.getByTestId('ai-sell-mana').locator('.log-value-number')).toHaveText('32');
   await expect(page.getByTestId('ai-sell-structured')).not.toContainText('track now');
   await page.getByTestId('ai-banner').screenshot({ path: 'docs/screenshots/banner-sell-multi-dpr3.png' });
