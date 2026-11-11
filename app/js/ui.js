@@ -973,6 +973,7 @@ export function convertSheet(g, reagent) {
   const val2 = h('span', { class: 'val', 'data-testid': 'convert-n2' }, '1');
   const gain = h('div', { class: 'gain' });
   const gain2 = h('div', { class: 'gain', 'data-testid': 'convert-gain2' });
+  const result = h('div', { class: 'convert-result-wrap', 'data-testid': 'convert-total' });
   const secondRow = h('div', { class: 'stepper adept-stepper', style: { display: 'none' }, 'data-testid': 'convert-stepper2' });
   const xQueued = h('div', { class: 'chips', 'data-testid': 'transform-queue' });
   const xPick = h('div', { class: 'chips' });
@@ -1071,13 +1072,14 @@ export function convertSheet(g, reagent) {
       appendNodes(gain,
         h('div', { class: 'ov-sub energize-track', 'data-testid': 'convert-energize-note' },
           h('b', {}, `${nice(reagent)} track ${base} + 3 Energize = ${v}${capped ? ' (capped at 12)' : ''}`)),
-        h('div', { 'data-testid': 'convert-gain-math' },
-          reagentCount(reagent, n), ' × ', mana(v), ' → ', mana(n * v)));
+        h('div', { class: 'convert-formula', 'data-testid': 'convert-gain-math' },
+          reagentCount(reagent, n), h('span', { class: 'convert-op' }, '×'), mana(v)));
     } else {
-      appendNodes(gain, h('div', { class: 'convert-formula', 'data-testid': 'convert-gain-math' },
-        reagentCount(reagent, n), h('span', { class: 'convert-op' }, '×'), mana(v), h('span', { class: 'convert-op' }, '→'), mana(n * v), h('span'),
-        h('span', { class: 'convert-price-label' }, 'Price drops to'), h('span', { class: 'convert-price-drop' }, mana(endTrack)),
-        h('span', { class: 'convert-price-each' }, 'each')));
+      appendNodes(gain,
+        h('div', { class: 'convert-formula', 'data-testid': 'convert-gain-math' },
+          reagentCount(reagent, n), h('span', { class: 'convert-op' }, '×'), mana(v), h('span', { class: 'convert-price-each' }, 'each')),
+        h('div', { class: 'convert-price-note', 'data-testid': 'convert-price-drop' },
+          h('span', {}, 'Price drops to'), mana(endTrack), h('span', {}, 'each')));
     }
     if (adept && r2) {
       const c2 = L.convert[r2] || { n: countTok(r2), value: trackOf(r2) };
@@ -1091,6 +1093,7 @@ export function convertSheet(g, reagent) {
       val2.textContent = '1';
       n2 = 1;
     }
+    replaceChildren(result, convertResult(n * v + (adept && r2 ? n2 * (L.convert[r2]?.value ?? trackOf(r2)) : 0)));
   };
   const type2Pick = h('div', { class: 'reagent-choice-group', 'data-testid': 'convert-adept-type2' });
   const renderType2Choices = () => {
@@ -1150,6 +1153,7 @@ export function convertSheet(g, reagent) {
       type2Pick,
       secondRow) : null,
     adept ? gain2 : null,
+    result,
     h('div', { class: 'actions' }, h('button', { class: 'act', 'data-testid': 'convert-go', onclick: onGo }, 'Convert')),
     L.convert1 ? h('button', { class: 'linkish', 'data-testid': 'convert-mixed', onclick: () => { ov.close(); convertMixed(g); } },
       'Sell a mix of reagents at ', logValueChip({ kind: 'mana', value: 1 }), ' each') : null);
@@ -1157,6 +1161,15 @@ export function convertSheet(g, reagent) {
   if (adept) rebuildSecondStepper();
   if (transformOn) { renderTransformPick(); renderTransformQueue(); }
   upd();
+}
+
+// The payout of a trade, shown big: "You get 21 (mana)". Shared by every convert sheet.
+function convertResult(total) {
+  return h('div', { class: `convert-result ${total ? '' : 'empty'}`, 'data-testid': 'convert-result', 'aria-label': `You get ${total} mana` },
+    h('span', { class: 'convert-result-label' }, 'You get'),
+    h('span', { class: 'convert-result-value' },
+      h('span', { class: 'convert-result-num' }, String(total)),
+      h('span', { class: 'log-value-orb mana convert-result-orb', 'aria-hidden': 'true' })));
 }
 
 function convertMixed(g) {

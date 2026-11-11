@@ -666,15 +666,23 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .stepper .val { font-family: var(--sans); font-weight: 700; font-size: 32px; min-width: 50px; text-align: center; color: var(--gold-hi); }
 .big-icon { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .6)); }
 .gain { font-size: 16px; color: #cfe0ff; text-align: center; }
-.convert-formula { display: inline-grid; grid-template-columns: auto auto auto auto auto 0; align-items: center; justify-items: center; column-gap: 8px; row-gap: 10px; margin: 0 auto; }
+.convert-formula { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 auto; }
+.convert-price-note { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; color: var(--muted); font-size: 15px; white-space: nowrap; }
 .convert-op { color: #cfe0ff; font-size: 13px; }
-.convert-price-label { grid-column: 1 / 5; justify-self: end; color: var(--muted); font-size: 15px; white-space: nowrap; }
-.convert-price-drop { grid-column: 5; justify-self: end; display: flex; }
-.convert-formula > :nth-child(5) { justify-self: end; }
+.convert-price-each { color: #cfe0ff; font-size: 15px; white-space: nowrap; }
 .sheet-panel > .linkish .log-value-chip { margin: 0 4px; vertical-align: middle; }
-.convert-price-each { grid-column: 6; justify-self: start; color: var(--muted); font-size: 15px; white-space: nowrap; }
 .gain b { color: #9fd0ff; }
 .gain .energize-track b { color: #f2d98e; }
+.convert-result-wrap { width: 100%; display: flex; justify-content: center; margin-top: 4px; }
+.sheet-panel [data-testid=convert-go] { justify-content: center; }
+.convert-result { width: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 16px; padding: 8px 16px;
+  border: 1px solid rgba(120, 175, 255, .55); border-radius: 16px; background: radial-gradient(ellipse at 50% 50%, rgba(43, 110, 224, .30), rgba(10, 18, 48, .65) 70%);
+  box-shadow: 0 0 18px rgba(80, 150, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .04); }
+.convert-result-label { font-family: var(--display); font-size: 17px; font-variant-caps: small-caps; letter-spacing: .6px; color: #cfe0ff; white-space: nowrap; }
+.convert-result-value { display: inline-flex; align-items: center; gap: 8px; }
+.convert-result-num { font-family: var(--sans); font-weight: 800; font-size: 44px; line-height: 1; color: #fff; font-variant-numeric: tabular-nums; text-shadow: 0 2px 8px rgba(0, 0, 0, .55); }
+.convert-result-orb { width: 42px; height: 42px; box-shadow: 0 0 12px rgba(90, 160, 255, .55); }
+.convert-result.empty { opacity: .45; box-shadow: none; }
 .reagent-choice-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; }
 .reagent-choice { display: flex; width: 100%; box-sizing: border-box; align-items: center; gap: 7px; min-height: 48px; padding: 3px 8px 3px 4px;
   border: 1px solid rgba(214, 180, 90, .55); border-radius: 28px; background: rgba(8, 13, 38, .72);
