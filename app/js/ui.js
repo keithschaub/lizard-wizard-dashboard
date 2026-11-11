@@ -495,9 +495,9 @@ export function openMats(g) {
 // ------------------------------------------------------------------ log drawer
 const DOT = { Keith: '#6ff0d0', Newt: '#c49bff', LizWiz: '#ffb46b' };
 
-export function logReagentChip(r, { bonus = false, count = 1, track = null } = {}) {
+export function logReagentChip(r, { bonus = false, count = 1, track = null, showCount = false } = {}) {
   const label = nice(r);
-  const suffix = track ? `▲+${track}` : (count >= 2 ? `×${count}` : '');
+  const suffix = track ? `▲+${track}` : (count >= 2 || showCount ? `×${count}` : '');
   return h('span', {
     class: `log-reagent-chip ${track ? 'log-track-chip' : ''}`,
     title: suffix ? `${label} ${suffix}` : label,
@@ -917,7 +917,7 @@ export function buildFlow(g, towerKey = null, { group = null, groupIndex = 0 } =
   const towerGroup = (group && group.length ? group : [g.v.board.tower_face].filter(Boolean));
   const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : towerGroup.indexOf(tower);
   const startIdx = resolvedIdx < 0 ? 0 : resolvedIdx;
-  expandCard(g, tower, {
+  const ov = expandCard(g, tower, {
     group: towerGroup,
     groupIndex: startIdx,
     actions: (k) => {
@@ -932,11 +932,12 @@ export function buildFlow(g, towerKey = null, { group = null, groupIndex = 0 } =
       return [
         buildLegal.reagent ? { label: 'Build with reagents', sub: h('span', { class: 'action-chip-row' },
           ...groupReagents(Array.from({ length: buildLegal.reagent.n }, () => buildLegal.reagent.reagent))
-            .map(({ reagent: r, count }) => logReagentChip(r, { count }))), testid: 'build-reagent', onClick: build('reagent') } : null,
+            .map(({ reagent: r, count }) => logReagentChip(r, { count, showCount: true }))), testid: 'build-reagent', onClick: build('reagent') } : null,
         buildLegal.gold ? { label: 'Build with Gold', sub: logValueChip({ kind: 'gold', value: buildLegal.gold.n }), testid: 'build-gold', onClick: build('gold') } : null,
       ].filter(Boolean);
     },
   });
+  ov.el.classList.add('build-expand');
 }
 
 export function divinationFlow(g) {
