@@ -274,13 +274,15 @@ export function expandCard(g, key, {
       if (info) {
         const remaining = Number(info.remaining);
         replaceChildren(costContainer,
-          h('span', { class: 'familiar-summon-mana', 'aria-hidden': 'true' }, logValueChip({ kind: 'mana', value: info.cost })),
+          h('span', { class: 'familiar-summon-mana', 'aria-hidden': 'true' }, info.cost),
           h('span', { class: 'familiar-summon-cost-copy' },
-            h('span', { class: 'familiar-summon-cost-title' }, 'Summon for ', logValueChip({ kind: 'mana', value: info.cost })),
+            h('span', { class: 'familiar-summon-cost-title' },
+              h('span', { class: 'familiar-summon-cost-label' }, 'Summon for'),
+              logValueChip({ kind: 'mana', value: info.cost })),
             h('span', { class: `familiar-summon-cost-detail ${info.affordable ? '' : 'unaffordable'}` },
               info.affordable
-                ? ['You have ', logValueChip({ kind: 'mana', value: info.mana }), ' · ', logValueChip({ kind: 'mana', value: remaining }), ' left after']
-                : ['You have ', logValueChip({ kind: 'mana', value: info.mana }), ' · not enough mana'])));
+                ? [h('span', { class: 'familiar-summon-cost-label' }, 'You have'), logValueChip({ kind: 'mana', value: info.mana }), h('span', { class: 'familiar-summon-separator' }, '·'), logValueChip({ kind: 'mana', value: remaining }), ' left after']
+                : [h('span', { class: 'familiar-summon-cost-label' }, 'You have'), logValueChip({ kind: 'mana', value: info.mana }), h('span', { class: 'familiar-summon-separator' }, '·'), 'not enough mana'])));
         costContainer.hidden = false;
       } else {
         costContainer.hidden = true;
