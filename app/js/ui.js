@@ -1204,12 +1204,14 @@ export async function effectChooser(g) {
   const pd = g.v.pending; const k = pd.spell; const info = g.cards[k] || {};
   const ov = openOverlay('gather', { testid: 'effect' });
   const [p, done] = wait();
-  appendNodes(ov.el, h('div', { class: 'chooser-head' }, h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }),
-    h('div', {}, h('div', { class: 'phase-title' }, info.display), h('div', { class: 'ov-sub' }, info.effect))));
   const opts = pd.options;
   const grid = h('div', { class: 'opt-grid', 'data-testid': 'effect-options' });
   const pick = (choice) => () => { g.sfx('select'); done(choice); };
   const kind = pd.kind;
+  if (kind !== 'transmute') {
+    appendNodes(ov.el, h('div', { class: 'chooser-head' }, h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }),
+      h('div', {}, h('div', { class: 'phase-title' }, info.display), h('div', { class: 'ov-sub' }, info.effect))));
+  }
   const playerData = (name) => g.v.players.find((p) => p.name === name);
   if (['flame_bolt', 'disintegrate', 'earthquake', 'charm', 'creation', 'demonic_possession'].includes(kind)) {
     const byP = {};
@@ -1250,19 +1252,26 @@ export async function effectChooser(g) {
     const tok = opts[0].tok; const sel = new Set();
     const go = h('button', { class: 'act', disabled: true, 'data-testid': 'transmute-go' }, 'Transmute');
     const goldBefore = g.me_().gold ?? 0;
+    const goldOrb = () => h('span', { class: 'log-value-orb gold', 'aria-hidden': 'true' });
+    const flask = h('span', { class: 'transmute-flask', 'aria-hidden': 'true' });
+    flask.innerHTML = '<svg viewBox="0 0 24 32"><path d="M9 2h6v3h-1v6.2c4 1.4 7 5.1 7 9.6C21 26.4 16.9 30 12 30S3 26.4 3 20.8c0-4.5 3-8.2 7-9.6V5H9z" fill="none" stroke="#f2d98e" stroke-width="1.8" stroke-linejoin="round"/><path d="M4.6 21h14.8c-.2 4.4-3.5 7.4-7.4 7.4S4.8 25.4 4.6 21z" fill="#e0a92e"/></svg>';
+    const tradeCount = h('span', { class: 'transmute-num' }, '×0');
+    const tradeGold = h('span', { class: 'transmute-num' }, '0');
+    const goldAfter = h('span', { class: 'transmute-num' }, String(goldBefore));
     const summary = h('div', { class: 'transmute-summary', 'data-testid': 'transmute-summary' },
-      h('div', { class: 'transmute-trade' }, h('b', {}, 'Transmute'), h('span', {}, '⚗ ×0 → '), logValueChip({ kind: 'gold', value: 0 })),
-      h('div', { class: 'transmute-gold' }, h('b', {}, 'Your gold'), logValueChip({ kind: 'gold', value: goldBefore }), ' → ', logValueChip({ kind: 'gold', value: goldBefore })));
+      h('div', { class: 'transmute-trade' }, h('b', {}, 'Transmute'),
+        h('span', { class: 'transmute-values' }, flask, tradeCount, h('span', { class: 'transmute-arrow' }, '→'), tradeGold, goldOrb())),
+      h('div', { class: 'transmute-gold' }, h('b', {}, 'Your gold'),
+        h('span', { class: 'transmute-values' }, h('span', { class: 'transmute-num' }, String(goldBefore)), goldOrb(), h('span', { class: 'transmute-arrow' }, '→'), goldAfter, goldOrb())));
     const updateSummary = () => {
       const gain = Math.floor(sel.size / 2);
-      summary.querySelector('.transmute-trade span').textContent = `⚗ ×${sel.size} → `;
-      const values = summary.querySelectorAll('.transmute-trade .log-value-number, .transmute-gold .log-value-number');
-      values[0].textContent = String(gain);
-      values[2].textContent = String(goldBefore + gain);
+      tradeCount.textContent = `×${sel.size}`;
+      tradeGold.textContent = String(gain);
+      goldAfter.textContent = String(goldBefore + gain);
     };
-    appendNodes(grid, summary);
-    appendNodes(grid, ...tok.map((r, i) => { const b = h('button', { class: 'tokbtn', 'data-testid': `transmute-${i}` }, h('img', { src: reagentIcon(r), alt: '' })); b.onclick = () => { if (sel.has(i)) { sel.delete(i); b.classList.remove('on'); } else { sel.add(i); b.classList.add('on'); } updateSummary(); go.disabled = sel.size < 2 || sel.size % 2; go.textContent = 'Transmute'; }; return b; }));
+    appendNodes(grid, ...tok.map((r, i) => { const b = h('button', { class: 'tokbtn', 'data-testid': `transmute-${i}` }, h('img', { src: reagentIcon(r), alt: '' })); b.onclick = () => { if (sel.has(i)) { sel.delete(i); b.classList.remove('on'); } else { sel.add(i); b.classList.add('on'); } updateSummary(); go.disabled = sel.size < 2 || sel.size % 2; go.textContent = 'Transmute'; }; return b; }), summary);
     appendNodes(grid, h('div', { class: 'actions' }, go));
+    grid.classList.add('transmute-frame');
     go.onclick = () => done({ reagents: [...sel].map((i) => tok[i]) });
   } else if (kind === 'evolve' || kind === 'rise') {
     appendNodes(grid, ...opts.map((o) => h('button', { class: 'opt-card', 'data-testid': `${kind}-${o.familiar}`, onclick: pick(o) }, h('img', { src: art(o.familiar), alt: o.familiar }), h('span', { class: 'oc-label' }, o.school))));
