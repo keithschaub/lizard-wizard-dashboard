@@ -978,6 +978,7 @@ export function convertSheet(g, reagent) {
   const xPick = h('div', { class: 'chips' });
   const xAdd = h('button', { class: 'chip', disabled: true, 'data-testid': 'transform-add' }, 'Transform (2:1)');
   const trackOf = (r) => (g.v.board.tracks[r] ?? 0);
+  const priceOf = (r) => (L.convert[r]?.value ?? trackOf(r));
   const mana = (value) => logValueChip({ kind: 'mana', value });
   const reagentCount = (r, count) => logReagentChip(r, { count });
   const choiceGroup = (options, selected, testPrefix, onPick) => h('div', { class: 'reagent-choice-group' },
@@ -1087,7 +1088,7 @@ export function convertSheet(g, reagent) {
       n2 = 1;
     }
     if (adept) {
-      const total = n * v + (r2 ? n2 * trackOf(r2) : 0);
+      const total = n * v + (r2 ? n2 * priceOf(r2) : 0);
       replaceChildren(gain2, h('b', {}, 'Total'), mana(total));
     }
   };
@@ -1115,7 +1116,7 @@ export function convertSheet(g, reagent) {
       h('span', { class: 'reagent-choice-medallion' },
         h('img', { src: reagentIcon(r), alt: '' }),
         h('span', { class: 'reagent-choice-count', 'data-testid': `convert-count-${r}` }, `×${countTok(r)}`)),
-      h('span', { class: 'reagent-choice-price', 'aria-label': `${nice(r)} ${trackOf(r)} mana each` }, mana(trackOf(r)), 'each'));
+      h('span', { class: 'reagent-choice-price', 'aria-label': `${nice(r)} ${priceOf(r)} mana each` }, mana(priceOf(r)), 'each'));
       return b;
     }));
   };
