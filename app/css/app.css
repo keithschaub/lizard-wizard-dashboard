@@ -422,6 +422,28 @@ img { -webkit-user-drag: none; user-select: none; }
 .cardinfo .ci-meta { color: var(--muted); font-size: 13.5px; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
 .cardinfo .ci-meta img { width: 16px; height: 16px; vertical-align: -3px; }
 .cardinfo .ci-text { margin-top: 8px; font-size: 16px; line-height: 1.35; }
+.expand:has(.cardinfo .ci-fx-grid) { --expand-slot: max(200px, calc(100vh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
+@supports (height: 100dvh) {
+  .expand:has(.cardinfo .ci-fx-grid) { --expand-slot: max(200px, calc(100dvh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
+}
+.cardinfo .ci-meta .log-value-chip { height: 32px; border-radius: 16px; }
+.cardinfo .ci-meta .log-value-orb { width: 28px; height: 28px; }
+/* Familiar trigger | effect grid (mirrors the printed card's 2x2 box) */
+.cardinfo .ci-fx-grid { display: grid; grid-template-columns: max-content 1fr; margin-top: 10px;
+  border: 1px solid rgba(214, 180, 90, .45); border-radius: 12px; overflow: hidden; background: rgba(5, 8, 22, .45); }
+.cardinfo .ci-fx-trigger, .cardinfo .ci-fx-effect { min-height: 52px; box-sizing: border-box; display: flex; align-items: center; }
+.cardinfo .ci-fx-trigger { padding: 0 12px; border-right: 1px solid rgba(214, 180, 90, .45); background: rgba(88, 67, 24, .18);
+  color: #e9dcb2; font-size: 15px; white-space: nowrap; }
+.cardinfo .ci-fx-effect { gap: 8px; padding: 0 12px; color: var(--ink); font-size: 16px; white-space: nowrap; }
+.cardinfo .ci-fx-trigger:nth-child(n+3), .cardinfo .ci-fx-effect:nth-child(n+3) { border-top: 1px solid rgba(214, 180, 90, .45); }
+.cardinfo .ci-fx-effect .log-value-chip, .cardinfo .ci-fx-effect .log-reagent-chip { height: 34px; min-height: 34px; box-sizing: border-box; border-radius: 17px; font-size: 14px; }
+.cardinfo .ci-fx-effect .log-value-chip { padding: 1px 2px 1px 8px; gap: 4px; }
+.cardinfo .ci-fx-effect .log-reagent-chip { padding: 2px 9px 2px 3px; gap: 3px; font-weight: 700; }
+.cardinfo .ci-fx-effect .log-value-orb { width: 28px; height: 28px; }
+.cardinfo .ci-fx-effect .log-reagent-chip img { width: 28px; height: 28px; }
+.cardinfo .ci-fx-crest { width: 34px; height: 34px; flex: none; box-sizing: border-box; display: grid; place-items: center; border-radius: 50%;
+  border: 1px solid rgba(255, 220, 137, .82); background: rgba(88, 67, 24, .32); }
+.cardinfo .ci-fx-crest img { width: 26px; height: 26px; object-fit: contain; }
 .actions { width: min(92vw, 460px); display: flex; flex-direction: column; gap: 8px; }
 .act { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 50px; padding: 10px 14px; border-radius: 12px; font-size: 16px; font-weight: 700;
   border: 1px solid rgba(214, 180, 90, .75); background: linear-gradient(180deg, rgba(60, 46, 14, .95), rgba(34, 26, 8, .95)); color: var(--gold-hi); box-shadow: 0 0 16px rgba(255, 211, 107, .25); text-align: left; }
