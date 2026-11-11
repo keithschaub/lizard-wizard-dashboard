@@ -630,6 +630,15 @@ def board_view(s):
         ach=list(s.get('ach', [])), tracks=dict(s['tracks']), out_of_play=len(s.get('out_of_play', [])))
 
 
+def tower_cost_view(s, v):
+    """What the face-up tower costs THIS viewer (A.tower_cost: Perfect Reagent / Inexpensive applied)."""
+    tf = s.get('tower_face')
+    if not tf or not any(q['name'] == v for q in s['players']): return None
+    p = P(s, v); _t, r, _sc = CD.tower_info(tf); r = A.norm(r)
+    return dict(tower=key(tf), reagent=r, n=A.tower_cost(p, tf, 'reagent'), gold=A.tower_cost(p, tf, 'gold'),
+                perfect_reagent=SE.has_cast(p, 'Perfect_Reagent'), inexpensive=SE.has_cast(p, 'Inexpensive'))
+
+
 def view():
     s = st(); v = me()
     ntype, nwho = T.who_needed(s)
@@ -642,6 +651,7 @@ def view():
         board=board_view(s), players=[player_view(s, q, v) for q in s['players']],
         auction=auction_view(s), pending=pending_view(s) if wp else None,
         legal=legal(s, v) if (ntype == 'action' and nwho == v and not wp) else None,
+        tower_cost=tower_cost_view(s, v),
         log_len=len(s['meta'].get('log', [])))
     if out['game_over']:
         out['final'] = {q['name']: S.score(q, s) for q in s['players']}
