@@ -680,7 +680,9 @@ input[type=range].slider::-moz-range-track { height: 8px; border-radius: 4px; ba
 input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: #e0a92e; border: 2px solid #fff; }
 .bidbtns { display: flex; gap: 8px; }
 .bidbtns .act { flex: 1; justify-content: center; }
-.winner-banner { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--teal); text-align: center; padding: 0 16px 20px; }
+.winner-banner { font-family: var(--display); font-weight: 700; font-size: 16px; color: var(--teal); text-align: center; padding: 0 8px 14px; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+.arena-center .high:has(.log-value-chip) { display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+.auction-settled { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, .04); color: var(--muted); font-size: 13px; text-align: center; }
 
 /* convert sheet + menus */
 .sheet { justify-content: flex-start; padding-top: calc(var(--safe-t) + 10px); }

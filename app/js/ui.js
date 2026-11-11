@@ -1530,7 +1530,8 @@ export async function arena(g, { mode, wizard = null }) {
     else { b.textContent = val; leader = who; hi = val; g.sfx('bid'); }
     Object.values(seats).forEach((s) => s.classList.remove('leader'));
     if (leader) seats[leader].classList.add('leader');
-    high.textContent = leader ? `High bid ${hi} · ${leader}` : 'No bids yet';
+    if (leader) replaceChildren(high, 'High bid ', logValueChip({ kind: 'mana', value: hi }), ` · ${leader === me ? 'You' : leader}`);
+    else high.textContent = 'No bids yet';
     b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
     await sleep(fast ? 120 : 650);
   };
@@ -1582,6 +1583,7 @@ export async function arena(g, { mode, wizard = null }) {
       const ci = ringEl.querySelector('.arena-center img');
       if (ci && seats[w]) fly(art(card), ci.getBoundingClientRect(), seats[w].querySelector('.avatar'), { w: 40, hgt: 56 });
       replaceChildren(msg, `${w === me ? 'You win' : w + ' wins'} ${g.cards[card]?.name || ''} for `, logValueChip({ kind: 'mana', value: e.price }));
+      appendNodes(bar, h('div', { class: 'auction-settled', 'data-testid': 'auction-settled' }, 'Auction settled'));
       msg.setAttribute('data-testid', 'arena-winner');
       g.sfx(w === me ? 'win' : 'coin');
     } else msg.textContent = 'Nobody bid';
