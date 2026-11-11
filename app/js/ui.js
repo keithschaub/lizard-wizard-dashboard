@@ -188,6 +188,7 @@ export function attachSwipe(el, { onBegin = null, onDrag = null, onSwipe, onCanc
 export function expandCard(g, key, {
   actions = [], extra = null, group = null, groupIndex = 0, title = null, titleTestid = null,
   subtitle = null, actionPrompt = null, actionLayout = 'actions', compactTiles = false, costInfo = null,
+  actionFrame = null, hideCardInfo = false,
   testid = 'expanded', closeTestid = 'ov-close',
 } = {}) {
   // group: array of card keys for swipeable navigation, groupIndex: current card index in group
@@ -201,7 +202,7 @@ export function expandCard(g, key, {
   // Container for all card frames (for swipe animation)
   const cardTrack = h('div', { class: 'card-track', 'data-testid': 'card-track' });
   const cardinfoContainer = h('div', { class: 'cardinfo-container', 'data-testid': 'cardinfo-container' });
-  const actionsContainer = h('div', { class: `actions-container ${actionLayout === 'tiles' ? 'familiar-action-grid' : ''}`, 'data-testid': 'expanded-actions' });
+  const actionsContainer = h('div', { class: `actions-container ${actionLayout === 'tiles' ? 'familiar-action-grid' : ''} ${actionFrame || ''}`, 'data-testid': 'expanded-actions' });
   const costContainer = h('div', { class: 'familiar-summon-cost', 'data-testid': 'summon-cost' });
   const scrollInner = h('div', { class: 'expand-inner', 'data-testid': 'expand-inner' });
   
@@ -267,7 +268,7 @@ export function expandCard(g, key, {
     // the legacy Gather/Increase Value panel so the card remains centered on
     // short phone viewports. Other card decks retain their existing details.
     const isReagent = g.cards[k]?.deck === 'Reagent';
-    cardinfoContainer.hidden = isReagent;
+    cardinfoContainer.hidden = hideCardInfo || isReagent;
     replaceChildren(cardinfoContainer, isReagent ? null : cardInfo(g, k));
     if (actionLayout === 'tiles' && costInfo) {
       const info = typeof costInfo === 'function' ? costInfo(k, idx) : costInfo;
@@ -879,6 +880,8 @@ export function researchFlow(g, sk, { group = null, groupIndex = 0 } = {}) {
   expandCard(g, sk, {
     group: spellGroup,
     groupIndex: startIdx,
+    actionFrame: 'research-action-frame',
+    hideCardInfo: true,
     actions: (k) => {
       const L = (g.v.legal.research || {})[k];
       if (!L) return [];
