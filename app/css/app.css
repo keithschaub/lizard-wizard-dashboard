@@ -350,6 +350,14 @@ img { -webkit-user-drag: none; user-select: none; }
 
 .expand .big { display: block; width: 100%; height: auto; border-radius: 6px; user-select: none; -webkit-user-select: none;
   -webkit-user-drag: none; -webkit-touch-callout: none; pointer-events: none; }
+.research-action-frame { width: calc(100% - 8px); max-width: 800px; min-width: 0; box-sizing: border-box; margin-top: -20px; padding: 26px 10px 10px; border: 2px solid rgba(214, 180, 90, .7); border-radius: 16px; background: rgba(7, 9, 17, .72); }
+.research-action-frame .act { border-radius: 18px; }
+.research-action-frame .actions { width: 100%; min-width: 0; }
+.research-action-frame .act { min-width: 0; gap: 6px; min-height: 58px; font-size: 17px; }
+.research-action-frame .log-value-chip, .research-action-frame .log-reagent-chip { height: 32px; border-radius: 16px; }
+.research-action-frame .log-value-orb { width: 28px; height: 28px; }
+.research-action-frame .log-reagent-chip img { width: 24px; height: 24px; }
+.research-action-frame .act .sub { min-width: 0; }
 
 /* Navigation arrows */
 .nav-arrow { position: absolute; top: calc(var(--expand-pad-t) + 8px + min(78vw, calc(var(--expand-slot) / 1.62), 420px) / 2);
@@ -807,3 +815,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .sname .diff-badge { display: block; margin: 4px auto 0; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+.expand:has(.research-action-frame) { --expand-slot: max(200px, calc(100vh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
+@supports (height: 100dvh) {
+  .expand:has(.research-action-frame) { --expand-slot: max(200px, calc(100dvh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
+}
