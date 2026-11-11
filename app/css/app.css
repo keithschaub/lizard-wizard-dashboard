@@ -802,3 +802,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .sname .diff-badge { display: block; margin: 4px auto 0; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+.expand:has(.research-action-frame) { --expand-slot: max(200px, calc(100vh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
+@supports (height: 100dvh) {
+  .expand:has(.research-action-frame) { --expand-slot: max(200px, calc(100dvh - var(--expand-pad-t) - var(--clear-b) - 270px)); }
+}
