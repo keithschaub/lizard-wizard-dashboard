@@ -673,7 +673,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .sheet-panel > .linkish .log-value-chip { margin: 0 4px; vertical-align: middle; }
 .gain b { color: #9fd0ff; }
 .gain .energize-track b { color: #f2d98e; }
-.convert-result-wrap { width: 100%; display: flex; justify-content: center; margin-top: 4px; }
+.convert-result-wrap { width: min(92vw, 460px); display: flex; justify-content: center; margin-top: 4px; }
 .sheet-panel [data-testid=convert-go] { justify-content: center; }
 .convert-result { width: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 16px; padding: 8px 16px;
   border: 1px solid rgba(120, 175, 255, .55); border-radius: 16px; background: radial-gradient(ellipse at 50% 50%, rgba(43, 110, 224, .30), rgba(10, 18, 48, .65) 70%);
