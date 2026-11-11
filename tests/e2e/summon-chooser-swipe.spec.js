@@ -53,7 +53,7 @@ test('Summon chooser closes without state change and swipes market familiars', a
   const track = page.getByTestId('card-track');
   const tileGrid = page.getByTestId('expanded-actions');
   const cost = page.getByTestId('summon-cost');
-  await expect(cost).toContainText(`Summon for ${v.legal.summon[first].cost} mana`);
+  await expect(cost.locator('.log-value-number').first()).toHaveText(String(v.legal.summon[first].cost));
   await expect(cost).toContainText('You have');
   await expect(page.locator('.familiar-action-subtitle')).toHaveCount(0);
   await expect(page.locator('.familiar-action-pick')).toHaveText('THEN PICK ONE');
@@ -75,16 +75,16 @@ test('Summon chooser closes without state change and swipes market familiars', a
   expect(tileLayout.rows[2]).toBe(tileLayout.rows[3]);
   const firstImage = track.locator('[data-testid="expanded-card"][data-index="0"] img');
   const firstSrc = await firstImage.getAttribute('src');
-  const firstDetail = await page.getByTestId('summon-gather').locator('img').getAttribute('src');
+  const firstDetail = await page.getByTestId('summon-gather').textContent();
   await swipeFromImage(page, firstImage, -140);
   const secondImage = track.locator('[data-testid="expanded-card"][data-index="1"] img');
   await expect.poll(() => secondImage.getAttribute('src')).not.toBe(firstSrc);
-  await expect.poll(() => page.getByTestId('summon-gather').locator('img').getAttribute('src')).not.toBe(firstDetail);
+  await expect.poll(() => page.getByTestId('summon-gather').textContent()).not.toBe(firstDetail);
   await chooser.screenshot({ path: 'docs/screenshots/summon-expand-card-iphone-after-swipe.png' });
 
   expect(await secondImage.getAttribute('src')).toBe(`art/cards/${group[1]}.webp`);
   const secondDetail = await page.getByTestId('summon-gather').textContent();
-  await expect(cost).toContainText(`Summon for ${v.legal.summon[group[1]].cost} mana`);
+  await expect(cost.locator('.log-value-number').first()).toHaveText(String(v.legal.summon[group[1]].cost));
   await expect(page.getByTestId('summon-dungeon')).toContainText('draw for treasure');
   await swipeFromImage(page, secondImage, 140);
   await expect.poll(() => firstImage.getAttribute('src')).toBe(firstSrc);
@@ -120,7 +120,7 @@ test.describe('approved chooser layout at 430px', () => {
     await page.getByTestId(`slot-fam_${v.board.fam_face.indexOf(first)}`).tap();
     const chooser = page.getByTestId('summon-use');
     await expect(chooser).toBeVisible();
-    await expect(page.getByTestId('summon-cost')).toContainText(`Summon for ${v.legal.summon[first].cost} mana`);
+    await expect(page.getByTestId('summon-cost').locator('.log-value-number').first()).toHaveText(String(v.legal.summon[first].cost));
     await expect(page.locator('.familiar-action-pick')).toHaveText('THEN PICK ONE');
     const layout = await chooser.evaluate((el) => {
       const card = el.querySelector('[data-testid="card-track"]').getBoundingClientRect();
