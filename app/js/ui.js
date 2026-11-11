@@ -676,29 +676,24 @@ function castPicker(g, host, castable, { multi = false, title = 'Cast a spell wi
   return p;
 }
 
-function xTargetPicker(g, host, maxX, title = 'Invisibility Potion') {
+export function xTargetPicker(g, host, maxX, title = 'Invisibility Potion') {
   const [p, done] = wait();
-  let x = 1; let target = null;
+  let x = 1;
   const val = h('span', { class: 'val' }, '1');
   const opp = g.v.players.filter((q) => !q.you);
-  const go = h('button', { class: 'act', disabled: true, 'data-testid': 'x-confirm' }, 'Cast');
+  const hasShield = (q) => (q.spells || []).some((sp) => sp.cast && /Spell_Spell_Shield/.test(sp.key || sp.img || ''));
   const chips = opp.map((q) => {
-    const shielded = q.shielded || q.spell_shield || q.has_spell_shield;
-    const c = h('button', { class: `chip ${shielded ? 'shielded' : ''}`, disabled: shielded || null, 'data-testid': `x-target-${q.name}` },
-      avatar(q.name, 26), q.name, shielded ? h('span', { class: 'target-shield-badge' }, '🛡 Shielded') : null);
-    c.onclick = () => { target = q.name; chips.forEach((z) => z.classList.remove('on')); c.classList.add('on'); go.disabled = false; };
+    const shielded = hasShield(q);
+    const c = h('button', { class: `chip x-target-chip ${shielded ? 'shielded' : ''}`, disabled: shielded || null, 'data-testid': `x-target-${q.name}` },
+      h('span', { class: 'x-target-who' }, avatar(q.name, 30), q.name),
+      shielded ? h('span', { class: 'target-shield-badge', 'data-testid': `x-shielded-${q.name}` }, h('span', { class: 'target-shield-icon', 'aria-hidden': 'true' }), 'Shielded') : null);
+    c.onclick = () => { g.sfx('select'); done({ x, target: q.name }); };
     return c;
   });
-  appendNodes(host, h('div', { class: 'phase-title' }, title, ': pay ',
-      logValueChip({ kind: 'mana', value: 5 }), ' + ', reagentCountChip('Eye_of_Newt', maxX)),
+  appendNodes(host, h('div', { class: 'phase-title x-target-title' }, `${title}: pay X`, logReagentChip('Eye_of_Newt')),
     h('div', { class: 'stepper' }, h('button', { onclick: () => { x = Math.max(1, x - 1); val.textContent = x; } }, '−'), val, h('button', { onclick: () => { x = Math.min(maxX, x + 1); val.textContent = x; } }, '+')),
-    h('div', { class: 'chips' }, chips), h('div', { class: 'actions' }, go));
-  go.onclick = () => done({ x, target });
+    h('div', { class: 'chips x-target-chips' }, chips));
   return p;
-}
-
-function reagentCountChip(reagent, count) {
-  return logReagentChip(reagent, { count });
 }
 
 // ------------------------------------------------------------------ gather: keep taps -> cast -> put-back -> commit
