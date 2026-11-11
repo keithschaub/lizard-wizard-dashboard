@@ -984,6 +984,7 @@ export function convertSheet(g, reagent) {
   const xPick = h('div', { class: 'chips' });
   const xAdd = h('button', { class: 'chip', disabled: true, 'data-testid': 'transform-add' }, 'Transform (2:1)');
   const trackOf = (r) => (g.v.board.tracks[r] ?? 0);
+  const priceOf = (r) => (L.convert[r]?.value ?? trackOf(r));
   const mana = (value) => logValueChip({ kind: 'mana', value });
   const reagentCount = (r, count) => logReagentChip(r, { count });
   const choiceGroup = (options, selected, testPrefix, onPick) => h('div', { class: 'reagent-choice-group' },
@@ -1090,11 +1091,7 @@ export function convertSheet(g, reagent) {
       const c2 = L.convert[r2] || { n: countTok(r2), value: trackOf(r2) };
       n2 = Math.min(Math.max(1, n2), countTok(r2));
       val2.textContent = String(n2);
-      const tv = trackOf(r2);
-      gain2.innerHTML = '';
-      appendNodes(gain2, reagentCount(r2, n2), ' × ', mana(tv), ' → ', mana(n2 * tv));
     } else {
-      gain2.innerHTML = '';
       val2.textContent = '1';
       n2 = 1;
     }
@@ -1124,8 +1121,7 @@ export function convertSheet(g, reagent) {
       h('span', { class: 'reagent-choice-medallion' },
         h('img', { src: reagentIcon(r), alt: '' }),
         h('span', { class: 'reagent-choice-count', 'data-testid': `convert-count-${r}` }, `×${countTok(r)}`)),
-      h('span', { class: 'reagent-choice-copy' }, h('span', { class: 'reagent-choice-name' }, nice(r)),
-        h('span', { class: 'reagent-choice-price' }, `${trackOf(r)} mana each`)));
+      h('span', { class: 'reagent-choice-price', 'aria-label': `${nice(r)} ${priceOf(r)} mana each` }, mana(priceOf(r)), 'each'));
       return b;
     }));
   };
@@ -1149,7 +1145,6 @@ export function convertSheet(g, reagent) {
       xTarget,
       xAdd,
       xQueued) : null,
-    adept ? h('div', { class: 'ov-sub', 'data-testid': 'convert-adept-banner' }, 'Adept Conversion: you may also sell a second type.') : null,
     h('div', { class: 'stepper' }, h('button', { 'data-testid': 'convert-minus', onclick: () => { n = Math.max(1, n - 1); upd(); g.sfx('tap'); } }, '−'), val,
       h('button', { 'data-testid': 'convert-plus', onclick: () => { n = Math.min(countTok(reagent), n + 1); upd(); g.sfx('tap'); } }, '+')),
     gain,

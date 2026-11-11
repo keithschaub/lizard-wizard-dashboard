@@ -38,7 +38,7 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
   expect(v.legal.adept_conversion).toBe(true);
 
   await page.getByTestId('token-Toadstool').tap();
-  await expect(page.getByTestId('convert-adept-banner')).toHaveText('Adept Conversion: you may also sell a second type.');
+  await expect(page.getByTestId('convert-adept-banner')).toHaveCount(0);
   await expect(page.locator('.adept-second-label')).toContainText('Also sell a second type');
   await expect(page.locator('select')).toHaveCount(0);
   await expect(page.getByTestId('convert-adept-type2-Mandrake')).toBeVisible();
@@ -48,12 +48,15 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
   await expect(page.getByTestId('convert-adept-type2-Sulphur')).toBeVisible();
   await expect(page.getByTestId('convert-held-count')).toHaveText('You have 2');
   await expect(page.getByTestId('convert-count-Nightshade')).toHaveText('×12');
-  const nightshadeRightPadding = await page.getByTestId('convert-adept-type2-Nightshade').evaluate((el) => {
-    const chip = el.getBoundingClientRect();
-    const name = el.querySelector('.reagent-choice-name').getBoundingClientRect();
-    return chip.right - name.right;
-  });
-  expect(nightshadeRightPadding).toBeGreaterThanOrEqual(10);
+  await expect(page.locator('[data-testid=convert-adept-type2] .reagent-choice-name')).toHaveCount(0);
+  for (const [r, price] of Object.entries({ Mandrake: 6, Eye_of_Newt: 5, Foxglove: 4, Nightshade: 7, Sulphur: 2 })) {
+    expect(v.legal.convert[r].value).toBe(price);
+    await expect(page.getByTestId(`convert-adept-type2-${r}`).locator('.log-value-number')).toHaveText(String(price));
+  }
+  await expect(page.getByTestId('convert-gain2')).toHaveCount(1);
+  await expect(page.getByTestId('convert-gain2')).toBeHidden();
+  await expect(page.getByTestId('convert-result')).toContainText('You get');
+  await expect(page.getByTestId('convert-result').locator('.convert-result-num')).toHaveText('8');
   await page.waitForTimeout(500);
   await page.getByTestId('convert').screenshot({ path: 'docs/screenshots/adept-counts-none-dpr3.png' });
   await page.getByTestId('convert').screenshot({ path: 'docs/screenshots/adept-counts-many-dpr3.png' });
@@ -66,6 +69,7 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
   await page.getByTestId('convert-adept-type2-Horn').tap();
   await expect(page.getByTestId('convert-stepper2')).toBeHidden();
   await page.getByTestId('convert-adept-type2-Horn').tap();
+  await expect(page.getByTestId('convert-result').locator('.convert-result-num')).toHaveText('7');
   await page.getByTestId('convert-go').tap();
   await waitOverlayGone(page, 'convert');
 
