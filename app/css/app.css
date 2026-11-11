@@ -229,8 +229,9 @@ img { -webkit-user-drag: none; user-select: none; }
 .banner .bgather-track { font-size: 10.5px; color: #d8d4c4; }
 .banner .bsell { min-width: 0; }
 .banner .bsell-headline { color: var(--gold-hi); font-family: 'Cinzel', Georgia, serif; font-size: 17px; font-weight: 600; line-height: 1.1; }
-.banner .bsell-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; min-width: 0; }
-.banner .bsell-chips { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; flex: 1; }
+.banner .bsell-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 6px; min-width: 0; }
+.banner .bsell-times { color: var(--gold-hi); font-size: 15px; flex: none; }
+.banner .bsell-chips { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; flex: 0 1 auto; }
 .banner .bsell-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px 3px 3px; border: 1px solid rgba(214, 180, 90, .55); border-radius: 14px; background: rgba(255, 255, 255, .06); font-size: 12px; line-height: 1.05; }
 .banner .bsell-chip img { width: 23px; height: 23px; object-fit: contain; flex: none; }
 .banner .bsell-arrow { color: var(--gold-hi); font-size: 17px; flex: none; }
