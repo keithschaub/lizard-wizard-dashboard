@@ -142,9 +142,15 @@ class Game {
 
   // AI moves the engine made inside one of Keith's calls (after an auction it plays the AI turns that follow).
   // They are announced by settle() before anything else; auction results are shown by the arena itself.
+  // Each entry is tagged with the seat whose turn it happened in, so another seat's bonus during Keith's
+  // own move is not announced as that seat's turn.
   queueMoves(entries) {
     const shown = new Set(['turn', 'reshuffle_reagents', 'auction', 'auction_nobid', 'game_over']);
-    this.moveQueue.push(...(entries || []).filter((e) => e.who && e.who !== this.me && !shown.has(e.act)));
+    let seat = this.me;
+    for (const e of entries || []) {
+      if (e.act === 'turn') { seat = e.who || seat; continue; }
+      if (seat !== this.me && e.who && e.who !== this.me && !shown.has(e.act)) this.moveQueue.push({ ...e, _turn: seat });
+    }
   }
   async autosave() { const d = await this.call('dump'); if (d.ok) Store.saveLocal(d.result); }
 
@@ -305,7 +311,7 @@ class Game {
       const r = await this.call('ai_step');
       if (!r.ok) { this.toast(r.error); return false; }
       const res = r.result;
-      await this.showMoves(res.entries.filter((e) => e.act !== 'turn' && e.act !== 'reshuffle_reagents'));
+      await this.showMoves(res.entries.filter((e) => e.act !== 'turn' && e.act !== 'reshuffle_reagents'), res.who);
       const vr = await this.call('view');
       this.setView(vr.result);
       await UI.bannerDone(this);
@@ -315,14 +321,17 @@ class Game {
     } finally { this.aiRunning = false; }
   }
 
-  async showMoves(moves) {
+  async showMoves(raw, turnOf = null) {
     UI.closeExpandOverlays();
+    const moves = UI.foldTurnMoves(raw || []);
     for (const [i, e] of moves.entries()) {
       const slot = this.slotFor(e);
       if (slot && !this.skip) this.board.focus(slot);
       if (!this.skip) this.sfx(e.cast ? 'cast' : e.act === 'build' ? 'build' : e.act === 'dungeon' ? 'flip' : e.act === 'gather' ? 'gather' : 'tap');
-      const run = moves.filter((x) => x.who === e.who);
-      await UI.banner(this, e, run.indexOf(e), run.length);
+      const turnOfMove = (x) => turnOf || x._turn || x.who;
+      const who = turnOfMove(e);
+      const run = moves.filter((x) => turnOfMove(x) === who);
+      await UI.banner(this, e, run.indexOf(e), run.length, who);
       this.board.focus(null);
     }
   }

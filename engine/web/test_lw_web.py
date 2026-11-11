@@ -704,5 +704,23 @@ r = call('act_research', spell='Spell_Demonic_Possession', cast=True)
 check(r['ok'] and not r['view'].get('pending'), 'Demonic with no targets finishes cast')
 check(any(e.get('feedback') == 'No familiars to take' for e in r.get('entries', [])), 'empty demonic possession feedback')
 
+for use in ('dungeon', 'research'):
+    setup(m18dem)
+    call('act_research', spell='Spell_Demonic_Possession', cast=True)
+    call('resolve_effect', choice={'player': 'Newt', 'kind': 'familiars', 'card': fk})
+    r = call('rise_use', use=use)
+    check(r['ok'] and r['view']['pending']['type'] == ('dungeon' if use == 'dungeon' else 'new_research'), f'Rise {use} opens its picker')
+    if use == 'dungeon':
+        r = call('dungeon_flip')
+        check(r['ok'], f"Rise dungeon first flip works ({r.get('error')})")
+        r = call('dungeon_stop')
+        check(r['ok'] and not r['view'].get('pending'), 'Rise dungeon expedition finishes')
+        check(any(e.get('act') == 'dungeon' for e in W.st()['meta']['log'][-4:]), 'Rise dungeon delve logged')
+    else:
+        r = call('choose_new_research', spell=r['view']['pending']['four'][0])
+        check(r['ok'] and not r['view'].get('pending'), f"Rise New Research takes a spell ({r.get('error')})")
+    log = W.st()['meta']['log']; ri = max(i for i, e in enumerate(log) if e.get('act') == 'rise')
+    check(not any(e.get('act') in ('summon',) for e in log[ri:]), f'Rise {use} does not summon a face-up familiar')
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)

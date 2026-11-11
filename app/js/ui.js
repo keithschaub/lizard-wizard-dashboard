@@ -627,24 +627,20 @@ function foldFamiliarCasts(entries) {
     && (fam.who || fam.won) === (cast.who || cast.won)
     && familiarEnabledSpellKeys(fam).includes(spellKeyOf(cast.cast || cast.spell))
   );
+  // The engine logs a familiar's cast after its summon/rise. Older saves logged it before, so look ahead too.
+  const find = (i, step) => {
+    for (let j = i + step; j >= 0 && j < entries.length; j += step) {
+      const f = entries[j];
+      if (f.r !== entries[i].r || f.act === 'turn') return -1;
+      if (enabledBy(entries[i], f)) return j;
+    }
+    return -1;
+  };
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
     if (e.act !== 'cast') continue;
-    let hit = -1;
-    for (let j = i + 1; j < entries.length; j++) {
-      const f = entries[j];
-      if (f.r !== e.r) break;
-      if (f.act === 'turn') continue;
-      if (enabledBy(e, f)) { hit = j; break; }
-    }
-    if (hit < 0) {
-      for (let j = i - 1; j >= 0; j--) {
-        const f = entries[j];
-        if (f.r !== e.r) break;
-        if (f.act === 'turn') continue;
-        if (enabledBy(e, f)) { hit = j; break; }
-      }
-    }
+    let hit = find(i, -1);
+    if (hit < 0) hit = find(i, 1);
     if (hit >= 0) {
       absorbed.add(i);
       const list = folded.get(hit) || [];
@@ -653,6 +649,57 @@ function foldFamiliarCasts(entries) {
     }
   }
   return { absorbed, folded };
+}
+
+// A '+mana' bonus another card pays out (Mana Fountain, Mana Leak, Energy Circle) belongs to the move that caused it.
+const TRIGGER_PARENTS = new Set(['build', 'auction', 'summon']);
+function foldTriggers(entries) {
+  const absorbed = new Set();
+  const folded = new Map();
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    if (e.act !== 'trigger' || !e.by) continue;
+    for (let j = i - 1; j >= 0; j--) {
+      const f = entries[j];
+      if (f.r !== e.r || f.act === 'turn') break;
+      if (TRIGGER_PARENTS.has(f.act) && (f.who || f.won) === e.by) {
+        absorbed.add(i); folded.set(j, [...(folded.get(j) || []), e]); break;
+      }
+    }
+  }
+  return { absorbed, folded };
+}
+
+// One list for the AI banners: casts folded into their summon/rise, bonuses folded into their cause.
+export function foldTurnMoves(entries) {
+  const casts = foldFamiliarCasts(entries);
+  const trig = foldTriggers(entries);
+  return entries.map((e, i) => ({ ...e, _casts: casts.folded.get(i) || [], _triggers: trig.folded.get(i) || [] }))
+    .filter((e, i) => !casts.absorbed.has(i) && !trig.absorbed.has(i));
+}
+
+function logTriggerLine(t) {
+  return h('div', { class: 'log-inline log-inline-and-cast', 'data-testid': 'log-trigger' },
+    h('span', { class: 'log-inline-text' }, `${t.who} gets`),
+    logValueChip({ kind: 'mana', value: t.gain || 0 }),
+    h('span', { class: 'log-inline-text' }, `from ${t.from || 'a spell'}`));
+}
+
+// Achievement shown as its condition: [reagent] ×7, or 5 [school], or 5 Wizards.
+function achChips(tile) {
+  const s = String(tile || '');
+  let m = s.match(/^x(\d+)\s+(.+)$/i);
+  if (m) return [logReagentChip(m[2].replace(/ /g, '_'), { count: Number(m[1]) })];
+  m = s.match(/^(\d+)\s+(.+?) cards$/);
+  if (m) return [h('span', { class: 'log-inline-text' }, m[1]), logSchoolChip(m[2])];
+  return [h('span', { class: 'log-inline-text' }, s)];
+}
+
+function logAchievementLine(g, e) {
+  return h('div', { class: 'log-inline', 'data-testid': 'log-achievement' },
+    h('span', { class: 'log-inline-text' }, `${e.who} claimed an achievement`),
+    ...achChips(e.ach),
+    h('span', { class: 'log-inline-text' }, `for ${e.vp || 10} VP`));
 }
 
 function logAndCastLine(g, c) {
@@ -685,10 +732,11 @@ export async function openLog(g) {
   list.innerHTML = '';
   const entries = r.result || [];
   const { absorbed, folded } = foldFamiliarCasts(entries);
+  const trig = foldTriggers(entries);
   let round = null;
   entries.forEach((e, i) => {
     if (e.act === 'turn') return;
-    if (absorbed.has(i)) return;
+    if (absorbed.has(i) || trig.absorbed.has(i)) return;
     if (e.r !== round) { round = e.r; appendNodes(list, h('div', { class: 'log-round' }, e.r ? `Round ${e.r}` : 'Setup')); }
     const extraCasts = folded.get(i) || [];
     const castKeys = [];
@@ -717,10 +765,11 @@ export async function openLog(g) {
     const inlineValues = !gatherBlock && !inlineReagents && e.values?.length
       ? logInlineReagents(chronicleText(e), [], [], e.school, e.tier, e.values)
       : null;
-    const andCastLines = extraCasts.map((c) => logAndCastLine(g, c));
+    const andCastLines = [...extraCasts.map((c) => logAndCastLine(g, c)), ...(trig.folded.get(i) || []).map(logTriggerLine)];
+    const achLine = e.act === 'achievement' && e.ach ? logAchievementLine(g, e) : null;
     appendNodes(list, h('div', { class: 'log-item', 'data-testid': 'log-item' },
       h('span', { class: 'dot', style: { background: DOT[e.who] || '#9aa6cc' } }),
-      h('div', { style: { flex: 1 } }, gatherBlock, inlineReagents || inlineValues || (!gatherBlock ? h('div', {}, chronicleText(e)) : null),
+      h('div', { style: { flex: 1 } }, gatherBlock, achLine || inlineReagents || inlineValues || (!gatherBlock ? h('div', {}, chronicleText(e)) : null),
         ...andCastLines,
         thumbs.length ? h('div', { class: 'thumbs' }, thumbs.slice(0, 8).map((k) => h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }))) : null,
         castBlock)));
@@ -1795,21 +1844,53 @@ function plainBanner(g, e) {
         ...values.map(logValueChip))));
 }
 
-export async function banner(g, e, i = 0, n = 1) {
+function bannerSubLines(g, e) {
+  const lines = [];
+  if ((e.act === 'summon' || e.act === 'rise') && e.use === 'gather' && e.reagents?.length) {
+    lines.push(h('div', { class: 'bstructured-row bsub', 'data-testid': 'ai-sub-gather' }, h('span', {}, 'gathered'), logReagentRow(e.reagents)));
+  }
+  for (const c of e._casts || []) {
+    const k = c.cast || String(c.spell || '').replace(/\.jpg$/i, '');
+    const info = g.cards[k] || {};
+    const name = String(info.display || k.replace(/^Spell_/, '').replace(/_/g, ' ')).replace(/\s+\([^()]*\)$/, '');
+    lines.push(h('div', { class: 'bstructured-row bsub', 'data-testid': 'ai-sub-cast' },
+      h('span', {}, `and cast ${name}`),
+      c.reagents?.length ? h('span', {}, 'paying') : null, c.reagents?.length ? logReagentRow(c.reagents) : null));
+  }
+  for (const t of e._triggers || []) {
+    lines.push(h('div', { class: 'bstructured-row bsub', 'data-testid': 'ai-sub-trigger' },
+      h('span', {}, `${t.who} gets`), logValueChip({ kind: 'mana', value: t.gain || 0 }), h('span', {}, `from ${t.from || 'a spell'}`)));
+  }
+  return lines;
+}
+
+function achievementBanner(g, e) {
+  if (e.act !== 'achievement' || !e.ach) return null;
+  return h('div', { 'data-testid': 'ai-banner-text' },
+    h('div', { class: 'bstructured' },
+      h('div', { class: 'bstructured-headline' }, `${e.who} claimed an achievement`),
+      h('div', { class: 'bstructured-row' }, ...achChips(e.ach), h('span', {}, `for ${e.vp || 10} VP`))));
+}
+
+export async function banner(g, e, i = 0, n = 1, turnOf = null) {
   if (g.skip) return;
   const layer = document.getElementById('banner-layer');
-  const imgs = (e.cast ? [e.cast] : (e.cards || [])).filter((k) => g.cards[k]).slice(0, 4);
-  const extra = e.cast && g.cards[e.cast] ? h('div', { style: { fontSize: '12.5px', color: '#d8ccff', marginTop: '3px' } }, `“${g.cards[e.cast].effect}”`) : null;
-  const dur = aiMoveMs(e);
+  const castKeys = (e._casts || []).map((c) => c.cast || String(c.spell || '').replace(/\.jpg$/i, ''));
+  const imgs = (e.cast ? [e.cast] : [...(e.cards || []).filter((k) => !castKeys.includes(k)), ...castKeys]).filter((k) => g.cards[k]).slice(0, 4);
+  const effectOf = e.cast || castKeys[0];
+  const extra = effectOf && g.cards[effectOf] ? h('div', { style: { fontSize: '12.5px', color: '#d8ccff', marginTop: '3px' } }, `“${g.cards[effectOf].effect}”`) : null;
+  const dur = castKeys.length ? AI_CAST_MS : aiMoveMs(e);
+  const who = turnOf || e.who || 'AI';
   let el = layer.querySelector('.banner:not(.out)');
   if (!el) { el = h('div', { class: 'banner', 'data-testid': 'ai-banner' }); replaceChildren(layer, el); }
   else { el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap'); }
   el.dataset.move = `${i + 1}/${n}`;
   replaceChildren(el,
-    avatar(e.who || '?'),
+    avatar(who === 'AI' ? '?' : who),
     h('div', { class: 'btext' },
-      h('div', { class: 'bhead' }, `${e.who || 'AI'}'s turn${n > 1 ? ` · move ${i + 1} of ${n}` : ''}`),
-      gatherBanner(g, e) || sellBanner(g, e) || structuredBanner(g, e) || plainBanner(g, e) || h('div', { 'data-testid': 'ai-banner-text' }, e.text), extra,
+      h('div', { class: 'bhead' }, `${who}'s turn${n > 1 ? ` · move ${i + 1} of ${n}` : ''}`),
+      achievementBanner(g, e) || gatherBanner(g, e) || sellBanner(g, e) || structuredBanner(g, e) || plainBanner(g, e) || h('div', { 'data-testid': 'ai-banner-text' }, e.text),
+      ...bannerSubLines(g, e), extra,
       h('div', { class: 'bfoot' }, h('span', { class: 'skiphint' }, i + 1 < n ? 'tap anywhere: next move' : 'tap anywhere to continue'),
         h('button', { class: 'bskip', 'data-testid': 'ai-skip', onclick: () => { g.skip = true; } }, 'Skip ⏭'))),
     imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null,
