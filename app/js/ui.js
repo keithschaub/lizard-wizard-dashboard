@@ -608,26 +608,107 @@ function chronicleText(e) {
   return text;
 }
 
+function spellKeyOf(x) {
+  if (!x) return '';
+  return String(x).replace(/\.jpg$/i, '');
+}
+
+function familiarEnabledSpellKeys(e) {
+  if (!e || (e.act !== 'summon' && e.act !== 'rise')) return [];
+  for (const list of [e.cast, e.fam_casts, e.casts]) if (Array.isArray(list) && list.length) return list.map(spellKeyOf);
+  return (e.cards || []).map(spellKeyOf).filter((k) => k.startsWith('Spell_'));
+}
+
+function foldFamiliarCasts(entries) {
+  const absorbed = new Set();
+  const folded = new Map();
+  const enabledBy = (cast, fam) => (
+    fam.r === cast.r
+    && (fam.who || fam.won) === (cast.who || cast.won)
+    && familiarEnabledSpellKeys(fam).includes(spellKeyOf(cast.cast || cast.spell))
+  );
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    if (e.act !== 'cast') continue;
+    let hit = -1;
+    for (let j = i + 1; j < entries.length; j++) {
+      const f = entries[j];
+      if (f.r !== e.r) break;
+      if (f.act === 'turn') continue;
+      if (enabledBy(e, f)) { hit = j; break; }
+    }
+    if (hit < 0) {
+      for (let j = i - 1; j >= 0; j--) {
+        const f = entries[j];
+        if (f.r !== e.r) break;
+        if (f.act === 'turn') continue;
+        if (enabledBy(e, f)) { hit = j; break; }
+      }
+    }
+    if (hit >= 0) {
+      absorbed.add(i);
+      const list = folded.get(hit) || [];
+      list.push(e);
+      folded.set(hit, list);
+    }
+  }
+  return { absorbed, folded };
+}
+
+function logAndCastLine(g, c) {
+  const key = c.cast || spellKeyOf(c.spell);
+  const info = g.cards[key] || {};
+  let name = info.display || String(c.spell || 'a spell').replace(/^Spell_/, '').replace(/\.jpg$/i, '').replace(/_/g, ' ');
+  for (const school of (c.schools || (c.school ? [c.school] : []))) {
+    name = name.replace(new RegExp('\\s+\\(' + school + '\\)', 'g'), '');
+  }
+  const reagents = c.reagents || [];
+  return h('div', { class: 'log-inline log-inline-and-cast' },
+    h('span', { class: 'log-inline-text' }, `and cast ${name}`),
+    c.school ? logSchoolChip(c.school, c.tier || null) : null,
+    reagents.length ? h('span', { class: 'log-inline-separator' }, ' paying ') : null,
+    reagents.length ? logReagentRow(reagents, []) : null);
+}
+
+function logCastPanel(g, key) {
+  if (!key || !g.cards[key]) return null;
+  return h('div', { class: 'log-cast', 'data-testid': 'log-cast' },
+    h('img', { src: art(key), alt: key, onclick: () => expandCard(g, key) }),
+    h('div', {}, h('div', { class: 'lc-name' }, g.cards[key].display), h('div', { class: 'lc-text' }, g.cards[key].effect)));
+}
+
 export async function openLog(g) {
   const ov = openOverlay('drawer', { onScrim: (o) => o.close(), testid: 'log' });
   const list = h('div', { class: 'log-list', 'data-testid': 'log-list' }, h('div', { class: 'none' }, 'Reading the chronicle…'));
   appendNodes(ov.el, h('div', { class: 'drawer-panel' }, h('div', { class: 'drawer-head' }, h('span', { class: 'ttl' }, 'Chronicle'), closeBtn(() => ov.close(), 'log-close')), list));
   const r = await g.call('full_log');
   list.innerHTML = '';
+  const entries = r.result || [];
+  const { absorbed, folded } = foldFamiliarCasts(entries);
   let round = null;
-  for (const e of r.result || []) {
-    if (e.act === 'turn') continue;
+  entries.forEach((e, i) => {
+    if (e.act === 'turn') return;
+    if (absorbed.has(i)) return;
     if (e.r !== round) { round = e.r; appendNodes(list, h('div', { class: 'log-round' }, e.r ? `Round ${e.r}` : 'Setup')); }
-    const thumbs = (e.cards || []).filter((k) => k && g.cards[k] && k !== e.cast);
-    const castBlock = e.cast && g.cards[e.cast] ? h('div', { class: 'log-cast', 'data-testid': 'log-cast' },
-      h('img', { src: art(e.cast), alt: e.cast, onclick: () => expandCard(g, e.cast) }),
-      h('div', {}, h('div', { class: 'lc-name' }, g.cards[e.cast].display), h('div', { class: 'lc-text' }, g.cards[e.cast].effect))) : null;
+    const extraCasts = folded.get(i) || [];
+    const castKeys = [];
+    const seenCast = new Set();
+    const addCastKey = (k) => {
+      const sk = spellKeyOf(k);
+      if (!sk || seenCast.has(sk) || !g.cards[sk]) return;
+      seenCast.add(sk);
+      castKeys.push(sk);
+    };
+    extraCasts.forEach((c) => addCastKey(c.cast || c.spell));
+    if (!extraCasts.length) [].concat(e.cast || []).forEach(addCastKey);
+    const thumbs = (e.cards || []).filter((k) => k && g.cards[k] && !seenCast.has(spellKeyOf(k)));
+    const castBlock = castKeys.length ? h('div', { class: 'log-cast-list' }, ...castKeys.map((k) => logCastPanel(g, k))) : null;
     const gatherBlock = e.act === 'gather' && e.gather ? h('div', { class: 'log-gather-details' },
       logInlineReagents(`${e.who} gathered`, e.gather.reagents, e.gather.bonus, e.school, e.tier, e.values), logTracksRow(e.gather.tracks)) : null;
     const inlineReagents = !gatherBlock && (e.reagents?.length || e.school || e.schools?.length)
       ? logInlineReagents(chronicleText(e), e.reagents, [], e.school, e.tier, e.values, {
         schoolBeforePaying: e.act === 'build',
-        summonGather: e.act === 'summon' && e.use === 'gather',
+        summonGather: (e.act === 'summon' || e.act === 'rise') && e.use === 'gather',
         valueLead: (e.act === 'convert' || e.act === 'convert1') ? ' for ' : null,
         schools: e.schools,
         schoolAfterCard: e.act === 'creation',
@@ -636,12 +717,14 @@ export async function openLog(g) {
     const inlineValues = !gatherBlock && !inlineReagents && e.values?.length
       ? logInlineReagents(chronicleText(e), [], [], e.school, e.tier, e.values)
       : null;
+    const andCastLines = extraCasts.map((c) => logAndCastLine(g, c));
     appendNodes(list, h('div', { class: 'log-item', 'data-testid': 'log-item' },
       h('span', { class: 'dot', style: { background: DOT[e.who] || '#9aa6cc' } }),
       h('div', { style: { flex: 1 } }, gatherBlock, inlineReagents || inlineValues || (!gatherBlock ? h('div', {}, chronicleText(e)) : null),
+        ...andCastLines,
         thumbs.length ? h('div', { class: 'thumbs' }, thumbs.slice(0, 8).map((k) => h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }))) : null,
         castBlock)));
-  }
+  });
   list.scrollTop = list.scrollHeight;
   return ov;
 }
