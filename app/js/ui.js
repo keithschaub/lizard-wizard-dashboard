@@ -1204,12 +1204,14 @@ export async function effectChooser(g) {
   const pd = g.v.pending; const k = pd.spell; const info = g.cards[k] || {};
   const ov = openOverlay('gather', { testid: 'effect' });
   const [p, done] = wait();
-  appendNodes(ov.el, h('div', { class: 'chooser-head' }, h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }),
-    h('div', {}, h('div', { class: 'phase-title' }, info.display), h('div', { class: 'ov-sub' }, info.effect))));
   const opts = pd.options;
   const grid = h('div', { class: 'opt-grid', 'data-testid': 'effect-options' });
   const pick = (choice) => () => { g.sfx('select'); done(choice); };
   const kind = pd.kind;
+  if (kind !== 'transmute') {
+    appendNodes(ov.el, h('div', { class: 'chooser-head' }, h('img', { src: art(k), alt: k, onclick: () => expandCard(g, k) }),
+      h('div', {}, h('div', { class: 'phase-title' }, info.display), h('div', { class: 'ov-sub' }, info.effect))));
+  }
   const playerData = (name) => g.v.players.find((p) => p.name === name);
   if (['flame_bolt', 'disintegrate', 'earthquake', 'charm', 'creation', 'demonic_possession'].includes(kind)) {
     const byP = {};
@@ -1251,17 +1253,16 @@ export async function effectChooser(g) {
     const go = h('button', { class: 'act', disabled: true, 'data-testid': 'transmute-go' }, 'Transmute');
     const goldBefore = g.me_().gold ?? 0;
     const summary = h('div', { class: 'transmute-summary', 'data-testid': 'transmute-summary' },
-      h('div', { class: 'transmute-trade' }, h('b', {}, 'Transmute'), h('span', {}, '⚗ ×0 → '), logValueChip({ kind: 'gold', value: 0 })),
+      h('div', { class: 'transmute-trade' }, h('b', {}, 'Transmute'), h('span', { class: 'transmute-flask' }, '⚗'), h('span', {}, '×0 → '), logValueChip({ kind: 'gold', value: 0 })),
       h('div', { class: 'transmute-gold' }, h('b', {}, 'Your gold'), logValueChip({ kind: 'gold', value: goldBefore }), ' → ', logValueChip({ kind: 'gold', value: goldBefore })));
     const updateSummary = () => {
       const gain = Math.floor(sel.size / 2);
-      summary.querySelector('.transmute-trade span').textContent = `⚗ ×${sel.size} → `;
+      summary.querySelector('.transmute-trade span:nth-of-type(2)').textContent = `×${sel.size} → `;
       const values = summary.querySelectorAll('.transmute-trade .log-value-number, .transmute-gold .log-value-number');
       values[0].textContent = String(gain);
       values[2].textContent = String(goldBefore + gain);
     };
-    appendNodes(grid, summary);
-    appendNodes(grid, ...tok.map((r, i) => { const b = h('button', { class: 'tokbtn', 'data-testid': `transmute-${i}` }, h('img', { src: reagentIcon(r), alt: '' })); b.onclick = () => { if (sel.has(i)) { sel.delete(i); b.classList.remove('on'); } else { sel.add(i); b.classList.add('on'); } updateSummary(); go.disabled = sel.size < 2 || sel.size % 2; go.textContent = 'Transmute'; }; return b; }));
+    appendNodes(grid, ...tok.map((r, i) => { const b = h('button', { class: 'tokbtn', 'data-testid': `transmute-${i}` }, h('img', { src: reagentIcon(r), alt: '' })); b.onclick = () => { if (sel.has(i)) { sel.delete(i); b.classList.remove('on'); } else { sel.add(i); b.classList.add('on'); } updateSummary(); go.disabled = sel.size < 2 || sel.size % 2; go.textContent = 'Transmute'; }; return b; }), summary);
     appendNodes(grid, h('div', { class: 'actions' }, go));
     go.onclick = () => done({ reagents: [...sel].map((i) => tok[i]) });
   } else if (kind === 'evolve' || kind === 'rise') {
