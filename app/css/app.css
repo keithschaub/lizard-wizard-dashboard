@@ -624,6 +624,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 /* Bottom-anchored while it fits; a taller panel starts at the top (flex-end would push it out of reach above). */
 .sheet > .sheet-panel { margin-top: auto; position: relative; }
 .convert-mixed-title { display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; }
+.convert-mixed-title .log-value-chip { font-family: var(--sans); font-size: 13px; font-weight: 700; gap: 4px; padding: 1px 2px 1px 8px; }
 .convert-mixed-panel .actions .act { justify-content: center; }
 .sheet-close { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: rgba(255, 255, 255, .06); font-size: 20px; line-height: 1; z-index: 2; }
 .sheet::after { display: none; }
