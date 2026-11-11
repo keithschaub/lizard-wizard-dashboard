@@ -407,44 +407,51 @@ export function openBugReportDialog(game) {
   let micBtn = null;
   
   if (hasSpeechRecognition) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
+    // iOS Safari can throw from the constructor; the dialog must still open without a mic button.
+    try {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
     
-    let transcript = '';
+      let transcript = '';
     
-    recognition.onresult = (event) => {
-      transcript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      textarea.value = transcript;
-    };
-    
-    recognition.onerror = (event) => {
-      console.error('[bug-report] Speech recognition error:', event.error);
-      if (micBtn) micBtn.classList.remove('active');
-    };
-    
-    recognition.onend = () => {
-      if (micBtn) micBtn.classList.remove('active');
-    };
-    
-    micBtn = h('button', {
-      class: 'bug-mic',
-      'data-testid': 'bug-mic',
-      'aria-label': 'Voice input',
-      onclick: () => {
-        if (micBtn.classList.contains('active')) {
-          recognition.stop();
-          micBtn.classList.remove('active');
-        } else {
-          recognition.start();
-          micBtn.classList.add('active');
+      recognition.onresult = (event) => {
+        transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
         }
-      },
-    }, '🎤');
+        textarea.value = transcript;
+      };
+    
+      recognition.onerror = (event) => {
+        console.error('[bug-report] Speech recognition error:', event.error);
+        if (micBtn) micBtn.classList.remove('active');
+      };
+    
+      recognition.onend = () => {
+        if (micBtn) micBtn.classList.remove('active');
+      };
+    
+      micBtn = h('button', {
+        class: 'bug-mic',
+        'data-testid': 'bug-mic',
+        'aria-label': 'Voice input',
+        onclick: () => {
+          if (micBtn.classList.contains('active')) {
+            recognition.stop();
+            micBtn.classList.remove('active');
+          } else {
+            recognition.start();
+            micBtn.classList.add('active');
+          }
+        },
+      }, '🎤');
+    } catch (err) {
+      console.warn('[bug-report] Speech recognition unavailable:', err);
+      recognition = null;
+      micBtn = null;
+    }
   }
   
   const hasRelay = !!(RELAY_URL && RELAY_URL !== 'undefined');

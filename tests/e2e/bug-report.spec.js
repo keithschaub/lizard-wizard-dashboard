@@ -44,6 +44,29 @@ async function setupOfflineRelay(page) {
   });
 }
 
+test('Bug report dialog opens when the SpeechRecognition constructor throws', async ({ page }) => {
+  await page.addInitScript(() => {
+    const Throwing = function SpeechRecognition() { throw new Error('speech recognition not allowed'); };
+    window.SpeechRecognition = Throwing;
+    window.webkitSpeechRecognition = Throwing;
+  });
+  const pageErrors = [];
+  page.on('pageerror', (e) => pageErrors.push(String(e)));
+  await open(page, JSON.stringify(G8_AUTO));
+
+  await page.getByTestId('btn-menu').click();
+  await page.getByTestId('menu-bug-report').click();
+
+  await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
+  await expect(page.getByTestId('bug-description')).toBeVisible();
+  await expect(page.getByTestId('bug-mic')).toHaveCount(0);
+  await expect(page.getByTestId('bug-cancel')).toBeVisible();
+  expect(pageErrors).toEqual([]);
+
+  await page.getByTestId('bug-cancel').click();
+  await expect(page.getByTestId('bug-report')).not.toBeVisible();
+});
+
 test('Bug report dialog opens from menu', async ({ page }) => {
   await open(page, JSON.stringify(G8_AUTO));
   
