@@ -1259,6 +1259,8 @@ export async function effectChooser(g) {
             h('span', { class: 'stat vp mini', 'data-testid': `${o.player}-vp` }, `${pData?.vp ?? '?'} VP`))));
     }));
   } else if (kind === 'wand_tax') {
+    ov.el.querySelector('.chooser-head')?.remove();
+    ov.el.classList.add('wand-tax-effect');
     appendNodes(grid, ...opts.map((o) => h('button', { class: 'chip', 'data-testid': `school-${o.school}`, onclick: pick(o) },
       h('img', { src: schoolIcon(o.school), alt: '' }), o.school, logValueChip({ kind: 'gold', value: o.gold }))));
   } else if (kind === 'time_shift') {
