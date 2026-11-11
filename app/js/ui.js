@@ -1074,9 +1074,10 @@ export function convertSheet(g, reagent) {
         h('div', { 'data-testid': 'convert-gain-math' },
           reagentCount(reagent, n), ' × ', mana(v), ' → ', mana(n * v)));
     } else {
-      appendNodes(gain, h('div', { 'data-testid': 'convert-gain-math' },
-        reagentCount(reagent, n), ' × ', mana(v), ' → ', mana(n * v)),
-      h('div', { class: 'ov-sub convert-price-drop' }, 'Price drops to ', mana(endTrack), ' each'));
+      appendNodes(gain, h('div', { class: 'convert-formula', 'data-testid': 'convert-gain-math' },
+        reagentCount(reagent, n), h('span', { class: 'convert-op' }, '×'), mana(v), h('span', { class: 'convert-op' }, '→'), mana(n * v), h('span'),
+        h('span', { class: 'convert-price-label' }, 'Price drops to'), h('span', { class: 'convert-price-drop' }, mana(endTrack)),
+        h('span', { class: 'convert-price-each' }, 'each')));
     }
     if (adept && r2) {
       const c2 = L.convert[r2] || { n: countTok(r2), value: trackOf(r2) };
