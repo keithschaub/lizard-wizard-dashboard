@@ -39,8 +39,10 @@ async function checkPanel(page) {
     const v = window.lwDebug.view(); const a = v.auction; const k = v.players.find((p) => p.name === 'Keith');
     const ar = document.querySelector('[data-testid=arena]:not(.out)');
     const val = ar.querySelector('[data-testid=bid-value]'); const sl = ar.querySelector('[data-testid=bid-slider]'); const go = ar.querySelector('[data-testid=bid-go]');
-    return { mana: k.mana, a, min: val && +val.dataset.min, max: val && +val.dataset.max, shown: val && val.firstChild.textContent,
-      slider: sl && [+sl.min, +sl.max, +sl.value], manaText: ar.querySelector('[data-testid=bid-mana]')?.textContent, high: ar.querySelector('[data-testid=arena-high]').textContent,
+    const rows = [...ar.querySelectorAll('[data-testid=bid-summary] .bid-summary-row')].map((row) => row.textContent);
+    const fixed = rows[1]?.match(/Your bid(\d+)\/(\d+)/);
+    return { mana: k.mana, a, min: val ? +val.dataset.min : sl ? +sl.min : fixed && +fixed[1], max: val ? +val.dataset.max : sl ? +sl.max : fixed && +fixed[2], shown: val ? val.firstChild.textContent : sl ? sl.value : fixed && fixed[1],
+      slider: sl && [+sl.min, +sl.max, +sl.value], bidRows: rows, high: ar.querySelector('[data-testid=arena-high]').textContent,
       card: ar.querySelector('[data-testid=arena-card] img').getAttribute('src'), go: !!go && !go.disabled, arenas: document.querySelectorAll('[data-testid=arena]:not(.out)').length };
   });
   expect(st.arenas, 'one auction screen at a time').toBe(1);
@@ -51,7 +53,8 @@ async function checkPanel(page) {
     expect(st.max, 'panel max = Keith\'s live mana').toBe(st.mana);
     expect(st.min, 'panel min = high bid + 1').toBe(st.a.high + 1);
     expect(st.shown).toBe(String(st.a.high + 1));
-    expect(st.manaText).toContain(`Your mana: ${st.mana} · high bid ${st.a.high} (${st.a.who})`);
+    expect(st.bidRows[0]).toContain(`High bid${st.a.high}`);
+    expect(st.bidRows[1]).toContain(`Your bid${st.a.high + 1}/${st.mana}`);
     if (st.slider) expect(st.slider).toEqual([st.a.high + 1, st.mana, st.a.high + 1]);
   }
   return st;
