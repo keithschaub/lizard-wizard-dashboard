@@ -1,399 +1,117 @@
-/**
- * Cloudflare Worker: Bug Report Relay
- * 
- * Receives bug reports from the Lizard Wizard web app and files GitHub issues.
- * Reports include description, game state JSON, screenshots, and metadata.
- * 
- * POST multipart/form-data to the deployed worker URL with description, metadata,
- * gameState, and image_0..N files. GITHUB_TOKEN is a Worker secret.
- */
+// Cloudflare Worker: in-game relay for the Lizard Wizard web app (https://lw-bug-relay.keithschaub.workers.dev).
+// POST multipart/form-data:
+//   Report Bug:     description, metadata (JSON), gameState, image_0..N -> reports/<ISO>-<id>/ + a GitHub issue
+//   finished game:  kind=game, gameId, summary (JSON), gameState       -> games/<ISO>-<gameId>/ (no issue)
+// Files go to the bug-reports branch through the contents API. GITHUB_TOKEN is a Worker secret.
+const REPO = 'keithschaub/lizard-wizard-dashboard';
+const BRANCH = 'bug-reports';
+const BASE = 'Jan18_2025';
+const ORIGINS = ['https://keithschaub.github.io', 'http://localhost:8000', 'http://127.0.0.1:8000'];
+const MAX_TOTAL = 25 * 1024 * 1024;
 
-const GITHUB_OWNER = 'keithschaub';
-const GITHUB_REPO = 'lizard-wizard-dashboard';
-const GITHUB_BRANCH = 'bug-reports';
-const RATE_LIMIT = 10; // reports per hour per IP
-const MAX_SIZE = 25 * 1024 * 1024; // 25MB
-const ORIGINS = new Set(['https://keithschaub.github.io', 'http://localhost:8000', 'http://127.0.0.1:8000']);
+function cors(origin) {
+  const o = ORIGINS.includes(origin) ? origin : ORIGINS[0];
+  return { 'Access-Control-Allow-Origin': o, 'Access-Control-Allow-Methods': 'POST, OPTIONS, GET', 'Access-Control-Allow-Headers': 'Content-Type', 'Vary': 'Origin' };
+}
+function json(obj, status, origin) {
+  return new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json', ...cors(origin) } });
+}
+async function gh(env, method, path, body) {
+  const r = await fetch(`https://api.github.com${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'User-Agent': 'lw-bug-relay', 'X-GitHub-Api-Version': '2022-11-28', ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const t = await r.text();
+  let j; try { j = JSON.parse(t); } catch { j = { raw: t }; }
+  return { ok: r.ok, status: r.status, j };
+}
+function b64(buf) {
+  const bytes = new Uint8Array(buf); let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+async function ensureBranch(env) {
+  const r = await gh(env, 'GET', `/repos/${REPO}/git/ref/heads/${BRANCH}`);
+  if (r.ok) return;
+  const base = await gh(env, 'GET', `/repos/${REPO}/git/ref/heads/${BASE}`);
+  if (!base.ok) throw new Error('base branch lookup failed ' + base.status);
+  const c = await gh(env, 'POST', `/repos/${REPO}/git/refs`, { ref: `refs/heads/${BRANCH}`, sha: base.j.object.sha });
+  if (!c.ok && c.status !== 422) throw new Error('branch create failed ' + c.status);
+}
+async function put(env, path, content64, msg) {
+  const r = await gh(env, 'PUT', `/repos/${REPO}/contents/${path}`, { message: msg, content: content64, branch: BRANCH });
+  if (!r.ok) throw new Error(`upload ${path} failed ${r.status}`);
+}
+const safe = (s) => String(s || '').replace(/[^\w.-]+/g, '_').slice(0, 60);
+const stamp = () => new Date().toISOString().replace(/[:.]/g, '-');
+const text64 = (s) => b64(new TextEncoder().encode(s));
+
+// A finished game for AI learning: game-state.json + summary.json, once per game id, no issue.
+async function saveGame(env, form, origin) {
+  const gameId = String(form.get('gameId') || '');
+  const gameState = String(form.get('gameState') || '');
+  let summary; try { summary = JSON.parse(form.get('summary') || ''); } catch { summary = null; }
+  if (!/^[0-9a-f]{6,32}$/.test(gameId) || !gameState || !summary || typeof summary !== 'object') return json({ error: 'gameId, summary and gameState required' }, 400, origin);
+  try { if (!JSON.parse(gameState).meta?.game_over) return json({ error: 'game is not finished' }, 400, origin); } catch { return json({ error: 'gameState is not JSON' }, 400, origin); }
+  await ensureBranch(env);
+  const listing = await gh(env, 'GET', `/repos/${REPO}/contents/games?ref=${BRANCH}`);
+  const seen = listing.ok && Array.isArray(listing.j) ? listing.j.find((x) => x.name.endsWith(`-${gameId}`)) : null;
+  if (seen) return json({ ok: true, duplicate: true, dir: seen.path }, 200, origin);
+  const dir = `games/${stamp()}-${gameId}`;
+  await put(env, `${dir}/game-state.json`, text64(gameState), `game ${gameId}: state`);
+  await put(env, `${dir}/summary.json`, text64(JSON.stringify({ ...summary, game_id: gameId, received_at: new Date().toISOString() }, null, 2) + '\n'), `game ${gameId}: summary`);
+  return json({ ok: true, dir }, 200, origin);
+}
 
 export default {
-  async fetch(request, env) {
-    const origin = request.headers.get('Origin') || '';
-    if (origin && !ORIGINS.has(origin)) {
-      return new Response(JSON.stringify({ error: 'origin not allowed' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
-    }
-    // CORS headers
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': ORIGINS.has(origin) ? origin : 'https://keithschaub.github.io',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Vary': 'Origin',
-    };
-
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
-    }
-
-    if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405, headers: corsHeaders });
-    }
-
+  async fetch(req, env) {
+    const origin = req.headers.get('Origin') || '';
+    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
+    if (req.method === 'GET') return json({ ok: true, service: 'lizard-wizard bug relay' }, 200, origin);
+    if (req.method !== 'POST') return json({ error: 'method' }, 405, origin);
+    if (origin && !ORIGINS.includes(origin)) return json({ error: 'origin not allowed' }, 403, origin);
+    const len = +(req.headers.get('Content-Length') || 0);
+    if (len > MAX_TOTAL) return json({ error: 'too large' }, 413, origin);
     try {
-      // Check rate limit
-      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-      const rateLimitKey = `ratelimit:${ip}`;
-      const count = parseInt(await env.KV?.get(rateLimitKey) || '0');
-      
-      if (count >= RATE_LIMIT) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      const form = await req.formData();
+      if (form.get('kind') === 'game') return await saveGame(env, form, origin);
+      const description = String(form.get('description') || '').slice(0, 20000);
+      let meta = {}; try { meta = JSON.parse(form.get('metadata') || '{}'); } catch {}
+      const gameState = String(form.get('gameState') || '');
+      if (!description.trim()) return json({ error: 'description required' }, 400, origin);
+      const id = stamp() + '-' + Math.random().toString(36).slice(2, 7);
+      const dir = `reports/${id}`;
+      await ensureBranch(env);
+      const files = [];
+      if (gameState) { await put(env, `${dir}/game-state.json`, text64(gameState), `bug report ${id}: state`); files.push({ name: 'game-state.json', kind: 'state' }); }
+      for (const [k, v] of form.entries()) {
+        if (!k.startsWith('image_') || typeof v === 'string') continue;
+        if (v.size > 6 * 1024 * 1024) continue;
+        const name = `${k}-${safe(v.name || 'image.png')}`;
+        await put(env, `${dir}/${name}`, b64(await v.arrayBuffer()), `bug report ${id}: ${name}`);
+        files.push({ name, kind: 'image' });
       }
-
-      // Parse form data
-      const contentType = request.headers.get('Content-Type') || '';
-      if (!contentType.includes('multipart/form-data')) {
-        return new Response(JSON.stringify({ error: 'Expected multipart/form-data' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      const blob = (n) => `https://github.com/${REPO}/blob/${BRANCH}/${dir}/${n}`;
+      const raw = (n) => `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${dir}/${n}`;
+      const firstLine = description.split('\n')[0].trim().slice(0, 80);
+      const metaRows = Object.entries(meta).filter(([, v]) => v !== null && typeof v !== 'object').map(([k, v]) => `| ${k} | ${String(v).replace(/\|/g, '\\|').slice(0, 200)} |`).join('\n');
+      const body = [
+        '### What happened', '', description, '',
+        metaRows ? '### Details\n\n| Field | Value |\n|---|---|\n' + metaRows + '\n' : '',
+        files.some((f) => f.kind === 'state') ? `### Game state\n\n[game-state.json](${blob('game-state.json')})\n` : '',
+        ...files.filter((f) => f.kind === 'image').map((f) => `![${f.name}](${raw(f.name)})`),
+        '', `_Filed from the in-game Report Bug button · report ${id}_`,
+      ].join('\n');
+      const issue = await gh(env, 'POST', `/repos/${REPO}/issues`, { title: `[Bug] ${firstLine || 'In-game report'}`, body, labels: ['bug', 'in-game-report'] });
+      if (!issue.ok) {
+        const retry = await gh(env, 'POST', `/repos/${REPO}/issues`, { title: `[Bug] ${firstLine || 'In-game report'}`, body });
+        if (!retry.ok) throw new Error('issue create failed ' + retry.status);
+        return json({ ok: true, issue_url: retry.j.html_url, number: retry.j.number }, 200, origin);
       }
-
-      const formData = await request.formData();
-      const description = formData.get('description');
-      const metadataStr = formData.get('metadata');
-      const gameState = formData.get('gameState');
-
-      if (!description || !metadataStr || !gameState) {
-        return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      const metadata = JSON.parse(metadataStr);
-
-      // Collect images
-      const images = [];
-      for (const [key, value] of formData.entries()) {
-        if (key.startsWith('image_') && value instanceof File) {
-          images.push({
-            name: value.name,
-            buffer: await value.arrayBuffer(),
-            type: value.type,
-          });
-        }
-      }
-
-      // Create GitHub issue
-      const issueNumber = await createGitHubIssue(env, {
-        description,
-        metadata,
-        gameState,
-        images,
-        ip,
-      });
-
-      // Update rate limit
-      if (env.KV) {
-        await env.KV.put(rateLimitKey, String(count + 1), { expirationTtl: 3600 });
-      }
-
-      return new Response(JSON.stringify({
-        ok: true,
-        issue_url: `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${issueNumber}`,
-        number: issueNumber,
-      }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-
-    } catch (err) {
-      console.error('Error processing bug report:', err);
-      return new Response(JSON.stringify({
-        error: 'Internal server error',
-        message: err.message,
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json({ ok: true, issue_url: issue.j.html_url, number: issue.j.number }, 200, origin);
+    } catch (e) {
+      return json({ error: String(e.message || e) }, 502, origin);
     }
   },
 };
-
-/**
- * Create GitHub issue with bug report
- */
-async function createGitHubIssue(env, report) {
-  const { description, metadata, gameState, images, ip } = report;
-
-  // Format issue body
-  const timestamp = new Date(metadata.timestamp || Date.now()).toLocaleString();
-  const issueBody = `## Bug Report
-
-**Reported:** ${timestamp}
-**Build:** \`${metadata.build || 'unknown'}\` · **SHA:** \`${metadata.sha || metadata.commitSHA || 'unknown'}\`
-**Round:** ${metadata.round ?? 'unknown'} | **Current player:** ${metadata.currentPlayer || 'unknown'} | **Human:** ${metadata.humanName || 'unknown'}
-
-### Description
-
-${description}
-
-### Metadata
-
-- **User Agent:** ${metadata.userAgent}
-- **Viewport:** ${typeof metadata.viewport === 'string' ? metadata.viewport : `${metadata.viewport?.width || '?'}×${metadata.viewport?.height || '?'}`}
-- **URL:** ${metadata.url}
-- **IP:** ${ip}
-
-### Game State
-
-<details>
-<summary>Full game state JSON (click to expand)</summary>
-
-\`\`\`json
-${gameState.slice(0, 10000)}${gameState.length > 10000 ? '\n... (truncated, see bug-reports branch)' : ''}
-\`\`\`
-
-</details>
-
-### Screenshots
-
-${images.length} screenshot(s) attached
-
----
-
-*This issue was automatically created by the in-game bug reporter.*
-`;
-
-  // Create issue
-  const issueResponse = await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${env.GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Lizard-Wizard-Bug-Relay',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title: `🐛 ${description.slice(0, 80)}${description.length > 80 ? '...' : ''}`,
-        body: issueBody,
-        labels: ['bug', 'in-game-report'],
-      }),
-    }
-  );
-
-  if (!issueResponse.ok) {
-    const error = await issueResponse.text();
-    throw new Error(`Failed to create GitHub issue: ${error}`);
-  }
-
-  const issue = await issueResponse.json();
-  const issueNumber = issue.number;
-
-  // Upload full game state and images to bug-reports branch
-  try {
-    await uploadToBugReportsBranch(env, issueNumber, gameState, images);
-  } catch (err) {
-    console.error('Failed to upload files to bug-reports branch:', err);
-    // Don't fail the whole request if upload fails
-    await addCommentToIssue(env, issueNumber, `⚠️ Failed to upload files: ${err.message}`);
-  }
-
-  return issueNumber;
-}
-
-/**
- * Upload game state and screenshots to bug-reports branch
- */
-async function uploadToBugReportsBranch(env, issueNumber, gameState, images) {
-  const reportDir = `reports/${issueNumber}`;
-
-  // Get the SHA of the bug-reports branch
-  const branchResponse = await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/refs/heads/${GITHUB_BRANCH}`,
-    {
-      headers: {
-        'Authorization': `token ${env.GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Lizard-Wizard-Bug-Relay',
-      },
-    }
-  );
-
-  let baseSha;
-  if (branchResponse.ok) {
-    const branchData = await branchResponse.json();
-    baseSha = branchData.object.sha;
-  } else {
-    // Branch doesn't exist, create it from main
-    const mainResponse = await fetch(
-      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/refs/heads/main`,
-      {
-        headers: {
-          'Authorization': `token ${env.GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'Lizard-Wizard-Bug-Relay',
-        },
-      }
-    );
-    const mainData = await mainResponse.json();
-    baseSha = mainData.object.sha;
-
-    // Create bug-reports branch
-    await fetch(
-      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/refs`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `token ${env.GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'Lizard-Wizard-Bug-Relay',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ref: `refs/heads/${GITHUB_BRANCH}`,
-          sha: baseSha,
-        }),
-      }
-    );
-  }
-
-  // Create blobs for game state and images
-  const blobs = [];
-
-  // Game state
-  const stateBlob = await createBlob(env, gameState);
-  blobs.push({ path: `${reportDir}/game-state.json`, sha: stateBlob });
-
-  // Images
-  for (let i = 0; i < images.length; i++) {
-    const img = images[i];
-    const base64 = arrayBufferToBase64(img.buffer);
-    const imgBlob = await createBlob(env, base64, 'base64');
-    blobs.push({ path: `${reportDir}/${img.name}`, sha: imgBlob });
-  }
-
-  // Create tree
-  const treeResponse = await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${env.GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Lizard-Wizard-Bug-Relay',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        base_tree: baseSha,
-        tree: blobs.map(b => ({
-          path: b.path,
-          mode: '100644',
-          type: 'blob',
-          sha: b.sha,
-        })),
-      }),
-    }
-  );
-
-  const tree = await treeResponse.json();
-
-  // Create commit
-  const commitResponse = await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/commits`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${env.GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Lizard-Wizard-Bug-Relay',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: `Bug report #${issueNumber}: Upload game state and screenshots`,
-        tree: tree.sha,
-        parents: [baseSha],
-      }),
-    }
-  );
-
-  const commit = await commitResponse.json();
-
-  // Update branch reference
-  await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/refs/heads/${GITHUB_BRANCH}`,
-    {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `token ${env.GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Lizard-Wizard-Bug-Relay',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ sha: commit.sha }),
-    }
-  );
-
-  // Add comment to issue with links
-  const links = blobs.map(b =>
-    `- [${b.path.split('/').pop()}](https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/blob/${GITHUB_BRANCH}/${b.path})`
-  ).join('\n');
-
-  await addCommentToIssue(env, issueNumber, `Files uploaded to [\`${GITHUB_BRANCH}\`](https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/tree/${GITHUB_BRANCH}/${reportDir}):\n\n${links}`);
-}
-
-/**
- * Create a GitHub blob
- */
-async function createBlob(env, content, encoding = 'utf-8') {
-  const response = await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/blobs`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${env.GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Lizard-Wizard-Bug-Relay',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ content, encoding }),
-    }
-  );
-
-  const blob = await response.json();
-  return blob.sha;
-}
-
-/**
- * Add comment to GitHub issue
- */
-async function addCommentToIssue(env, issueNumber, body) {
-  await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${issueNumber}/comments`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${env.GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Lizard-Wizard-Bug-Relay',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ body }),
-    }
-  );
-}
-
-/**
- * Convert ArrayBuffer to base64
- */
-function arrayBufferToBase64(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
