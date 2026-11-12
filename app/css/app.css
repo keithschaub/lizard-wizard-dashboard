@@ -817,11 +817,51 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .reagent-choice-mandrake .reagent-choice-medallion img { transform: scale(1.2); }
 .adept-second-label { color: var(--ink); font-size: 15px; text-align: center; margin-top: 2px; }
 .adept-second-label span { color: var(--muted); font-size: 13px; }
-.convert-held-count { color: var(--gold-hi); font-size: 13px; margin-top: -4px; }
 .adept-second .reagent-choice-group { margin-top: 2px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .adept-second .reagent-choice { width: auto; gap: 6px; padding: 3px 12px 3px 4px; }
 .adept-second .reagent-choice-price { display: inline-flex; align-items: center; gap: 4px; margin-top: 0; color: #e8e2cc; font-size: 12px; }
 [data-testid=convert-gain2]:empty { display: none; }
+/* Transform (2:1): a collapsed step 1 above the sale. */
+.transform-block { width: 100%; box-sizing: border-box; border: 1px solid rgba(214, 180, 90, .55); border-radius: 14px; background: rgba(255, 255, 255, .03); }
+.transform-toggle { list-style: none; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; cursor: pointer;
+  font-family: var(--display); font-size: 16px; font-weight: 700; color: var(--gold-hi); }
+.transform-toggle::-webkit-details-marker { display: none; }
+.transform-ratio { font-family: var(--sans); font-size: 13px; color: #f2d98e; border: 1px solid rgba(214, 180, 90, .6); border-radius: 10px; padding: 1px 7px; }
+.transform-chev { margin-left: auto; font-size: 18px; line-height: 1; transition: transform .2s; }
+.transform-block[open] .transform-chev { transform: rotate(180deg); }
+.transform-body { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 6px 10px; }
+/* While step 1 is open the big icon goes: the title already names the reagent, and the sale stays on screen. */
+.sheet-panel:has(.transform-block[open]) > .big-icon { display: none; }
+/* Two ovals: Pick 2, then Into — walks the player through the swap. */
+.transform-step { align-self: stretch; display: flex; flex-direction: column; gap: 6px;
+  padding: 6px 6px 8px; border: 1px solid rgba(214, 180, 90, .5); border-radius: 36px;
+  background: rgba(8, 12, 32, .4); }
+.transform-label { align-self: stretch; display: flex; justify-content: space-between; align-items: baseline;
+  color: #cfe0ff; font-size: 14px; font-weight: 700; padding: 0 8px; }
+.transform-count { color: var(--gold-hi); font-variant-numeric: tabular-nums; }
+.transform-pick { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; width: 100%; }
+.transform-pick .tokbtn { width: 36px; height: 36px; border-width: 1.5px; }
+.transform-pick .tokbtn img { width: 26px; height: 26px; }
+.transform-pick .tokbtn.made { border-color: var(--teal); }
+.transform-pick .tokbtn.on { border-color: var(--gold-hi); box-shadow: 0 0 0 2px rgba(255, 211, 107, .45), 0 0 12px rgba(255, 211, 107, .6); opacity: 1; }
+.transform-pick .tokbtn.on::after { content: '✓'; right: -4px; top: -4px; width: 16px; height: 16px; font-size: 11px; font-weight: 800; background: var(--gold-hi); color: #1a1405; }
+.transform-targets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; width: 100%; }
+.transform-target { display: flex; align-items: center; justify-content: center; gap: 4px; height: 40px; padding: 0 4px; border-radius: 20px;
+  border: 1px solid var(--line); background: rgba(255, 255, 255, .05); }
+.transform-target img { width: 28px; height: 28px; object-fit: contain; }
+.transform-target .log-value-chip { height: 26px; font-size: 12px; }
+.transform-target .log-value-orb { width: 20px; height: 20px; }
+.transform-target.on { border-color: var(--gold-hi); background: rgba(90, 67, 18, .48); box-shadow: 0 0 10px rgba(255, 211, 107, .45); }
+.transform-preview { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 30px; }
+.transform-preview:empty { display: none; }
+.transform-line, .transform-mana { display: inline-flex; align-items: center; gap: 6px; }
+.transform-arrow { color: #cfe0ff; font-size: 16px; }
+.transform-go { align-self: center; min-height: 42px; padding: 6px 28px; justify-content: center; }
+.transform-queue { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.transform-queue:empty { display: none; }
+.transform-done { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; border-radius: 18px; border: 1px solid var(--teal); background: rgba(111, 240, 208, .08); }
+.transform-undo { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); background: rgba(255, 255, 255, .06); color: var(--ink); font-size: 14px; padding: 0; }
+.convert-divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(214, 180, 90, .55), transparent); }
 .toggle { display: flex; align-items: center; gap: 8px; font-size: 15px; }
 .linkish { background: none; border: none; color: var(--gold); font-size: 14px; text-decoration: underline; padding: 6px; }
 

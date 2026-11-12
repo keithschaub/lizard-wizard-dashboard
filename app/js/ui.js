@@ -1123,43 +1123,34 @@ export function convertSheet(g, reagent) {
   const countTok = (r) => virtualTok().filter((x) => x === r).length;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'convert' });
   const val = h('span', { class: 'val', 'data-testid': 'convert-n' }, String(n));
-  const heldCount = h('div', { class: 'convert-held-count', 'data-testid': 'convert-held-count' });
   const val2 = h('span', { class: 'val', 'data-testid': 'convert-n2' }, '1');
   const gain = h('div', { class: 'gain' });
   const gain2 = h('div', { class: 'gain', 'data-testid': 'convert-gain2' });
   const result = h('div', { class: 'convert-result-wrap', 'data-testid': 'convert-total' });
   const secondRow = h('div', { class: 'stepper adept-stepper', style: { display: 'none' }, 'data-testid': 'convert-stepper2' });
-  const xQueued = h('div', { class: 'chips', 'data-testid': 'transform-queue' });
-  const xPick = h('div', { class: 'chips' });
-  const xAdd = h('button', { class: 'chip', disabled: true, 'data-testid': 'transform-add' }, 'Transform (2:1)');
+  const xQueued = h('div', { class: 'transform-queue', 'data-testid': 'transform-queue' });
+  const xPick = h('div', { class: 'transform-pick' });
+  const xCount = h('span', { class: 'transform-count', 'data-testid': 'transform-count' }, '0/2');
+  const xPreview = h('div', { class: 'transform-preview', 'data-testid': 'transform-preview' });
+  const xAdd = h('button', { class: 'act transform-go', disabled: true, 'data-testid': 'transform-add' }, 'Transform');
   const trackOf = (r) => (g.v.board.tracks[r] ?? 0);
   const priceOf = (r) => (L.convert[r]?.value ?? trackOf(r));
   const mana = (value) => logValueChip({ kind: 'mana', value });
   const reagentCount = (r, count) => logReagentChip(r, { count });
-  const choiceGroup = (options, selected, testPrefix, onPick) => h('div', { class: 'reagent-choice-group' },
-    ...options.map((r) => {
-      const b = h('button', {
-        class: `reagent-choice reagent-choice-${String(r).toLowerCase().replaceAll('_', '-')} ${selected === r ? 'on' : ''}`,
-        type: 'button',
-        'data-testid': `${testPrefix}-${r}`,
-        'aria-pressed': selected === r ? 'true' : 'false',
-        onclick: () => onPick(r),
-      },
-      h('span', { class: 'reagent-choice-medallion' }, h('img', { src: reagentIcon(r), alt: '' })),
-      h('span', { class: 'reagent-choice-copy' }, h('span', { class: 'reagent-choice-name' }, nice(r)),
-        h('span', { class: 'reagent-choice-price' }, `${trackOf(r)} mana each`)));
-      return b;
-    }));
-  let xTargetValue = reagent;
-  const xTarget = choiceGroup(REAGENTS, xTargetValue, 'transform-target', (r) => {
-    xTargetValue = r;
-    xTarget.querySelectorAll('.reagent-choice').forEach((b) => {
-      const selected = b.dataset.testid === `transform-target-${r}`;
-      b.classList.toggle('on', selected);
-      b.setAttribute('aria-pressed', selected ? 'true' : 'false');
-    });
-    g.sfx('select');
-  });
+  // Transform targets: compact icon + mana chips, nothing picked until tapped.
+  let xTargetValue = '';
+  const xTarget = h('div', { class: 'transform-targets' }, ...REAGENTS.map((r) => h('button', {
+    class: 'transform-target', type: 'button', 'data-testid': `transform-target-${r}`, 'aria-pressed': 'false',
+    'aria-label': `${nice(r)} ${trackOf(r)} mana`,
+    onclick: () => {
+      xTargetValue = xTargetValue === r ? '' : r;
+      xTarget.querySelectorAll('.transform-target').forEach((b) => {
+        const on = b.dataset.testid === `transform-target-${xTargetValue}`;
+        b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      renderTransformPreview(); g.sfx(xTargetValue ? 'select' : 'unselect');
+    },
+  }, h('img', { src: reagentIcon(r), alt: '' }), mana(trackOf(r)))));
   const rebuildSecondStepper = () => {
     secondRow.style.display = r2 ? 'flex' : 'none';
     secondRow.innerHTML = '';
@@ -1171,42 +1162,60 @@ export function convertSheet(g, reagent) {
       h('button', { 'data-testid': 'convert-plus2', onclick: () => { n2 = Math.min(countTok(r2), n2 + 1); upd(); g.sfx('tap'); } }, '+'),
     );
   };
+  // "[a][b] → [c]" grouped as icon ×N, then the mana it changes: "4 (mana) → 5 (mana)".
+  const transformLine = (from, to) => h('span', { class: 'transform-line', 'aria-label': `${from.map(nice).join(' + ')} → ${nice(to)}` },
+    ...groupReagents(from).map(({ reagent: r, count }) => logReagentChip(r, { count })),
+    h('span', { class: 'transform-arrow' }, '→'), logReagentChip(to));
+  const renderTransformPreview = () => {
+    const vt = virtualTok();
+    const fr = [...xSel].sort((a, b) => a - b).map((i) => vt[i]);
+    xCount.textContent = `${xSel.size}/2`;
+    xAdd.disabled = !(xSel.size === 2 && xTargetValue);
+    replaceChildren(xPreview, fr.length === 2 && xTargetValue
+      ? [transformLine(fr, xTargetValue), h('span', { class: 'transform-mana' },
+        mana(fr.reduce((t, r) => t + trackOf(r), 0)), h('span', { class: 'transform-arrow' }, '→'), mana(trackOf(xTargetValue)))]
+      : null);
+  };
   const renderTransformPick = () => {
     if (!transformOn) return;
     xPick.innerHTML = '';
-    virtualTok().forEach((r, i) => {
+    const made = transforms.length;
+    virtualTok().forEach((r, i, all) => {
       const b = h('button', {
-        class: `tokbtn ${xSel.has(i) ? 'on' : ''}`,
-        'data-testid': `transform-pick-${i}`,
+        class: `tokbtn ${xSel.has(i) ? 'on' : ''} ${i >= all.length - made ? 'made' : ''}`,
+        'data-testid': `transform-pick-${i}`, 'aria-pressed': xSel.has(i) ? 'true' : 'false',
       }, h('img', { src: reagentIcon(r), alt: nice(r) }));
       b.onclick = () => {
         if (xSel.has(i)) { xSel.delete(i); g.sfx('unselect'); }
         else if (xSel.size < 2) { xSel.add(i); g.sfx('select'); }
         renderTransformPick();
-        xAdd.disabled = xSel.size !== 2;
       };
       appendNodes(xPick, b);
     });
+    renderTransformPreview();
   };
   const renderTransformQueue = () => {
     xQueued.innerHTML = '';
     transforms.forEach((tr, i) => {
-      appendNodes(xQueued, h('span', { class: 'chip static', 'data-testid': `transform-done-${i}` },
-        `${tr.from.map(nice).join(' + ')} → ${nice(tr.to)}`,
-        h('button', { class: 'linkish', 'data-testid': `transform-undo-${i}`, onclick: () => {
-          transforms.splice(i, 1); renderTransformQueue(); renderTransformPick(); upd(); g.sfx('tap');
-        } }, 'undo')));
+      appendNodes(xQueued, h('span', { class: 'transform-done', 'data-testid': `transform-done-${i}` },
+        transformLine(tr.from, tr.to),
+        h('button', { class: 'transform-undo', 'aria-label': 'Undo', 'data-testid': `transform-undo-${i}`, onclick: () => {
+          const t = transforms.splice(i, 1)[0]; if (t.to === reagent) n = Math.max(1, n - 1); xSel.clear();
+          renderTransformQueue(); renderTransformPick(); upd(); g.sfx('tap');
+        } }, '↩')));
     });
   };
   xAdd.onclick = () => {
-    if (xSel.size !== 2) return;
+    if (xSel.size !== 2 || !xTargetValue) return;
     const vt = virtualTok();
     const fr = [...xSel].sort((a, b) => a - b).map((i) => vt[i]);
     transforms.push({ from: fr, to: xTargetValue });
+    if (xTargetValue === reagent) n += 1;   // a new token of the type being sold joins the sale
     xSel.clear();
+    xTargetValue = '';
+    xTarget.querySelectorAll('.transform-target').forEach((b) => { b.classList.remove('on'); b.setAttribute('aria-pressed', 'false'); });
     renderTransformQueue();
     renderTransformPick();
-    xAdd.disabled = true;
     n = Math.min(n, countTok(reagent));
     if (adept && r2) n2 = Math.min(n2, countTok(r2));
     upd();
@@ -1216,7 +1225,6 @@ export function convertSheet(g, reagent) {
   const upd = () => {
     const held = countTok(reagent);
     n = Math.min(n, held || 1);
-    heldCount.textContent = `You have ${held}`;
     const base = c.value;
     const v = Math.min(12, base + (energize ? 3 : 0));
     const endTrack = Math.max(1, v - n);
@@ -1286,14 +1294,20 @@ export function convertSheet(g, reagent) {
   const panel = h('div', { class: 'sheet-panel' },
     h('img', { class: 'big-icon', src: reagentIcon(reagent), alt: '' }),
     h('div', { class: 'phase-title' }, `Convert ${nice(reagent)}`),
-    heldCount,
-    transformOn ? h('div', { class: 'transform-block', 'data-testid': 'convert-transform' },
-      h('div', { class: 'ov-sub' }, 'Transform (2:1): pick any 2 tokens, then one target type (repeatable before selling).'),
-      xPick,
-      h('label', { class: 'sr-only', for: 'transform-target' }, 'Transform into'),
-      xTarget,
-      xAdd,
-      xQueued) : null,
+    transformOn ? h('details', { class: 'transform-block', 'data-testid': 'convert-transform' },
+      h('summary', { class: 'transform-toggle', 'data-testid': 'transform-toggle' },
+        h('span', {}, 'Transform first?'), h('span', { class: 'transform-ratio' }, '2:1'), h('span', { class: 'transform-chev', 'aria-hidden': 'true' }, '⌄')),
+      h('div', { class: 'transform-body' },
+        h('div', { class: 'transform-step' },
+          h('div', { class: 'transform-label' }, h('span', {}, 'Pick 2'), xCount),
+          xPick),
+        h('div', { class: 'transform-step' },
+          h('div', { class: 'transform-label' }, h('span', {}, 'Into')),
+          xTarget),
+        xPreview,
+        xAdd,
+        xQueued)) : null,
+    transformOn ? h('div', { class: 'convert-divider', 'aria-hidden': 'true' }) : null,
     h('div', { class: 'stepper' }, h('button', { 'data-testid': 'convert-minus', onclick: () => { n = Math.max(1, n - 1); upd(); g.sfx('tap'); } }, '−'), val,
       h('button', { 'data-testid': 'convert-plus', onclick: () => { n = Math.min(countTok(reagent), n + 1); upd(); g.sfx('tap'); } }, '+')),
     gain,

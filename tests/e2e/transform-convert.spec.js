@@ -26,18 +26,20 @@ test('Transform: 2 tokens become target type then convert in one action', async 
 
   await page.getByTestId('token-Toadstool').tap();
   await expect(page.getByTestId('convert-transform')).toBeVisible();
+  await page.getByTestId('transform-toggle').tap();
   await page.getByTestId('transform-pick-1').tap();
   await page.getByTestId('transform-pick-3').tap();
   await page.getByTestId('transform-target-Toadstool').tap();
   await page.getByTestId('transform-add').tap();
-  await expect(page.getByTestId('transform-done-0')).toContainText('→ Toadstool');
+  await expect(page.getByTestId('transform-done-0').locator('.transform-line')).toHaveAttribute('aria-label', 'Horn + Sulphur → Toadstool');
   await page.getByTestId('convert-go').tap();
   await waitOverlayGone(page, 'convert');
   await page.waitForFunction((m) => window.lwDebug.view().players.find((p) => p.you).mana > m, manaBefore);
 
   const v = await view(page);
   const me = v.players.find((p) => p.you);
-  expect(me.mana).toBe(manaBefore + 4);
+  expect(me.mana).toBe(manaBefore + 8);   // the Toadstool Transform made joins the sale: 2 x 4 mana
+  expect(me.tok.filter((x) => x === 'Toadstool')).toHaveLength(0);
   expect(me.tok.filter((x) => x === 'Horn')).toHaveLength(1);
   expect(me.tok.filter((x) => x === 'Sulphur')).toHaveLength(0);
   expect(errors, errors.join('\n')).toEqual([]);

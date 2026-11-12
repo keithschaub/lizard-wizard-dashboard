@@ -46,7 +46,6 @@ test('Adept Conversion: dual-type convert from convert sheet', async ({ page }) 
   await expect(page.getByTestId('convert-adept-type2-Foxglove')).toBeVisible();
   await expect(page.getByTestId('convert-adept-type2-Nightshade')).toBeVisible();
   await expect(page.getByTestId('convert-adept-type2-Sulphur')).toBeVisible();
-  await expect(page.getByTestId('convert-held-count')).toHaveText('You have 2');
   await expect(page.getByTestId('convert-count-Nightshade')).toHaveText('×12');
   await expect(page.locator('[data-testid=convert-adept-type2] .reagent-choice-name')).toHaveCount(0);
   for (const [r, price] of Object.entries({ Mandrake: 6, Eye_of_Newt: 5, Foxglove: 4, Nightshade: 7, Sulphur: 2 })) {
