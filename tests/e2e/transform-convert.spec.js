@@ -38,7 +38,8 @@ test('Transform: 2 tokens become target type then convert in one action', async 
 
   const v = await view(page);
   const me = v.players.find((p) => p.you);
-  expect(me.mana).toBe(manaBefore + 4);
+  expect(me.mana).toBe(manaBefore + 8);   // the Toadstool Transform made joins the sale: 2 x 4 mana
+  expect(me.tok.filter((x) => x === 'Toadstool')).toHaveLength(0);
   expect(me.tok.filter((x) => x === 'Horn')).toHaveLength(1);
   expect(me.tok.filter((x) => x === 'Sulphur')).toHaveLength(0);
   expect(errors, errors.join('\n')).toEqual([]);
