@@ -26,11 +26,12 @@ test('Transform: 2 tokens become target type then convert in one action', async 
 
   await page.getByTestId('token-Toadstool').tap();
   await expect(page.getByTestId('convert-transform')).toBeVisible();
+  await page.getByTestId('transform-toggle').tap();
   await page.getByTestId('transform-pick-1').tap();
   await page.getByTestId('transform-pick-3').tap();
   await page.getByTestId('transform-target-Toadstool').tap();
   await page.getByTestId('transform-add').tap();
-  await expect(page.getByTestId('transform-done-0')).toContainText('→ Toadstool');
+  await expect(page.getByTestId('transform-done-0').locator('.transform-line')).toHaveAttribute('aria-label', 'Horn + Sulphur → Toadstool');
   await page.getByTestId('convert-go').tap();
   await waitOverlayGone(page, 'convert');
   await page.waitForFunction((m) => window.lwDebug.view().players.find((p) => p.you).mana > m, manaBefore);
