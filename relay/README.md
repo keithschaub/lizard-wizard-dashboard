@@ -8,6 +8,13 @@ The app POSTs `multipart/form-data` with `description`, JSON `metadata`,
 GitHub issue and stores the state/screenshots on `bug-reports`. Configure only
 the `GITHUB_TOKEN` Worker secret; never commit it.
 
+When a game ends the app also POSTs `kind=game`, `gameId`, JSON `summary` and
+`gameState` (no description, no images). The Worker stores those under
+`games/<ISO time>-<gameId>/` (`game-state.json`, `summary.json`) on `bug-reports`
+without filing an issue, and skips a game id it already has. `node
+tools/test_relay.mjs` covers both kinds; deploy with `wrangler deploy` from this
+folder.
+
 The remaining notes document the original one-time deployment setup.
 
 ## Features
