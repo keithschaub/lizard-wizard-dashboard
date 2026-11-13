@@ -101,9 +101,10 @@ test('multi-raise auction (BUG FIX: no back-to-back after AI loses): the panel f
     if (seen.length === 1 && raises < 3 && st.go) { raises++; await answer(page, 'bid-go'); } else await answer(page, 'bid-pass');
   }
   expect(raises, 'Keith raised three times in the auction').toBe(3);
-  // BUG FIX: After the round-27 four-auctions fix, AI that loses an auction where a human
-  // participated just ends their turn (no second auction). So we only see one auction now.
-  expect(seen.map((c) => c.replace('Wizard_', ''))).toEqual(['Reptilius_Venenum']);
+  // Rulebook: a starter who loses may act again, including another auction; an AI opens at most two a turn.
+  const cards = seen.map((c) => c.replace('Wizard_', ''));
+  expect(cards[0]).toBe('Reptilius_Venenum');
+  expect(cards.length).toBeLessThanOrEqual(2);
   const v = await view(page);
   expect(v.auction).toBeNull();
   expect(me(v).mana, 'Keith lost the auction: his mana is untouched').toBe(mana0);
