@@ -28,6 +28,8 @@ jobs:
         run: tools/setup_python_test_env.sh
       - name: Original engine test suite (scripts/test_turn_process.py, unchanged)
         run: python3 /workspace/lizard-wizard/scripts/test_turn_process.py
+      - name: Two-player auction rules (engine/scripts/test_two_player_auction.py)
+        run: cd engine && python3 scripts/test_two_player_auction.py
       - name: Web glue tests (engine/web/test_lw_web.py)
         run: python3 engine/web/test_lw_web.py
       - name: Deploy version stamp (app/js/version.js)

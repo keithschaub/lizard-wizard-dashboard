@@ -104,27 +104,83 @@ def test_ai_starter_gets_one_extra_action_after_human_wins():
           'resumed AI action is logged')
 
 
-def test_second_lost_auction_is_capped():
-    state = fresh('duel-cap', ['Keith', 'Newt'])
+def newt_turn(name, mana=40):
+    state = fresh(name, ['Keith', 'Newt'])
     state['next'] = 'Newt'
     state['turn'] = state['meta']['seat_order'].index('Newt')
     A.log(state, {'r': state['meta']['round'], 'act': 'turn', 'seat': 'Newt'})
-    # These are the initial lost auction and the one permitted retry.
-    for i in range(2):
-        A.log(state, {'r': state['meta']['round'], 'act': 'auction', 'starter': 'Newt',
-                      'item': f'wizard-{i}', 'won': 'Keith'})
+    state['players'][0]['mana'] = mana
+    state['players'][1]['mana'] = mana
+    return state
+
+
+def keith_outbids(state, auction):
+    """Newt opened `auction`; Keith bids one more, which wins a duel (the starter bids only once)."""
+    status, who = T.auction_run(state, auction)
+    check(status == 'need' and who == 'Keith', 'the duel auction waits for Keith')
+    T.human_answer(state, auction, 'Keith', str(auction['high'] + 1))
+    status, winner = T.auction_run(state, auction)
+    check(status == 'done' and winner == 'Keith', 'Keith outbids the AI starter')
+    return winner
+
+
+def newt_moves_after(state, n0):
+    return [e for e in state['meta']['log'][n0:] if (e.get('who') or e.get('starter')) == 'Newt' and e.get('act') != 'turn']
+
+
+def test_ai_takes_another_action_after_losing_its_auction():
+    """Issue #122: the AI starter is outbid and must keep its turn (rulebook: 'may perform any other action,
+    including another Recruitment'). Real AI policy for the follow-up."""
+    state = newt_turn('issue-122-one-loss')
+    first = T.start_auction(state, 'Newt', next(x for x in state['wiz_face'] if x), 12,
+                            resume={'actor': 'Newt', 'attempt': 0, 'bonus': 0})
+    winner = keith_outbids(state, first)
+    n0 = len(state['meta']['log'])
+    result = T.after_auction(state, first, winner, [])
+    pending = state['meta'].get('pending')
+    acted = newt_moves_after(state, n0)
+    check(bool(acted) or (isinstance(pending, dict) and pending.get('starter') == 'Newt'),
+          f'Newt acts again after losing its auction ({[e.get("act") for e in acted]}, result {result})')
+
+
+def test_ai_continues_after_two_lost_auctions():
+    """Issue #122 (round 17 of the report): Newt opens two auctions and Keith wins both. Newt still takes a main
+    action, chosen without the wizard offer (two auctions a turn at most), then the turn passes to Keith."""
+    state = newt_turn('issue-122-two-losses')
+    r0 = state['meta']['round']
+    first = T.start_auction(state, 'Newt', next(x for x in state['wiz_face'] if x), 12,
+                            resume={'actor': 'Newt', 'attempt': 0, 'bonus': 0})
+    winner = keith_outbids(state, first)
     original_choose = T.AI.choose_action
+    seen = []
+    def choose(view, me):
+        seen.append([x for x in view['wiz_face'] if x])
+        if len(seen) == 1:
+            return {'type': 'recruit', 'wizard': seen[0][0]}, 'test: open a second auction'
+        return original_choose(view, me)
     try:
-        T.AI.choose_action = lambda *_: (_ for _ in ()).throw(AssertionError('third auction attempted'))
-        result = T.after_auction(
-            state,
-            {'starter': 'Newt', 'resume': {'actor': 'Newt', 'attempt': 1, 'bonus': 0, 'retried': True}},
-            'Keith',
-            [],
-        )
+        T.AI.choose_action = choose
+        result = T.after_auction(state, first, winner, [])
+        check(result == 'auction' and state['meta']['pending'].get('starter') == 'Newt',
+              'after the first loss Newt opens another auction (rule-legal), paused for Keith')
+        second = state['meta']['pending']
+        winner = keith_outbids(state, second)
+        n0 = len(state['meta']['log'])
+        result = T.after_auction(state, second, winner, [])
     finally:
         T.AI.choose_action = original_choose
-    check(result == 'human' and state['next'] == 'Keith', 'second lost auction ends the AI turn')
+    acted = [e for e in newt_moves_after(state, n0) if e.get('act') != 'achievement']
+    check(acted and acted[0].get('act') != 'auction',
+          f'Newt takes a non-auction action after its second lost auction ({[e.get("act") for e in acted]})')
+    check(len(seen) == 2 and seen[-1] == [], 'that action is chosen with the wizard offer hidden')
+    check(state['next'] == 'Keith' and result == 'human', 'then the turn passes to Keith')
+    auctions = [e for e in state['meta']['log'] if e.get('act') == 'auction' and e.get('starter') == 'Newt'
+                and e.get('r') == r0]
+    check(len(auctions) == 2 and all(e['won'] == 'Keith' for e in auctions), 'both lost auctions are logged, in order')
+    log = state['meta']['log']
+    order = [e.get('act') for e in log[log.index(auctions[0]):] if e.get('act') != 'achievement']
+    check(order[:3] == ['auction', 'auction', acted[0]['act']], f'Chronicle order: auction, auction, then the action ({order[:4]})')
+
 
 def test_human_can_continue_after_repeated_lost_opening_auctions():
     state = fresh('human-repeated-loss', ['Keith', 'Newt'])
@@ -144,6 +200,7 @@ def test_human_can_continue_after_repeated_lost_opening_auctions():
 if __name__ == '__main__':
     test_opening_bid_uses_full_limit_only_in_duel()
     test_ai_starter_gets_one_extra_action_after_human_wins()
-    test_second_lost_auction_is_capped()
+    test_ai_takes_another_action_after_losing_its_auction()
+    test_ai_continues_after_two_lost_auctions()
     test_human_can_continue_after_repeated_lost_opening_auctions()
     print('all two-player auction tests passed')
