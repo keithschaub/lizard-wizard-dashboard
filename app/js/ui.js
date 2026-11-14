@@ -1471,28 +1471,28 @@ export async function effectChooser(g) {
   return r;
 }
 
-export async function newResearchChooser(g) {
+// A familiar's New Research shows the four new spells in the same carousel as the Research action (expandCard,
+// research-action-frame, no card-info panel), with one free "Research" button per spell.
+export function newResearchChooser(g) {
   const pd = g.v.pending;
-  const ov = openOverlay('gather', { testid: 'new-research' });
-  const [p, done] = wait();
-  appendNodes(ov.el, h('div', { class: 'chooser-head' }, h('img', { src: art(pd.familiar), alt: '' }),
-    h('div', {}, h('div', { class: 'phase-title' }, 'New Research'), h('div', { class: 'ov-sub' }, 'Take one of the four new spells'))));
-  appendNodes(ov.el, h('div', { class: 'opt-grid' }, pd.four.map((k) => {
-    const c = g.cards[k] || {};
-    const school = c.school && !['Wild', 'Arch-Mage'].includes(c.school) ? c.school : null;
-    const name = (c.display || k).replace(school ? ` (${school})` : '', '');
-    const cost = Object.entries(c.cost?.reagents || {}).flatMap(([r, n]) => n === 'X' ? [r] : Array.from({ length: n }, () => r));
-    return h('button', { class: 'opt-card wide', 'data-testid': `nr-${k}`, onclick: () => done(k) },
-      h('img', { src: art(k), alt: k }), h('span', { class: 'oc-text' }, name),
-      school ? logSchoolChip(school) : null,
-      h('span', { class: 'oc-cost' }, logValueChip({ kind: 'mana', value: -(c.cost?.mana ?? 5) }),
-        ...groupReagents(cost).map(({ reagent: r, count }) => logReagentChip(r, { count }))),
-      h('span', { class: 'oc-label' }, c.effect));
-  })));
-  const k = await p;
-  const r = await g.act('choose_new_research', { spell: k }, { sound: 'select' });
-  ov.close();
-  return r;
+  return new Promise((resolve) => {
+    let result = null;
+    const ov = expandCard(g, pd.four[0], {
+      group: pd.four,
+      groupIndex: 0,
+      testid: 'new-research',
+      actionFrame: 'research-action-frame',
+      hideCardInfo: true,
+      actions: (k) => [{
+        label: 'Research', testid: 'nr-take', onClick: async () => {
+          result = await g.act('choose_new_research', { spell: k }, { sound: 'select' });
+          return !result;
+        },
+      }],
+    });
+    const close = ov.close.bind(ov);
+    ov.close = (...args) => { close(...args); resolve(result); };
+  });
 }
 
 function familiarActionIcon(use, reagent) {

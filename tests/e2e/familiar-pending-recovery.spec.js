@@ -26,8 +26,8 @@ test('a saved familiar research pending step reopens after reload', async ({ pag
   await page.waitForFunction(() => window.lwDebug?.ready(), null, { timeout: 60_000 });
   const research = page.getByTestId('new-research');
   await expect(research).toBeVisible();
-  await expect(research.locator('[data-testid^="nr-"]')).toHaveCount(4);
-  await research.locator('[data-testid^="nr-"]').first().tap();
+  await expect(research.locator('[data-testid=card-indicator] .dot')).toHaveCount(4);
+  await research.getByTestId('nr-take').tap();
   await expect.poll(async () => {
     const p = (await page.evaluate(() => window.lwDebug.view())).players.find((q) => q.you);
     return { owned: p.familiars.includes(fk), mana: p.mana };
