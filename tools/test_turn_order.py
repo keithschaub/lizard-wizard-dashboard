@@ -14,6 +14,9 @@ sys.path.insert(0, os.path.join(REPO, 'engine', 'web'))
 import lw_web as W  # noqa: E402
 
 A, SE, SIM = W.A, W.SE, W.SIM
+# The AI lookahead stops after LA_BUDGET seconds of wall-clock time, so on a busy machine (CI, parallel runs) the
+# same state could lead to a different move. Evaluate every option here so a seed always plays the same game.
+W.AI.LA_BUDGET = float('inf')
 
 # engine function -> the acts its own entry may carry
 PARENTS = {
@@ -72,6 +75,17 @@ def turn_segments(log):
     if seg: yield seg
 
 
+def could_earn(summon, tile):
+    """Whether this summon/Rise gather could have completed the achievement tile (an achievement claimed at the start
+    of the turn, before an unrelated summon, is not out of order)."""
+    import re
+    m = re.match(r'x(\d+) (.+)$', tile)
+    if m: return A.norm(m.group(2).replace(' ', '_')) in [A.norm(r) for r in summon.get('got', [])]
+    m = re.match(r'\d+ (.+) cards$', tile)
+    if m: return W.CD.school(summon.get('familiar', '')) == m.group(1)
+    return True
+
+
 def pattern_checks(log, game):
     """Rules on the finished log; these also cover glue code that is not a wrapped engine function (rise_use, ai_sim)."""
     out = []
@@ -89,11 +103,15 @@ def pattern_checks(log, game):
                         out.append(f"{where}: cast {e['spell']} before the {x['act']} that enabled it"); break
             if a == 'achievement':
                 for x in rest[:3]:
-                    if x.get('act') in ('summon', 'rise') and x.get('who') == e.get('who') and x.get('use') == 'gather':
+                    if x.get('act') in ('summon', 'rise') and x.get('who') == e.get('who') and x.get('use') == 'gather' \
+                            and could_earn(x, e.get('tile', '')):
                         out.append(f"{where}: achievement {e.get('tile')} before the {x['act']} that earned it"); break
-            if a == 'trigger' and e.get('by'):
+            # A bonus paid out after its cause is fine even if the same seat acts again later in the turn
+            # (Haste's bonus action, another recruit): flag it only when no cause precedes it.
+            caused = lambda x: x.get('act') in ('build', 'auction', 'summon') and (x.get('who') or x.get('won')) == e.get('by')
+            if a == 'trigger' and e.get('by') and not any(caused(x) for x in seg[:k]):
                 for x in rest:
-                    if x.get('act') in ('build', 'auction', 'summon') and (x.get('who') or x.get('won')) == e['by']:
+                    if caused(x):
                         out.append(f"{where}: {e.get('spell')} trigger before {e['by']}'s {x['act']}"); break
             if a == 'reshuffle_reagents' and rest and rest[0].get('act') == 'gather':
                 out.append(f"{where}: reagent reshuffle before the gather that emptied the deck")
@@ -105,11 +123,37 @@ PROFILES = ['balanced', 'spellslinger', 'delver', 'tycoon']
 KNOWN_STOPS = ('auction',)
 
 
-def play(seed, players, max_steps=400):
+def deal(seed, players):
+    """ai_sim.new_game with a pinned --ai-seed. Without it deal4.py draws the AI tie-break seed from secrets, the AI
+    seats' starting picks can differ, and the same game seed played out differently from run to run."""
+    import subprocess
     path = f'/tmp/turn_order_{seed}_{os.getpid()}.json'
     if os.path.exists(path): os.remove(path)
-    s = SIM.new_game(seed, path=path, players=players)
-    os.remove(path)
+    env = dict(os.environ, LW_STATE=path); d = os.path.join(REPO, 'engine', 'scripts', 'deal4.py')
+    subprocess.run([sys.executable, d, 'hands', '--seed', str(seed), '--players', players, '--humans', 'nobody',
+                    '--ai-seed', str(seed)], env=env, check=True, capture_output=True)
+    subprocess.run([sys.executable, d, 'board', '--seed', str(seed + 1)], env=env, check=True, capture_output=True)
+    s = json.load(open(path)); os.remove(path); s['meta']['humans'] = []
+    return s
+
+
+def self_check():
+    """Known logs: a legal turn the checks must accept, and an out-of-order one they must flag."""
+    # Game 1004 r24 (CI, Nov 14): Gecko summons Troglodytam (Energy Circle pays LizWiz right after), casts Demonic
+    # Possession through the familiar and uses the stolen Imp at once, which ai_sim logs as a second 'summon'.
+    legal = [{'r': 24, 'act': 'turn', 'seat': 'Gecko'},
+             {'r': 24, 'act': 'summon', 'who': 'Gecko', 'familiar': 'Familiar_15_Troglodytam.jpg', 'use': 'gather', 'got': ['Horn'] * 4},
+             {'r': 24, 'act': 'trigger', 'who': 'LizWiz', 'by': 'Gecko', 'spell': 'Energy_Circle', 'gain': 5},
+             {'r': 24, 'act': 'cast', 'who': 'Gecko', 'spell': 'Spell_Demonic_Possession.jpg'},
+             {'r': 24, 'act': 'demonic_possession', 'who': 'Gecko', 'familiar': 'Familiar_10_Imp.jpg'},
+             {'r': 24, 'act': 'summon', 'who': 'Gecko', 'familiar': 'Familiar_10_Imp.jpg', 'use': 'score'}]
+    assert pattern_checks(legal, 'self-check') == [], pattern_checks(legal, 'self-check')
+    reordered = [legal[0], legal[2], legal[1]] + legal[3:]
+    assert any('Energy_Circle trigger before' in x for x in pattern_checks(reordered, 'self-check'))
+
+
+def play(seed, players, max_steps=400):
+    s = deal(seed, players)
     names = players.split(','); rnd = random.Random(seed)
     s['meta']['humans'] = []
     s['meta']['ai_profiles'] = {n: PROFILES[(i + seed) % 4] for i, n in enumerate(names)}
@@ -126,6 +170,7 @@ def play(seed, players, max_steps=400):
 
 
 def main():
+    self_check()
     games = int(sys.argv[1]) if len(sys.argv) > 1 else 12
     first = int(sys.argv[2]) if len(sys.argv) > 2 else 1000
     turns = 0; pats = []; acts = collections.Counter(); stray = []
