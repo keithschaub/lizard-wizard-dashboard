@@ -1,14 +1,17 @@
 // A finished autosave must never win over a requested new deal.
+import fs from 'fs';
 import { test, expect } from './fixtures.js';
 
 test.describe.configure({ mode: 'serial' });
 
 async function seedFinishedSave(page) {
-  await page.addInitScript(async () => {
-    const s = await (await fetch('engine/game/g8_state.json')).json();
-    s.meta = { ...(s.meta || {}), game_over: true };
-    localStorage.setItem('lw.save.v1', JSON.stringify(s));
-  });
+  // Seed once: later reloads must find whatever the app saved since, like a real browser.
+  const s = JSON.parse(fs.readFileSync('engine/game/g8_state.json', 'utf8'));
+  s.meta = { ...(s.meta || {}), game_over: true };
+  await page.addInitScript((text) => {
+    if (sessionStorage.getItem('seeded')) return;
+    localStorage.setItem('lw.save.v1', text); sessionStorage.setItem('seeded', '1');
+  }, JSON.stringify(s));
   await page.goto('/');
   await page.waitForFunction(() => window.lwDebug && window.lwDebug.ready(), null, { timeout: 90_000 });
 }
@@ -31,8 +34,9 @@ test('setup, Quick start, and Play again always deal a fresh game', async ({ pag
   test.skip(browserName !== 'webkit', 'iPhone layout project only');
 
   await seedFinishedSave(page);
-  await page.getByTestId('btn-menu').tap();
-  await page.getByTestId('menu-new-game').tap();
+  // The finished autosave reopens on its Game Over screen (issue #129); start the new setup from there.
+  await expect(page.getByTestId('game-over')).toBeVisible();
+  await page.getByTestId('go-new-setup').tap();
   await page.getByTestId('setup-name-input').fill('Rex');
   await page.getByTestId('setup-custom-game').tap();
   await page.getByTestId('setup-size-4').tap();

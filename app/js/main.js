@@ -104,8 +104,10 @@ class Game {
       let text = Store.loadLocal(); let r = null;
       if (text) {
         r = await this.call('load', { text });
-        if (!r.ok || r.result?.game_over) {
-          console.warn('saved game is unreadable or finished; starting a fresh game');
+        // A finished game stays: settle() shows its Game Over screen (Play again / New setup). Only an unreadable
+        // save is dropped; the bundled g8 position is for a first visit, never a stand-in for a finished game.
+        if (!r.ok) {
+          console.warn('saved game is unreadable; loading the starting position');
           Store.clearLocal(); text = null; r = null;
         }
       }
