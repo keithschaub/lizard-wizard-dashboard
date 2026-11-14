@@ -126,47 +126,27 @@ def check_turn_invariants(s, seat):
             # Count only auctions where this seat was the starter
             auctions_started.append((e.get('item'), e.get('won')))
     
-    # Rulebook: starter wins -> turn ends; starter loses -> takes another action.
-    # Legal patterns:
-    #   - 1 main action (no auctions)
-    #   - 1 auction won by starter (turn ends)
-    #   - 1 auction lost by starter + 1 more action (could be another auction or build/gather/etc)
-    # 
-    # An automated seat opens at most two auctions a turn: after losing two it
-    # still acts, choosing among its other actions (ai_view hides the wizard
-    # offer), so it never opens auctions forever. Humans choose each follow-up
-    # action themselves, so a human may lose an auction and deliberately open
-    # another one, repeatedly. The only universally illegal sequence is winning
-    # an auction and then opening another action before the turn advances.
-    if len(auctions_started) > 2 and seat not in humans(s):
-        items = ', '.join(f"{item} (won by {winner})" for item, winner in auctions_started)
+    # Rulebook: starter wins -> turn ends; starter loses -> "may perform any other action, including another
+    # Recruitment". Legal patterns: any number of lost auctions, then either one more main action or one won
+    # auction (which ends the turn). Lost auctions are not capped here: a two-player AI only opens an auction the
+    # rival cannot top (ai_policy.duel_opening); with 3+ seats ai_view stops an AI after two lost auctions; and
+    # ai_turn's attempt budget is the loop guard.
+    won = [i for i, (_, winner) in enumerate(auctions_started) if winner == seat]
+    if won and won[0] != len(auctions_started) - 1:
         raise AssertionError(
-            f"INVARIANT VIOLATION: {seat} started {len(auctions_started)} auctions in round {current_round}: {items}. "
-            f"Rule: an automated starter opens at most 2 auctions per turn. "
-            f"This is the round-27 four-auctions bug!"
+            f"INVARIANT VIOLATION: {seat} won an auction but then started another in round {current_round}. "
+            f"Rule: starter wins -> turn ends. Auctions: {auctions_started}"
         )
-    
-    # If there are 2 auctions, the first must have been lost
-    if len(auctions_started) == 2:
-        if auctions_started[0][1] == seat:  # First auction won by this seat
-            raise AssertionError(
-                f"INVARIANT VIOLATION: {seat} won the first auction but then started another in round {current_round}. "
-                f"Rule: starter wins -> turn ends. Auctions: {auctions_started}"
-            )
-    
-    # If there's 1 auction (won or lost) and other main actions, that's wrong
-    if len(auctions_started) == 1 and main_actions:
-        # Unless the auction was lost (then 1 more action is allowed)
-        if auctions_started[0][1] == seat:  # Won the auction
-            raise AssertionError(
-                f"INVARIANT VIOLATION: {seat} won an auction but also did {len(main_actions)} other actions "
-                f"in round {current_round}. Rule: starter wins -> turn ends. Main actions: {main_actions}"
-            )
-        elif len(main_actions) > 1:  # Lost the auction but did 2+ other actions
-            raise AssertionError(
-                f"INVARIANT VIOLATION: {seat} lost an auction but then did {len(main_actions)} other actions "
-                f"in round {current_round}. Rule: starter loses -> ONE more action. Main actions: {main_actions}"
-            )
+    if won and main_actions:
+        raise AssertionError(
+            f"INVARIANT VIOLATION: {seat} won an auction but also did {len(main_actions)} other actions "
+            f"in round {current_round}. Rule: starter wins -> turn ends. Main actions: {main_actions}"
+        )
+    if auctions_started and len(main_actions) > 1:
+        raise AssertionError(
+            f"INVARIANT VIOLATION: {seat} lost an auction but then did {len(main_actions)} other actions "
+            f"in round {current_round}. Rule: starter loses -> ONE more action. Main actions: {main_actions}"
+        )
 
 def advance(s, events):
     """Seat after s['next'] acts. End of round: game ends if the end was triggered, else next round."""
@@ -297,19 +277,20 @@ def lost_auctions_this_turn(s, seat):
             return 0
         if e.get('act') == 'auction' and e.get('starter') == seat and e.get('won') != seat: n += 1
     return 0
-def ai_view(s, me, no_auctions=False):
-    """Rulebook: a starter who does not win 'may perform any other action, including another Recruitment'.
-    An automated seat gets at most two auctions a turn (check_turn_invariants), so after losing two it chooses
-    among its other actions: the wizard offer is hidden from that choice."""
+def ai_view(s, me):
+    """The AI's public view. In a game of 3+ seats an AI opener bids 1 and can be outbid every time, so after two
+    lost auctions in a turn it chooses among its other actions (the wizard offer is hidden). A two-player AI only
+    opens an auction the rival cannot top (ai_policy.duel_opening), so nothing is hidden there."""
     v = AI.public_view(s, me)
-    if no_auctions or lost_auctions_this_turn(s, me) >= 2: v['wiz_face'] = [None] * len(v.get('wiz_face') or [])
+    if len(s['meta'].get('seat_order', [])) > 2 and lost_auctions_this_turn(s, me) >= 2:
+        v['wiz_face'] = [None] * len(v.get('wiz_face') or [])
     return v
-def ai_turn(s, me, attempt=0, events=None, bonus=0, auction_retry=False, no_auctions=False):
+def ai_turn(s, me, attempt=0, events=None, bonus=0, auction_retry=False):
     """Mirrors ai_sim.take_turn (6 attempts, Haste bonus, illegal -> end turn) but pauses auctions for Keith.
     Returns 'paused' (auction needs Keith) or 'done'."""
     if attempt == 0: claim_all(s, me)
     while attempt < 6:
-        act, why = AI.choose_action(ai_view(s, me, no_auctions), me) if AI else placeholder_action(s, me)
+        act, why = AI.choose_action(ai_view(s, me), me) if AI else placeholder_action(s, me)
         t = act['type']
         if t == 'recruit':
             ob = AI.opening_bid(view(s, me), me, act['wizard']) if AI else 1
@@ -351,13 +332,12 @@ def after_auction(s, a, winner, events):
         claim_all(s, st); A.check_end(s)
         advance(s, events); return run_ais(s, events)
     # Resume the AI starter after a human wins (or nobody bids): it always takes another action, like a human
-    # starter. ai_view keeps it to two auctions a turn; after a second loss it picks a non-auction action.
+    # starter, and may open another auction (with 3+ seats, not after a second loss: ai_view). ai_turn's attempt
+    # budget (carried in resume) bounds the turn.
     resume = a.get('resume') or {}
     attempt = int(resume.get('attempt', 0))
     events.append(f'{st} lost the auction, so {st} takes another action.')
-    # resume['retried'] marks an auction opened after a lost one: losing it is the second loss this turn.
-    r = ai_turn(s, st, attempt + 1, events, int(resume.get('bonus', 0)), auction_retry=True,
-                no_auctions=bool(resume.get('retried')))
+    r = ai_turn(s, st, attempt + 1, events, int(resume.get('bonus', 0)), auction_retry=True)
     if r == 'paused': return 'auction'
     claim_all(s, st); A.check_end(s)
     advance(s, events); return run_ais(s, events)

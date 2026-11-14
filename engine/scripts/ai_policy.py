@@ -771,14 +771,41 @@ def _two_player(view):
     meta = view.get('meta') or {}
     order = meta.get('seat_order') or view.get('seat_order') or []
     return len(order) == 2 or meta.get('num_players') == 2 or view.get('num_players') == 2
+def duel_rival_mana(view, me):
+    """Two-player duel: the most the rival can bid, i.e. their mana as the public ledger tracks it (public_view /
+    _ledger; never the hidden total)."""
+    return max([P(view, n)['mana'] for n in others(view, me)] + [0])
+def duel_ledger_proven_low(view, me):
+    """True when, earlier in my current turn, the rival topped an auction I opened at or above the mana the ledger
+    tracked for them at that moment: the ledger undercounts them (it is exact for a human's logged moves,
+    approximate otherwise), so no opening is safe for the rest of the turn. Losses where I bid below their tracked
+    mana prove nothing."""
+    log = view['meta'].get('log', [])
+    start = next((i for i in range(len(log) - 1, -1, -1) if log[i].get('act') == 'turn'), None)
+    if start is None or log[start].get('seat') != me: return False
+    for i in range(start + 1, len(log)):
+        e = log[i]
+        if e.get('act') != 'auction' or e.get('starter') != me or e.get('won') in (None, me): continue
+        tail = e.get('bids_tail') or []
+        opened = tail[0][1] if tail and tail[0][0] == me and isinstance(tail[0][1], int) else e.get('price', 1) - 1
+        if opened >= _ledger({'meta': {'log': log[:i]}}, e['won'])[0]: return True
+    return False
+def duel_opening(view, me, card, kind='wizards'):
+    """Two-player duel, I start: I bid once, and the rival wins only by bidding MORE (turn.human_answer refuses a bid
+    that does not beat the high bid, and anything above the bidder's mana). Treat the rival as willing to spend all
+    the mana the ledger shows: an opening at exactly that amount (at least 1) cannot be beaten. Return it when my
+    limit covers it, else 0 (do not open an auction the rival can top)."""
+    if duel_ledger_proven_low(view, me): return 0
+    need = max(1, duel_rival_mana(view, me))
+    return need if need <= bid_limit(view, me, card, kind) else 0
 def opening_bid(view, me, card, kind='wizards'):
-    """Open at my limit in a two-player duel; otherwise use the normal 1-mana opener."""
+    """Two-player duel: duel_opening (the rival's tracked mana, or no auction). Otherwise the normal 1-mana opener."""
     limit = bid_limit(view, me, card, kind)
     if LV().get('skip_bid', 0) and limit >= 1:
         rng = random.Random(f"{view['meta'].get('ai_seed', 0)}-open-{me}-{b(card)}")
         if rng.random() < LV()['skip_bid']:
             return 0
-    return limit if _two_player(view) else (1 if limit >= 1 else 0)
+    return duel_opening(view, me, card, kind) if _two_player(view) else (1 if limit >= 1 else 0)
 def raise_bid(view, me, card, high, kind='wizards'):
     """(d) Raise by the minimum (+1) while that stays within my limit; otherwise pass (None). Never pass below the limit."""
     lim = bid_limit(view, me, card, kind)
@@ -978,17 +1005,18 @@ def _candidates(v, me):
         two_player = _two_player(v)
         my_limit = bid_limit(v, me, wz) if two_player else bd['limit']
         if two_player and my_limit < 1: continue
-        price = my_limit if two_player else min(bd['limit'], comp + 1)
-        if two_player and comp >= my_limit:
-            # The opener must commit its full limit and cannot answer a raise.
-            # Do not select an auction the rival can meet or exceed.
-            continue
+        if two_player:
+            # The opener bids once and the rival may answer with any mana the public ledger shows: open only at a
+            # price they cannot top (duel_opening), never on the modeled 'fair' rival limit.
+            price = duel_opening(v, me, wz)
+            if not price: continue
+        else: price = min(bd['limit'], comp + 1)
         val = bd['gain'] + bd['future'] + bd['gather'] + bd['deny'] * pw['deny'] - (tw0 - holdings(v, me, p['tok'], p['mana'] - price))
-        if comp == bd['limit'] and comp >= 1:
+        if not two_player and comp == bd['limit'] and comp >= 1:
             # Tie at the top: +1 raises reach my limit first about half the time (seat order). Price = my limit.
             val = 0.5 * (bd['gain'] + bd['future'] + bd['gather'] + bd['deny'] * pw['deny']
                          - (tw0 - holdings(v, me, p['tok'], p['mana'] - bd['limit']))) - 0.05
-        elif comp + 1 > bd['limit']:
+        elif not two_player and comp + 1 > bd['limit']:
             # I'd be outbid. Opening is then ~neutral: the winner pays about my limit+1 (second price) either way and a lost
             # auction gives my action back. Small negative so it is only picked when nothing else is useful.
             # Deadlock fix (Nov 2): when every AI expects to be outbid nobody opens, wizards never sell and mana piles up.
