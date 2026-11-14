@@ -2,15 +2,15 @@ import fs from 'fs';
 import { test, expect } from './fixtures.js';
 import { boot } from './helpers.js';
 
-// Issue #122. fixtures/issue-122-second-auction.json: Keith's round 18 save (13InchesOfFun vs Newt, master), made
-// Newt's turn with 40 mana for Keith. Newt has opened an auction and lost it to Keith, opened a second one, and that
-// second auction now waits for Keith's bid. Outbidding it must leave Newt its turn: it takes another (non-auction)
-// action, shown as Newt's move, and only then does the turn pass to Keith.
-const SAVE = fs.readFileSync('tests/e2e/fixtures/issue-122-second-auction.json', 'utf8');
+// Issues #122 and #127. fixtures/issue-127-after-two-losses.json: Keith's save at round 17 just after Keith won both
+// of Newt's auctions (Reptilius at 18, Draco at 27): Keith 6 mana, Newt 34, Newt still to act. Newt keeps its turn
+// (a starter who loses acts again, with no cap) and opens Bufonem Creaturae at exactly Keith's tracked 6 mana, which
+// Keith cannot top; Keith can only pass, Newt wins, and only then is it Keith's turn.
+const SAVE = fs.readFileSync('tests/e2e/fixtures/issue-127-after-two-losses.json', 'utf8');
 
 test.use({ viewport: { width: 430, height: 775 } });
 
-test('an AI that loses its second auction still takes its turn (issue #122)', async ({ page }) => {
+test('after two lost auctions the AI keeps its turn and recruits at exactly the rival mana (issues #122, #127)', async ({ page }) => {
   await page.addInitScript(() => {
     window.__banners = [];
     new MutationObserver(() => {
@@ -22,24 +22,24 @@ test('an AI that loses its second auction still takes its turn (issue #122)', as
   });
   await page.addInitScript((t) => localStorage.setItem('lw.save.v1', t), SAVE);
   await boot(page);
-  const lost = await page.evaluate(() => window.lwDebug.log().then((l) => l.filter((e) => e.act === 'auction' && e.r === 18).length));
-  expect(lost).toBe(1);
 
-  await expect(page.getByTestId('bid-go')).toBeVisible({ timeout: 20_000 });
-  await page.getByTestId('bid-go').click();
-  // The arena shows the auction result first, then Newt's follow-up move plays as a banner.
-  await expect.poll(() => page.evaluate(() => window.__banners.some((x) => /NEWT'S TURN/i.test(x))), { timeout: 60_000 }).toBe(true);
+  const arena = page.getByTestId('arena');
+  await expect(arena).toBeVisible({ timeout: 30_000 });
+  const a = await page.evaluate(() => window.lwDebug.view().auction);
+  expect(a.starter).toBe('Newt');
+  expect(a.card).toContain('Bufonem_Creaturae');
+  expect(a.high).toBe(6);
+  await expect(arena).toContainText('you cannot beat 6');
+  await expect(page.getByTestId('bid-go')).toHaveCount(0);
+  await page.getByTestId('bid-pass').click();
+
   await expect(page.getByTestId('dock-status')).toContainText('Your move', { timeout: 60_000 });
-
-  const banners = await page.evaluate(() => window.__banners);
-  const newtMove = banners.find((b) => /NEWT'S TURN/i.test(b));
-  expect(newtMove, `Newt's follow-up move is announced as Newt's turn: ${JSON.stringify(banners)}`).toBeTruthy();
-  expect(newtMove).toMatch(/Newt (gathered|sold|built|researched|summoned|cast)/);
-  expect(banners.some((b) => /13INCHESOFFUN'S TURN/i.test(b) && /Newt /.test(b))).toBe(false);
-
-  const tail = await page.evaluate(() => window.lwDebug.log().then((l) => l.filter((e) => e.act !== 'turn' && e.act !== 'achievement' && e.r >= 18)
-    .map((e) => `${e.act}:${e.who}`)));
-  const i = tail.indexOf('auction:13InchesOfFun');
-  expect(tail.slice(i, i + 3)).toEqual(['auction:13InchesOfFun', 'auction:13InchesOfFun', expect.stringMatching(/^(gather|convert|convert1|build|research|summon|cast):Newt$/)]);
-  expect(await page.evaluate(() => window.lwDebug.view().next)).toBe('13InchesOfFun');
+  const log = await page.evaluate(() => window.lwDebug.log());
+  const r17 = log.filter((e) => e.r === 17 && e.act === 'auction');
+  expect(r17.map((e) => e.who)).toEqual(['13InchesOfFun', '13InchesOfFun', 'Newt']);
+  const raw = await page.evaluate(async () => JSON.parse((await window.lwDebug._g.call('dump')).result).meta.log.filter((e) => e.r === 17 && e.act === 'auction'));
+  expect(raw.at(-1)).toMatchObject({ won: 'Newt', starter: 'Newt', price: 6 });
+  const v = await page.evaluate(() => window.lwDebug.view());
+  expect(v.players.find((p) => p.you).mana).toBe(6);
+  expect(v.next).toBe('13InchesOfFun');
 });
