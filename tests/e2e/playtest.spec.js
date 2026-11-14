@@ -295,7 +295,7 @@ class Playtest {
       return;
     }
     if (ovs.includes('new-research')) {
-      await this.checkOverlayCards('new-research', '.opt-card', 'New Research picker');
+      await this.checkOverlayCards('new-research', '.nr-card', 'New Research picker');
       if (!this.screens.picker) await this.shot('picker');
       this.mark('newResearch');
       await page.locator('[data-testid^=nr-]').first().tap();
