@@ -130,12 +130,13 @@ class Game {
   }
 
   async act(fn, args, { sound = null } = {}) {
+    const turnOf = this.v?.next;
     const r = await this.call(fn, args);
     if (!r.ok) { this.sfx('error'); this.toast(r.error); return null; }
     if (sound) this.sfx(sound);
     if (r.view) this.setView(r.view);
     UI.announceSpellEffectResults(this, r.entries);
-    this.queueMoves(r.entries);
+    this.queueMoves(r.entries, turnOf);
     await this.autosave();
     return r;
   }
@@ -143,10 +144,11 @@ class Game {
   // AI moves the engine made inside one of Keith's calls (after an auction it plays the AI turns that follow).
   // They are announced by settle() before anything else; auction results are shown by the arena itself.
   // Each entry is tagged with the seat whose turn it happened in, so another seat's bonus during Keith's
-  // own move is not announced as that seat's turn.
-  queueMoves(entries) {
+  // own move is not announced as that seat's turn. `turnOf` is whose turn it was when the call started: a bid
+  // in an auction an AI opened returns that AI's follow-up action before the next turn marker.
+  queueMoves(entries, turnOf = this.me) {
     const shown = new Set(['turn', 'reshuffle_reagents', 'auction', 'auction_nobid', 'game_over']);
-    let seat = this.me;
+    let seat = turnOf || this.me;
     for (const e of entries || []) {
       if (e.act === 'turn') { seat = e.who || seat; continue; }
       if (seat !== this.me && e.who && e.who !== this.me && !shown.has(e.act)) this.moveQueue.push({ ...e, _turn: seat });

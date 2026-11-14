@@ -132,17 +132,17 @@ def check_turn_invariants(s, seat):
     #   - 1 auction won by starter (turn ends)
     #   - 1 auction lost by starter + 1 more action (could be another auction or build/gather/etc)
     # 
-    # AI turns are capped separately in after_auction: an automated AI may
-    # retry one lost auction, but must not recursively open auctions forever.
-    # Humans choose each follow-up action themselves, so a human may lose an
-    # auction and deliberately open another one, repeatedly. The only
-    # universally illegal sequence is winning an auction and then opening
-    # another action before the turn advances.
+    # An automated seat opens at most two auctions a turn: after losing two it
+    # still acts, choosing among its other actions (ai_view hides the wizard
+    # offer), so it never opens auctions forever. Humans choose each follow-up
+    # action themselves, so a human may lose an auction and deliberately open
+    # another one, repeatedly. The only universally illegal sequence is winning
+    # an auction and then opening another action before the turn advances.
     if len(auctions_started) > 2 and seat not in humans(s):
         items = ', '.join(f"{item} (won by {winner})" for item, winner in auctions_started)
         raise AssertionError(
             f"INVARIANT VIOLATION: {seat} started {len(auctions_started)} auctions in round {current_round}: {items}. "
-            f"Rule: automated starter gets one retry, so max 2 auctions per turn. "
+            f"Rule: an automated starter opens at most 2 auctions per turn. "
             f"This is the round-27 four-auctions bug!"
         )
     
@@ -288,12 +288,28 @@ def _apply_fallback(s, me, act, events):
     elif t == 'pass': events.append(f'{me} passed (no legal action)')
     else: events.append(f'NOTE: turn.py does not know AI action type {t!r}; {me} did nothing')
     return None
-def ai_turn(s, me, attempt=0, events=None, bonus=0, auction_retry=False):
+def lost_auctions_this_turn(s, seat):
+    """Auctions `seat` started and lost since its turn marker this round."""
+    log = s['meta'].get('log', []); n = 0
+    for e in reversed(log):
+        if e.get('act') == 'turn':
+            if e.get('seat') == seat and e.get('r') == s['meta'].get('round'): return n
+            return 0
+        if e.get('act') == 'auction' and e.get('starter') == seat and e.get('won') != seat: n += 1
+    return 0
+def ai_view(s, me, no_auctions=False):
+    """Rulebook: a starter who does not win 'may perform any other action, including another Recruitment'.
+    An automated seat gets at most two auctions a turn (check_turn_invariants), so after losing two it chooses
+    among its other actions: the wizard offer is hidden from that choice."""
+    v = AI.public_view(s, me)
+    if no_auctions or lost_auctions_this_turn(s, me) >= 2: v['wiz_face'] = [None] * len(v.get('wiz_face') or [])
+    return v
+def ai_turn(s, me, attempt=0, events=None, bonus=0, auction_retry=False, no_auctions=False):
     """Mirrors ai_sim.take_turn (6 attempts, Haste bonus, illegal -> end turn) but pauses auctions for Keith.
     Returns 'paused' (auction needs Keith) or 'done'."""
     if attempt == 0: claim_all(s, me)
     while attempt < 6:
-        act, why = AI.choose_action(AI.public_view(s, me), me) if AI else placeholder_action(s, me)
+        act, why = AI.choose_action(ai_view(s, me, no_auctions), me) if AI else placeholder_action(s, me)
         t = act['type']
         if t == 'recruit':
             ob = AI.opening_bid(view(s, me), me, act['wizard']) if AI else 1
@@ -334,18 +350,14 @@ def after_auction(s, a, winner, events):
     if winner == st:
         claim_all(s, st); A.check_end(s)
         advance(s, events); return run_ais(s, events)
-    # Resume the AI starter after a human wins (or nobody bids). The resume data
-    # preserves the attempt budget across the pause. An attempt of 1 means the
-    # one permitted retry has already happened, so a second lost auction ends
-    # the turn instead of recursively opening unlimited auctions.
+    # Resume the AI starter after a human wins (or nobody bids): it always takes another action, like a human
+    # starter. ai_view keeps it to two auctions a turn; after a second loss it picks a non-auction action.
     resume = a.get('resume') or {}
     attempt = int(resume.get('attempt', 0))
-    if resume.get('retried', False):
-        events.append(f'{st} lost the auction but has already retried once this turn; turn ends.')
-        claim_all(s, st); A.check_end(s)
-        advance(s, events); return run_ais(s, events)
     events.append(f'{st} lost the auction, so {st} takes another action.')
-    r = ai_turn(s, st, attempt + 1, events, int(resume.get('bonus', 0)), auction_retry=True)
+    # resume['retried'] marks an auction opened after a lost one: losing it is the second loss this turn.
+    r = ai_turn(s, st, attempt + 1, events, int(resume.get('bonus', 0)), auction_retry=True,
+                no_auctions=bool(resume.get('retried')))
     if r == 'paused': return 'auction'
     claim_all(s, st); A.check_end(s)
     advance(s, events); return run_ais(s, events)
