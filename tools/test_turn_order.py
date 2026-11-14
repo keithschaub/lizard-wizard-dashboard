@@ -72,6 +72,17 @@ def turn_segments(log):
     if seg: yield seg
 
 
+def could_earn(summon, tile):
+    """Whether this summon/Rise gather could have completed the achievement tile (an achievement claimed at the start
+    of the turn, before an unrelated summon, is not out of order)."""
+    import re
+    m = re.match(r'x(\d+) (.+)$', tile)
+    if m: return A.norm(m.group(2).replace(' ', '_')) in [A.norm(r) for r in summon.get('got', [])]
+    m = re.match(r'\d+ (.+) cards$', tile)
+    if m: return W.CD.school(summon.get('familiar', '')) == m.group(1)
+    return True
+
+
 def pattern_checks(log, game):
     """Rules on the finished log; these also cover glue code that is not a wrapped engine function (rise_use, ai_sim)."""
     out = []
@@ -89,11 +100,15 @@ def pattern_checks(log, game):
                         out.append(f"{where}: cast {e['spell']} before the {x['act']} that enabled it"); break
             if a == 'achievement':
                 for x in rest[:3]:
-                    if x.get('act') in ('summon', 'rise') and x.get('who') == e.get('who') and x.get('use') == 'gather':
+                    if x.get('act') in ('summon', 'rise') and x.get('who') == e.get('who') and x.get('use') == 'gather' \
+                            and could_earn(x, e.get('tile', '')):
                         out.append(f"{where}: achievement {e.get('tile')} before the {x['act']} that earned it"); break
-            if a == 'trigger' and e.get('by'):
+            # A bonus paid out after its cause is fine even if the same seat acts again later in the turn
+            # (Haste's bonus action, another recruit): flag it only when no cause precedes it.
+            caused = lambda x: x.get('act') in ('build', 'auction', 'summon') and (x.get('who') or x.get('won')) == e.get('by')
+            if a == 'trigger' and e.get('by') and not any(caused(x) for x in seg[:k]):
                 for x in rest:
-                    if x.get('act') in ('build', 'auction', 'summon') and (x.get('who') or x.get('won')) == e['by']:
+                    if caused(x):
                         out.append(f"{where}: {e.get('spell')} trigger before {e['by']}'s {x['act']}"); break
             if a == 'reshuffle_reagents' and rest and rest[0].get('act') == 'gather':
                 out.append(f"{where}: reagent reshuffle before the gather that emptied the deck")
