@@ -74,7 +74,7 @@ test('summon Research commits the familiar, opens four spells, and can finish', 
   await page.getByTestId('summon-research').click();
   const research = page.getByTestId('new-research');
   await expect(research).toBeVisible();
-  await expect(research.locator('[data-testid=card-indicator] .dot')).toHaveCount(4);
+  await expect(research.locator('[data-testid^=nrcard-]')).toHaveCount(4);
   await research.screenshot({ path: 'docs/screenshots/familiar-new-research-dpr3.png' });
   await research.getByTestId('nr-take').tap();
   await expect(research).toHaveCount(0);

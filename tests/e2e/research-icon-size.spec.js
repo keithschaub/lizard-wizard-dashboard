@@ -61,34 +61,32 @@ test('Research action: spell carousel with normal-size chips', async ({ page }) 
   expect(m.chipIcons.length).toBeGreaterThan(0);
 });
 
-test('familiar New Research looks like the Research action (issue #123)', async ({ page }) => {
-  await page.addInitScript((t) => localStorage.setItem('lw.save.v1', t), RESEARCH);
+test('familiar New Research shows its four spells with normal-size icons (issues #123, #128)', async ({ page }) => {
+  await page.addInitScript((t) => localStorage.setItem('lw.save.v1', t), NEW_RESEARCH);
   await boot(page);
-  await page.evaluate(() => { const g = window.lwDebug._g; window.ui.researchFlow(g, Object.keys(g.v.legal.research)[0]); });
-  await expect(page.getByTestId('research-only')).toBeVisible();
+  const nr = page.getByTestId('new-research');
+  await expect(nr.locator('.nr-card')).toHaveCount(4);
   await page.waitForTimeout(500);
-  const normal = await measure(page, 'expanded');
-
-  const page2 = await page.context().newPage();
-  await page2.addInitScript((t) => localStorage.setItem('lw.save.v1', t), NEW_RESEARCH);
-  await boot(page2);
-  const nr = page2.getByTestId('new-research');
-  await expect(nr).toBeVisible();
-  await page2.waitForTimeout(500);
-  const m = await measure(page2, 'new-research');
-  expectNormalSize(m);
-  await expect(nr.locator('[data-testid=card-indicator] .dot')).toHaveCount(4);
-  // WebKit occasionally lays the Research action's card out smaller (two buttons under it); New Research must
-  // never come out smaller than it.
-  expect(m.cardW, 'card at least as large as in the Research action').toBeGreaterThanOrEqual(normal.cardW - 2);
-
-  const four = await page2.evaluate(() => window.lwDebug.view().pending.four);
-  await nr.getByTestId('nav-next').click();
-  await page2.waitForTimeout(400);
-  await nr.getByTestId('nr-take').tap();
-  await expect(nr).toHaveCount(0);
-  await expect.poll(() => page2.evaluate(() => window.lwDebug.view().pending)).toBeNull();
-  const mine = await page2.evaluate(() => window.lwDebug.view().players.find((p) => p.you).spells.map((x) => x.key || x));
-  expect(JSON.stringify(mine)).toContain(four[1]);
-  await page2.close();
+  const m = await page.evaluate(() => {
+    const ov = document.querySelector('[data-testid="new-research"]:not(.out)');
+    const box = (e) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height }; };
+    const cards = [...ov.querySelectorAll('.nr-card')];
+    const arts = cards.map((c) => c.querySelector('img'));
+    return {
+      cardW: Math.min(...cards.map((c) => box(c).w)),
+      artW: arts.map((i) => box(i).w),
+      others: [...ov.querySelectorAll('img')].filter((i) => !arts.includes(i)).map((i) => ({ src: i.getAttribute('src'), w: box(i).w })),
+      chipIcons: [...ov.querySelectorAll('[class*=chip] img')].map((i) => Math.max(box(i).w, box(i).h)),
+      frame: !!ov.querySelector('.research-action-frame [data-testid=nr-take]'),
+      cardText: ov.querySelectorAll('.ci-text, .oc-label, .cardinfo').length,
+      overflow: document.documentElement.scrollWidth - innerWidth,
+    };
+  });
+  expect(m.cardW).toBeGreaterThan(100);
+  for (const w of m.artW) expect(w, 'card art fills its frame, not a medallion or tile').toBeGreaterThan(m.cardW * 0.85);
+  expect(m.chipIcons.every((w) => w <= 32), `chip icons ${m.chipIcons}`).toBe(true);
+  for (const o of m.others) expect(o.w, `${o.src} stays below a third of a card`).toBeLessThanOrEqual(m.cardW / 3);
+  expect(m.frame, 'Research button in the research action frame').toBe(true);
+  expect(m.cardText, 'no card-info text panel').toBe(0);
+  expect(m.overflow).toBeLessThanOrEqual(0);
 });

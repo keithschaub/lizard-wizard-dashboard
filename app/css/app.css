@@ -365,6 +365,20 @@ img { -webkit-user-drag: none; user-select: none; }
 .research-action-frame .log-value-orb { width: 28px; height: 28px; }
 .research-action-frame .log-reagent-chip img { width: 24px; height: 24px; }
 .research-action-frame .act .sub { min-width: 0; }
+/* Familiar New Research: four spells in a 2x2 grid, one Research button aligned to it. At 430x775 the cards are
+   177.1 x 266.5 (art 166.5 x 252.3); smaller viewports scale them by width or by the height left above the bar. */
+.overlay.nr-pick { --nr-w: min(177.1px, calc((100vw - 76px) / 2), calc((100vh - var(--safe-t) - var(--clear-b) - 158px) * .33227));
+  justify-content: flex-start; padding-top: calc(54px + var(--safe-t)); background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; }
+@supports (height: 100dvh) {
+  .overlay.nr-pick { --nr-w: min(177.1px, calc((100vw - 76px) / 2), calc((100dvh - var(--safe-t) - var(--clear-b) - 158px) * .33227)); }
+}
+.nr-pick .ov-close { position: absolute; top: calc(8px + var(--safe-t)); right: 10px; margin: 0; }
+.nr-grid { display: grid; grid-template-columns: repeat(2, var(--nr-w)); gap: 14px; }
+.nr-card { width: var(--nr-w); height: calc(var(--nr-w) * 1.5048); box-sizing: border-box; padding: 0 3%; border: none; border-radius: 12px;
+  background: #110d0c; box-shadow: 0 0 0 1px rgba(214, 180, 90, .35); display: flex; align-items: center; justify-content: center; }
+.nr-card img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.nr-card.sel { box-shadow: 0 0 0 3px var(--gold-hi), 0 0 18px 4px rgba(255, 211, 107, .55); }
+.nr-frame.research-action-frame { width: calc(var(--nr-w) * 2 + 14px); margin-top: 8px; padding: 10px; }
 
 /* Navigation arrows */
 .nav-arrow { position: absolute; top: calc(var(--expand-pad-t) + 8px + min(78vw, calc(var(--expand-slot) / 1.62), 420px) / 2);

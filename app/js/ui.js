@@ -1473,23 +1473,27 @@ export async function effectChooser(g) {
 
 // A familiar's New Research shows the four new spells in the same carousel as the Research action (expandCard,
 // research-action-frame, no card-info panel), with one free "Research" button per spell.
+// A familiar's New Research: the four new spells side by side (2x2), the first selected; tap a card to select it,
+// then one free Research button takes it.
 export function newResearchChooser(g) {
   const pd = g.v.pending;
   return new Promise((resolve) => {
-    let result = null;
-    const ov = expandCard(g, pd.four[0], {
-      group: pd.four,
-      groupIndex: 0,
-      testid: 'new-research',
-      actionFrame: 'research-action-frame',
-      hideCardInfo: true,
-      actions: (k) => [{
-        label: 'Research', testid: 'nr-take', onClick: async () => {
-          result = await g.act('choose_new_research', { spell: k }, { sound: 'select' });
-          return !result;
-        },
-      }],
-    });
+    let result = null; let sel = pd.four[0];
+    const ov = openOverlay('nr-pick', { testid: 'new-research' });
+    const cards = pd.four.map((k) => h('button', {
+      class: 'nr-card', 'data-testid': `nrcard-${k}`, 'aria-label': g.cards[k]?.display || k,
+      onclick: () => { sel = k; mark(); g.sfx('tap'); },
+    }, h('img', { src: art(k), alt: '' })));
+    const mark = () => cards.forEach((b, i) => { const on = pd.four[i] === sel; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', String(on)); });
+    const take = h('button', { class: 'act', 'data-testid': 'nr-take', onclick: async () => {
+      take.disabled = true;
+      result = await g.act('choose_new_research', { spell: sel }, { sound: 'select' });
+      take.disabled = false;
+      if (result) ov.close();
+    } }, 'Research');
+    mark();
+    appendNodes(ov.el, closeBtn(() => ov.close(), 'nr-close'), h('div', { class: 'nr-grid', 'data-testid': 'nr-grid' }, cards),
+      h('div', { class: 'nr-frame research-action-frame' }, h('div', { class: 'actions' }, take)));
     const close = ov.close.bind(ov);
     ov.close = (...args) => { close(...args); resolve(result); };
   });
