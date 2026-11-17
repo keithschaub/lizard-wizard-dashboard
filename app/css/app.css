@@ -695,6 +695,25 @@ img { -webkit-user-drag: none; user-select: none; }
 .dungeon-result-bonus { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: -6px; color: var(--gold-hi); font-size: 15px; }
 .dungeon-loot { flex-wrap: nowrap; gap: 16px; min-height: 0; }
 .dungeon-loot .dc { width: 96px; }
+/* Scry Dungeon result: centered above the bottom bar reserve */
+.overlay.scry-result { justify-content: center; padding: var(--safe-t) 0 0; }
+.sd-panel { gap: 16px; padding: 16px 12px 16px; }
+.sd-head { display: flex; align-items: center; gap: 10px; }
+.sd-head .ov-title { margin: 0; }
+.sd-spell { width: 40px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0, 0, 0, .6); }
+.sd-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.sd-gold { gap: 6px; flex-wrap: nowrap; }
+.sd-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.sd-card { padding: 0; border: none; background: none; width: min(70px, calc((94vw - 56px) / 5)); }
+.sd-items .sd-card { width: min(84px, calc((94vw - 56px) / 4)); }
+.sd-card img { display: block; width: 100%; height: auto; border-radius: 5px; box-shadow: 0 6px 16px rgba(0, 0, 0, .6); }
+.sd-cell .log-value-chip { height: 28px; border-radius: 14px; font-size: 14px; }
+.sd-cell .log-value-orb { width: 22px; height: 22px; }
+.sd-before { opacity: .45; }
+.sd-arrow { color: var(--muted); }
+.sd-divider { width: 70%; height: 1px; background: rgba(214, 180, 90, .35); }
+.sd-panel .actions { width: 100%; }
+.sd-panel .actions .act { width: 100%; justify-content: center; }
 
 /* arena */
 .arena { justify-content: flex-start; gap: 4px; background: radial-gradient(70% 50% at 50% 45%, rgba(60, 70, 160, .5), rgba(3, 5, 14, .95)); }

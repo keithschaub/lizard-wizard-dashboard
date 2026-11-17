@@ -13,7 +13,7 @@ const MUTE_OFF = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill=
 
 class Game {
   constructor() {
-    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.moveQueue = []; this.settling = false; this.busy = false;
+    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.moveQueue = []; this.panelQueue = []; this.settling = false; this.busy = false;
     this.engine = null;
     this.board = new Board(document.getElementById('stage'), document.getElementById('board'), (el) => this.onBoardTap(el));
     this.dock = document.getElementById('dock');
@@ -138,6 +138,7 @@ class Game {
     if (sound) this.sfx(sound);
     if (r.view) this.setView(r.view);
     UI.announceSpellEffectResults(this, r.entries);
+    for (const e of r.entries || []) if (e.act === 'scry_dungeon' && e.who === this.me) this.panelQueue.push(e);
     this.queueMoves(r.entries, turnOf);
     await this.autosave();
     return r;
@@ -286,6 +287,7 @@ class Game {
     this.settling = true;
     try {
       for (let guard = 0; guard < 200; guard++) {
+        if (this.panelQueue.length) { await UI.scryDungeonPanel(this, this.panelQueue.shift()); continue; }
         if (this.moveQueue.length) { await this.playMoves(this.moveQueue.splice(0)); continue; }
         const v = this.v;
         if (v.game_over) {
