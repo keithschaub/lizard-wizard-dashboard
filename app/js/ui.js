@@ -1607,14 +1607,22 @@ export function scryDungeonPanel(g, e) {
     ov.close = (...args) => {
       const from = goldEls.map((img) => img.getBoundingClientRect()); const dock = document.querySelector('[data-testid=my-gold]');
       close(...args);
-      from.forEach((r, i) => fly(art(gold[i].card), r, dock, { w: 22, hgt: 32 }));
+      g.sfx('coin');
+      Promise.all(from.map((r, i) => fly(art(gold[i].card), r, dock, { w: 22, hgt: 32 }))).then(() => {
+        const chip = document.querySelector('[data-testid=my-gold]');
+        if (!chip || !total) return;
+        chip.classList.add('sd-pulse');
+        setTimeout(() => chip.classList.remove('sd-pulse'), 1300);
+      });
       resolve();
     };
+    const effect = total
+      ? [h('span', { class: 'sd-before' }, logValueChip({ kind: 'gold', value: before })), h('span', { class: 'sd-arrow' }, '→'), logValueChip({ kind: 'gold', value: after })]
+      : [logValueChip({ kind: 'gold', value: 0 })];
     appendNodes(ov.el, h('div', { class: 'dungeon-result-panel sd-panel', 'data-testid': 'sd-panel', onclick: (ev) => ev.stopPropagation() },
       h('div', { class: 'sd-head' }, h('img', { class: 'sd-spell', src: art('Spell_Scry_Dungeon'), alt: '' }), h('div', { class: 'ov-title' }, 'Scry Dungeon')),
       gold.length ? goldRow : null,
-      h('div', { class: 'dungeon-result-line sd-effect', 'data-testid': 'sd-effect' },
-        h('span', { class: 'sd-before' }, logValueChip({ kind: 'gold', value: before })), h('span', { class: 'sd-arrow' }, '→'), logValueChip({ kind: 'gold', value: after })),
+      h('div', { class: 'dungeon-result-line sd-effect', 'data-testid': 'sd-effect' }, ...effect),
       items.length ? h('div', { class: 'sd-divider' }) : null,
       items.length ? h('div', { class: 'sd-row sd-items', 'data-testid': 'sd-items' }, items.map((c) => h('div', { class: 'sd-cell' }, card(c.card)))) : null,
       h('div', { class: 'actions' }, h('button', { class: 'act', 'data-testid': 'sd-continue', onclick: () => ov.close() }, 'Continue'))));

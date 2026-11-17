@@ -696,24 +696,30 @@ img { -webkit-user-drag: none; user-select: none; }
 .dungeon-loot { flex-wrap: nowrap; gap: 16px; min-height: 0; }
 .dungeon-loot .dc { width: 96px; }
 /* Scry Dungeon result: centered above the bottom bar reserve */
-.overlay.scry-result { justify-content: center; padding: var(--safe-t) 0 0; }
-.sd-panel { gap: 16px; padding: 16px 12px 16px; }
-.sd-head { display: flex; align-items: center; gap: 10px; }
-.sd-head .ov-title { margin: 0; }
+.overlay.scry-result { background: rgba(3, 3, 8, .9); justify-content: flex-start; padding: calc(70px + var(--safe-t)) 0 0; }
+.sd-panel { gap: 14px; padding: 14px 12px 16px; background: rgba(28, 12, 14, .96); }
+.sd-head { display: flex; align-items: center; gap: 12px; align-self: stretch; padding: 0 4px 12px; border-bottom: 1px solid rgba(214, 180, 90, .35); }
+.sd-head .ov-title { margin: 0; font-size: 21px; text-align: left; }
 .sd-spell { width: 40px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0, 0, 0, .6); }
 .sd-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.sd-gold { gap: 6px; flex-wrap: nowrap; }
+.sd-gold { flex-wrap: nowrap; }
+.sd-items { gap: 16px; }
 .sd-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.sd-card { padding: 0; border: none; background: none; width: min(70px, calc((94vw - 56px) / 5)); }
-.sd-items .sd-card { width: min(84px, calc((94vw - 56px) / 4)); }
+.sd-card { padding: 0; border: none; background: none; width: min(68px, calc((94vw - 58px) / 5)); }
+.sd-items .sd-card { width: 104px; }
 .sd-card img { display: block; width: 100%; height: auto; border-radius: 5px; box-shadow: 0 6px 16px rgba(0, 0, 0, .6); }
-.sd-cell .log-value-chip { height: 28px; border-radius: 14px; font-size: 14px; }
+.sd-cell .log-value-chip { height: 26px; border-radius: 13px; padding: 2px 2px 2px 7px; font-size: 14px; }
 .sd-cell .log-value-orb { width: 22px; height: 22px; }
-.sd-before { opacity: .45; }
-.sd-arrow { color: var(--muted); }
-.sd-divider { width: 70%; height: 1px; background: rgba(214, 180, 90, .35); }
+.sd-effect { gap: 0; }
+.sd-effect .log-value-chip { height: 44px; min-width: 73px; box-sizing: border-box; border-radius: 22px; padding: 3px 3px 3px 14px; gap: 6px; font-size: 22px; }
+.sd-effect .log-value-orb { width: 38px; height: 38px; }
+.sd-before .log-value-chip { filter: grayscale(.7) brightness(.75); }
+.sd-arrow { width: 37px; text-align: center; color: #f3e6c4; font-size: 25px; font-weight: 700; }
+.sd-divider { align-self: stretch; height: 1px; background: rgba(214, 180, 90, .35); }
 .sd-panel .actions { width: 100%; }
-.sd-panel .actions .act { width: 100%; justify-content: center; }
+.sd-panel .actions .act { width: 100%; min-height: 54px; justify-content: center; border-radius: 18px; font-size: 17px; }
+.sd-pulse { animation: sdPulse .6s ease-in-out 2; }
+@keyframes sdPulse { 50% { box-shadow: 0 0 0 3px rgba(255, 211, 107, .8), 0 0 16px 4px rgba(255, 211, 107, .7); } }
 
 /* arena */
 .arena { justify-content: flex-start; gap: 4px; background: radial-gradient(70% 50% at 50% 45%, rgba(60, 70, 160, .5), rgba(3, 5, 14, .95)); }
