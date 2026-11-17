@@ -1587,11 +1587,14 @@ async function riseGather(g, pd) {
 // Scry Dungeon result, shown before play moves on: the spell, the kept gold cards in draw order (each with its gold),
 // the player's gold before -> after, then the kept items. Continue or a tap outside closes it; tapping a card opens
 // the card viewer. Afterwards the gold cards fly to the dock's gold.
+const scryKept = (g, e) => (e.kept || (e.cards || []).map((k) => ({ card: k, gold: g.cards[k]?.gold ?? null })));
+export const scryGold = (g, e) => scryKept(g, e).reduce((n, c) => n + (c.gold || 0), 0);
+
 export function scryDungeonPanel(g, e) {
-  const kept = (e.kept || (e.cards || []).map((k) => ({ card: k, gold: g.cards[k]?.gold ?? null })));
+  const kept = scryKept(g, e);
   const gold = kept.filter((c) => c.gold != null);
   const items = kept.filter((c) => c.gold == null);
-  const total = gold.reduce((n, c) => n + c.gold, 0);
+  const total = scryGold(g, e);
   const after = e.gold_before != null ? e.gold_before + total : g.me_().gold;
   const before = after - total;
   return new Promise((resolve) => {
@@ -1609,6 +1612,7 @@ export function scryDungeonPanel(g, e) {
       close(...args);
       g.sfx('coin');
       Promise.all(from.map((r, i) => fly(art(gold[i].card), r, dock, { w: 22, hgt: 32 }))).then(() => {
+        g.landGold(total);
         const chip = document.querySelector('[data-testid=my-gold]');
         if (!chip || !total) return;
         chip.classList.add('sd-pulse');

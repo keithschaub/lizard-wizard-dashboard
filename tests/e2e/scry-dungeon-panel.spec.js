@@ -21,7 +21,10 @@ const SAVE = fs.readFileSync('tests/e2e/fixtures/issue-134-pre-cast.json', 'utf8
 test.use({ viewport: { width: 430, height: 775 } });
 
 async function cast(page) {
-  await page.addInitScript((t) => localStorage.setItem('lw.save.v1', t), SAVE);
+  await page.addInitScript((t) => {
+    if (sessionStorage.getItem('seeded')) return;           // a reload keeps the game the page saved
+    localStorage.setItem('lw.save.v1', t); sessionStorage.setItem('seeded', '1');
+  }, SAVE);
   await boot(page);
   await page.evaluate(() => window.ui.researchFlow(window.lwDebug._g, 'Spell_Scry_Dungeon', { groupIndex: -1 }));
   await page.getByTestId('research-cast').tap();
@@ -45,6 +48,7 @@ test('Scry Dungeon shows what was kept, before the next turn (issue #134)', asyn
   expect(box.y + box.height, 'the bottom 84px stay clear').toBeLessThanOrEqual(775 - 84);
   await expect(page.locator('#banner-layer .banner')).toHaveCount(0);
   await expect(page.getByTestId('turn')).toHaveText('Your turn');
+  await expect(page.getByTestId('my-gold')).toHaveText('0');   // cause before effect: no gold until the coins land
 
   await page.waitForTimeout(1500);                       // no auto-close
   await expect(panel).toBeVisible();
@@ -83,4 +87,26 @@ test('Scry Dungeon result matches the approved mockup boxes', async ({ page }) =
     expect(got.length, sel).toBe(want.length);
     got.forEach((box, i) => box.forEach((v, j) => expect(Math.abs(v - want[i][j]), `${sel}[${i}] ${['x', 'y', 'w', 'h'][j]} ${v} vs ${want[i][j]}`).toBeLessThanOrEqual(4)));
   }
+});
+
+test('Scry Dungeon result survives a reload with the gold still unpaid on the dock', async ({ page }) => {
+  const errors = watchErrors(page);
+  await cast(page);
+  const vp = await page.getByTestId('my-vp').textContent();
+  await page.reload();
+  await page.waitForFunction(() => window.lwDebug?.ready(), null, { timeout: 60_000 });
+  const panel = page.getByTestId('scry-dungeon-result');
+  await expect(panel).toBeVisible({ timeout: 30_000 });
+  await expect(panel.getByTestId('sd-effect')).toHaveText(/^0\s*→\s*7$/);
+  await expect(page.getByTestId('my-gold')).toHaveText('0');
+  await expect(page.getByTestId('my-vp')).toHaveText(vp);
+  await expect(page.getByTestId('turn')).toHaveText('Your turn');
+  await panel.getByTestId('sd-continue').tap();
+  await expect(panel).toHaveCount(0);
+  await expect(page.getByTestId('my-gold')).toHaveText('7');
+  await page.reload();
+  await page.waitForFunction(() => window.lwDebug?.ready(), null, { timeout: 60_000 });
+  await expect(page.getByTestId('my-gold')).toHaveText('7');
+  await expect(page.getByTestId('scry-dungeon-result')).toHaveCount(0);
+  expect(errors, errors.join('\n')).toEqual([]);
 });

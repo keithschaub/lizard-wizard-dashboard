@@ -13,7 +13,7 @@ const MUTE_OFF = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill=
 
 class Game {
   constructor() {
-    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.moveQueue = []; this.panelQueue = []; this.panelTurn = null; this.settling = false; this.busy = false;
+    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.moveQueue = []; this.panelQueue = []; this.panelTurn = null; this.goldHold = 0; this.settling = false; this.busy = false;
     this.engine = null;
     this.board = new Board(document.getElementById('stage'), document.getElementById('board'), (el) => this.onBoardTap(el));
     this.dock = document.getElementById('dock');
@@ -119,6 +119,8 @@ class Game {
         if (!r.ok) throw new Error(r.error);
         Store.saveLocal(text);
       }
+      const open = Store.loadPanel(text);
+      if (open) { this.panelQueue = open.entries; this.panelTurn = open.turn; this.goldHold = open.hold; } else Store.clearPanel();
       this.setView(r.result);
       this.loadMs = Math.round(performance.now() - T_START);
       clearInterval(this.watchdog);
@@ -136,11 +138,13 @@ class Game {
     const r = await this.call(fn, args);
     if (!r.ok) { this.sfx('error'); this.toast(r.error); return null; }
     if (sound) this.sfx(sound);
-    for (const e of r.entries || []) if (e.act === 'scry_dungeon' && e.who === this.me) { this.panelQueue.push(e); this.panelTurn = turnOf; }
+    const panels = (r.entries || []).filter((e) => e.act === 'scry_dungeon' && e.who === this.me);
+    for (const e of panels) { this.panelQueue.push(e); this.panelTurn = turnOf; this.goldHold += UI.scryGold(this, e); }
     if (r.view) this.setView(r.view);
     UI.announceSpellEffectResults(this, r.entries);
     this.queueMoves(r.entries, turnOf);
-    await this.autosave();
+    const saved = await this.autosave();
+    if (panels.length && saved) Store.savePanel(saved, { entries: this.panelQueue, turn: this.panelTurn, hold: this.goldHold });
     return r;
   }
 
@@ -157,12 +161,16 @@ class Game {
       if (seat !== this.me && e.who && e.who !== this.me && !shown.has(e.act)) this.moveQueue.push({ ...e, _turn: seat });
     }
   }
-  async autosave() { const d = await this.call('dump'); if (d.ok) Store.saveLocal(d.result); }
+  async autosave() { const d = await this.call('dump'); if (d.ok) { Store.saveLocal(d.result); return d.result; } return null; }
+
+  // Gold a result panel has not paid out yet stays off the dock until its coins land.
+  landGold(n) { this.goldHold = Math.max(0, this.goldHold - n); this.renderDock(this.v); }
 
   afterAction() { return this.settle(); }
 
   setView(v, { fresh = false } = {}) {
     const prev = fresh ? null : this.v; this.v = v;
+    if (fresh) { this.panelQueue = []; this.panelTurn = null; this.goldHold = 0; Store.clearPanel(); }
     if (v.next !== this.me) UI.closeExpandOverlays();
     const you = v.players?.find((p) => p.you);
     if (you) this.me = you.name;
@@ -188,14 +196,14 @@ class Game {
     const v = this.v; const p = this.me_(); const L = v.legal || {};
     const prevHand = prev?.players?.find((q) => q.name === this.me)?.hand ?? p.hand;
     const tok = counts(p.tok);
-    const status = v.game_over ? `Game over · ${UI.ranking(v).text}` : (v.next === this.me && !v.auction ? (v.pending ? 'Finish your move' : 'Your move') : (this.aiRunning ? `${v.next} is playing…` : `${v.next}'s turn`));
+    const status = v.game_over ? `Game over · ${UI.ranking(v).text}` : this.panelTurn === this.me ? 'Your move' : (v.next === this.me && !v.auction ? (v.pending ? 'Finish your move' : 'Your move') : (this.aiRunning ? `${v.next} is playing…` : `${v.next}'s turn`));
     this.dock.innerHTML = '';
     this.dock.dataset.mana = p.mana; this.dock.dataset.gold = p.gold; this.dock.dataset.tokens = p.tok.length; this.dock.dataset.vp = p.vp;
     this.dock.append(
       h('div', { class: 'dock-stats' },
         h('span', { class: 'stat mana', 'data-testid': 'my-mana', title: 'Mana' }, h('span', { class: 'orb' }), p.mana),
-        h('span', { class: 'stat gold', 'data-testid': 'my-gold', title: 'Gold' }, h('span', { class: 'orb' }), p.gold),
-        h('span', { class: 'stat vp', 'data-testid': 'my-vp' }, `${p.vp} VP`),
+        h('span', { class: 'stat gold', 'data-testid': 'my-gold', title: 'Gold' }, h('span', { class: 'orb' }), p.gold - this.goldHold),
+        h('span', { class: 'stat vp', 'data-testid': 'my-vp' }, `${p.vp - this.goldHold} VP`),
         h('span', { class: `stat store ${p.tok.length > p.cap ? 'full' : ''}`, 'data-testid': 'my-storage' }, `${p.tok.length}/${p.cap}`),
         v.game_over ? h('button', { class: 'dock-btn', 'data-testid': 'dock-scores', onclick: () => { this.sfx('tap'); UI.gameOver(this); } }, 'Scores') : null,
         h('span', { class: `dock-status ${v.next === this.me && !v.game_over ? 'you' : ''}`, 'data-testid': 'dock-status' }, status)),
@@ -290,7 +298,7 @@ class Game {
       for (let guard = 0; guard < 200; guard++) {
         if (this.panelQueue.length) {
           await UI.scryDungeonPanel(this, this.panelQueue.shift());
-          if (!this.panelQueue.length) { this.panelTurn = null; this.renderTop(); }
+          if (!this.panelQueue.length) { this.panelTurn = null; Store.clearPanel(); this.renderTop(); }
           continue;
         }
         if (this.moveQueue.length) { await this.playMoves(this.moveQueue.splice(0)); continue; }

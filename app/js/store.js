@@ -44,6 +44,25 @@ export function loadLocal() {
 export function clearLocal() {
   try { localStorage.removeItem(KEY); localStorage.removeItem(KEY + '.at'); } catch { /* ignore */ }
 }
+// A result panel still open when the page went away. It belongs to one exact save, so any later save drops it.
+const PANEL_KEY = 'lw.panel.v1';
+function hashText(text) {
+  let x = 0;
+  for (let i = 0; i < text.length; i++) x = (Math.imul(x, 31) + text.charCodeAt(i)) | 0;
+  return `${text.length}:${x}`;
+}
+export function savePanel(text, panel) {
+  try { localStorage.setItem(PANEL_KEY, JSON.stringify({ ...panel, save: hashText(text) })); } catch { /* ignore */ }
+}
+export function loadPanel(text) {
+  try {
+    const p = JSON.parse(localStorage.getItem(PANEL_KEY) || 'null');
+    return p && text && p.save === hashText(text) ? p : null;
+  } catch { return null; }
+}
+export function clearPanel() {
+  try { localStorage.removeItem(PANEL_KEY); } catch { /* ignore */ }
+}
 export function savedAt() {
   try { return localStorage.getItem(KEY + '.at'); } catch { return null; }
 }
