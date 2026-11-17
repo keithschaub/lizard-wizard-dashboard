@@ -749,5 +749,25 @@ check(r['ok'] and sd and [c['card'] for c in sd[0]['kept']] == ['Dungeon_Rubies'
 chips = sd[0]['structured']['chips'] if sd else []
 check([c.get('label') for c in chips] == ['Rubies', 'Necklace', '7 Gold'] and chips[-1].get('gold') == 7, f'scry banner shows every kept item and the gold total ({chips})')
 
+# Issue #135: Keith's save, Scry Familiar took Corvum (collect 5 Nightshade, "& Cast Spells") and its use-now
+# choice is pending. Gather must collect, clear the choice and finish the turn; a spell cast with the gathered
+# tokens must resolve its effect (Disintegrate asks for a target), with the rise logged before the cast.
+_I135 = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tests', 'e2e', 'fixtures', 'issue-135-scry-familiar.json')
+W.load(open(_I135).read(), viewer='13InchesOfFun')
+r = call('rise_use', use='gather')
+me135 = A.P(W.st(), '13InchesOfFun')
+check(r['ok'] and me135['tok'].count('Nightshade') == 5 and not W.st()['meta'].get('web_pending'),
+      f"Scry Familiar gather collects 5 Nightshade and clears the use-now choice ({r.get('error')})")
+s135 = json.load(open(_I135)); [q for q in s135['players'] if q['name'] == '13InchesOfFun'][0]['tok'].append('Foxglove')
+W.load(json.dumps(s135), viewer='13InchesOfFun')
+pv = call('summon_gather_preview', familiar='Familiar_15_Corvum')
+check(pv['ok'] and 'Spell_Disintegrate_N' in [o['key'] for o in pv['result']['castable']], 'the gather preview offers Disintegrate once Corvum collects')
+r = call('rise_use', use='gather', casts=['Spell_Disintegrate_N'])
+wp = W.st()['meta'].get('web_pending') or {}
+check(r['ok'] and wp.get('type') == 'effect' and 'Disintegrate' in wp.get('spell', ''),
+      f"a spell cast during the Rise gather resolves its effect ({r.get('error')}, {wp.get('type')})")
+log135 = W.st()['meta']['log']; ri = max(i for i, e in enumerate(log135) if e.get('act') == 'rise')
+check(any(e.get('act') == 'cast' and 'Disintegrate' in str(e.get('spell')) for e in log135[ri + 1:]), 'the rise is logged before the cast it enabled')
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)
