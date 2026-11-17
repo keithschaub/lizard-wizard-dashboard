@@ -996,14 +996,18 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
   });
 }
 
-async function summonGather(g, fk) {
-  const ov = openOverlay('gather', { testid: 'summon-gather-flow' });
+// Gather from a familiar (Summon, Rise, Scry Familiar): the engine previews the tokens collected and the spells
+// they can pay for (summon_gather_preview), the player may cast any of them, puts back over-storage tokens, and
+// `commit(casts, discard)` performs the action. Returns the action's result, or undefined when cancelled.
+async function familiarGather(g, fk, testid, commit) {
+  const ov = openOverlay('gather', { testid });
   const body = h('div', { class: 'gather-body' });
-  appendNodes(ov.el, closeBtn(() => ov.close(), 'gather-cancel'), body);
+  let cancelled = false;
+  appendNodes(ov.el, closeBtn(() => { cancelled = true; ov.close(); }, 'gather-cancel'), body);
   let casts = [];
   for (;;) {
     const pr = await g.call('summon_gather_preview', { familiar: fk, casts });
-    if (!pr.ok) { g.toast(pr.error); ov.close(); return; }
+    if (!pr.ok) { g.toast(pr.error); ov.close(); return undefined; }
     const pv = pr.result;
     if (!pv.castable.length && !casts.length) break;
     body.innerHTML = '';
@@ -1012,15 +1016,24 @@ async function summonGather(g, fk) {
     const pick = castPicker(g, body, all, { multi: true, title: 'Cast any of your spells' });
     body.querySelectorAll('.castopt').forEach((el, i) => { if (i < casts.length) el.classList.add('on'); });
     const ch = await pick;
+    if (cancelled) return undefined;
     if (ch.skip) break;
     casts = ch.chosen;
   }
   const pr = await g.call('summon_gather_preview', { familiar: fk, casts });
   let discard = null;
   if (pr.ok && pr.result.over > 0) { body.innerHTML = ''; discard = await putbackPicker(g, body, pr.result.pool, pr.result.over); }
-  const r = await g.act('act_summon', { familiar: fk, use: 'gather', casts, discard }, { sound: 'gather' });
+  if (cancelled) return undefined;
+  const r = await commit(casts, discard);
   ov.close();
-  if (r) { if (casts.length) g.sfx('cast'); g.afterAction(); }
+  if (r && casts.length) g.sfx('cast');
+  return r;
+}
+
+async function summonGather(g, fk) {
+  const r = await familiarGather(g, fk, 'summon-gather-flow',
+    (casts, discard) => g.act('act_summon', { familiar: fk, use: 'gather', casts, discard }, { sound: 'gather' }));
+  if (r) g.afterAction();
 }
 
 export function researchFlow(g, sk, { group = null, groupIndex = 0 } = {}) {
@@ -1537,51 +1550,10 @@ export async function riseUseChooser(g) {
   });
 }
 
-async function riseGather(g, pd) {
-  const me = g.me_();
-  const holdings = me.tok.concat(Array(pd.collect).fill(pd.reagent));
-  const castable = [];
-  for (const o of g.v.legal.research) {
-    if (!o.castable || o.x) continue;
-    const c = g.cards[o.key];
-    const cost = Object.entries(c?.cost?.reagents || {}).flatMap(([r, n]) => Array.from({ length: Number(n) || 0 }, () => r));
-    const covers = (have, need) => {
-      const cnt = (list) => list.reduce((m, x) => ((m[x] = (m[x] || 0) + 1), m), {});
-      return Object.entries(cnt(need)).every(([r, n]) => (have[r] || 0) >= n);
-    };
-    if (covers(holdings, cost)) castable.push({ key: o.key, cost });
-  }
-  const casts = [];
-  const ov = openOverlay('gather', { testid: 'rise-gather-cast' });
-  const [p, done] = wait();
-  appendNodes(ov.el, h('div', { class: 'phase-title' }, 'Cast spells (optional)'));
-  const grid = h('div', { class: 'opt-grid' });
-  const go = h('button', { class: 'act', 'data-testid': 'rise-gather-done' }, 'Done');
-  go.onclick = () => done();
-  castable.forEach((o) => {
-    const b = h('button', { class: 'opt-card wide', 'data-testid': `cast-${o.key}` },
-      h('img', { src: art(o.key), alt: o.key }), h('span', { class: 'oc-text' }, g.cards[o.key]?.display));
-    b.onclick = () => { casts.push(o.key); b.disabled = true; };
-    appendNodes(grid, b);
-  });
-  appendNodes(ov.el, grid, h('div', { class: 'actions' }, go));
-  await p;
-  ov.close();
-  const newHoldings = holdings.slice();
-  for (const k of casts) {
-    const o = castable.find((x) => x.key === k);
-    for (const r of o.cost) {
-      const i = newHoldings.indexOf(r);
-      if (i >= 0) newHoldings.splice(i, 1);
-    }
-  }
-  const over = Math.max(0, newHoldings.length - me.cap);
-  let discard = null;
-  if (over > 0) {
-    discard = await pickPutbacks(g, newHoldings, over);
-  }
-  const r = await g.act('rise_use', { use: 'gather', casts, discard }, { sound: 'coin' });
-  return r;
+// Rise and Scry Familiar gather: the same flow as a summon's gather, committed with rise_use.
+function riseGather(g, pd) {
+  return familiarGather(g, pd.familiar, 'rise-gather-flow',
+    (casts, discard) => g.act('rise_use', { use: 'gather', casts, discard }, { sound: 'gather' }));
 }
 
 export function renderDungeonResult(ov, was) {
