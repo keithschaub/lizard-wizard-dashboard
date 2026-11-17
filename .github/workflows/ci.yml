@@ -67,7 +67,9 @@ jobs:
       - name: Install ${{ matrix.browser }}
         run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Regression specs listed in tests/regression/manifest.json
-        run: npx playwright test $(node tools/regression_specs.mjs) --project=${{ matrix.project }}
+        run: |
+          specs=$(node tools/regression_specs.mjs)
+          npx playwright test $specs --project=${{ matrix.project }}
         env:
           CI: 'true'
       - uses: actions/upload-artifact@v4
