@@ -13,7 +13,7 @@ const MUTE_OFF = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill=
 
 class Game {
   constructor() {
-    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.moveQueue = []; this.panelQueue = []; this.panelTurn = null; this.goldHold = 0; this.settling = false; this.busy = false;
+    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.moveQueue = []; this.panelQueue = []; this.panelTurn = null; this.dockHold = null; this.settling = false; this.busy = false;
     this.engine = null;
     this.board = new Board(document.getElementById('stage'), document.getElementById('board'), (el) => this.onBoardTap(el));
     this.dock = document.getElementById('dock');
@@ -120,7 +120,7 @@ class Game {
         Store.saveLocal(text);
       }
       const open = Store.loadPanel(text);
-      if (open) { this.panelQueue = open.entries; this.panelTurn = open.turn; this.goldHold = open.hold; } else Store.clearPanel();
+      if (open && typeof open.hold === 'object' && open.hold) { this.panelQueue = open.entries; this.panelTurn = open.turn; this.dockHold = open.hold; } else Store.clearPanel();
       this.setView(r.result);
       this.loadMs = Math.round(performance.now() - T_START);
       clearInterval(this.watchdog);
@@ -135,16 +135,21 @@ class Game {
 
   async act(fn, args, { sound = null } = {}) {
     const turnOf = this.v?.next;
+    const before = this.v ? this.me_() : null;
     const r = await this.call(fn, args);
     if (!r.ok) { this.sfx('error'); this.toast(r.error); return null; }
     if (sound) this.sfx(sound);
     const panels = (r.entries || []).filter((e) => e.act === 'scry_dungeon' && e.who === this.me);
-    for (const e of panels) { this.panelQueue.push(e); this.panelTurn = turnOf; this.goldHold += UI.scryGold(this, e); }
+    for (const e of panels) { this.panelQueue.push(e); this.panelTurn = turnOf; }
+    if (panels.length) {
+      this.dockHold = this.dockHold ? { ...this.dockHold, n: this.dockHold.n + panels.length }
+        : { gold: before?.gold ?? 0, vp: before?.vp ?? 0, n: panels.length };
+    }
     if (r.view) this.setView(r.view);
     UI.announceSpellEffectResults(this, r.entries);
     this.queueMoves(r.entries, turnOf);
     const saved = await this.autosave();
-    if (panels.length && saved) Store.savePanel(saved, { entries: this.panelQueue, turn: this.panelTurn, hold: this.goldHold });
+    if (panels.length && saved) Store.savePanel(saved, { entries: this.panelQueue, turn: this.panelTurn, hold: this.dockHold });
     return r;
   }
 
@@ -163,14 +168,17 @@ class Game {
   }
   async autosave() { const d = await this.call('dump'); if (d.ok) { Store.saveLocal(d.result); return d.result; } return null; }
 
-  // Gold a result panel has not paid out yet stays off the dock until its coins land.
-  landGold(n) { this.goldHold = Math.max(0, this.goldHold - n); this.renderDock(this.v); }
+  // While a result panel is open the dock keeps the gold and VP from before the cast; both update when its coins land.
+  landPanel() {
+    if (this.dockHold && --this.dockHold.n <= 0) this.dockHold = null;
+    this.renderDock(this.v);
+  }
 
   afterAction() { return this.settle(); }
 
   setView(v, { fresh = false } = {}) {
     const prev = fresh ? null : this.v; this.v = v;
-    if (fresh) { this.panelQueue = []; this.panelTurn = null; this.goldHold = 0; Store.clearPanel(); }
+    if (fresh) { this.panelQueue = []; this.panelTurn = null; this.dockHold = null; Store.clearPanel(); }
     if (v.next !== this.me) UI.closeExpandOverlays();
     const you = v.players?.find((p) => p.you);
     if (you) this.me = you.name;
@@ -202,8 +210,8 @@ class Game {
     this.dock.append(
       h('div', { class: 'dock-stats' },
         h('span', { class: 'stat mana', 'data-testid': 'my-mana', title: 'Mana' }, h('span', { class: 'orb' }), p.mana),
-        h('span', { class: 'stat gold', 'data-testid': 'my-gold', title: 'Gold' }, h('span', { class: 'orb' }), p.gold - this.goldHold),
-        h('span', { class: 'stat vp', 'data-testid': 'my-vp' }, `${p.vp - this.goldHold} VP`),
+        h('span', { class: 'stat gold', 'data-testid': 'my-gold', title: 'Gold' }, h('span', { class: 'orb' }), this.dockHold ? this.dockHold.gold : p.gold),
+        h('span', { class: 'stat vp', 'data-testid': 'my-vp' }, `${this.dockHold ? this.dockHold.vp : p.vp} VP`),
         h('span', { class: `stat store ${p.tok.length > p.cap ? 'full' : ''}`, 'data-testid': 'my-storage' }, `${p.tok.length}/${p.cap}`),
         v.game_over ? h('button', { class: 'dock-btn', 'data-testid': 'dock-scores', onclick: () => { this.sfx('tap'); UI.gameOver(this); } }, 'Scores') : null,
         h('span', { class: `dock-status ${v.next === this.me && !v.game_over ? 'you' : ''}`, 'data-testid': 'dock-status' }, status)),

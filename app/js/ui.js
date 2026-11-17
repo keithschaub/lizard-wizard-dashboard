@@ -1612,7 +1612,7 @@ export function scryDungeonPanel(g, e) {
       close(...args);
       g.sfx('coin');
       Promise.all(from.map((r, i) => fly(art(gold[i].card), r, dock, { w: 22, hgt: 32 }))).then(() => {
-        g.landGold(total);
+        g.landPanel();
         const chip = document.querySelector('[data-testid=my-gold]');
         if (!chip || !total) return;
         chip.classList.add('sd-pulse');

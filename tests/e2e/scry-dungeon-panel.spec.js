@@ -49,6 +49,7 @@ test('Scry Dungeon shows what was kept, before the next turn (issue #134)', asyn
   await expect(page.locator('#banner-layer .banner')).toHaveCount(0);
   await expect(page.getByTestId('turn')).toHaveText('Your turn');
   await expect(page.getByTestId('my-gold')).toHaveText('0');   // cause before effect: no gold until the coins land
+  await expect(page.getByTestId('my-vp')).toHaveText('3 VP');  // nor any of the VP the kept cards bring
 
   await page.waitForTimeout(1500);                       // no auto-close
   await expect(panel).toBeVisible();
@@ -58,14 +59,19 @@ test('Scry Dungeon shows what was kept, before the next turn (issue #134)', asyn
   await expect(panel).toBeVisible();
 
   await page.evaluate(() => {
-    window.__goldPulse = false;
-    new MutationObserver(() => { if (document.querySelector('[data-testid=my-gold].sd-pulse')) window.__goldPulse = true; })
-      .observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+    window.__goldPulse = false; window.__dock = new Set();
+    new MutationObserver(() => {
+      if (document.querySelector('[data-testid=my-gold].sd-pulse')) window.__goldPulse = true;
+      const gold = document.querySelector('[data-testid=my-gold]')?.textContent.trim(); const vp = document.querySelector('[data-testid=my-vp]')?.textContent.trim();
+      if (gold != null && vp != null) window.__dock.add(`${gold}|${vp}`);
+    }).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
   });
   await page.mouse.click(215, 740);                      // outside the panel
   await expect(panel).toHaveCount(0);
   await expect(page.getByTestId('my-gold')).toHaveText('7');
   await expect.poll(() => page.evaluate(() => window.__goldPulse), { timeout: 5_000 }).toBe(true);
+  await expect(page.getByTestId('my-vp')).toHaveText('20 VP');
+  expect(await page.evaluate(() => [...window.__dock].sort()), 'gold and VP change together').toEqual(['0|3 VP', '7|20 VP']);
   const log = await page.evaluate(() => window.lwDebug.log());
   const i = log.findIndex((e) => e.act === 'research' && e.r === 12 && JSON.stringify(e).includes('Scry_Dungeon'));
   expect(log[i + 1].act).toBe('scry_dungeon');
@@ -92,21 +98,23 @@ test('Scry Dungeon result matches the approved mockup boxes', async ({ page }) =
 test('Scry Dungeon result survives a reload with the gold still unpaid on the dock', async ({ page }) => {
   const errors = watchErrors(page);
   await cast(page);
-  const vp = await page.getByTestId('my-vp').textContent();
+  await expect(page.getByTestId('my-vp')).toHaveText('3 VP');
   await page.reload();
   await page.waitForFunction(() => window.lwDebug?.ready(), null, { timeout: 60_000 });
   const panel = page.getByTestId('scry-dungeon-result');
   await expect(panel).toBeVisible({ timeout: 30_000 });
   await expect(panel.getByTestId('sd-effect')).toHaveText(/^0\s*→\s*7$/);
   await expect(page.getByTestId('my-gold')).toHaveText('0');
-  await expect(page.getByTestId('my-vp')).toHaveText(vp);
+  await expect(page.getByTestId('my-vp')).toHaveText('3 VP');
   await expect(page.getByTestId('turn')).toHaveText('Your turn');
   await panel.getByTestId('sd-continue').tap();
   await expect(panel).toHaveCount(0);
   await expect(page.getByTestId('my-gold')).toHaveText('7');
+  await expect(page.getByTestId('my-vp')).toHaveText('20 VP');
   await page.reload();
   await page.waitForFunction(() => window.lwDebug?.ready(), null, { timeout: 60_000 });
   await expect(page.getByTestId('my-gold')).toHaveText('7');
+  await expect(page.getByTestId('my-vp')).toHaveText('20 VP');
   await expect(page.getByTestId('scry-dungeon-result')).toHaveCount(0);
   expect(errors, errors.join('\n')).toEqual([]);
 });
