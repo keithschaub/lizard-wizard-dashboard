@@ -737,5 +737,17 @@ tc = W.view()['tower_cost']
 check(tc['n'] == 1 and tc['gold'] == 1 and tc['perfect_reagent'] and tc['inexpensive'], f'tower cost view: Perfect Reagent and Inexpensive take 1 off ({tc})')
 check(tc['n'] == A.tower_cost(A.P(W.st(), 'Keith'), W.st()['tower_face'], 'reagent'), 'tower cost view matches the engine build cost')
 
+# Issue #134: casting Scry Dungeon reports what was kept (draw order, gold before -> after); the AI banner shows
+# every kept item and the gold total.
+_I134 = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tests', 'e2e', 'fixtures', 'issue-134-pre-cast.json')
+W.load(open(_I134).read(), viewer='13InchesOfFun')
+r = call('act_research', spell='Spell_Scry_Dungeon', cast=True)
+sd = [e for e in r.get('entries', []) if e['act'] == 'scry_dungeon']
+check(r['ok'] and sd and [c['card'] for c in sd[0]['kept']] == ['Dungeon_Rubies', 'Dungeon_Gold2_a', 'Dungeon_Necklace', 'Dungeon_Gold1_a', 'Dungeon_Gold1_a', 'Dungeon_Gold2_a', 'Dungeon_Gold1_a']
+      and [c['gold'] for c in sd[0]['kept']] == [None, 2, None, 1, 1, 2, 1] and sd[0].get('gold_before') == 0 and P('13InchesOfFun')['gold'] == 7,
+      'Scry Dungeon entry lists the kept cards in draw order with gold 0 -> 7')
+chips = sd[0]['structured']['chips'] if sd else []
+check([c.get('label') for c in chips] == ['Rubies', 'Necklace', '7 Gold'] and chips[-1].get('gold') == 7, f'scry banner shows every kept item and the gold total ({chips})')
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)
