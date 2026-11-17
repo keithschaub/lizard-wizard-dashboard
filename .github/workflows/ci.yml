@@ -38,8 +38,46 @@ jobs:
         run: python3 tools/test_swipe_groups.py
       - name: Turn order (cause before effect in the log, banners and Chronicle)
         run: python3 tools/test_turn_order.py
+      - name: Gameplay regressions from bug-report saves (tests/regression)
+        run: python3 tests/regression/test_regressions.py
       - name: Engine files still unchanged after the tests
         run: cd engine && sha256sum -c --quiet ORIGINAL_SHA256SUMS
+
+  regression-e2e:
+    name: Gameplay regressions (${{ matrix.project }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: chromium
+            browser: chromium
+          - project: webkit-iphone
+            browser: webkit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Vendor the Pyodide runtime
+        run: npm run vendor
+      - name: Install ${{ matrix.browser }}
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Regression specs listed in tests/regression/manifest.json
+        run: npx playwright test $(node tools/regression_specs.mjs) --project=${{ matrix.project }}
+        env:
+          CI: 'true'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-${{ matrix.project }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
   e2e:
     name: Playwright (${{ matrix.project }})

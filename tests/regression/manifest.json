@@ -1,0 +1,96 @@
+{
+  "about": "Every in-game bug report (bug-reports branch, reports/<ts>-<id>/) that was a gameplay or logic bug, mapped to the test that guards it. status: new = added by this suite; covered = an earlier fix already has a test; pending-pr = its test is in an open PR; live-regression = the test fails on the current head and is held as XFAIL in tests/regression/test_regressions.py (KNOWN_LIVE) until the fix lands. Fixtures are the reporters' saves copied verbatim.",
+  "run": {
+    "engine": "python3 tests/regression/test_regressions.py",
+    "e2e": "npx playwright test $(node tools/regression_specs.mjs) --project=<chromium|webkit-iphone>"
+  },
+  "issues": [
+    {
+      "issue": 53, "status": "covered", "kind": "engine",
+      "description": "AI Scribe free cast resolved nothing",
+      "report": "2026-11-08T21-27-54-759Z-wor2r",
+      "tests": ["engine/web/test_lw_web.py::m6ai_scribe", "tests/e2e/scribe-time-shift.spec.js"],
+      "note": "The save in the report is empty ({}), so the existing synthetic test from #55 is the guard."
+    },
+    {
+      "issue": 60, "status": "covered", "kind": "engine",
+      "description": "Duel: human outbid twice and the turn ended",
+      "report": "2026-11-09T01-22-19-773Z-y1o24",
+      "tests": ["engine/scripts/test_two_player_auction.py::test_human_can_continue_after_repeated_lost_opening_auctions"]
+    },
+    {
+      "issue": 67, "status": "new", "kind": "e2e",
+      "description": "Familiar gather and its cast read as two Newt turns",
+      "report": "2026-11-09T09-14-55-453Z-pjt8g",
+      "fixture": "tests/regression/fixtures/issue-67.json",
+      "tests": ["tests/e2e/regression-issue-67.spec.js", "tests/e2e/chronicle-familiar-cast-fold.spec.js", "tools/test_turn_order.py"],
+      "note": "One move (summon Vulpes for gather, cast Mana Drain) logged cast-first. Fixed by #115 and #116."
+    },
+    {
+      "issue": 117, "status": "covered", "kind": "engine+e2e",
+      "description": "Tower cost ignored Perfect Reagent / Inexpensive",
+      "report": "2026-11-11T16-21-37-326Z-01w9u",
+      "tests": ["engine/web/test_lw_web.py::m117", "tests/e2e/tower-cost-discount.spec.js"]
+    },
+    {
+      "issue": 118, "status": "live-regression", "kind": "engine",
+      "description": "AI with the lead did not build the last tower to win",
+      "report": "2026-11-11T16-53-45-220Z-z3lg2",
+      "fixture": "tests/regression/fixtures/issue-118.json",
+      "tests": ["tests/regression/test_regressions.py::118"],
+      "note": "As saved Newt trailed 48-54, so not ending the game was right (passes). With Newt leading 48-26 the master lookahead still picks research over the winning build (XFAIL 118-lead)."
+    },
+    {
+      "issue": 122, "status": "covered", "kind": "engine+e2e",
+      "description": "AI turn ended after losing its own auction",
+      "report": "2026-11-13T22-51-14-902Z-ax8mx",
+      "tests": ["engine/scripts/test_two_player_auction.py::test_ai_takes_another_action_after_losing_its_auction", "tests/e2e/ai-auction-loss.spec.js"]
+    },
+    {
+      "issue": 127, "status": "covered", "kind": "engine+e2e",
+      "description": "AI gave up after two lost bids",
+      "report": "2026-11-14T16-16-25-029Z-mgeh0",
+      "tests": ["engine/scripts/test_two_player_auction.py::test_issue_127_recruits_bufonem_for_exactly_6_after_two_losses", "engine/scripts/test_two_player_auction.py::test_issue_127_does_not_open_auctions_the_rival_can_top", "tests/e2e/ai-auction-loss.spec.js"]
+    },
+    {
+      "issue": 128, "status": "covered", "kind": "e2e",
+      "description": "Familiar New Research showed one spell, not four",
+      "report": "2026-11-14T16-32-46-882Z-gfajm",
+      "tests": ["tests/e2e/new-research-grid.spec.js"]
+    },
+    {
+      "issue": 129, "status": "covered", "kind": "e2e",
+      "description": "Finished game reloaded as round 2",
+      "report": "2026-11-14T16-35-34-250Z-hii2i",
+      "tests": ["tests/e2e/game-over-reload.spec.js"]
+    },
+    {
+      "issue": 133, "status": "new", "kind": "engine",
+      "description": "Rise did not let the player pick a familiar",
+      "report": "2026-11-14T23-19-35-157Z-aqixk",
+      "fixture": "tests/regression/fixtures/issue-133.json",
+      "tests": ["tests/regression/test_regressions.py::133", "tests/e2e/rise-familiar-actions.spec.js"],
+      "note": "Keith owned no familiar, so Rise had no target (correct). The test also gives him one and checks the pick and use flow."
+    },
+    {
+      "issue": 134, "status": "pending-pr", "kind": "engine+e2e",
+      "description": "Scry Dungeon showed nothing about the gold kept",
+      "report": "2026-11-15T02-22-50-446Z-bmymt",
+      "tests": ["PR #137: tests/e2e/scry-dungeon-panel.spec.js", "PR #137: engine/web/test_lw_web.py #134 checks"]
+    },
+    {
+      "issue": 135, "status": "pending-pr", "kind": "engine+e2e",
+      "description": "Scry Familiar gather ended the turn before the cast",
+      "report": "2026-11-17T04-00-12-160Z-22pcw",
+      "tests": ["PR #136: tests/e2e/scry-familiar-gather.spec.js", "PR #136: engine/web/test_lw_web.py #135 checks"]
+    }
+  ],
+  "fixes_without_a_report": [
+    {"pr": 115, "description": "Familiar-enabled cast folds into its summon/rise entry", "tests": ["tests/e2e/chronicle-familiar-cast-fold.spec.js"]},
+    {"pr": 116, "description": "Turn order: cause before effect, incl. Energy Circle triggers", "tests": ["tools/test_turn_order.py", "tests/e2e/turn-order.spec.js"]}
+  ],
+  "not_gameplay": [
+    {"issues": [48, 50, 51, 54], "why": "relay tests of the Report Bug button"},
+    {"issues": [56, 57, 61, 64, 65, 66, 81, 113, 123], "why": "visual or layout enhancements, no game logic"}
+  ]
+}
