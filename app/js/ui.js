@@ -1556,6 +1556,55 @@ function riseGather(g, pd) {
     (casts, discard) => g.act('rise_use', { use: 'gather', casts, discard }, { sound: 'gather' }));
 }
 
+// Scry Dungeon result, shown before play moves on: the spell, the kept gold cards in draw order (each with its gold),
+// the player's gold before -> after, then the kept items. Continue or a tap outside closes it; tapping a card opens
+// the card viewer. Afterwards the gold cards fly to the dock's gold.
+const scryKept = (g, e) => (e.kept || (e.cards || []).map((k) => ({ card: k, gold: g.cards[k]?.gold ?? null })));
+export const scryGold = (g, e) => scryKept(g, e).reduce((n, c) => n + (c.gold || 0), 0);
+
+export function scryDungeonPanel(g, e) {
+  const kept = scryKept(g, e);
+  const gold = kept.filter((c) => c.gold != null);
+  const items = kept.filter((c) => c.gold == null);
+  const total = scryGold(g, e);
+  const after = e.gold_before != null ? e.gold_before + total : g.me_().gold;
+  const before = after - total;
+  return new Promise((resolve) => {
+    let goldEls = [];
+    const ov = openOverlay('scry-result', { onScrim: (o) => o.close(), testid: 'scry-dungeon-result' });
+    const card = (k) => h('button', { class: 'sd-card', 'data-testid': `sd-card-${k}`, onclick: (ev) => { ev.stopPropagation(); expandCard(g, k); } },
+      h('img', { src: art(k), alt: g.cards[k]?.display || k }));
+    const goldRow = h('div', { class: 'sd-row sd-gold', 'data-testid': 'sd-gold' }, gold.map((c) => {
+      const el = h('div', { class: 'sd-cell' }, card(c.card), logValueChip({ kind: 'gold', value: c.gold }));
+      goldEls.push(el.querySelector('img')); return el;
+    }));
+    const close = ov.close.bind(ov);
+    ov.close = (...args) => {
+      const from = goldEls.map((img) => img.getBoundingClientRect()); const dock = document.querySelector('[data-testid=my-gold]');
+      close(...args);
+      g.sfx('coin');
+      Promise.all(from.map((r, i) => fly(art(gold[i].card), r, dock, { w: 22, hgt: 32 }))).then(() => {
+        g.landPanel();
+        const chip = document.querySelector('[data-testid=my-gold]');
+        if (!chip || !total) return;
+        chip.classList.add('sd-pulse');
+        setTimeout(() => chip.classList.remove('sd-pulse'), 1300);
+      });
+      resolve();
+    };
+    const effect = total
+      ? [h('span', { class: 'sd-before' }, logValueChip({ kind: 'gold', value: before })), h('span', { class: 'sd-arrow' }, '→'), logValueChip({ kind: 'gold', value: after })]
+      : [logValueChip({ kind: 'gold', value: 0 })];
+    appendNodes(ov.el, h('div', { class: 'dungeon-result-panel sd-panel', 'data-testid': 'sd-panel', onclick: (ev) => ev.stopPropagation() },
+      h('div', { class: 'sd-head' }, h('img', { class: 'sd-spell', src: art('Spell_Scry_Dungeon'), alt: '' }), h('div', { class: 'ov-title' }, 'Scry Dungeon')),
+      gold.length ? goldRow : null,
+      h('div', { class: 'dungeon-result-line sd-effect', 'data-testid': 'sd-effect' }, ...effect),
+      items.length ? h('div', { class: 'sd-divider' }) : null,
+      items.length ? h('div', { class: 'sd-row sd-items', 'data-testid': 'sd-items' }, items.map((c) => h('div', { class: 'sd-cell' }, card(c.card)))) : null,
+      h('div', { class: 'actions' }, h('button', { class: 'act', 'data-testid': 'sd-continue', onclick: () => ov.close() }, 'Continue'))));
+  });
+}
+
 export function renderDungeonResult(ov, was) {
   const kept = was.drawn_cards.filter((c) => c.type === 'Treasure');
   const cardGold = kept.reduce((s, c) => s + (c.gold || 0), 0);

@@ -451,7 +451,9 @@ def structured_banner_data(e):
         return data('entered the dungeon', [{'label': f"kept {dungeon_label(c)}", 'card': dungeon_key(c)} for c in kept[:2]])
     if a == 'scry_dungeon':
         kept = e.get('kept', [])
-        return data('scried the dungeon', [{'label': dungeon_label(c), 'card': dungeon_key(c)} for c in kept[:2]])
+        gold = sum(c.get('gold', 0) for c in kept if c.get('subtype') == 'Gold')
+        items = [{'label': dungeon_label(c), 'card': dungeon_key(c)} for c in kept if c.get('subtype') != 'Gold']
+        return data('scried the dungeon', items + ([{'label': f'{gold} Gold', 'gold': gold}] if gold else []))
     if a and a.startswith('scry_'):
         deck = a[5:].title()
         return data('scried', [{'label': deck, 'deck': a[5:]}] + ([card(CD.display(e['took']), e['took'])] if e.get('took') else []))
@@ -575,6 +577,9 @@ def public_log(s, viewer):
             item['text'] = re.sub(rf'\s+T{item["tier"]}(?=\s|$)', '', item['text'], count=1)
         if a == 'gather':
             item['gather'] = gather_banner_data(e)
+        if a == 'scry_dungeon':
+            item['kept'] = [dict(card=dungeon_key(c), gold=c.get('gold') if c.get('subtype') == 'Gold' else None) for c in e.get('kept', [])]
+            if 'gold_before' in e: item['gold_before'] = e['gold_before']
         values = chronicle_values(e)
         if values:
             item['values'] = values
@@ -1082,7 +1087,9 @@ def _effect_auto(s, n, k):
     """Effects with no choice; returns True when handled."""
     kind = _effect_kind(k)
     if kind == 'auto':
-        if k == 'Spell_Scry_Dungeon': A.scry_dungeon(s, n)
+        if k == 'Spell_Scry_Dungeon':
+            g0 = P(s, n).get('gold', 0); A.scry_dungeon(s, n)
+            s['meta']['log'][-1]['gold_before'] = g0     # for the result panel's 'before -> after'; adds no log entry
         else: SE.energy_pulse(s, n)
         return True
     if kind == 'haste':
