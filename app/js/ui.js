@@ -3,6 +3,7 @@ import { versionLabel } from './version.js';
 import * as Store from './store.js';
 import { achievementTile, achievementBadge, achievementTitle, achievementFromText, SPELL_SCROLL_ICON } from './achievements.js';
 import * as GA from './gather-anim.js';
+import { deckTile } from './board.js';
 
 const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage', master: 'Grand Sorcerer' };
 
@@ -1105,6 +1106,21 @@ export function buildFlow(g, towerKey = null, { group = null, groupIndex = 0 } =
     },
   });
   ov.el.classList.add('build-expand');
+}
+
+// A draw deck enlarged: its tile over a stack of card edges that thins as the deck runs down, and the count.
+export function deckView(g, slot) {
+  const n = g.v.board[slot] ?? 0;
+  const ov = openOverlay('deck-view', { onScrim: (o) => o.close(), testid: 'deck-view' });
+  const stack = h('div', { class: `dv-stack ${n ? '' : 'empty'}`, 'data-testid': 'deck-view-stack' });
+  for (let i = Math.min(6, Math.ceil(n / 6)); i >= 1; i--) appendNodes(stack, h('div', { class: 'dv-edge', style: { transform: `translate(${i * 3}px, ${i * 3}px)` } }));
+  appendNodes(stack, deckTile(slot, n));
+  stack.lastChild.classList.add('dv-art');
+  if (!n) appendNodes(stack, h('div', { class: 'dv-empty' }));
+  appendNodes(ov.el, closeBtn(() => ov.close(), 'deck-view-close'), stack,
+    h('div', { class: 'dv-count', 'data-testid': 'deck-view-count' },
+      h('span', { class: 'n', 'data-testid': 'deck-view-n' }, String(n)), h('span', { class: 'l' }, n === 1 ? 'card' : 'cards')));
+  return ov;
 }
 
 export function divinationFlow(g) {

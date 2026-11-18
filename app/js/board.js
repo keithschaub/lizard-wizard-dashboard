@@ -11,6 +11,14 @@ export const SLOTS = {
   dungeon_deck: [40, 900],
 };
 const DECKS = { tower_deck: ['Towers', ''], wiz_deck: ['Wizards', ''], fam_deck: ['Familiars', ''], spell_deck: ['Spells', 'spells'], dungeon_deck: ['Dungeon', 'dungeon'] };
+export const DECK_SLOTS = Object.keys(DECKS);
+
+/** A draw deck's face-down tile (board slot and enlarged deck view). */
+export function deckTile(name, n, attrs = {}) {
+  const [label, cls] = DECKS[name];
+  return h('div', { class: `deck ${cls} ${n ? '' : 'empty'}`, ...attrs },
+    h('div', { class: 'mono' }, 'LW'), h('div', { class: 'dname' }, label), h('div', { class: 'dcount' }, `${n} cards`));
+}
 const SCHOOLS = Object.keys(SCHOOL_REAGENT);
 
 function achSchool(t) {
@@ -55,9 +63,7 @@ export class Board {
         const first = this.keys[name] === undefined;
         this.keys[name] = sig; holder.innerHTML = '';
         if (Array.isArray(k)) {
-          const [label, cls] = DECKS[name];
-          holder.appendChild(h('div', { class: `deck ${cls} ${k[1] ? '' : 'empty'}`, 'data-tap': 'deck', 'data-slot': name, 'data-testid': `slot-${name}`, style: { left: 0, top: 0 } },
-            h('div', { class: 'mono' }, 'LW'), h('div', { class: 'dname' }, label), h('div', { class: 'dcount' }, `${k[1]} cards`)));
+          holder.appendChild(deckTile(name, k[1], { 'data-tap': 'deck', 'data-slot': name, 'data-testid': `slot-${name}`, style: { left: 0, top: 0 } }));
         } else if (k) {
           holder.appendChild(h('div', { class: `bcard ${first ? '' : 'deal'}`, 'data-tap': 'card', 'data-key': k, 'data-slot': name, 'data-testid': `slot-${name}`, style: { left: 0, top: 0 } },
             h('img', { src: art(k), alt: k, draggable: 'false' })));

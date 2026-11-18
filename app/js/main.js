@@ -326,7 +326,7 @@ class Game {
     }
     if (el.dataset.tap === 'deck') {
       if (slot === 'dungeon_deck' && L.divination) { UI.divinationFlow(this); return; }
-      UI.openMats(this); return;
+      UI.deckView(this, slot); return;
     }
     if (slot === 'tower_face' && L.build) {
       const group = [v.board.tower_face].filter(Boolean);
