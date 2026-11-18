@@ -5,7 +5,7 @@ import { achievementTile, achievementBadge, achievementTitle, achievementFromTex
 import { REAGENT_ICON_POS } from './reagent-icon-positions.js';
 import * as GA from './gather-anim.js';
 import { deckTile } from './board.js';
-import * as Inv from './inventory.js';
+import * as Peek from './peek.js';
 
 const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage', master: 'Grand Sorcerer' };
 
@@ -55,7 +55,7 @@ export function closeAll() { document.querySelectorAll('#overlays .overlay').for
 
 /** Remove swipe/enlarge card overlays (not other flows). */
 export function closeExpandOverlays() {
-  if (Inv.isOpen()) return;   // an AI step waits for the inventory to close and clears them then
+  if (Peek.isOpen()) return;   // an AI step waits for the inventory to close and clears them then
   document.querySelectorAll('[data-testid="expanded"]').forEach((el) => el.remove());
 }
 
@@ -473,11 +473,93 @@ export function openMats(g) {
 
 /** The players sheet for the eye button: opponents first, no other player's gold, shield state, nothing to tap but close. */
 export function openInventory(g, close) {
-  const root = document.getElementById('inventory-layer');
+  const root = document.getElementById('peek-layer');
   const ov = openOverlay('mats inventory', { onScrim: () => close(), testid: 'inventory', root });
   const draw = () => matSheet(g, ov.el, closeBtn(() => close(), 'inventory-close'), { inventory: true });
   draw();
   return { el: ov.el, close: ov.close, refresh: () => { const top = ov.el.scrollTop; draw(); ov.el.scrollTop = top; } };
+}
+
+// ------------------------------------------------------------------ turn steps card (the ? button)
+// Steps in rules order (engine/LizardWizard-Rulebook-na.txt "Actions", "Casting Spells", "Storage limit",
+// "Achievements"); which actions are open and their cheapest costs come from the engine's legal list.
+const OVERLAY_ACTION = { gather: 'gather', 'summon-use': 'summon', 'summon-gather-flow': 'summon', dungeon: 'summon', 'new-research': 'summon',
+  arena: 'recruit', convert: 'convert', convert1: 'convert' };
+
+function turnStage(g) {
+  const v = g.v;
+  if (v.game_over) return { step: 0 };
+  const arena = [...document.querySelectorAll('#overlays .overlay.arena:not(.out)')].pop();
+  if (arena || v.auction) return (arena ? arena.dataset.starter : v.auction.starter) === g.me ? { step: 1, action: 'recruit' } : { step: 0 };
+  if (v.next !== g.me) return { step: 0 };
+  for (const ov of [...document.querySelectorAll('#overlays .overlay:not(.out)')].reverse()) {
+    const id = ov.dataset.testid; const d = ov.dataset;
+    if (d.turnStep === 'putback') return { step: 3, over: Number(d.stepOver) || 0 };
+    if (d.turnStep === 'cast') return { step: 2, castable: (d.stepCastable || '').split(',').filter(Boolean), multi: d.stepMulti === '1' };
+    if (id === 'effect' || id === 'rise-use' || id === 'rise-gather-flow') return { step: 2 };
+    const action = OVERLAY_ACTION[id]
+      || (ov.querySelector('[data-testid=research-only], [data-testid=research-cast]') ? 'research' : null)
+      || (ov.querySelector('[data-testid^=build-]') ? 'build' : null);
+    if (action) return { step: 1, action };
+  }
+  return { step: 1, again: !!(v.bonus || v.again) };
+}
+
+export function openTurnHelper(g, close) {
+  const root = document.getElementById('peek-layer');
+  const ov = openOverlay('helper', { onScrim: () => close(), testid: 'turn-helper', root });
+  const draw = () => replaceChildren(ov.el, closeBtn(() => close(), 'helper-close'), turnCard(g, turnStage(g)));
+  draw();
+  return { el: ov.el, close: ov.close, refresh: () => { const top = ov.el.scrollTop; draw(); ov.el.scrollTop = top; } };
+}
+
+function turnCard(g, stage) {
+  const v = g.v; const L = v.legal || {}; const me = g.me_();
+  const icon = (src, cls = 'th-ic') => h('img', { class: cls, src, alt: '' });
+  const scroll = () => h('span', { class: 'th-ic', html: SPELL_SCROLL_ICON });
+  const handCard = () => (me.hand[0] ? icon(art(me.hand[0]), 'th-ic card') : icon('art/icons/mana-orb.webp'));
+  const row = (ic, label, on, cost = null, { pick = false, testid = null } = {}) => h('div', { class: `th-row ${on ? '' : 'off'} ${pick ? 'pick' : ''}`, 'data-testid': testid, 'data-off': on ? null : '' },
+    ic, h('span', { class: 'th-name' }, label), cost ? h('span', { class: 'th-cost' }, cost) : h('span'));
+  const minOf = (xs) => (xs.length ? Math.min(...xs) : null);
+  const tower = g.cards[v.board?.tower_face]?.cost;
+  const famCost = minOf(Object.values(L.summon || {}).map((d) => d.cost)) ?? minOf((v.board?.fam_face || []).filter(Boolean).map((k) => g.cards[k]?.cost?.mana).filter((x) => x != null));
+  const resCost = minOf(Object.values(L.research || {}).map((d) => d.mana));
+  const act = stage.step === 1 ? stage.action : null;
+  const actions = [
+    ['gather', handCard(), 'Gather reagents', Object.keys(L.gather || {}).length > 0, null],
+    ['convert', icon('art/icons/mana-orb.webp'), 'Convert reagents to mana', Object.keys(L.convert || {}).length > 0 || !!L.convert1, null],
+    ['recruit', icon('art/icons/achievement-wizard.webp'), 'Recruit a wizard', (L.recruit || []).length > 0, h('span', {}, 'duel')],
+    ['research', scroll(), 'Research a spell', Object.keys(L.research || {}).length > 0, resCost != null ? logValueChip({ kind: 'mana', value: resCost }) : null],
+    ['build', icon('art/icons/achievement-tower.webp'), 'Build a tower', !!L.build,
+      tower ? [tower.gold != null ? logValueChip({ kind: 'gold', value: tower.gold }) : null, tower.reagent ? [h('span', {}, 'or'), logReagentChip(tower.reagent, { count: tower.reagent_count, showCount: true })] : null] : null],
+    ['summon', icon('art/icons/achievement-familiar.webp'), 'Summon a familiar', Object.keys(L.summon || {}).length > 0, famCost != null ? logValueChip({ kind: 'mana', value: famCost }) : null],
+  ].map(([k, ic, label, on, cost]) => row(ic, label, act ? k === act : on, cost, { pick: k === act, testid: `th-act-${k}` }));
+  const step = (n, title, kids) => h('div', { class: `th-step ${stage.step === n ? 'cur' : ''}`, 'data-testid': `th-step-${n}` }, h('span', { class: 'th-num' }, String(n)),
+    h('div', {}, h('div', { class: 'th-t' }, title, stage.step === n ? h('span', { class: 'now' }, 'now') : null), kids));
+  const cost = (k) => {
+    const c = g.cards[k]?.cost || {};
+    if (c.variable) return [logReagentChip('Eye_of_Newt'), h('span', {}, 'X')];
+    return Object.entries(c.reagents || {}).map(([r, n]) => logReagentChip(r, { count: n, showCount: true }));
+  };
+  const castRows = stage.step === 2 && stage.castable
+    ? [h('div', { class: 'th-sub' }, stage.multi ? 'Familiar gather: any spells' : 'After a gather: 1 spell'),
+      ...me.spells.filter((s) => s.key && !s.cast).map((s) => {
+        const info = g.cards[s.key] || {};
+        return row(icon(art(s.key), 'th-ic card'), [info.name || nice(s.key), info.school ? h('img', { class: 'school', src: schoolIcon(info.school), alt: info.school }) : null],
+          stage.castable.includes(s.key), cost(s.key), { testid: `th-spell-${s.key}` });
+      })]
+    : [row(handCard(), 'After a gather', true, h('span', {}, '1 spell')),
+      row(scroll(), 'After research', true, h('span', {}, 'that spell')),
+      row(icon('art/icons/achievement-familiar.webp'), 'Familiar gather', true, h('span', {}, 'any spells'))];
+  const stored = `Storage ${me.tok.length}/${me.cap}`;
+  return h('div', { class: 'th-card', 'data-testid': 'turn-card', 'data-step': String(stage.step) },
+    h('div', { class: 'th-h' }, 'Your turn'),
+    stage.step === 0 && !v.game_over ? h('div', { class: 'th-who', 'data-testid': 'th-who' }, `${v.next} is playing`) : null,
+    step(1, stage.again ? 'One more action' : 'Pick one action', h('div', { class: 'th-rows' }, actions)),
+    step(2, 'Cast spells', h('div', { class: 'th-rows' }, castRows)),
+    step(3, 'Put back over storage', h('div', { class: 'th-sub' }, stage.step === 3 ? `${stored}, put back ${stage.over}` : stored)),
+    step(4, 'Claim achievements', h('div', { class: 'th-sub' }, 'At turn end, 10 VP each')),
+    h('div', { class: `th-foot ${stage.again ? 'cur' : ''}` }, icon('art/icons/achievement-wizard.webp', ''), stage.again ? 'Duel lost: take one more action' : 'Lose a duel you started: act again'));
 }
 
 // The inventory reads: "10 VP" for a pair and "Gather 5" for a gather with two wizard bonuses (no plus signs).
@@ -818,8 +900,16 @@ export async function openLog(g) {
 }
 
 // ------------------------------------------------------------------ shared pickers
+// The turn steps card reads which step an overlay is on from these marks (see turnStage).
+function markStep(host, step, data = {}) {
+  const ov = host.closest('.overlay'); if (!ov) return;
+  ov.dataset.turnStep = step;
+  for (const [k, v] of Object.entries(data)) ov.dataset[`step${k[0].toUpperCase()}${k.slice(1)}`] = v;
+}
+
 function putbackPicker(g, host, pool, over) {
   const [p, done] = wait();
+  markStep(host, 'putback', { over });
   const sel = new Set();
   const counter = h('span', { class: 'pill', 'data-testid': 'putback-count' }, `0 / ${over}`);
   const grid = h('div', { class: 'chips', 'data-testid': 'putback-pool' });
@@ -840,6 +930,7 @@ function putbackPicker(g, host, pool, over) {
 
 function castPicker(g, host, castable, { multi = false, title = 'Cast a spell with this gather?' } = {}) {
   const [p, done] = wait();
+  markStep(host, 'cast', { castable: castable.map((c) => c.key).join(','), multi: multi ? '1' : '' });
   const chosen = new Set();
   appendNodes(host, h('div', { class: 'phase-title' }, title));
   const row = h('div', { class: 'cast-row' });
@@ -862,6 +953,7 @@ function castPicker(g, host, castable, { multi = false, title = 'Cast a spell wi
 
 export function xTargetPicker(g, host, maxX, title = 'Invisibility Potion') {
   const [p, done] = wait();
+  markStep(host, 'cast', { castable: 'Spell_Invisibility_Potion', multi: '' });
   let x = 1;
   const val = h('span', { class: 'val' }, '1');
   const opp = g.v.players.filter((q) => !q.you);
@@ -937,7 +1029,7 @@ export async function gatherFlow(g, cid) {
     renderKeep(); maybeDone();
   };
   const maybeDone = () => {
-    if (sel.size === need(side) && (!L.bloom || bloom)) { busy = true; setTimeout(() => Inv.idle().then(proceed).catch((e) => { g.toast(String(e)); ov.close(); }), 260); }
+    if (sel.size === need(side) && (!L.bloom || bloom)) { busy = true; setTimeout(() => Peek.idle().then(proceed).catch((e) => { g.toast(String(e)); ov.close(); }), 260); }
   };
   const proceed = async () => {
     const keep = [...sel].sort((a, b) => a - b).map((i) => icons(side)[i]);
@@ -1726,6 +1818,7 @@ function seatPos(i, n) {
 export async function arena(g, { mode, wizard = null }) {
   const me = g.me;
   const ov = openOverlay('arena', { testid: 'arena' });
+  ov.el.dataset.starter = mode === 'open' ? me : (g.v.auction?.starter || '');
   const order0 = g.v.seat_order; const k = order0.indexOf(me);
   const ring = [...order0.slice(k), ...order0.slice(0, k)];
   const card = wizard || g.v.auction.card;
@@ -1758,7 +1851,7 @@ export async function arena(g, { mode, wizard = null }) {
     if (leader) replaceChildren(high, 'High bid ', logValueChip({ kind: 'mana', value: hi }), ` · ${leader === me ? 'You' : leader}`);
     else high.textContent = 'No bids yet';
     b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
-    await Inv.pausableSleep(fast ? 120 : 650);
+    await Peek.pausableSleep(fast ? 120 : 650);
   };
   const playTail = async (tail, fast = false) => { for (; shown < tail.length; shown++) await showBid(tail[shown][0], tail[shown][1], fast || g.skip); };
 
@@ -1812,7 +1905,7 @@ export async function arena(g, { mode, wizard = null }) {
       msg.setAttribute('data-testid', 'arena-winner');
       g.sfx(w === me ? 'win' : 'coin');
     } else msg.textContent = 'Nobody bid';
-    await Inv.pausableSleep(g.skip ? 300 : 1500);
+    await Peek.pausableSleep(g.skip ? 300 : 1500);
   };
 
   try {
@@ -1836,7 +1929,7 @@ export async function arena(g, { mode, wizard = null }) {
       if (sig !== ident || !extends_) { await finish(); break; }
       lastTail = a.tail.map((x) => [...x]);
       await playTail(a.tail, mode === 'respond' && shown === 0 && a.tail.length > 4);
-      if (a.waiting !== me) { await Inv.pausableSleep(300); continue; }
+      if (a.waiting !== me) { await Peek.pausableSleep(300); continue; }
       Object.values(seats).forEach((s) => s.classList.remove('active'));
       seats[me].classList.add('active');
       const c = await controls(a.high + 1, g.me_().mana, false, a.who);
@@ -2031,9 +2124,9 @@ export async function banner(g, e, i = 0, n = 1, turnOf = null) {
   const flights = live ? bannerGatherFlights(el, e) : null;
   let landed = !flights; flights?.done.then(() => { landed = true; });
   let shown = 0;
-  while ((shown < dur || !landed || (flights && GA.testClock.hold) || Inv.isOpen()) && !g.skip && !g.skipMove) {
+  while ((shown < dur || !landed || (flights && GA.testClock.hold) || Peek.isOpen()) && !g.skip && !g.skipMove) {
     const t0 = Date.now(); await sleep(50);
-    if (!Inv.isOpen()) shown += Date.now() - t0;
+    if (!Peek.isOpen()) shown += Date.now() - t0;
   }
   if (flights) { flights.finish(); await flights.done; }
   g.skipMove = false;
