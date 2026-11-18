@@ -1007,3 +1007,16 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 }
 .banner .bsub { margin-top: 4px; font-size: 13px; }
 .banner .bsub .log-reagent-row { display: inline-flex; }
+
+/* Gather animation (gather-anim.js): reagents fly from the price board columns to their chips. */
+#flight-layer { position: fixed; inset: 0; pointer-events: none; z-index: 80; }
+.gflight { position: fixed; left: 0; top: 0; display: grid; place-items: center; border-radius: 50%; will-change: transform;
+  mix-blend-mode: screen; background: radial-gradient(circle, rgba(255, 226, 150, .8) 0%, rgba(255, 200, 100, .5) 28%, rgba(240, 170, 70, .2) 50%, rgba(240, 170, 70, 0) 70%); }
+.gflight img { object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5)); }
+.gtrail { position: fixed; left: 0; top: 0; border-radius: 50%; background: rgba(255, 226, 150, .85); filter: blur(1.5px); box-shadow: 0 0 8px rgba(255, 205, 110, .7); will-change: transform, opacity; }
+.gather-catcher { position: fixed; inset: 0; z-index: 79; background: transparent; }
+.tokchip.reserved, .bgather-chip.reserved, .log-reagent-chip.reserved, .bgather-after.reserved { visibility: hidden; }
+.land-pulse { animation: landPulse .3s ease-out; }
+@keyframes landPulse { 50% { transform: scale(1.14); box-shadow: 0 0 0 2px var(--gold-hi), 0 0 12px 2px rgba(255, 211, 107, .7); } }
+.tokchip.spend { animation: tokSpend .42s ease-out; }
+@keyframes tokSpend { 50% { transform: scale(.88); opacity: .6; } }

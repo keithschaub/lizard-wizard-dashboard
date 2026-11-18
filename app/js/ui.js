@@ -2,6 +2,7 @@ import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenC
 import { versionLabel } from './version.js';
 import * as Store from './store.js';
 import { achievementTile, achievementBadge, achievementTitle, achievementFromText, SPELL_SCROLL_ICON } from './achievements.js';
+import * as GA from './gather-anim.js';
 
 const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage', master: 'Grand Sorcerer' };
 
@@ -1810,26 +1811,53 @@ export const AI_MOVE_MS = 4400;
 export const AI_CAST_MS = 5000;
 export const aiMoveMs = (e) => (e.cast ? AI_CAST_MS : AI_MOVE_MS);
 
-function gatherBanner(g, e) {
+// Reagent chips in flight order. `live`: the chips start hidden at 0 and fill in as each reagent lands.
+function gatherOrder(reagents) {
+  const grouped = new Map();
+  for (const r of reagents) grouped.set(r, (grouped.get(r) || 0) + 1);
+  return [...grouped];
+}
+function setGatherCount(chip, n) {
+  chip.classList.toggle('reserved', !n);
+  const c = chip.querySelector('.bgather-count, .log-reagent-count');
+  if (c) { c.textContent = n >= 2 ? `×${n}` : ''; c.hidden = n < 2; }
+}
+
+function gatherBanner(g, e, live = false) {
   const data = e.gather;
   if (!data) return null;
-  const chip = ({ reagent: r, count }) => h('span', {
-    class: 'bgather-chip',
-    'data-testid': 'ai-gather-reagent',
-  }, h('img', { src: reagentIcon(r), alt: nice(r) }),
-  count >= 2 ? h('span', { class: 'bgather-count' }, `×${count}`) : null);
+  const chip = ([r, count]) => {
+    const el = h('span', { class: 'bgather-chip', 'data-testid': 'ai-gather-reagent', 'data-reagent': r },
+      h('img', { src: reagentIcon(r), alt: nice(r) }), h('span', { class: 'bgather-count' }));
+    setGatherCount(el, live ? 0 : count);
+    return el;
+  };
   const track = ({ reagent: r, count }) => h('span', { class: 'bgather-track', 'data-testid': 'ai-gather-track' },
     h('img', { src: reagentIcon(r), alt: nice(r) }), h('span', { class: 'bgather-count' }, `▲+${count}`));
-  const reagents = groupReagents(data.reagents || [], data.bonus || []);
+  const reagents = gatherOrder(e.gathered || [...(data.reagents || []), ...(data.bonus || [])]);
   const tracks = groupReagents(data.tracks || []);
   return h('div', { 'data-testid': 'ai-banner-text' },
     h('div', { class: 'bgather', 'data-testid': 'ai-gather-structured' },
       h('div', { class: 'bgather-headline' }, `${e.who || 'AI'} gathered`),
       h('div', { class: 'bgather-chips' },
         ...reagents.map(chip)),
-      h('div', { class: 'bgather-divider' }),
-      h('div', { class: 'bgather-tracks-label' }, 'Tracks up:'),
-      h('div', { class: 'bgather-tracks' }, ...tracks.map(track))));
+      h('div', { class: `bgather-after ${live ? 'reserved' : ''}`, 'data-testid': 'ai-gather-after' },
+        h('div', { class: 'bgather-divider' }),
+        h('div', { class: 'bgather-tracks-label' }, 'Tracks up:'),
+        h('div', { class: 'bgather-tracks' }, ...tracks.map(track)))));
+}
+
+// An AI gather on screen: its reagents fly from the price board into the banner chips. Returns { done, finish }.
+function bannerGatherFlights(el, e) {
+  const chips = (r) => el.querySelector(`[data-reagent="${r}"]`);
+  const seen = new Map();
+  const land = (r) => { seen.set(r, (seen.get(r) || 0) + 1); const c = chips(r); setGatherCount(c, seen.get(r)); GA.pulse(c); };
+  const run = GA.flyReagents(e.gathered, { target: (r) => chips(r)?.querySelector('img'), onLand: land });
+  const reveal = () => {
+    el.querySelectorAll('[data-reagent]').forEach((c) => { const want = e.gathered.filter((x) => x === c.dataset.reagent).length; if ((seen.get(c.dataset.reagent) || 0) !== want) { seen.set(c.dataset.reagent, want); setGatherCount(c, want); } });
+    el.querySelector('[data-testid=ai-gather-after]')?.classList.remove('reserved');
+  };
+  return { done: run.done.then(() => reveal()), finish: () => run.finish() };
 }
 
 function sellBanner(g, e) {
@@ -1895,10 +1923,19 @@ function plainBanner(g, e) {
         ...values.map(logValueChip))));
 }
 
-function bannerSubLines(g, e) {
+function bannerSubLines(g, e, live = false) {
   const lines = [];
   if ((e.act === 'summon' || e.act === 'rise') && e.use === 'gather' && e.reagents?.length) {
-    lines.push(h('div', { class: 'bstructured-row bsub', 'data-testid': 'ai-sub-gather' }, h('span', {}, 'gathered'), logReagentRow(e.reagents)));
+    const row = logReagentRow(e.reagents);
+    if (live && e.gathered?.length) {
+      row.querySelectorAll('.log-reagent-chip').forEach((c, i) => {
+        const r = gatherOrder(e.gathered)[i]?.[0]; if (!r) return;
+        c.dataset.reagent = r;
+        if (!c.querySelector('.log-reagent-count')) c.appendChild(h('span', { class: 'log-reagent-count' }));
+        setGatherCount(c, 0);
+      });
+    }
+    lines.push(h('div', { class: 'bstructured-row bsub', 'data-testid': 'ai-sub-gather' }, h('span', {}, 'gathered'), row));
   }
   for (const c of e._casts || []) {
     const k = c.cast || String(c.spell || '').replace(/\.jpg$/i, '');
@@ -1932,6 +1969,7 @@ export async function banner(g, e, i = 0, n = 1, turnOf = null) {
   const extra = effectOf && g.cards[effectOf] ? h('div', { style: { fontSize: '12.5px', color: '#d8ccff', marginTop: '3px' } }, `“${g.cards[effectOf].effect}”`) : null;
   const dur = castKeys.length ? AI_CAST_MS : aiMoveMs(e);
   const who = turnOf || e.who || 'AI';
+  const live = !!e.gathered?.length && !GA.reducedMotion();
   let el = layer.querySelector('.banner:not(.out)');
   if (!el) { el = h('div', { class: 'banner', 'data-testid': 'ai-banner' }); replaceChildren(layer, el); }
   else { el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap'); }
@@ -1940,15 +1978,18 @@ export async function banner(g, e, i = 0, n = 1, turnOf = null) {
     avatar(who === 'AI' ? '?' : who),
     h('div', { class: 'btext' },
       h('div', { class: 'bhead' }, `${who}'s turn${n > 1 ? ` · move ${i + 1} of ${n}` : ''}`),
-      achievementBanner(g, e) || gatherBanner(g, e) || sellBanner(g, e) || structuredBanner(g, e) || plainBanner(g, e) || h('div', { 'data-testid': 'ai-banner-text' }, e.text),
-      ...bannerSubLines(g, e), extra,
+      achievementBanner(g, e) || gatherBanner(g, e, live) || sellBanner(g, e) || structuredBanner(g, e) || plainBanner(g, e) || h('div', { 'data-testid': 'ai-banner-text' }, e.text),
+      ...bannerSubLines(g, e, live), extra,
       h('div', { class: 'bfoot' }, h('span', { class: 'skiphint' }, i + 1 < n ? 'tap anywhere: next move' : 'tap anywhere to continue'),
         h('button', { class: 'bskip', 'data-testid': 'ai-skip', onclick: () => { g.skip = true; } }, 'Skip ⏭'))),
     imgs.length ? h('div', { class: 'bcards' }, imgs.map((k) => h('img', { src: art(k), alt: k }))) : null,
     h('div', { class: 'bprog', style: { animationDuration: `${dur}ms` } }));
   g.skipMove = false;
+  const flights = live ? bannerGatherFlights(el, e) : null;
+  let landed = !flights; flights?.done.then(() => { landed = true; });
   const t0 = Date.now();
-  while (Date.now() - t0 < dur && !g.skip && !g.skipMove) await sleep(50);
+  while ((Date.now() - t0 < dur || !landed || (flights && GA.testClock.hold)) && !g.skip && !g.skipMove) await sleep(50);
+  if (flights) { flights.finish(); await flights.done; }
   g.skipMove = false;
 }
 

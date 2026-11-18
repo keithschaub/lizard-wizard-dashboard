@@ -4,6 +4,7 @@ import { h, art, reagentIcon, nice, counts, sleep } from './dom.js';
 import * as UI from './ui.js';
 import * as Audio from './audio.js';
 import * as Store from './store.js';
+import * as GA from './gather-anim.js';
 import { versionLabel } from './version.js';
 
 const T_START = performance.now();
@@ -13,7 +14,7 @@ const MUTE_OFF = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill=
 
 class Game {
   constructor() {
-    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.moveQueue = []; this.panelQueue = []; this.panelTurn = null; this.dockHold = null; this.settling = false; this.busy = false;
+    this.me = ME; this.v = null; this.cards = {}; this.skip = false; this.moveQueue = []; this.panelQueue = []; this.panelTurn = null; this.dockHold = null; this.tokHold = null; this.gatherQueue = []; this.settling = false; this.busy = false;
     this.engine = null;
     this.board = new Board(document.getElementById('stage'), document.getElementById('board'), (el) => this.onBoardTap(el));
     this.dock = document.getElementById('dock');
@@ -26,7 +27,7 @@ class Game {
     window.addEventListener('pointerdown', () => { Audio.unlock(); if (this.aiRunning) this.skipMove = true; }, { capture: true });
     const verEl = document.getElementById('loader-version');
     if (verEl) verEl.textContent = versionLabel();
-    window.lwDebug = { seedNextGame: (seeds) => { this.nextGameSeeds = seeds; }, view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning, version: versionLabel, _g: this };
+    window.lwDebug = { seedNextGame: (seeds) => { this.nextGameSeeds = seeds; }, view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning, version: versionLabel, gatherClock: GA.testClock, _g: this };
     window.ui = UI;
   }
 
@@ -145,6 +146,13 @@ class Game {
       this.dockHold = this.dockHold ? { ...this.dockHold, n: this.dockHold.n + panels.length }
         : { gold: before?.gold ?? 0, vp: before?.vp ?? 0, n: panels.length };
     }
+    const gathered = (r.entries || []).filter((e) => e.who === this.me && e.gathered?.length).flatMap((e) => e.gathered);
+    if (gathered.length && before) {
+      // Until each reagent lands the dock keeps the tokens, storage, mana and price tracks from before the gather.
+      this.tokHold ||= { counts: counts(before.tok), n: before.tok.length, mana: before.mana, tracks: { ...this.v.board.tracks }, turn: turnOf };
+      for (const x of gathered) if (!this.tokHold.counts.has(x)) this.tokHold.counts.set(x, 0);
+      this.gatherQueue.push(gathered);
+    }
     if (r.view) this.setView(r.view);
     UI.announceSpellEffectResults(this, r.entries);
     this.queueMoves(r.entries, turnOf);
@@ -176,13 +184,66 @@ class Game {
 
   afterAction() { return this.settle(); }
 
+  // The player's gathered reagents fly to their dock chips one by one; a tap lands them all at once.
+  async playGather(reagents) {
+    const hold = this.tokHold;
+    if (!hold) return;
+    const chip = (x) => this.dock.querySelector(`[data-testid="token-${x}"]`);
+    const land = (x, quiet = false) => {
+      hold.counts.set(x, (hold.counts.get(x) || 0) + 1); hold.n += 1;
+      this.paintTokChip(x);
+      if (!quiet) GA.pulse(chip(x));
+    };
+    let rest = reagents.map((_, i) => i);
+    if (!this.skip && !GA.reducedMotion()) {
+      const run = GA.flyReagents(reagents, { target: (x) => chip(x)?.querySelector('img'), onLand: (x) => land(x) });
+      const catcher = h('div', { class: 'gather-catcher', 'data-testid': 'gather-catcher', onpointerdown: (e) => { e.preventDefault(); e.stopPropagation(); run.finish(); } });
+      document.body.appendChild(catcher);
+      rest = await run.done;
+      catcher.remove();
+      if (!rest.length) await sleep(GA.TAIL_MS);
+    }
+    if (rest.length) {
+      const changed = new Set(rest.map((i) => reagents[i]));
+      for (const i of rest) land(reagents[i], true);
+      changed.forEach((x) => GA.pulse(chip(x)));
+    }
+  }
+
+  paintTokChip(x) {
+    const el = this.dock.querySelector(`[data-testid="token-${x}"]`);
+    const n = this.tokHold?.counts.get(x) ?? 0;
+    if (el) {
+      el.classList.toggle('reserved', !n);
+      el.setAttribute('aria-label', `${n} ${nice(x)}`);
+      el.querySelector('.tokn').textContent = `×${n}`;
+    }
+    const store = this.dock.querySelector('[data-testid=my-storage]');
+    if (store && this.tokHold) { store.textContent = `${this.tokHold.n}/${this.me_().cap}`; store.classList.toggle('full', this.tokHold.n > this.me_().cap); }
+  }
+
+  // After the last landing: the real token counts (put-backs and cast costs leave now), mana, then the price tracks.
+  releaseTokHold() {
+    const hold = this.tokHold; if (!hold) return;
+    this.tokHold = null;
+    const now = counts(this.me_().tok);
+    this.renderDock(this.v); this.renderTop();
+    this.board.render(this.v, this.cards);
+    for (const [x, n] of hold.counts) {
+      if ((now.get(x) || 0) < n) {
+        const el = this.dock.querySelector(`[data-testid="token-${x}"]`);
+        if (el) { el.classList.add('spend'); setTimeout(() => el.classList.remove('spend'), 420); }
+      }
+    }
+  }
+
   setView(v, { fresh = false } = {}) {
     const prev = fresh ? null : this.v; this.v = v;
-    if (fresh) { this.panelQueue = []; this.panelTurn = null; this.dockHold = null; Store.clearPanel(); }
+    if (fresh) { this.panelQueue = []; this.panelTurn = null; this.dockHold = null; this.tokHold = null; this.gatherQueue = []; Store.clearPanel(); }
     if (v.next !== this.me) UI.closeExpandOverlays();
     const you = v.players?.find((p) => p.you);
     if (you) this.me = you.name;
-    this.board.render(v, this.cards);
+    this.board.render(this.tokHold ? { ...v, board: { ...v.board, tracks: this.tokHold.tracks } } : v, this.cards);
     this.renderDock(prev);
     this.renderTop();
   }
@@ -194,7 +255,7 @@ class Game {
     let txt; let you = false;
     if (v.game_over) txt = UI.ranking(v).text;
     else if (v.auction) txt = v.auction.waiting === this.me ? 'Your bid' : `Auction · ${v.auction.waiting || ''}`;
-    else if (this.panelTurn) { you = this.panelTurn === this.me; txt = you ? 'Your turn' : `${this.panelTurn}'s turn`; }
+    else if (this.panelTurn || this.tokHold) { const who = this.panelTurn || this.tokHold.turn; you = who === this.me; txt = you ? 'Your turn' : `${who}'s turn`; }
     else if (v.next === this.me) { txt = v.bonus || v.again ? 'Your turn · bonus action' : 'Your turn'; you = true; }
     else txt = `${v.next}'s turn`;
     t.textContent = txt; t.classList.toggle('you', you);
@@ -203,22 +264,23 @@ class Game {
   renderDock(prev) {
     const v = this.v; const p = this.me_(); const L = v.legal || {};
     const prevHand = prev?.players?.find((q) => q.name === this.me)?.hand ?? p.hand;
-    const tok = counts(p.tok);
-    const status = v.game_over ? `Game over · ${UI.ranking(v).text}` : this.panelTurn === this.me ? 'Your move' : (v.next === this.me && !v.auction ? (v.pending ? 'Finish your move' : 'Your move') : (this.aiRunning ? `${v.next} is playing…` : `${v.next}'s turn`));
+    const tok = this.tokHold ? this.tokHold.counts : counts(p.tok);
+    const stored = this.tokHold ? this.tokHold.n : p.tok.length;
+    const status = v.game_over ? `Game over · ${UI.ranking(v).text}` : (this.panelTurn || this.tokHold?.turn) === this.me ? 'Your move' : (v.next === this.me && !v.auction ? (v.pending ? 'Finish your move' : 'Your move') : (this.aiRunning ? `${v.next} is playing…` : `${v.next}'s turn`));
     this.dock.innerHTML = '';
     this.dock.dataset.mana = p.mana; this.dock.dataset.gold = p.gold; this.dock.dataset.tokens = p.tok.length; this.dock.dataset.vp = p.vp;
     this.dock.append(
       h('div', { class: 'dock-stats' },
-        h('span', { class: 'stat mana', 'data-testid': 'my-mana', title: 'Mana' }, h('span', { class: 'orb' }), p.mana),
+        h('span', { class: 'stat mana', 'data-testid': 'my-mana', title: 'Mana' }, h('span', { class: 'orb' }), this.tokHold ? this.tokHold.mana : p.mana),
         h('span', { class: 'stat gold', 'data-testid': 'my-gold', title: 'Gold' }, h('span', { class: 'orb' }), this.dockHold ? this.dockHold.gold : p.gold),
         h('span', { class: 'stat vp', 'data-testid': 'my-vp' }, `${this.dockHold ? this.dockHold.vp : p.vp} VP`),
-        h('span', { class: `stat store ${p.tok.length > p.cap ? 'full' : ''}`, 'data-testid': 'my-storage' }, `${p.tok.length}/${p.cap}`),
+        h('span', { class: `stat store ${stored > p.cap ? 'full' : ''}`, 'data-testid': 'my-storage' }, `${stored}/${p.cap}`),
         v.game_over ? h('button', { class: 'dock-btn', 'data-testid': 'dock-scores', onclick: () => { this.sfx('tap'); UI.gameOver(this); } }, 'Scores') : null,
         h('span', { class: `dock-status ${v.next === this.me && !v.game_over ? 'you' : ''}`, 'data-testid': 'dock-status' }, status)),
       h('div', { class: 'dock-main' },
         h('div', { class: 'tokens', 'data-testid': 'tokens' }, tok.size ? [...tok].map(([r, n]) => {
           const legal = !!(L.convert || {})[r];
-          const el = h('button', { class: `tokchip ${legal ? 'legal' : ''}`, 'data-testid': `token-${r}`, 'aria-label': `${n} ${nice(r)}` }, h('img', { src: reagentIcon(r), alt: '' }), `×${n}`);
+          const el = h('button', { class: `tokchip ${legal ? 'legal' : ''} ${n ? '' : 'reserved'}`, 'data-testid': `token-${r}`, 'aria-label': `${n} ${nice(r)}` }, h('img', { src: reagentIcon(r), alt: '' }), h('span', { class: 'tokn' }, `×${n}`));
           el.onclick = () => {
             this.sfx('tap');
             if (legal) UI.convertSheet(this, r);
@@ -304,6 +366,11 @@ class Game {
     this.settling = true;
     try {
       for (let guard = 0; guard < 200; guard++) {
+        if (this.gatherQueue.length) {
+          await this.playGather(this.gatherQueue.shift());
+          if (!this.gatherQueue.length) this.releaseTokHold();
+          continue;
+        }
         if (this.panelQueue.length) {
           await UI.scryDungeonPanel(this, this.panelQueue.shift());
           if (!this.panelQueue.length) { this.panelTurn = null; Store.clearPanel(); this.renderTop(); }
