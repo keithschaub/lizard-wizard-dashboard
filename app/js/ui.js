@@ -494,12 +494,12 @@ function turnStage(g) {
   if (v.next !== g.me) return { step: 0 };
   for (const ov of [...document.querySelectorAll('#overlays .overlay:not(.out)')].reverse()) {
     const id = ov.dataset.testid; const d = ov.dataset;
-    if (d.turnStep === 'putback') return { step: 3, over: Number(d.stepOver) || 0 };
-    if (d.turnStep === 'cast') return { step: 2, castable: (d.stepCastable || '').split(',').filter(Boolean), multi: d.stepMulti === '1' };
-    if (id === 'effect' || id === 'rise-use' || id === 'rise-gather-flow') return { step: 2 };
     const action = OVERLAY_ACTION[id]
       || (ov.querySelector('[data-testid=research-only], [data-testid=research-cast]') ? 'research' : null)
       || (ov.querySelector('[data-testid^=build-]') ? 'build' : null);
+    if (d.turnStep === 'putback') return { step: 3, action, over: Number(d.stepOver) || 0 };
+    if (d.turnStep === 'cast') return { step: 2, action, castable: (d.stepCastable || '').split(',').filter(Boolean), multi: d.stepMulti === '1' };
+    if (id === 'effect' || id === 'rise-use' || id === 'rise-gather-flow') return { step: 2 };
     if (action) return { step: 1, action };
   }
   return { step: 1, again: !!(v.bonus || v.again) };
@@ -524,7 +524,7 @@ function turnCard(g, stage) {
   const tower = g.cards[v.board?.tower_face]?.cost;
   const famCost = minOf(Object.values(L.summon || {}).map((d) => d.cost)) ?? minOf((v.board?.fam_face || []).filter(Boolean).map((k) => g.cards[k]?.cost?.mana).filter((x) => x != null));
   const resCost = minOf(Object.values(L.research || {}).map((d) => d.mana));
-  const act = stage.step === 1 ? stage.action : null;
+  const act = stage.action || null;
   const actions = [
     ['gather', handCard(), 'Gather reagents', Object.keys(L.gather || {}).length > 0, null],
     ['convert', icon('art/icons/mana-orb.webp'), 'Convert reagents to mana', Object.keys(L.convert || {}).length > 0 || !!L.convert1, null],

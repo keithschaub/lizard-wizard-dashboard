@@ -201,6 +201,7 @@ test('over an overlay the card highlights the step in progress', async ({ page }
   await help(page).tap();
   await expect(page.getByTestId('th-step-2')).toHaveClass(/cur/);
   await expect(page.getByTestId('th-step-1')).not.toHaveClass(/cur/);
+  await expect(page.getByTestId('th-act-gather')).toHaveClass(/pick/);
   const shield = page.getByTestId('th-spell-Spell_Spell_Shield_T');
   // Charm needs Mandrake ×3; one Mandrake is held and no Wizard adds Mandrake.
   const charm = page.getByTestId('th-spell-Spell_Charm');
