@@ -769,5 +769,13 @@ check(r['ok'] and wp.get('type') == 'effect' and 'Disintegrate' in wp.get('spell
 log135 = W.st()['meta']['log']; ri = max(i for i, e in enumerate(log135) if e.get('act') == 'rise')
 check(any(e.get('act') == 'cast' and 'Disintegrate' in str(e.get('spell')) for e in log135[ri + 1:]), 'the rise is logged before the cast it enabled')
 
+# Gather animation: public entries list the gathered reagents in flight order (print order on the card, then
+# Wizard bonus and Bloom); an AI keep in value order is re-sorted, Miracle uses the Increase Value half.
+e = {'act': 'gather', 'card': 'Reagent_14', 'got': ['Eye_of_Newt', 'Mandrake', 'Toadstool'], 'bonus': ['Horn']}
+check(W.gathered_tokens(e) == ['Mandrake', 'Toadstool', 'Eye_of_Newt', 'Horn'], f'gathered: AI keep re-sorted to print order, bonus last ({W.gathered_tokens(e)})')
+e = {'act': 'gather', 'card': 'Reagent_34', 'got': ['Mandrake', 'Sulphur', 'Sulphur'], 'bonus': []}
+check(W.gathered_tokens(e) == ['Sulphur', 'Sulphur', 'Mandrake'], f'gathered: Miracle half in print order ({W.gathered_tokens(e)})')
+check(W.gathered_tokens({'act': 'rise', 'use': 'gather', 'got': ['Nightshade'] * 5}) == ['Nightshade'] * 5, 'gathered: a familiar gather is one stream')
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)
