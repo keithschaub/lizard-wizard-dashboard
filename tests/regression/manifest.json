@@ -144,6 +144,18 @@
         "engine/web/test_lw_web.py (#135 checks)"
       ],
       "note": "Fixed in #136."
+    },
+    {
+      "issue": 140,
+      "status": "new",
+      "kind": "e2e",
+      "description": "Gather keep rings off-centre from the reagent art",
+      "report": "2026-11-18T03-32-42-637Z-2wagd",
+      "fixture": "tests/e2e/fixtures/issue-140.json",
+      "tests": [
+        "tests/e2e/gather-ring-centres.spec.js"
+      ],
+      "note": "Rings used one fixed layout per icon count; the scanned cards place icons by hand. Rings now use each card's measured icon centres (tools/measure_reagent_icons.py)."
     }
   ],
   "fixes_without_a_report": [
