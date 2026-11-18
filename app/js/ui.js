@@ -2,8 +2,8 @@ import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenC
 import { versionLabel } from './version.js';
 import * as Store from './store.js';
 import { achievementTile, achievementBadge, achievementTitle, achievementFromText, SPELL_SCROLL_ICON } from './achievements.js';
-import * as GA from './gather-anim.js';
 import { REAGENT_ICON_POS } from './reagent-icon-positions.js';
+import * as GA from './gather-anim.js';
 
 const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage', master: 'Grand Sorcerer' };
 
