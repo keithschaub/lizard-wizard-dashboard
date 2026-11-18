@@ -38,6 +38,9 @@ Run the relevant Playwright project on both Chromium and `webkit-iphone` where n
 | Chronicle tier deduplication | Tower names show no stray `T1/T2/T3` prose when the tier is already inside the school chip, across builds, Creation, and destruction lines. | `tests/e2e/chronicle-reagent-icons.spec.js`, `engine/web/test_log_format.py` |
 | Chronicle prose normalization | Table-driven school-bearing lines leave no tier or parenthesized school text outside their chips, including reagent/gold builds, free towers, destroys, research, scry, swaps, and cast outcomes. | `tests/e2e/chronicle-reagent-icons.spec.js` |
 | Research action value chips | Research and Research & Cast action rows use positive number-then-mana chips, with reagents left of a right-anchored mana chip. | `tests/e2e/board-spell-swipe.spec.js` |
+| Eye toggle (#148) | The 40 px eye sits top left on every screen and overlay (board, log, menu, players sheet, enlarged card, deck view, gather keep, arena, Report Bug, target pickers, AI banner) and covers no control or title. Gold open eye opens the inventory; teal shut eye or its X returns to the same screen with nothing lost or committed. | `tests/e2e/eye-toggle.spec.js` |
+| Eye toggle: game waits | While the inventory is open the AI banner and its progress bar stop, arena bid playback stops, and the keep overlay's commit waits; tapping the eye or the inventory never skips an AI move or lands a gather at once. | `tests/e2e/eye-toggle.spec.js` |
+| Eye toggle: inventory | Opponents first, no other player's gold, Shielded / No shield on every player, no plus signs, no AI tag; cards are view-only. The spell-effect picker, a load and AI-turn closes do not wipe it, and an enlarged card under it survives. | `tests/e2e/eye-toggle.spec.js` |
 
 ### Round 2 follow-up surfaces
 | Surface | Regression coverage |
