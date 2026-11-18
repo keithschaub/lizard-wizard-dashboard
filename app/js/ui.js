@@ -889,7 +889,7 @@ export async function gatherFlow(g, cid) {
         }));
       });
     }
-    if (L.miracle) appendNodes(wrap, h('span', { class: 'half-tag', style: { top: '57%', background: 'rgba(90,162,255,.85)' } }, 'Miracle: may gather this side'));
+    if (L.miracle) appendNodes(wrap, h('span', { class: 'half-tag', style: { top: '50.2%', background: 'rgba(90,162,255,.85)' } }, 'Miracle: may gather this side'));
     appendNodes(body, wrap);
     appendNodes(body, h('div', { class: 'counter' }, 'Keep', h('span', { class: 'pill', 'data-testid': 'keep-counter' }, `${sel.size} / ${need(side)}`)));
     if (L.bonus.length) appendNodes(body, h('div', { class: 'chips' }, L.bonus.map((r) => h('span', { class: 'chip static' }, h('img', { src: reagentIcon(r), alt: '' }), '+1 wizard bonus'))));
