@@ -144,6 +144,18 @@
         "engine/web/test_lw_web.py (#135 checks)"
       ],
       "note": "Fixed in #136."
+    },
+    {
+      "issue": 143,
+      "status": "new",
+      "kind": "e2e",
+      "description": "BLOOM heading O letters overlapped; text on and around cards too small",
+      "report": "2026-11-18T04-43-13-316Z-bn331",
+      "fixture": "tests/e2e/fixtures/issue-143.json",
+      "tests": [
+        "tests/e2e/text-size.spec.js"
+      ],
+      "note": "Cinzel Decorative kerns o·o, h·e, i·E by a third to a half em; display text turns kerning off. Bumped text stays at 13 px or more."
     }
   ],
   "fixes_without_a_report": [
