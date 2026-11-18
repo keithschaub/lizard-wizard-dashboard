@@ -1,0 +1,114 @@
+"""Measure where each reagent icon sits on every Reagent card's art, for the Gather keep overlay's tap rings.
+
+The cards are scans laid out by hand, so icon positions differ from card to card. This finds each icon by
+template matching the game's own reagent icons (art/icons/reagents/*.png, transparent edges masked) over a range
+of sizes, keeps the best non-overlapping match for every icon the card data lists, orders them in print order
+(rows top to bottom, left to right) and checks that order against engine/cards/carddb.json. The centre written is
+the centre of the matched icon's visible art, as fractions of the card width and height.
+
+Needs OpenCV (pip install opencv-python-headless); the app and tests only read the generated module.
+Run: python3 tools/measure_reagent_icons.py   (writes app/js/reagent-icon-positions.js)
+"""
+import json, os, sys
+
+import cv2
+import numpy as np
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, 'app', 'js', 'reagent-icon-positions.js')
+REAGENTS = ['Mandrake', 'Eye_of_Newt', 'Nightshade', 'Sulphur', 'Foxglove', 'Toadstool', 'Horn']
+HALVES = {'gather': (0.08, 0.50, 'gather_icons'), 'increase': (0.53, 0.99, 'increase_icons')}
+SIZES = range(120, 211, 6)          # icon's longer side on the 720 px wide card art
+MIN_GAP = 0.6                       # two icons never overlap by more than this share of their size
+ROW_GAP = 0.45                      # a centre this far below the row above (in icon sizes) starts a new row
+
+
+def icon(r):
+    im = cv2.imread(os.path.join(ROOT, 'art', 'icons', 'reagents', f'{r}.png'), cv2.IMREAD_UNCHANGED)
+    ys, xs = np.where(im[:, :, 3] > 20)
+    return im[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+
+
+ICONS = {r: icon(r) for r in REAGENTS}
+
+
+def candidates(sub, r, keep=8):
+    """Best-scoring placements of reagent r in `sub`: (score, cx, cy, size) with one placement per neighbourhood."""
+    t = ICONS[r]; th, tw = t.shape[:2]
+    found = []
+    for s in SIZES:
+        k = s / max(th, tw)
+        t2 = cv2.resize(t, (max(8, round(tw * k)), max(8, round(th * k))), interpolation=cv2.INTER_AREA)
+        if t2.shape[0] >= sub.shape[0] or t2.shape[1] >= sub.shape[1]:
+            continue
+        m = cv2.merge([t2[:, :, 3]] * 3)
+        res = np.nan_to_num(cv2.matchTemplate(sub, t2[:, :, :3], cv2.TM_CCORR_NORMED, mask=m), nan=0, posinf=0, neginf=0)
+        for _ in range(keep):
+            y, x = np.unravel_index(res.argmax(), res.shape)
+            sc = float(res[y, x])
+            if sc <= 0:
+                break
+            found.append((sc, x + t2.shape[1] / 2, y + t2.shape[0] / 2, s))
+            r0 = max(t2.shape[:2]) // 2
+            res[max(0, y - r0):y + r0, max(0, x - r0):x + r0] = 0
+    found.sort(reverse=True)
+    out = []
+    for c in found:
+        if all(np.hypot(c[1] - o[1], c[2] - o[2]) > MIN_GAP * c[3] for o in out):
+            out.append(c)
+        if len(out) >= keep:
+            break
+    return out
+
+
+def measure(card_key, want):
+    card = cv2.imread(os.path.join(ROOT, 'art', 'cards', f'{card_key}.webp'))
+    H, W = card.shape[:2]
+    out = {}
+    for half, (y0f, y1f, field) in HALVES.items():
+        icons = [x.replace(' ', '_') for x in want[field]]
+        y0, y1 = int(y0f * H), int(y1f * H)
+        sub = card[y0:y1]
+        pool = sorted((c + (r,) for r in set(icons) for c in candidates(sub, r)), reverse=True)
+        left = {r: icons.count(r) for r in set(icons)}
+        picked = []
+        for sc, cx, cy, s, r in pool:
+            if left[r] and all(np.hypot(cx - p[1], cy - p[2]) > MIN_GAP * max(s, p[3]) for p in picked):
+                picked.append((sc, cx, cy, s, r)); left[r] -= 1
+        if any(left.values()):
+            raise SystemExit(f'{card_key} {half}: could not place {left}')
+        picked.sort(key=lambda p: p[2])
+        rows = [[picked[0]]]
+        for p in picked[1:]:
+            if p[2] - rows[-1][-1][2] < ROW_GAP * p[3]:
+                rows[-1].append(p)
+            else:
+                rows.append([p])
+        ordered = [p for row in rows for p in sorted(row, key=lambda p: p[1])]
+        got = [p[4] for p in ordered]
+        if got != icons:
+            raise SystemExit(f'{card_key} {half}: print order {icons} but found {got}')
+        out[half] = [[round(p[1] / W, 4), round((p[2] + y0) / H, 4)] for p in ordered]
+        out[half + '_min_score'] = round(min(p[0] for p in ordered), 3)
+    return out
+
+
+def main():
+    db = json.load(open(os.path.join(ROOT, 'engine', 'cards', 'carddb.json')))['cards']
+    keys = sorted(k[:-4] for k in db if k.startswith('Reagent_') and k.endswith('.jpg'))
+    pos = {}; low = []
+    for k in keys:
+        m = measure(k, db[k + '.jpg'])
+        low += [(m[f'{h}_min_score'], k, h) for h in HALVES]
+        pos[k] = {h: m[h] for h in HALVES}
+    body = json.dumps(pos, separators=(',', ':')).replace('},"', '},\n  "').replace('{"Reagent', '{\n  "Reagent', 1)
+    with open(OUT, 'w') as f:
+        f.write('// Generated by tools/measure_reagent_icons.py: centre of each reagent icon on the Reagent card art, as\n'
+                '// fractions of the card width and height, in print order (rows top to bottom, left to right).\n'
+                f'export const REAGENT_ICON_POS = {body[:-1]}\n}};\n')
+    low.sort()
+    print(f'{len(pos)} cards written to {os.path.relpath(OUT, ROOT)}; weakest matches: {low[:4]}')
+
+
+if __name__ == '__main__':
+    sys.exit(main())

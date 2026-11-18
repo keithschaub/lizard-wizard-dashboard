@@ -2,6 +2,7 @@ import { h, art, reagentIcon, schoolIcon, nice, REAGENTS, counts, avatar, tokenC
 import { versionLabel } from './version.js';
 import * as Store from './store.js';
 import { achievementTile, achievementBadge, achievementTitle, achievementFromText, SPELL_SCROLL_ICON } from './achievements.js';
+import { REAGENT_ICON_POS } from './reagent-icon-positions.js';
 import * as GA from './gather-anim.js';
 import { deckTile } from './board.js';
 
@@ -857,6 +858,8 @@ export function xTargetPicker(g, host, maxX, title = 'Invisibility Potion') {
 }
 
 // ------------------------------------------------------------------ gather: keep taps -> cast -> put-back -> commit
+// Tap rings sit on each icon's measured centre on that card's art (REAGENT_ICON_POS). The cards are scans laid out by
+// hand, so a fixed layout per icon count is off by up to a ring's quarter; it stays only as a fallback.
 const HOT = {
   3: [[0.19, 0.5], [0.5, 0.5], [0.81, 0.5]],
   4: [[0.27, 0.3], [0.73, 0.3], [0.27, 0.72], [0.73, 0.72]],
@@ -878,14 +881,15 @@ export async function gatherFlow(g, cid) {
     const wrap = h('div', { class: 'gcard-wrap', 'data-testid': 'gather-card' }, h('img', { class: 'gcard', src: art(cid), alt: cid }));
     for (const sd of ['gather', 'increase']) {
       const ic = icons(sd); const pos = HOT[ic.length] || HOT[3]; const [y0, y1] = HALF[sd];
+      const measured = REAGENT_ICON_POS[cid]?.[sd];
       const live = sd === 'gather' || L.miracle;
       if (!live) continue;
       ic.forEach((r, i) => {
-        const [x, y] = pos[i];
+        const [x, y] = measured?.length === ic.length ? measured[i] : [pos[i][0], y0 + pos[i][1] * (y1 - y0)];
         const on = side === sd && sel.has(i);
         appendNodes(wrap, h('button', {
           class: `hot ${on ? 'on' : 'live'}`, 'data-testid': `hot-${sd}-${i}`, 'data-reagent': r, 'aria-label': nice(r),
-          style: { left: `${x * 100}%`, top: `${(y0 + y * (y1 - y0)) * 100}%` },
+          style: { left: `${x * 100}%`, top: `${y * 100}%` },
           onclick: () => tapIcon(sd, i),
         }));
       });
