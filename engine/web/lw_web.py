@@ -343,6 +343,27 @@ def gather_banner_data(e):
     }
 
 
+def gathered_tokens(e):
+    """Reagents a gather adds, in the order they fly to the dock: the card's kept icons in print order (an AI keeps
+    in value order; Miracle gathers the Increase Value half), then one per Wizard, then Bloom. Familiar gathers: N of one."""
+    a = e.get('act')
+    if a in ('summon', 'rise') and e.get('use') == 'gather':
+        return list(e.get('got', []))
+    if a != 'gather':
+        return None
+    got = list(e.get('got', []))
+    card = A._cards()[0].get(e.get('card'), {})
+    for side in ('gather_icons_in_print_order', 'increase_icons_in_print_order'):
+        icons = [A.norm(x) for x in card.get(side, [])]
+        if not Counter(got) - Counter(icons):
+            left = Counter(got); ordered = []
+            for x in icons:
+                if left[x] > 0: ordered.append(x); left[x] -= 1
+            got = ordered
+            break
+    return got + list(e.get('bonus', []))
+
+
 def sell_banner_data(e):
     if e.get('act') == 'convert':
         parts = e.get('parts')
@@ -577,6 +598,9 @@ def public_log(s, viewer):
             item['text'] = re.sub(rf'\s+T{item["tier"]}(?=\s|$)', '', item['text'], count=1)
         if a == 'gather':
             item['gather'] = gather_banner_data(e)
+        gathered = gathered_tokens(e)
+        if gathered:
+            item['gathered'] = gathered
         if a == 'scry_dungeon':
             item['kept'] = [dict(card=dungeon_key(c), gold=c.get('gold') if c.get('subtype') == 'Gold' else None) for c in e.get('kept', [])]
             if 'gold_before' in e: item['gold_before'] = e['gold_before']

@@ -161,6 +161,14 @@
         "tools/test_turn_order.py",
         "tests/e2e/turn-order.spec.js"
       ]
+    },
+    {
+      "feature": "gather animation",
+      "description": "Gathered reagents land on the dock (or AI banner) one by one; counts, storage, tracks and turn wait for the landings",
+      "tests": [
+        "tests/e2e/gather-animation.spec.js",
+        "engine/web/test_lw_web.py (gathered order checks)"
+      ]
     }
   ],
   "not_gameplay": [

@@ -8,7 +8,7 @@ for (const entry of [...m.issues, ...m.fixes_without_a_report]) {
   for (const t of entry.tests) {
     if (!(t.startsWith('tests/e2e/') && t.endsWith('.spec.js'))) continue;
     if (fs.existsSync(t)) specs.add(t);
-    else if (entry.status !== 'pending-pr') missing.push(`${t} (issue ${entry.issue ?? entry.pr})`);
+    else if (entry.status !== 'pending-pr') missing.push(`${t} (${entry.issue ? `issue ${entry.issue}` : entry.pr ? `PR ${entry.pr}` : entry.feature})`);
   }
 }
 if (missing.length) { console.error(`manifest lists missing specs:\n  ${missing.join('\n  ')}`); process.exit(1); }
