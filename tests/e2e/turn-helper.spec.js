@@ -24,6 +24,8 @@ async function open(page, save, { noAi = false } = {}) {
 const help = (page) => page.getByTestId('help-toggle');
 const eye = (page) => page.getByTestId('eye-toggle');
 const card = (page) => page.getByTestId('turn-card');
+// Closing fades the sheet out; wait until it is gone so a reopened card is the only one.
+async function closeHelp(page) { await help(page).tap(); await expect(page.getByTestId('turn-helper')).toHaveCount(0); }
 
 // Both floating buttons are the top element at their centres and cover no control, title or each other.
 async function peeksOnTop(page) {
@@ -191,7 +193,7 @@ test('over an overlay the card highlights the step in progress', async ({ page }
   await expect(page.getByTestId('th-step-1')).toHaveClass(/cur/);
   await expect(page.getByTestId('th-act-gather')).toHaveClass(/pick/);
   for (const k of ['convert', 'recruit', 'research', 'build', 'summon']) expect(await page.getByTestId(`th-act-${k}`).getAttribute('data-off')).toBe('');
-  await help(page).tap();
+  await closeHelp(page);
   // Cast picker: step 2, each owned spell with its cost, greyed when this gather cannot pay for it.
   for (const r of ['Foxglove', 'Horn', 'Sulphur']) {
     const offers = await page.evaluate(() => window.lwDebug.view().legal.gather.Reagent_52.offers);
@@ -211,7 +213,7 @@ test('over an overlay the card highlights the step in progress', async ({ page }
   await expect(charm.locator('.log-reagent-chip')).toHaveText(['×2', '×3']);
   const school = await page.evaluate(() => window.lwDebug.cards().Spell_Charm.school);
   await expect(charm.locator('img.school')).toHaveAttribute('alt', school);
-  await help(page).tap();
+  await closeHelp(page);
   // Skip the cast: storage is over, put-back is step 3.
   await page.getByTestId('skip-cast').tap();
   await expect(page.getByTestId('putback-pool')).toBeVisible();
