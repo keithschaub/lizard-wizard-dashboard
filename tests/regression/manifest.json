@@ -180,6 +180,18 @@
         "tests/e2e/eye-toggle.spec.js"
       ],
       "note": "The inventory has its own layer above the overlays, so closeAll and AI-turn closes leave it alone. While it is open, settle, AI steps, AI banners, arena playback and the keep commit wait; eye and inventory taps never skip an AI move or land a gather."
+    },
+    {
+      "issue": 150,
+      "status": "new",
+      "kind": "e2e",
+      "description": "Turn steps card: floating ? shows the turn in rules order and the step in progress, from any screen",
+      "report": "2026-11-18T23-25-46-921Z-ee9bx",
+      "fixture": "tests/e2e/fixtures/issue-123-research.json",
+      "tests": [
+        "tests/e2e/turn-helper.spec.js"
+      ],
+      "note": "Shares the eye's suspend logic (app/js/peek.js): while the card is open settle, AI steps, banners, arena playback and the keep commit wait. Over an overlay the card reads the step from the overlay's data-turn-step mark (cast picker, put-back) or its testid."
     }
   ],
   "fixes_without_a_report": [

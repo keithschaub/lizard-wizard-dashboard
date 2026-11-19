@@ -5,7 +5,7 @@ import * as UI from './ui.js';
 import * as Audio from './audio.js';
 import * as Store from './store.js';
 import * as GA from './gather-anim.js';
-import * as Inv from './inventory.js';
+import * as Peek from './peek.js';
 import { versionLabel } from './version.js';
 
 const T_START = performance.now();
@@ -27,9 +27,10 @@ class Game {
     paintMute();
     window.addEventListener('pointerdown', (e) => {
       Audio.unlock();
-      if (this.aiRunning && !e.target.closest?.('[data-eye], #inventory-layer')) this.skipMove = true;
+      if (this.aiRunning && !e.target.closest?.('[data-peek], #peek-layer')) this.skipMove = true;
     }, { capture: true });
-    Inv.mountEye((close) => { this.sfx('tap'); return UI.openInventory(this, close); });
+    Peek.mountEye((close) => { this.sfx('tap'); return UI.openInventory(this, close); });
+    Peek.mountHelp((close) => { this.sfx('tap'); return UI.openTurnHelper(this, close); });
     const verEl = document.getElementById('loader-version');
     if (verEl) verEl.textContent = versionLabel();
     window.lwDebug = { seedNextGame: (seeds) => { this.nextGameSeeds = seeds; }, view: () => JSON.parse(JSON.stringify(this.v)), cards: () => this.cards, log: () => this.call('full_log').then((r) => r.result), loadMs: () => this.loadMs, ready: () => !!this.ready, aiRunning: () => !!this.aiRunning, version: versionLabel, gatherClock: GA.testClock, _g: this };
@@ -248,7 +249,7 @@ class Game {
     if (v.next !== this.me) UI.closeExpandOverlays();
     const you = v.players?.find((p) => p.you);
     if (you) this.me = you.name;
-    Inv.refresh();
+    Peek.refresh();
     this.board.render(this.tokHold ? { ...v, board: { ...v.board, tracks: this.tokHold.tracks } } : v, this.cards);
     this.renderDock(prev);
     this.renderTop();
@@ -372,7 +373,7 @@ class Game {
     this.settling = true;
     try {
       for (let guard = 0; guard < 200; guard++) {
-        await Inv.idle();
+        await Peek.idle();
         if (this.gatherQueue.length) {
           await this.playGather(this.gatherQueue.shift());
           if (!this.gatherQueue.length) this.releaseTokHold();
@@ -406,7 +407,7 @@ class Game {
   }
 
   async aiStep() {
-    await Inv.idle();
+    await Peek.idle();
     UI.closeExpandOverlays();
     this.aiRunning = true; this.renderDock(this.v);
     try {
@@ -424,7 +425,7 @@ class Game {
   }
 
   async showMoves(raw, turnOf = null) {
-    await Inv.idle();
+    await Peek.idle();
     UI.closeExpandOverlays();
     const moves = UI.foldTurnMoves(raw || []);
     for (const [i, e] of moves.entries()) {
