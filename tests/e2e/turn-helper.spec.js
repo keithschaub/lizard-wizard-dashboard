@@ -84,12 +84,22 @@ async function roundTrip(page, how = 'help') {
   for (const k of Object.keys(before)) expect(after[k], `${k} is unchanged`).toBe(before[k]);
 }
 
+// A tap during the keep sheet's zoom-in can be lost; tap again until the ring is on (or the sheet has moved on).
+async function tapHot(page, i) {
+  const hot = page.getByTestId(`hot-gather-${i}`);
+  const on = async () => { const c = await hot.getAttribute('class', { timeout: 500 }).catch(() => null); return c === null || /\bon\b/.test(c); };
+  await expect(async () => {
+    if (!(await on())) await hot.tap({ timeout: 2000 });
+    expect(await on()).toBe(true);
+  }).toPass({ timeout: 15_000 });
+}
+
 async function gatherTo(page, card, keep) {
   await page.evaluate((k) => { void window.ui.gatherFlow(window.lwDebug._g, k); }, card);
   await expect(page.getByTestId('gather')).toBeVisible();
   const offers = await page.evaluate((k) => window.lwDebug.view().legal.gather[k].offers, card);
   const used = new Set();
-  for (const r of keep) { const i = offers.findIndex((x, j) => x === r && !used.has(j)); used.add(i); await page.getByTestId(`hot-gather-${i}`).tap(); }
+  for (const r of keep) { const i = offers.findIndex((x, j) => x === r && !used.has(j)); used.add(i); await tapHot(page, i); }
 }
 
 test('the ? is on top of every screen and overlay, next to the eye, and covers nothing', async ({ context }) => {
@@ -197,7 +207,7 @@ test('over an overlay the card highlights the step in progress', async ({ page }
   // Cast picker: step 2, each owned spell with its cost, greyed when this gather cannot pay for it.
   for (const r of ['Foxglove', 'Horn', 'Sulphur']) {
     const offers = await page.evaluate(() => window.lwDebug.view().legal.gather.Reagent_52.offers);
-    await page.getByTestId(`hot-gather-${offers.indexOf(r)}`).tap();
+    await tapHot(page, offers.indexOf(r));
   }
   await expect(page.getByTestId('cast-Spell_Spell_Shield_T')).toBeVisible({ timeout: 10_000 });
   await help(page).tap();
@@ -231,7 +241,7 @@ test('opening the card leaves the screen and its state identical', async ({ cont
   await expect(page.getByTestId('keep-counter')).toHaveText('1 / 3');
   for (const r of ['Horn', 'Sulphur']) {
     const offers = await page.evaluate(() => window.lwDebug.view().legal.gather.Reagent_52.offers);
-    await page.getByTestId(`hot-gather-${offers.indexOf(r)}`).tap();
+    await tapHot(page, offers.indexOf(r));
   }
   await expect(page.getByTestId('cast-Spell_Spell_Shield_T')).toBeVisible({ timeout: 10_000 });
   await roundTrip(page, 'scrim');
