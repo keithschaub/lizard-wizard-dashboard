@@ -5,6 +5,7 @@ import { achievementTile, achievementBadge, achievementTitle, achievementFromTex
 import { REAGENT_ICON_POS } from './reagent-icon-positions.js';
 import * as GA from './gather-anim.js';
 import { deckTile } from './board.js';
+import * as Inv from './inventory.js';
 
 const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage', master: 'Grand Sorcerer' };
 
@@ -14,8 +15,7 @@ function diffBadge(level) {
 }
 
 // ------------------------------------------------------------------ overlay plumbing
-export function openOverlay(cls, { onScrim = null, testid = null } = {}) {
-  const root = document.getElementById('overlays');
+export function openOverlay(cls, { onScrim = null, testid = null, root = document.getElementById('overlays') } = {}) {
   const el = h('div', { class: `overlay ${cls}`, 'data-testid': testid || `ov-${cls.split(' ')[0]}` });
   let closed = false;
   const ov = {
@@ -28,14 +28,14 @@ export function openOverlay(cls, { onScrim = null, testid = null } = {}) {
   };
   if (onScrim) el.addEventListener('click', (e) => { if (e.target === el) onScrim(ov); });
   root.appendChild(el);
-  scrollHint(el);
+  scrollHint(el, root);
   return ov;
 }
 
 // "More below" pill whenever an overlay's content runs past the visible area; tapping it scrolls down.
-function scrollHint(el) {
+function scrollHint(el, root) {
   const hint = h('button', { class: 'scroll-hint off', 'data-testid': 'scroll-hint', 'aria-label': 'More below', onclick: (e) => { e.stopPropagation(); el.scrollBy({ top: el.clientHeight * 0.7, behavior: 'smooth' }); } }, '⌄');
-  document.getElementById('overlays').appendChild(hint);
+  root.appendChild(hint);
   const update = () => {
     if (!el.isConnected || el.classList.contains('out')) { hint.remove(); mo.disconnect(); return; }
     const spacer = parseFloat(getComputedStyle(el, '::after').height) || 0;   // the bottom clearance is not content
@@ -43,7 +43,7 @@ function scrollHint(el) {
   };
   const mo = new MutationObserver(() => requestAnimationFrame(update));
   mo.observe(el, { childList: true, subtree: true });
-  new MutationObserver(update).observe(document.getElementById('overlays'), { childList: true });
+  new MutationObserver(update).observe(root, { childList: true });
   el.addEventListener('scroll', update, { passive: true });
   el.addEventListener('load', update, true);
   el.addEventListener('animationend', update, true);           // entrance animations inflate scrollHeight while they run
@@ -55,6 +55,7 @@ export function closeAll() { document.querySelectorAll('#overlays .overlay').for
 
 /** Remove swipe/enlarge card overlays (not other flows). */
 export function closeExpandOverlays() {
+  if (Inv.isOpen()) return;   // an AI step waits for the inventory to close and clears them then
   document.querySelectorAll('[data-testid="expanded"]').forEach((el) => el.remove());
 }
 
@@ -440,8 +441,9 @@ function pairUp(g, wizards, towers) {
   return cols;
 }
 
-function mini(g, key, { cls = '', badge = null, testid = null, group = null, groupIndex = 0, handGather = false } = {}) {
+function mini(g, key, { cls = '', badge = null, testid = null, group = null, groupIndex = 0, handGather = false, inert = false } = {}) {
   if (!key) return h('div', { class: 'mcard back', 'data-testid': testid }, 'LW');
+  if (inert) return h('div', { class: `mcard ${cls}`, 'data-testid': testid }, h('img', { src: art(key), alt: key }), badge ? h('div', { class: 'badge' }, badge) : null);
   return h('div', { class: `mcard ${cls}`, 'data-testid': testid, onclick: (e) => { 
     e.stopPropagation(); 
     g.sfx('tap');
@@ -460,28 +462,49 @@ function cardList(g, keys) {
   return [...n].map(([k, c]) => `${g.cards[k]?.name || k}${c > 1 ? ` ×${c}` : ''}`).join(', ');
 }
 
+const SHIELD_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 4.5 5.5v6c0 4.6 3.2 8.4 7.5 10 4.3-1.6 7.5-5.4 7.5-10v-6z" fill="currentColor"/></svg>';
+const hasShield = (q) => (q.spells || []).some((sp) => sp.cast && /Spell_Spell_Shield/.test(sp.key || sp.img || ''));
+
 export function openMats(g) {
   const ov = openOverlay('mats', { onScrim: (o) => o.close(), testid: 'mats' });
-  appendNodes(ov.el, closeBtn(() => ov.close()));
+  matSheet(g, ov.el, closeBtn(() => ov.close()));
+  return ov;
+}
+
+/** The players sheet for the eye button: opponents first, no other player's gold, shield state, nothing to tap but close. */
+export function openInventory(g, close) {
+  const root = document.getElementById('inventory-layer');
+  const ov = openOverlay('mats inventory', { onScrim: () => close(), testid: 'inventory', root });
+  const draw = () => matSheet(g, ov.el, closeBtn(() => close(), 'inventory-close'), { inventory: true });
+  draw();
+  return { el: ov.el, close: ov.close, refresh: () => { const top = ov.el.scrollTop; draw(); ov.el.scrollTop = top; } };
+}
+
+// The inventory reads: "10 VP" for a pair and "Gather 5" for a gather with two wizard bonuses (no plus signs).
+function matSheet(g, el, close, { inventory = false } = {}) {
+  replaceChildren(el, close);
   const v = g.v;
-  const order = [...v.players].sort((a, b) => (b.you - a.you) || v.seat_order.indexOf(a.name) - v.seat_order.indexOf(b.name));
-  console.info('[mats]', order.map((p) => `${p.name}: wizards [${p.wizards.join(', ')}] towers [${p.towers.join(', ')}]`).join(' | '));
+  const order = [...v.players].sort((a, b) => (inventory ? a.you - b.you : b.you - a.you) || v.seat_order.indexOf(a.name) - v.seat_order.indexOf(b.name));
+  const id = (name) => (inventory ? `inv-${name}` : name);
+  if (!inventory) console.info('[mats]', order.map((p) => `${p.name}: wizards [${p.wizards.join(', ')}] towers [${p.towers.join(', ')}]`).join(' | '));
   for (const p of order) {
-    const tag = p.you ? 'You' : (p.human ? 'Human' : `AI${p.profile ? ' · ' + p.profile : ''}`);
+    const tag = p.you ? 'You' : inventory ? null : (p.human ? 'Human' : `AI${p.profile ? ' · ' + p.profile : ''}`);
+    const shielded = hasShield(p);
     const tok = counts(p.tok);
     const pairs = pairUp(g, p.wizards, p.towers);
-    appendNodes(ov.el, h('div', { class: `mat ${p.you ? 'you' : ''}`, 'data-testid': `mat-${p.name}` },
-      h('div', { class: 'mat-head' }, avatar(p.name, 30), h('span', { class: 'mat-name' }, p.name), !p.you && p.level ? diffBadge(p.level) : null, h('span', { class: `mat-tag ${p.you ? 'you' : ''}` }, tag),
+    appendNodes(el, h('div', { class: `mat ${p.you ? 'you' : ''}`, 'data-testid': `mat-${id(p.name)}` },
+      h('div', { class: 'mat-head' }, avatar(p.name, 30), h('span', { class: 'mat-name' }, p.name), !p.you && p.level ? diffBadge(p.level) : null, tag ? h('span', { class: `mat-tag ${p.you ? 'you' : ''}` }, tag) : null,
         h('span', { class: 'stat vp mat-vp' }, `${p.vp} VP`)),
       h('div', { class: 'mat-row' },
         h('span', { class: 'stat mana' }, h('span', { class: 'orb' }), p.mana === null ? '?' : p.mana),
-        h('span', { class: 'stat gold' }, h('span', { class: 'orb' }), p.gold === null ? '?' : p.gold),
+        inventory ? h('span', { class: `shield-state ${shielded ? '' : 'off'}`, 'data-testid': `shield-${p.name}`, html: `${SHIELD_ICON}${shielded ? 'Shielded' : 'No shield'}` }) : null,
+        inventory && !p.you ? null : h('span', { class: 'stat gold' }, h('span', { class: 'orb' }), p.gold === null ? '?' : p.gold),
         h('span', { class: `stat store ${p.tok.length >= p.cap ? 'full' : ''}` }, `Reagents ${p.tok.length}/${p.cap}`),
-        h('span', { class: 'stat store' }, `Gather 3${p.bonus.length ? ' +' + p.bonus.length : ''}`, ...p.bonus.map((r) => h('img', { src: reagentIcon(r), alt: '', style: { width: '18px' } })))),
+        h('span', { class: 'stat store' }, inventory ? `Gather ${3 + p.bonus.length}` : `Gather 3${p.bonus.length ? ' +' + p.bonus.length : ''}`, ...p.bonus.map((r) => h('img', { src: reagentIcon(r), alt: '', style: { width: '18px' } })))),
       h('div', { class: 'mat-row' }, tok.size ? [...tok].map(([r, n]) => tokenChip(r, n)) : h('span', { class: 'none' }, 'No reagent tokens')),
       h('div', { class: 'mat-label' }, p.you ? 'Reagent cards in hand' : `Reagent cards in hand: ${p.hand_count}`),
       p.you ? h('div', { class: 'mat-row' }, p.hand.map((k, i) => mini(g, k, {
-        group: p.hand, groupIndex: i, handGather: p.you && g.v.next === g.me && !g.v.game_over,
+        group: p.hand, groupIndex: i, handGather: !inventory && g.v.next === g.me && !g.v.game_over, inert: inventory,
       }))) : null,
       h('div', { class: 'mat-label' }, `Wizards & Towers (${p.wizards.length}/${p.towers.length})`),
       h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m], i) => {
@@ -489,11 +512,11 @@ export function openMats(g) {
         const wizardsGroup = p.wizards.filter(k => k);
         const towersGroup = p.towers.filter(k => k);
         return h('div', { class: `pair ${m ? 'match' : ''}` },
-          h('span', { class: 'pts' }, m ? '+10' : (w && t ? '+5' : '+1')), 
-          w ? mini(g, w, { group: wizardsGroup, groupIndex: wizardsGroup.indexOf(w) }) : h('div', { class: 'mcard empty' }, 'no wizard'), 
-          t ? mini(g, t, { group: towersGroup, groupIndex: towersGroup.indexOf(t) }) : h('div', { class: 'mcard empty' }, 'no tower'));
+          h('span', { class: 'pts' }, inventory ? `${m ? 10 : w && t ? 5 : 1} VP` : m ? '+10' : (w && t ? '+5' : '+1')),
+          w ? mini(g, w, { group: wizardsGroup, groupIndex: wizardsGroup.indexOf(w), inert: inventory }) : h('div', { class: 'mcard empty' }, 'no wizard'),
+          t ? mini(g, t, { group: towersGroup, groupIndex: towersGroup.indexOf(t), inert: inventory }) : h('div', { class: 'mcard empty' }, 'no tower'));
       }) : h('span', { class: 'none' }, 'None yet')),
-      h('div', { class: 'mat-cardlist', 'data-testid': `mat-cards-${p.name}`, 'data-wizards': p.wizards.join(','), 'data-towers': p.towers.join(',') },
+      h('div', { class: 'mat-cardlist', 'data-testid': `mat-cards-${id(p.name)}`, 'data-wizards': p.wizards.join(','), 'data-towers': p.towers.join(',') },
         `Wizards: ${cardList(g, p.wizards)} · Towers: ${cardList(g, p.towers)}`),
       h('div', { class: 'mat-label' }, `Spells & Familiars (${p.spells.length + p.familiars.length})`),
       h('div', { class: 'mat-row' }, (p.spells.length + p.familiars.length) ? (() => {
@@ -504,20 +527,21 @@ export function openMats(g) {
             cls: s.cast ? '' : 'uncast', 
             badge: s.cast ? null : 'uncast',
             group: spellsAndFams,
-            groupIndex: spellsAndFams.indexOf(s.key)
+            groupIndex: spellsAndFams.indexOf(s.key),
+            inert: inventory,
           }) : mini(g, null)),
           ...p.familiars.map((f, i) => mini(g, f, {
             group: spellsAndFams,
-            groupIndex: spellsAndFams.indexOf(f)
+            groupIndex: spellsAndFams.indexOf(f),
+            inert: inventory,
           })),
         ];
       })() : h('span', { class: 'none' }, 'None yet')),
       (p.treasures.length || p.achievements.length) ? h('div', { class: 'mat-label' }, 'Items & Achievements') : null,
       (p.treasures.length || p.achievements.length) ? h('div', { class: 'mat-row' },
-        ...p.treasures.map((t) => mini(g, t.key)), ...p.achievements.map((a) => h('span', { class: 'ach-chip' }, achievementTile(achievementFromText(g.cards, a), { size: 'chip' })))) : null,
+        ...p.treasures.map((t) => mini(g, t.key, { inert: inventory })), ...p.achievements.map((a) => h('span', { class: 'ach-chip' }, achievementTile(achievementFromText(g.cards, a), { size: 'chip' })))) : null,
     ));
   }
-  return ov;
 }
 
 // ------------------------------------------------------------------ log drawer
@@ -841,7 +865,6 @@ export function xTargetPicker(g, host, maxX, title = 'Invisibility Potion') {
   let x = 1;
   const val = h('span', { class: 'val' }, '1');
   const opp = g.v.players.filter((q) => !q.you);
-  const hasShield = (q) => (q.spells || []).some((sp) => sp.cast && /Spell_Spell_Shield/.test(sp.key || sp.img || ''));
   const chips = opp.map((q) => {
     const shielded = hasShield(q);
     const c = h('button', { class: `chip x-target-chip ${shielded ? 'shielded' : ''}`, disabled: shielded || null, 'data-testid': `x-target-${q.name}` },
@@ -914,7 +937,7 @@ export async function gatherFlow(g, cid) {
     renderKeep(); maybeDone();
   };
   const maybeDone = () => {
-    if (sel.size === need(side) && (!L.bloom || bloom)) { busy = true; setTimeout(() => proceed().catch((e) => { g.toast(String(e)); ov.close(); }), 260); }
+    if (sel.size === need(side) && (!L.bloom || bloom)) { busy = true; setTimeout(() => Inv.idle().then(proceed).catch((e) => { g.toast(String(e)); ov.close(); }), 260); }
   };
   const proceed = async () => {
     const keep = [...sel].sort((a, b) => a - b).map((i) => icons(side)[i]);
@@ -1735,7 +1758,7 @@ export async function arena(g, { mode, wizard = null }) {
     if (leader) replaceChildren(high, 'High bid ', logValueChip({ kind: 'mana', value: hi }), ` · ${leader === me ? 'You' : leader}`);
     else high.textContent = 'No bids yet';
     b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
-    await sleep(fast ? 120 : 650);
+    await Inv.pausableSleep(fast ? 120 : 650);
   };
   const playTail = async (tail, fast = false) => { for (; shown < tail.length; shown++) await showBid(tail[shown][0], tail[shown][1], fast || g.skip); };
 
@@ -1789,7 +1812,7 @@ export async function arena(g, { mode, wizard = null }) {
       msg.setAttribute('data-testid', 'arena-winner');
       g.sfx(w === me ? 'win' : 'coin');
     } else msg.textContent = 'Nobody bid';
-    await sleep(g.skip ? 300 : 1500);
+    await Inv.pausableSleep(g.skip ? 300 : 1500);
   };
 
   try {
@@ -1813,7 +1836,7 @@ export async function arena(g, { mode, wizard = null }) {
       if (sig !== ident || !extends_) { await finish(); break; }
       lastTail = a.tail.map((x) => [...x]);
       await playTail(a.tail, mode === 'respond' && shown === 0 && a.tail.length > 4);
-      if (a.waiting !== me) { await sleep(300); continue; }
+      if (a.waiting !== me) { await Inv.pausableSleep(300); continue; }
       Object.values(seats).forEach((s) => s.classList.remove('active'));
       seats[me].classList.add('active');
       const c = await controls(a.high + 1, g.me_().mana, false, a.who);
@@ -2007,8 +2030,11 @@ export async function banner(g, e, i = 0, n = 1, turnOf = null) {
   g.skipMove = false;
   const flights = live ? bannerGatherFlights(el, e) : null;
   let landed = !flights; flights?.done.then(() => { landed = true; });
-  const t0 = Date.now();
-  while ((Date.now() - t0 < dur || !landed || (flights && GA.testClock.hold)) && !g.skip && !g.skipMove) await sleep(50);
+  let shown = 0;
+  while ((shown < dur || !landed || (flights && GA.testClock.hold) || Inv.isOpen()) && !g.skip && !g.skipMove) {
+    const t0 = Date.now(); await sleep(50);
+    if (!Inv.isOpen()) shown += Date.now() - t0;
+  }
   if (flights) { flights.finish(); await flights.done; }
   g.skipMove = false;
 }

@@ -168,6 +168,18 @@
         "tests/e2e/text-size.spec.js"
       ],
       "note": "Cinzel Decorative kerns o·o, h·e, i·E by a third to a half em; display text turns kerning off. Bumped text stays at 13 px or more."
+    },
+    {
+      "issue": 148,
+      "status": "new",
+      "kind": "e2e",
+      "description": "Eye toggle: see the players' inventory from any screen and return to it unchanged",
+      "report": "2026-11-18T20-29-25-465Z-i9xqn",
+      "fixture": "tests/e2e/fixtures/issue-143.json",
+      "tests": [
+        "tests/e2e/eye-toggle.spec.js"
+      ],
+      "note": "The inventory has its own layer above the overlays, so closeAll and AI-turn closes leave it alone. While it is open, settle, AI steps, AI banners, arena playback and the keep commit wait; eye and inventory taps never skip an AI move or land a gather."
     }
   ],
   "fixes_without_a_report": [
