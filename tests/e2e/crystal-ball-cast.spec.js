@@ -18,11 +18,20 @@ test('Crystal Ball: the ball shows over the board, ignores taps, clears within 2
   await page.evaluate(() => { window.lwDebug._g.aiStep = async () => false; });
   await page.waitForFunction(() => window.lwDebug.ready(), null, { timeout: 60_000 });
 
+  // Times the overlay in the page, from insertion to removal, so a slow runner's own steps are not counted.
+  await page.evaluate(() => {
+    const W = window.__cb = {};
+    new MutationObserver((recs) => {
+      for (const r of recs) {
+        for (const n of r.addedNodes) if (n.dataset?.testid === 'crystal-ball-cast') W.added = performance.now();
+        for (const n of r.removedNodes) if (n.dataset?.testid === 'crystal-ball-cast') W.removed = performance.now();
+      }
+    }).observe(document.body, { childList: true });
+  });
   await page.locator('#board [data-slot="spell_0"]').first().tap();
   await page.getByTestId('research-cast').tap();
   const ball = page.getByTestId('crystal-ball-cast');
   await expect(ball).toBeAttached({ timeout: 10_000 });
-  const t0 = Date.now();
 
   const probe = await page.evaluate(() => {
     const el = document.querySelector('[data-testid=crystal-ball-cast]');
@@ -39,7 +48,8 @@ test('Crystal Ball: the ball shows over the board, ignores taps, clears within 2
   await page.getByTestId('mats').getByTestId('ov-close').click();
 
   await expect(ball).toHaveCount(0, { timeout: 2_500 });
-  expect(Date.now() - t0).toBeLessThan(2_500);
+  const life = await page.evaluate(() => window.__cb.removed - window.__cb.added);
+  expect(life, 'on screen for').toBeLessThan(2_500);
   await expect(page.locator('#dock [data-testid^=hand-]')).toHaveCount(5);
   const me = await page.evaluate(() => window.lwDebug.view().players.find((p) => p.you));
   expect(me.hand).toHaveLength(5);
