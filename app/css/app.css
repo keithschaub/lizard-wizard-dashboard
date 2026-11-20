@@ -1090,3 +1090,20 @@ body.peek-open .banner .bprog { animation-play-state: paused; }
 .th-foot { margin: 8px 4px 0; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, .1); font-size: 13.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
 .th-foot.cur { color: var(--teal); font-weight: 700; }
 .th-foot img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+
+/* ---------- Crystal Ball cast: fade in 0.3 s, hold 1 s, fade out 0.3 s ---------- */
+.cb-veil { position: fixed; inset: 0; z-index: 70; pointer-events: none; animation: cbShow 1.6s ease-in-out both;
+  background: radial-gradient(60% 42% at 50% var(--cy), rgba(40, 24, 90, .42), rgba(5, 7, 20, 0) 72%); }
+@keyframes cbShow { 0% { opacity: 0; } 19% { opacity: 1; } 81% { opacity: 1; } 100% { opacity: 0; } }
+.cb-wrap { position: absolute; left: 50%; top: var(--cy); transform: translate(-50%, -54%); width: 190px; height: 232px; }
+.cb-halo { position: absolute; left: 50%; top: 92px; width: 290px; height: 290px; transform: translate(-50%, -50%); border-radius: 50%;
+  background: radial-gradient(circle, rgba(178, 150, 255, .42) 0%, rgba(120, 90, 230, .18) 42%, rgba(120, 90, 230, 0) 68%); }
+.cb-ball { position: absolute; left: 50%; top: 2px; width: 180px; height: 180px; transform: translateX(-50%); border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 50% 55%, #3a2a7a 0%, #20174f 55%, #120c30 100%);
+  box-shadow: inset 0 0 0 2px rgba(255, 225, 150, .85), inset 0 -18px 40px rgba(0, 0, 0, .55), 0 0 34px rgba(170, 140, 255, .55); }
+.cb-mist { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; animation: cbSwirl 1.6s ease-in-out both; }
+@keyframes cbSwirl { from { transform: rotate(-30deg) scale(.92); } to { transform: rotate(20deg) scale(1.04); } }
+.cb-glint { position: absolute; left: 34px; top: 24px; width: 54px; height: 32px; border-radius: 50%; transform: rotate(-30deg);
+  background: radial-gradient(ellipse, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 70%); }
+.cb-glint2 { position: absolute; right: 36px; bottom: 30px; width: 18px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, .35); filter: blur(1px); }
+.cb-stand { position: absolute; left: 50%; top: 166px; transform: translateX(-50%); width: 132px; height: 62px; }
