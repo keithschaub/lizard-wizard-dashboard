@@ -213,14 +213,15 @@ export function expandCard(g, key, {
   actions = [], extra = null, group = null, groupIndex = 0, title = null, titleTestid = null,
   subtitle = null, actionPrompt = null, actionLayout = 'actions', compactTiles = false, costInfo = null,
   actionFrame = null, hideCardInfo = false,
-  testid = 'expanded', closeTestid = 'ov-close',
+  testid = 'expanded', closeTestid = 'ov-close', root = undefined,
 } = {}) {
   // group: array of card keys for swipeable navigation, groupIndex: current card index in group
   const cards = (group && group.length ? group : [key]).filter(Boolean);
   const resolvedIdx = Number.isFinite(groupIndex) && groupIndex >= 0 ? groupIndex : cards.indexOf(key);
   let currentIndex = Math.min(Math.max(0, resolvedIdx < 0 ? 0 : resolvedIdx), cards.length - 1);
   
-  const ov = openOverlay('expand', { onScrim: (o) => o.close(), testid });
+  const ov = openOverlay('expand', { onScrim: (o) => o.close(), testid, root });
+  if (root) ov.el.dataset.peekChild = '';
   if (actionLayout === 'tiles') ov.el.classList.add('tiles');
   
   // Container for all card frames (for swipe animation)
@@ -441,12 +442,13 @@ function pairUp(g, wizards, towers) {
   return cols;
 }
 
-function mini(g, key, { cls = '', badge = null, testid = null, group = null, groupIndex = 0, handGather = false, inert = false } = {}) {
+// `peek`: the card sits on the inventory sheet (peek layer), so its enlarged view opens there too, on top of it.
+function mini(g, key, { cls = '', badge = null, testid = null, group = null, groupIndex = 0, handGather = false, peek = false } = {}) {
   if (!key) return h('div', { class: 'mcard back', 'data-testid': testid }, 'LW');
-  if (inert) return h('div', { class: `mcard ${cls}`, 'data-testid': testid }, h('img', { src: art(key), alt: key }), badge ? h('div', { class: 'badge' }, badge) : null);
   return h('div', { class: `mcard ${cls}`, 'data-testid': testid, onclick: (e) => { 
     e.stopPropagation(); 
     g.sfx('tap');
+    if (peek) { expandCard(g, key, { group, groupIndex, root: document.getElementById('peek-layer') }); return; }
     const youTurn = g.v.next === g.me && !g.v.game_over;
     const legal = !!(g.v.legal.gather || {})[key];
     if (handGather && youTurn && legal && !g.busyFlow()) gatherFlow(g, key);
@@ -477,7 +479,8 @@ export function openInventory(g, close) {
   const ov = openOverlay('mats inventory', { onScrim: () => close(), testid: 'inventory', root });
   const draw = () => matSheet(g, ov.el, closeBtn(() => close(), 'inventory-close'), { inventory: true });
   draw();
-  return { el: ov.el, close: ov.close, refresh: () => { const top = ov.el.scrollTop; draw(); ov.el.scrollTop = top; } };
+  const closeWithCards = () => { root.querySelectorAll('.overlay[data-peek-child]').forEach((o) => o.remove()); ov.close(); };
+  return { el: ov.el, close: closeWithCards, refresh: () => { const top = ov.el.scrollTop; draw(); ov.el.scrollTop = top; } };
 }
 
 // ------------------------------------------------------------------ turn steps card (the ? button)
@@ -574,6 +577,10 @@ function matSheet(g, el, close, { inventory = false } = {}) {
     const shielded = hasShield(p);
     const tok = counts(p.tok);
     const pairs = pairUp(g, p.wizards, p.towers);
+    // Every card on this player's mat swipes through all of them, in the order they are shown.
+    const all = []; const card = (k) => (k ? all.push(k) - 1 : -1);
+    const tap = (k, o = {}) => mini(g, k, { ...o, group: all, groupIndex: card(k), peek: inventory });
+    const achKey = (a) => (g.cards[`Achievement:${a}`] ? `Achievement:${a}` : null);
     appendNodes(el, h('div', { class: `mat ${p.you ? 'you' : ''}`, 'data-testid': `mat-${id(p.name)}` },
       h('div', { class: 'mat-head' }, avatar(p.name, 30), h('span', { class: 'mat-name' }, p.name), !p.you && p.level ? diffBadge(p.level) : null, tag ? h('span', { class: `mat-tag ${p.you ? 'you' : ''}` }, tag) : null,
         h('span', { class: 'stat vp mat-vp' }, `${p.vp} VP`)),
@@ -585,43 +592,29 @@ function matSheet(g, el, close, { inventory = false } = {}) {
         h('span', { class: 'stat store' }, inventory ? `Gather ${3 + p.bonus.length}` : `Gather 3${p.bonus.length ? ' +' + p.bonus.length : ''}`, ...p.bonus.map((r) => h('img', { src: reagentIcon(r), alt: '', style: { width: '18px' } })))),
       h('div', { class: 'mat-row' }, tok.size ? [...tok].map(([r, n]) => tokenChip(r, n)) : h('span', { class: 'none' }, 'No reagent tokens')),
       h('div', { class: 'mat-label' }, p.you ? 'Reagent cards in hand' : `Reagent cards in hand: ${p.hand_count}`),
-      p.you ? h('div', { class: 'mat-row' }, p.hand.map((k, i) => mini(g, k, {
-        group: p.hand, groupIndex: i, handGather: !inventory && g.v.next === g.me && !g.v.game_over, inert: inventory,
-      }))) : null,
+      p.you ? h('div', { class: 'mat-row' }, p.hand.map((k) => tap(k, { handGather: !inventory && g.v.next === g.me && !g.v.game_over }))) : null,
       h('div', { class: 'mat-label' }, `Wizards & Towers (${p.wizards.length}/${p.towers.length})`),
-      h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m], i) => {
-        // Create combined group of all wizards and towers for this mat
-        const wizardsGroup = p.wizards.filter(k => k);
-        const towersGroup = p.towers.filter(k => k);
-        return h('div', { class: `pair ${m ? 'match' : ''}` },
-          h('span', { class: 'pts' }, inventory ? `${m ? 10 : w && t ? 5 : 1} VP` : m ? '+10' : (w && t ? '+5' : '+1')),
-          w ? mini(g, w, { group: wizardsGroup, groupIndex: wizardsGroup.indexOf(w), inert: inventory }) : h('div', { class: 'mcard empty' }, 'no wizard'),
-          t ? mini(g, t, { group: towersGroup, groupIndex: towersGroup.indexOf(t), inert: inventory }) : h('div', { class: 'mcard empty' }, 'no tower'));
-      }) : h('span', { class: 'none' }, 'None yet')),
+      h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m]) => h('div', { class: `pair ${m ? 'match' : ''}` },
+        h('span', { class: 'pts' }, inventory ? `${m ? 10 : w && t ? 5 : 1} VP` : m ? '+10' : (w && t ? '+5' : '+1')),
+        w ? tap(w) : h('div', { class: 'mcard empty' }, 'no wizard'),
+        t ? tap(t) : h('div', { class: 'mcard empty' }, 'no tower'))) : h('span', { class: 'none' }, 'None yet')),
       h('div', { class: 'mat-cardlist', 'data-testid': `mat-cards-${id(p.name)}`, 'data-wizards': p.wizards.join(','), 'data-towers': p.towers.join(',') },
         `Wizards: ${cardList(g, p.wizards)} · Towers: ${cardList(g, p.towers)}`),
       h('div', { class: 'mat-label' }, `Spells & Familiars (${p.spells.length + p.familiars.length})`),
-      h('div', { class: 'mat-row' }, (p.spells.length + p.familiars.length) ? (() => {
-        // Create combined group of all spells and familiars
-        const spellsAndFams = [...p.spells.filter(s => s.key).map(s => s.key), ...p.familiars.filter(f => f)];
-        return [
-          ...p.spells.map((s, i) => s.key ? mini(g, s.key, { 
-            cls: s.cast ? '' : 'uncast', 
-            badge: s.cast ? null : 'uncast',
-            group: spellsAndFams,
-            groupIndex: spellsAndFams.indexOf(s.key),
-            inert: inventory,
-          }) : mini(g, null)),
-          ...p.familiars.map((f, i) => mini(g, f, {
-            group: spellsAndFams,
-            groupIndex: spellsAndFams.indexOf(f),
-            inert: inventory,
-          })),
-        ];
-      })() : h('span', { class: 'none' }, 'None yet')),
+      h('div', { class: 'mat-row' }, (p.spells.length + p.familiars.length) ? [
+        ...p.spells.map((s) => (s.key ? tap(s.key, { cls: s.cast ? '' : 'uncast', badge: s.cast ? null : 'uncast' }) : mini(g, null))),
+        ...p.familiars.map((f) => tap(f)),
+      ] : h('span', { class: 'none' }, 'None yet')),
       (p.treasures.length || p.achievements.length) ? h('div', { class: 'mat-label' }, 'Items & Achievements') : null,
       (p.treasures.length || p.achievements.length) ? h('div', { class: 'mat-row' },
-        ...p.treasures.map((t) => mini(g, t.key, { inert: inventory })), ...p.achievements.map((a) => h('span', { class: 'ach-chip' }, achievementTile(achievementFromText(g.cards, a), { size: 'chip' })))) : null,
+        ...p.treasures.map((tr) => tap(tr.key)),
+        ...p.achievements.map((a) => {
+          const k = achKey(a); const i = card(k);
+          return h('span', { class: 'ach-chip', 'data-testid': k ? `ach-${a}` : null, onclick: k ? (e) => {
+            e.stopPropagation(); g.sfx('tap');
+            expandCard(g, k, { group: all, groupIndex: i, root: inventory ? document.getElementById('peek-layer') : undefined });
+          } : null }, achievementTile(achievementFromText(g.cards, a), { size: 'chip' }));
+        })) : null,
     ));
   }
 }
