@@ -237,6 +237,14 @@
       "tests": [
         "tests/e2e/crystal-ball-cast.spec.js"
       ]
+    },
+    {
+      "feature": "Playtest mode",
+      "description": "Long-press the version for a Playtest sheet: starting mana and gold, face-up spells, wizards and tower, hand and inventory; Start deals the rest with the picks pulled from the decks",
+      "tests": [
+        "tests/e2e/playtest-mode.spec.js",
+        "engine/web/test_lw_web.py (playtest checks)"
+      ]
     }
   ],
   "not_gameplay": [
