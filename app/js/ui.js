@@ -2175,6 +2175,7 @@ export function gameOver(g) {
 export function menu(g) {
   const v = g.v;
   const ov = openOverlay('sheet', { onScrim: (o) => o.close(), testid: 'menu' });
+  const version = h('div', { class: 'menu-version', 'data-testid': 'menu-version' }, versionLabel());
   const scores = v.game_over ? [h('div', { class: 'phase-title', 'data-testid': 'menu-winner' }, `Final scores · ${ranking(v).text}`), h('div', { class: 'menu-scores', 'data-testid': 'menu-scores' }, rankRows(v))] : [];
   appendNodes(ov.el, h('div', { class: 'sheet-panel' }, h('button', { class: 'sheet-close', 'aria-label': 'Close', 'data-testid': 'menu-close', onclick: () => ov.close() }, '×'),
     ...(scores.length ? scores : [h('div', { class: 'phase-title' }, 'Game')]),
@@ -2196,7 +2197,8 @@ export function menu(g) {
       } }, '🐛 Report Bug'),
       h('button', { class: 'act danger', 'data-testid': 'menu-restart', onclick: () => { ov.close(); g.restart(); } }, 'Load the paused game g8')),
     h('div', { class: 'ov-sub' }, g.savedNote()),
-    h('div', { class: 'menu-version', 'data-testid': 'menu-version' }, versionLabel())));
+    version));
+  import('./playtest.js').then((m) => m.bindLongPress(version, () => { ov.close(); m.openPlaytest(g); }));
 }
 
 export async function openNewGameSetup(g) {

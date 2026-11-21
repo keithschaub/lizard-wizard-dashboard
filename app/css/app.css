@@ -1107,3 +1107,61 @@ body.peek-open .banner .bprog { animation-play-state: paused; }
   background: radial-gradient(ellipse, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 70%); }
 .cb-glint2 { position: absolute; right: 36px; bottom: 30px; width: 18px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, .35); filter: blur(1px); }
 .cb-stand { position: absolute; left: 50%; top: 166px; transform: translateX(-50%); width: 132px; height: 62px; }
+
+/* ---------- Playtest setup sheet and card picker ---------- */
+.overlay.pt { padding: calc(var(--safe-t) + 56px) 8px 8px; justify-content: flex-start; }
+.pt-panel, .pk-panel { width: min(100%, 420px); background: linear-gradient(180deg, rgba(22, 32, 76, .98), rgba(11, 16, 42, .98)); border: 1.5px solid rgba(214, 180, 90, .55);
+  border-radius: 20px; padding: 12px 12px 12px; box-shadow: 0 18px 50px rgba(0, 0, 0, .6); display: flex; flex-direction: column; gap: 10px; }
+.pt-top { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+.pt-badge { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, #7d5cff, #4bd6c0); color: #fff; box-shadow: 0 4px 14px rgba(125, 92, 255, .45); }
+.pt-badge svg { width: 22px; height: 22px; }
+.pt-title { font-family: var(--display); font-kerning: none; font-weight: 700; font-size: 22px; color: var(--gold-hi); letter-spacing: .5px; flex: 1; }
+.pt-x.ov-close { position: static; margin: 0; align-self: center; }
+.pt-money { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pt-num { display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; border-radius: 16px; background: rgba(255, 255, 255, .05); border: 1px solid var(--line); }
+.pt-num input { width: 74px; background: transparent; border: 0; color: var(--ink); font: 700 26px/1 var(--sans, inherit); text-align: right; font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; padding: 0; }
+.pt-num input::-webkit-outer-spin-button, .pt-num input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pt-num .log-value-orb { width: 28px; height: 28px; flex: none; }
+.pt-sec { display: flex; flex-direction: column; gap: 6px; }
+.pt-split { flex-direction: row; justify-content: space-between; gap: 8px; }
+.pt-split > div { display: flex; flex-direction: column; gap: 6px; }
+.pt-lab { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; color: #dfe6ff; letter-spacing: .3px; height: 24px; }
+.pt-ic { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; display: grid; place-items: center; color: var(--gold-hi); flex: none; }
+.pt-ic svg { width: 20px; height: 20px; }
+.pt-ic.card { border-radius: 5px; object-position: 50% 18%; }
+.pt-row { display: flex; gap: 8px; }
+.pt-slot { position: relative; width: 84px; height: 122px; border-radius: 12px; padding: 0; overflow: hidden; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+.pt-slot.rnd, .pt-slot.add { border: 1.5px dashed rgba(150, 190, 255, .42); background: rgba(255, 255, 255, .035); color: var(--muted); }
+.pt-slot.add { border-color: rgba(111, 240, 208, .5); color: var(--teal); }
+.pt-die svg { width: 26px; height: 26px; }
+.pt-rl { font-size: 13px; font-weight: 600; }
+.pt-slot.on { border: 2px solid var(--teal); box-shadow: 0 0 0 3px rgba(111, 240, 208, .18), 0 6px 16px rgba(0, 0, 0, .5); background: #0b1030; }
+.pt-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pt-check { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; border-radius: 50%; background: var(--teal); color: #05241c; display: grid; place-items: center; box-shadow: 0 2px 6px rgba(0, 0, 0, .5); }
+.pt-check svg { width: 15px; height: 15px; }
+.pt-band { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 4px 5px; display: flex; align-items: center; justify-content: center; gap: 3px;
+  background: linear-gradient(180deg, rgba(5, 8, 22, 0), rgba(5, 8, 22, .92) 46%); font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; }
+.pt-school { width: 16px; height: 16px; flex: none; }
+.pt-start.act { justify-content: center; font-size: 18px; min-height: 54px; margin-top: 2px; }
+.pk-panel { height: calc(100dvh - var(--safe-t) - 64px); }
+.pk-schools { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; flex: none; }
+.pk-chip { flex: none; height: 38px; min-width: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255, 255, 255, .05); color: var(--ink); font-weight: 700; font-size: 14px; display: grid; place-items: center; }
+.pk-chip.ic { padding: 0; width: 38px; }
+.pk-chip img { width: 24px; height: 24px; }
+.pk-chip.on { background: var(--gold-hi); color: #241a05; border-color: var(--gold-hi); }
+.pk-grid { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 4px 2px 6px; align-content: start; }
+.pk-card { position: relative; padding: 0; border: 0; border-radius: 10px; background: none; aspect-ratio: 665 / 1008; overflow: visible; }
+.pk-card img { width: 100%; height: 100%; display: block; border-radius: 10px; box-shadow: 0 6px 16px rgba(0, 0, 0, .55); }
+.pk-card.on img { outline: 3px solid var(--teal); outline-offset: 2px; box-shadow: 0 0 0 7px rgba(111, 240, 208, .2), 0 8px 20px rgba(0, 0, 0, .6); }
+.pk-card .pt-check { top: -6px; right: -6px; width: 28px; height: 28px; }
+.pk-card .pt-check svg { width: 17px; height: 17px; }
+.pk-bar { flex: none; display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, .1); }
+.pk-sel { display: flex; align-items: center; gap: 7px; min-width: 0; font-weight: 700; font-size: 15px; color: var(--ink); white-space: nowrap; }
+.pk-mini { width: 30px; height: 44px; border-radius: 4px; object-fit: cover; flex: none; }
+.pk-bar .act { min-height: 46px; padding: 8px 14px; font-size: 15px; }
+.pk-rnd { gap: 6px; justify-content: center; }
+.pk-rnd .pt-die svg { width: 20px; height: 20px; }
+.pk-card .pt-check { top: auto; bottom: -6px; right: -6px; }
+.pt-row.wrap { flex-wrap: wrap; }
+.pk-go:disabled { opacity: .45; }
+.menu-version { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
