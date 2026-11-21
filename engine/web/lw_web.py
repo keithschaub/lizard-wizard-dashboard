@@ -1457,6 +1457,104 @@ def new_game_start(picks, seed=None):
     return 'started'
 
 
+
+# ------------------------------------------------------------------ playtest: a new game with a forced setup
+# The engine deals as usual (deal4.py hands, then board); the picked cards are swapped in afterwards. Every pick
+# moves one copy of a card out of its deck list, and whatever it replaces goes back to that deck at the same spot,
+# so deck sizes and card counts stay as dealt. Settings are recorded in meta['playtest']; the game saves as normal.
+PLAYTEST_FACES = (('spells', 'spell_face', 'spell_list', 'spell_deck', 4, 'Spell_'),
+                  ('wizards', 'wiz_face', 'wiz_list', 'wiz_deck', 2, 'Wizard_'))
+PLAYTEST_INVENTORY = {'Spell_': ('spell_face', 'spell_list', 'spell_deck', 'spells'), 'Wizard_': ('wiz_face', 'wiz_list', 'wiz_deck', 'wizards'),
+                      'Tower_': (None, 'tow_list', 'tower_deck', 'towers'), 'Familiar_': ('fam_face', 'fam_list', 'fam_deck', 'familiars')}
+
+
+def _norm_forced(forced):
+    f = dict(forced or {})
+    def keys(v, n, prefix):
+        v = [key(x) if x else None for x in list(v or [])[:n]]
+        v += [None] * (n - len(v))
+        for k in v:
+            if k and not k.startswith(prefix): raise Refused(f'{k} cannot go in that slot')
+        return v
+    out = dict(spells=keys(f.get('spells'), 4, 'Spell_'), wizards=keys(f.get('wizards'), 2, 'Wizard_'),
+               tower=keys([f.get('tower')], 1, 'Tower_')[0], hand=keys(f.get('hand'), 3, 'Reagent_'), inventory=[])
+    for k in f.get('inventory') or []:
+        k = key(k)
+        if not any(k.startswith(x) for x in PLAYTEST_INVENTORY): raise Refused(f'{k} cannot start in the inventory')
+        out['inventory'].append(k)
+    for n in ('mana', 'gold'):
+        v = f.get(n)
+        if v is None or v == '': out[n] = None; continue
+        v = int(v)
+        if v < 0 or v > 999: raise Refused(f'{n} must be 0 to 999')
+        out[n] = v
+    return out
+
+
+def _take(lst, k):
+    """Remove one copy of card k from a deck list: (path, index) or (None, None)."""
+    for i, x in enumerate(lst):
+        if key(x) == k: return lst.pop(i), i
+    return None, None
+
+
+def _force_face(s, face, lst, count, i, k, picked=()):
+    cur = s[face] if i is None else s[face][i]
+    if k is None or (cur and key(cur) == k): return
+    if i is not None:
+        j = next((j for j, x in enumerate(s[face]) if j != i and x and key(x) == k and (j >= len(picked) or picked[j] != k)), None)
+        if j is not None: s[face][i], s[face][j] = s[face][j], s[face][i]; return
+    path, at = _take(s[lst], k)
+    if path is None: raise Refused(f'{k} is not in the deck')
+    if cur: s[lst].insert(at, cur)
+    if i is None: s[face] = path
+    else: s[face][i] = path
+    s[count] = len(s[lst])
+
+
+def playtest_start(forced=None, config=None, seed=None, ai_seed=None, board_seed=None, picks=None):
+    """New game with a forced setup: starting mana and gold, face-up spells, wizards and tower, starting hand, inventory."""
+    f = _norm_forced(forced)
+    rng = random.SystemRandom()
+    want = [k for k in f['hand'] if k]
+    for attempt in range(60):
+        pv = new_game_preview(seed=seed if attempt == 0 else None, ai_seed=ai_seed if attempt == 0 else None, config=config)
+        s = G['setup']; me_ = P(s, pv['human'])
+        pool = [key(x) for x in s['reag_list']] + [key(x) for x in me_['hand']]
+        if all(pool.count(k) >= want.count(k) for k in set(want)): break
+        if seed is not None and attempt == 0: raise Refused('a picked reagent card was dealt to an AI with this seed')
+    else:
+        raise Refused('could not keep the picked reagent cards out of the AI hands')
+    for i, k in enumerate(f['hand']):
+        if not k or key(me_['hand'][i]) == k: continue
+        j = next((j for j in range(3) if j != i and key(me_['hand'][j]) == k and f['hand'][j] != k), None)
+        if j is not None: me_['hand'][i], me_['hand'][j] = me_['hand'][j], me_['hand'][i]; continue
+        path, at = _take(s['reag_list'], k)
+        if path is None: raise Refused(f'{k} is not in the reagent deck')
+        s['reag_list'].insert(at, me_['hand'][i]); me_['hand'][i] = path
+    s['reag_deck'] = len(s['reag_list'])
+    picks = picks or rng.sample(REAGENTS, 2)
+    new_game_start(picks, seed=board_seed)
+    s = G['s']; me_ = P(s, G['me'])
+    for name, face, lst, count, n, _ in PLAYTEST_FACES:
+        for i, k in enumerate(f[name][:n]): _force_face(s, face, lst, count, i, k, f[name])
+    _force_face(s, 'tower_face', 'tow_list', 'tower_deck', None, f['tower'])
+    for k in f['inventory']:
+        face, lst, count, field = next(v for p_, v in PLAYTEST_INVENTORY.items() if k.startswith(p_))
+        path, _ = _take(s[lst], k)
+        if path is None and face:
+            i = next((i for i, x in enumerate(s[face]) if x and key(x) == k and k not in (f['spells'] + f['wizards'])), None)
+            if i is not None: path = s[face][i]; s[face][i] = s[lst].pop(0) if s[lst] else None
+        if path is None and face is None and s['tower_face'] and key(s['tower_face']) == k and f['tower'] != k:
+            path = s['tower_face']; s['tower_face'] = s[lst].pop(0) if s[lst] else None
+        if path is None: raise Refused(f'{k} is not in the deck')
+        s[count] = len(s[lst])
+        me_.setdefault(field, []).append({'img': path, 'cast': False} if field == 'spells' else path)
+    if f['mana'] is not None: me_['mana'] = f['mana']
+    if f['gold'] is not None: me_['gold'] = f['gold']
+    s['meta']['playtest'] = f
+    return 'started'
+
 # ------------------------------------------------------------------ JSON entry point for the worker
 API = dict(load=load, view=lambda: view(), dump=lambda: dump(), card_db=lambda: card_db(), full_log=lambda: full_log(),
            gather_preview=gather_preview, act_gather=act_gather, act_convert=act_convert, act_convert1=act_convert1,
@@ -1464,8 +1562,8 @@ API = dict(load=load, view=lambda: view(), dump=lambda: dump(), card_db=lambda: 
            summon_gather_preview=summon_gather_preview, act_summon=act_summon, act_divination=act_divination,
            choose_new_research=choose_new_research, dungeon_flip=dungeon_flip, dungeon_stop=dungeon_stop,
            dungeon_cancel=dungeon_cancel, resolve_effect=resolve_effect, rise_use=rise_use, ai_step=ai_step,
-           new_game_preview=new_game_preview, new_game_start=new_game_start)
-MUTATING = {k for k in API if k.startswith(('act_', 'choose_', 'dungeon_', 'resolve_', 'rise_'))} | {'new_game_start'}
+           new_game_preview=new_game_preview, new_game_start=new_game_start, playtest_start=playtest_start)
+MUTATING = {k for k in API if k.startswith(('act_', 'choose_', 'dungeon_', 'resolve_', 'rise_'))} | {'new_game_start', 'playtest_start'}
 
 
 def call(fn, args_json='{}'):
@@ -1480,7 +1578,7 @@ def call(fn, args_json='{}'):
         if fn in MUTATING:
             out['view'] = view()
             # moves the engine made inside this call (e.g. AI turns after an auction), so the UI can announce them
-            out['entries'] = [e for e in public_log(st(), me()) if e['i'] >= n0] if n0 is not None and fn != 'new_game_start' else []
+            out['entries'] = [e for e in public_log(st(), me()) if e['i'] >= n0] if n0 is not None and fn not in ('new_game_start', 'playtest_start') else []
     except Refused as e:
         out = dict(ok=False, error=str(e))
     except (ValueError, AssertionError, KeyError, IndexError, TypeError) as e:
