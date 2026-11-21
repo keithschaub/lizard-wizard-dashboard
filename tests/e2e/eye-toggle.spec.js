@@ -265,7 +265,7 @@ test('inventory: opponents first, no opponent gold, shield state, no plus signs,
   await expect(inv.locator('.mat-tag')).toHaveText(['You']);
 });
 
-test('inventory is read-only: no gather, enlarge or other action from inside it', async ({ page }) => {
+test('inventory takes no action: a tapped card only enlarges, over the inventory (issue 153)', async ({ page }) => {
   await open(page, fx('issue-143'), { noAi: true });
   await eye(page).tap();
   const inv = inventory(page);
@@ -273,16 +273,19 @@ test('inventory is read-only: no gather, enlarge or other action from inside it'
   await expect(inv.locator('button')).toHaveCount(1);
   await expect(inv.getByTestId('inventory-close')).toHaveCount(1);
   const save = await page.evaluate(() => localStorage.getItem('lw.save.v1'));
-  const cards = inv.locator('.mcard:not(.empty)');
-  const n = await cards.count();
-  expect(n).toBeGreaterThan(5);
-  for (let i = 0; i < n; i++) {
+  const cards = inv.locator('.mcard:not(.empty):not(.back)');
+  expect(await cards.count()).toBeGreaterThan(5);
+  const big = page.locator('#peek-layer [data-testid=expanded]:not(.out)');
+  for (let i = 0; i < 6; i++) {
     const c = cards.nth(i);
-    if (!(await c.isVisible())) continue;
     await c.scrollIntoViewIfNeeded();
     await c.tap();
+    await expect(big).toBeVisible();
+    await expect(big.getByTestId('expanded-actions').locator('button')).toHaveCount(0);
+    await big.getByTestId('ov-close').tap();
+    await expect(big).toHaveCount(0);
   }
-  expect(await page.evaluate(() => document.querySelectorAll('#overlays .overlay').length), 'no overlay opened under the inventory').toBe(0);
+  expect(await page.evaluate(() => document.querySelectorAll('#overlays .overlay').length), 'nothing opened under the inventory').toBe(0);
   await expect(inv).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('lw.save.v1'))).toBe(save);
 });
