@@ -777,5 +777,47 @@ e = {'act': 'gather', 'card': 'Reagent_34', 'got': ['Mandrake', 'Sulphur', 'Sulp
 check(W.gathered_tokens(e) == ['Sulphur', 'Sulphur', 'Mandrake'], f'gathered: Miracle half in print order ({W.gathered_tokens(e)})')
 check(W.gathered_tokens({'act': 'rise', 'use': 'gather', 'got': ['Nightshade'] * 5}) == ['Nightshade'] * 5, 'gathered: a familiar gather is one stream')
 
+
+# Playtest: a new game with a forced setup. Same seeds as a normal deal, so the two games hold the same cards.
+from collections import Counter
+def census(s):
+    c = Counter()
+    for k in ('spell_list', 'wiz_list', 'tow_list', 'fam_list', 'reag_list', 'reag_discard', 'spell_face', 'wiz_face', 'fam_face'):
+        c.update(W.key(x) for x in s.get(k) or [] if x)
+    if s.get('tower_face'): c[W.key(s['tower_face'])] += 1
+    for q in s['players']:
+        for k in ('hand', 'wizards', 'towers', 'familiars'): c.update(W.key(x) for x in q.get(k) or [])
+        c.update(W.key(x['img']) for x in q.get('spells') or [])
+    return c
+def counts_ok(s): return all(s[c] == len(s[l]) for l, c in (('spell_list', 'spell_deck'), ('wiz_list', 'wiz_deck'), ('tow_list', 'tower_deck'), ('fam_list', 'fam_deck'), ('reag_list', 'reag_deck')))
+SEEDS = dict(seed=4242, ai_seed=31, board_seed=77, picks=['Horn', 'Mandrake'])
+call('new_game_preview', seed=4242, ai_seed=31); call('new_game_start', picks=['Horn', 'Mandrake'], seed=77)
+base = copy.deepcopy(W.st())
+forced = dict(mana=40, gold=16, spells=['Spell_Crystal_Ball', None, None, None], wizards=['Wizard_Serpentium_Machinus', 'Wizard_Serpentium_Machinus'],
+              tower='Tower_T2_Keep_of_Elixers', hand=['Reagent_05', None, 'Reagent_14'], inventory=['Spell_Charm', 'Familiar_10_Imp', 'Wizard_Draco_Mortemus'])
+r = call('playtest_start', forced=forced, **SEEDS)
+s = W.st(); k = A.P(s, 'Keith')
+check(r['ok'] and r['view']['round'] == 1 and r['view']['next'] == 'Keith', f"playtest: the game starts at round 1 with Keith to act ({r.get('error')})")
+check(census(s) == census(base), 'playtest: every card is still in the game exactly as often as in a normal deal (no duplicates, none lost)')
+check(counts_ok(s), 'playtest: every deck count matches its deck list')
+check(W.key(s['spell_face'][0]) == 'Spell_Crystal_Ball' and [W.key(x) for x in s['wiz_face']] == ['Wizard_Serpentium_Machinus'] * 2 and W.key(s['tower_face']) == 'Tower_T2_Keep_of_Elixers',
+      'playtest: picked spell, both wizards (two copies) and the tower are face up in their slots')
+check([W.key(x) for x in k['hand']][0] == 'Reagent_05' and W.key(k['hand'][2]) == 'Reagent_14' and len(k['hand']) == 3, 'playtest: picked reagent cards are in hand, in their slots')
+check(not any(W.key(x) in ('Reagent_05', 'Reagent_14') for q in s['players'] if q['name'] != 'Keith' for x in q['hand']), 'playtest: no AI holds a picked reagent card')
+check([(W.key(x['img']), x['cast']) for x in k['spells']] == [('Spell_Charm', False)] and [W.key(x) for x in k['familiars']] == ['Familiar_10_Imp']
+      and [W.key(x) for x in k['wizards']] == ['Wizard_Draco_Mortemus'], 'playtest: inventory cards are on the mat; the spell starts uncast')
+check(k['mana'] == 40 and k['gold'] == 16 and r['view']['players'][0]['mana'] == 40, 'playtest: starting mana and gold are set')
+check(s['meta']['playtest']['spells'][0] == 'Spell_Crystal_Ball' and len(s['spell_list']) == len(base['spell_list']) - 1, 'playtest: settings recorded in meta; the inventory spell left the deck')
+saved = W.dump(); r2 = call('load', text=saved)
+check(r2['ok'] and W.key(W.st()['spell_face'][0]) == 'Spell_Crystal_Ball' and A.P(W.st(), 'Keith')['mana'] == 40, 'playtest: the game saves and loads like a normal game')
+r = call('playtest_start', forced=dict(spells=['Wizard_Serpentium_Machinus']))
+check(not r['ok'] and 'slot' in r['error'], 'playtest: a wizard cannot go in a spell slot')
+r = call('playtest_start', forced=dict(mana=-1))
+check(not r['ok'], 'playtest: negative mana is refused')
+r = call('playtest_start', forced=dict(spells=['Spell_Crystal_Ball', 'Spell_Crystal_Ball']))
+check(not r['ok'] and 'not in the deck' in r['error'], 'playtest: picking more copies than exist is refused')
+r = call('playtest_start', forced={})
+check(r['ok'] and counts_ok(W.st()) and A.P(W.st(), 'Keith')['mana'] == 20, 'playtest: an empty setup deals a normal game')
+
 print(f'\nRESULT: {PASS} passed, {FAIL} failed' + (' -> ALL PASS' if not FAIL else ''))
 sys.exit(1 if FAIL else 0)
