@@ -217,6 +217,13 @@
         "tests/e2e/gather-animation.spec.js",
         "engine/web/test_lw_web.py (gathered order checks)"
       ]
+    },
+    {
+      "feature": "Crystal Ball cast animation",
+      "description": "Casting Crystal Ball shows a crystal ball over the board for about 1.6 s; it takes no taps, leaves the hand at 5 cards and is removed afterward",
+      "tests": [
+        "tests/e2e/crystal-ball-cast.spec.js"
+      ]
     }
   ],
   "not_gameplay": [

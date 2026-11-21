@@ -1508,7 +1508,24 @@ function convertMixed(g) {
 export function announceSpellEffectResults(g, entries) {
   for (const e of entries || []) {
     if (e.feedback) g.toast(e.feedback);
+    if (e.who === g.me && [e.cast, ...(e.casts || [])].some((c) => String(c || '').includes('Crystal_Ball'))) crystalBallCast();
   }
+}
+
+// Crystal Ball: a glass ball with swirling mist fades in over the board, holds about 1 s and fades out. Visual only.
+const CB_MIST = '<svg class="cb-mist" viewBox="0 0 180 180" aria-hidden="true"><defs><filter id="cb-b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4"/></filter><filter id="cb-b2"><feGaussianBlur stdDeviation="9"/></filter></defs><ellipse cx="92" cy="104" rx="62" ry="34" fill="rgba(170,140,255,.45)" filter="url(#cb-b2)"/><g fill="none" stroke-linecap="round" filter="url(#cb-b)"><path d="M34 108 C46 70 104 58 128 80 C150 100 128 132 96 128 C72 125 68 104 88 98 C102 94 112 104 104 112" stroke="rgba(226,210,255,.85)" stroke-width="9"/><path d="M150 74 C140 46 96 38 70 54 C50 66 48 88 62 96" stroke="rgba(150,226,255,.6)" stroke-width="7"/><path d="M44 132 C70 152 120 150 142 126" stroke="rgba(255,228,180,.45)" stroke-width="6"/></g></svg>';
+const CB_STAND = '<svg class="cb-stand" viewBox="0 0 132 62" aria-hidden="true"><defs><linearGradient id="cb-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a3"/><stop offset=".45" stop-color="#d6b45a"/><stop offset="1" stop-color="#7a5a1e"/></linearGradient></defs><path d="M30 4 C44 14 88 14 102 4 L96 22 C86 30 46 30 36 22 Z" fill="url(#cb-g)" stroke="#5a3f12" stroke-width="1.2"/><path d="M40 26 L92 26 L104 44 C90 50 42 50 28 44 Z" fill="url(#cb-g)" stroke="#5a3f12" stroke-width="1.2"/><ellipse cx="66" cy="50" rx="56" ry="9" fill="url(#cb-g)" stroke="#5a3f12" stroke-width="1.2"/><ellipse cx="66" cy="48" rx="40" ry="4" fill="rgba(255,240,200,.45)"/></svg>';
+export function crystalBallCast() {
+  if (GA.reducedMotion()) return null;
+  const stage = document.getElementById('stage')?.getBoundingClientRect();
+  const el = h('div', { class: 'cb-veil', 'data-testid': 'crystal-ball-cast', 'aria-hidden': 'true' },
+    h('div', { class: 'cb-wrap', html: `<div class="cb-halo"></div>${CB_STAND}<div class="cb-ball">${CB_MIST}<div class="cb-glint"></div><div class="cb-glint2"></div></div>` }));
+  el.style.setProperty('--cy', `${Math.round(stage ? stage.top + stage.height / 2 : innerHeight / 2)}px`);
+  document.body.appendChild(el);
+  const done = () => el.remove();
+  el.addEventListener('animationend', (e) => { if (e.target === el) done(); });
+  setTimeout(done, 2200);
+  return el;
 }
 
 export function showTimeShiftRemoved(g, entry) {
