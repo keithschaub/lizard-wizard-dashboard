@@ -192,6 +192,19 @@
         "tests/e2e/turn-helper.spec.js"
       ],
       "note": "Shares the eye's suspend logic (app/js/peek.js): while the card is open settle, AI steps, banners, arena playback and the keep commit wait. Over an overlay the card reads the step from the overlay's data-turn-step mark (cast picker, put-back) or its testid."
+    },
+    {
+      "issue": 153,
+      "status": "new",
+      "kind": "e2e",
+      "description": "Players inventory: tapping a card no longer enlarged it (eye inventory)",
+      "report": "2026-11-21T01-07-48-707Z-iddwd",
+      "fixture": "tests/regression/fixtures/issue-153.json",
+      "tests": [
+        "tests/e2e/regression-issue-153.spec.js",
+        "tests/e2e/eye-toggle.spec.js"
+      ],
+      "note": "#149 drew the eye inventory's cards with no tap handler (view-only), and the sheet sits on the peek layer above #overlays, so an enlarged card would have opened underneath it. Inventory cards now open expandCard on the peek layer; on both sheets the swipe group is that player's whole mat in display order."
     }
   ],
   "fixes_without_a_report": [
