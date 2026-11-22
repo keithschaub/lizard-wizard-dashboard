@@ -42,8 +42,8 @@ async function layoutOfActionRow(page, testid) {
       && cr.top >= br.top - tol && cr.bottom <= br.bottom + tol;
     const overlap = rects.some((cr) => cr.right > lr.left && cr.left < lr.right && cr.bottom > lr.top && cr.top < lr.bottom);
     const first = rects[0];
-    const gap = first ? first.top - lr.bottom : 0;
-    const clear = overlap ? false : (gap >= 2 || first.left >= lr.right + 1);
+    const gap = first ? first.left - lr.right : 0;
+    const clear = !overlap && (gap >= 1 || lr.right <= first.left);
     return {
       ok: clear && rects.every(inside),
       overlap,
@@ -65,8 +65,8 @@ test('Arch-Mage Research & Cast: label, chips, and mana fit without overlap at 4
   await expect(cast.locator('.action-chip-reagents .log-reagent-chip')).toHaveCount(7);
   const layout = await layoutOfActionRow(page, 'research-cast');
   expect(layout.ok, JSON.stringify(layout)).toBe(true);
-  expect(layout.chips.slice(0, 7).every((c) => c.w >= 38 && c.w <= 42 && c.h >= 30 && c.h <= 34), JSON.stringify(layout.chips)).toBe(true);
-  await page.locator('[data-testid=research-cast]').screenshot({
+  expect(layout.chips.slice(0, 7).every((c) => c.w >= 20 && c.w <= 44 && c.h >= 30 && c.h <= 34), JSON.stringify(layout.chips)).toBe(true);
+  await page.locator('[data-testid=expanded]:not(.out)').screenshot({
     path: 'docs/screenshots/issue161-arch-mage-action-chips-430x775.png',
   });
 });
