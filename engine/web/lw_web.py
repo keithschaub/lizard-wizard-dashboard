@@ -790,6 +790,16 @@ def _castable(p, holdings):
     return res
 
 
+def _capacity_with(p, casts):
+    """Storage limit once this action's casts are cast. The cast is paid before the storage check (rulebook p.11), so
+    a Root Cellar cast with this gather counts: 'The Root Cellar spell also increases the limit by 10.'"""
+    q = copy.deepcopy(p)
+    for k in casts or []:
+        own = next((y for y in q.get('spells', []) if key(y['img']) == k and not y.get('cast')), None)
+        if own: own['cast'] = True
+    return A.capacity(q)
+
+
 def gather_preview(card, keep=None, bloom=None, miracle=False, cast=None, x=None):
     """What the UI needs after the keep taps: the reagents gained, the spells castable with them, and the put-back
     count (cast cost is spent BEFORE the storage check, rulebook p.11)."""
@@ -803,8 +813,9 @@ def gather_preview(card, keep=None, bloom=None, miracle=False, cast=None, x=None
         if not c: raise Refused(f'{cast} is not castable with this gather')
         spend = ['Eye_of_Newt'] * int(x or 1) if c[0].get('x') is not None else c[0]['cost']
     pool = list((Counter(holdings) - Counter(spend)).elements())
-    over = max(0, len(holdings) - len(spend) - A.capacity(p))
-    return dict(got=got, bonus=bonus, castable=castable, over=over, pool=sorted(pool, key=REAGENTS.index), cap=A.capacity(p))
+    cap = _capacity_with(p, [cast] if cast else [])
+    over = max(0, len(holdings) - len(spend) - cap)
+    return dict(got=got, bonus=bonus, castable=castable, over=over, pool=sorted(pool, key=REAGENTS.index), cap=cap)
 
 
 def act_gather(card, keep=None, bloom=None, miracle=False, cast=None, x=None, target=None, discard=None):
@@ -820,8 +831,14 @@ def act_gather(card, keep=None, bloom=None, miracle=False, cast=None, x=None, ta
             inv = 'Invisibility_Potion' in cast
             spend = ['Eye_of_Newt'] * int(x or 0) if inv else spell_cost(cast)
             if inv and (not x or int(x) < 1 or not target): raise Refused('Invisibility Potion needs X >= 1 and a target')
-        with _Reversed(cid, miracle):
-            A.gather(s, n, cid, keep=got, discard=discard, bloom=bonus[-1] if SE.has_cast(p, 'Bloom') else None, spend=spend)
+        # actions.gather checks storage with the limit before this cast; a Root Cellar cast here counts toward it.
+        cellar = own[0] if cast and 'Root_Cellar' in cast else None
+        if cellar: cellar['cast'] = True
+        try:
+            with _Reversed(cid, miracle):
+                A.gather(s, n, cid, keep=got, discard=discard, bloom=bonus[-1] if SE.has_cast(p, 'Bloom') else None, spend=spend)
+        finally:
+            if cellar: cellar['cast'] = False
         T.auto_claim(s, n)            # 'on your turn, if you meet': claim an x7 tile before the cast spends tokens
         queue = []
         if cast:
@@ -924,9 +941,10 @@ def summon_gather_preview(familiar, casts=()):
         if not can_pay(holdings, cc): raise Refused(f'cannot pay {k}')
         holdings = list((Counter(holdings) - Counter(cc)).elements())
     castable = [o for o in _castable(p, holdings) if o['key'] not in casts and o.get('x') is None]
-    over = max(0, len(holdings) - A.capacity(p))
+    cap = _capacity_with(p, casts)
+    over = max(0, len(holdings) - cap)
     return dict(got=[A.norm(c['reagent'])] * int(c['collect']), castable=castable, over=over,
-                pool=sorted(holdings, key=REAGENTS.index), cap=A.capacity(p))
+                pool=sorted(holdings, key=REAGENTS.index), cap=cap)
 
 
 def act_summon(familiar, use, casts=(), discard=None):

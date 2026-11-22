@@ -106,5 +106,41 @@ r = call('rise_use', use='score')
 check(r['ok'] and not r['view'].get('pending') and any(e.get('act') == 'rise' for e in W.st()['meta']['log'][-4:]),
       'choosing a use re-activates it and logs the rise')
 
+
+
+def root_cellar_gather(s):
+    """Issue #156 save (round 17, 13InchesOfFun to act, 10 reagents, Root Cellar cast, no towers): back to his round 16
+    move. Root Cellar is uncast again and Reagent 55 is back in hand, so he holds 10 reagents at a limit of 10."""
+    k = P(s, '13InchesOfFun')
+    next(x for x in k['spells'] if 'Root_Cellar' in x['img'])['cast'] = False
+    card = next(x for x in s['reag_discard'] if base(x) == 'Reagent_55.jpg')
+    s['reag_discard'].remove(card); s['reag_list'].insert(0, k['hand'][0]); k['hand'][0] = card
+    s['reag_deck'] = len(s['reag_list'])
+    return s
+
+
+print('\n=== #156 Root Cellar cast with a gather raises the limit before the storage check ===')
+r = call('load', text=json.dumps(root_cellar_gather(save(156))))
+k = P(W.st(), '13InchesOfFun')
+check(r['ok'] and len(k['tok']) == 10 and A.capacity(k) == 10, f"rewound #156: 10 reagents held, limit {A.capacity(k)}")
+keep = ['Foxglove', 'Eye_of_Newt', 'Toadstool']
+pv = call('gather_preview', card='Reagent_55', keep=keep)['result']
+check(pv['over'] == 6 and pv['cap'] == 10, f"without a cast the gather of 6 must put back 6 ({pv['over']})")
+pv = call('gather_preview', card='Reagent_55', keep=keep, cast='Spell_Root_Cellar')['result']
+check(pv['over'] == 0 and pv['cap'] == 20, f"casting Root Cellar with it: limit 20, nothing to put back ({pv['over']}, cap {pv['cap']})")
+r = call('act_gather', card='Reagent_55', keep=keep, cast='Spell_Root_Cellar')
+k = P(W.st(), '13InchesOfFun')
+check(r['ok'] and len(k['tok']) == 13 and A.capacity(k) == 20 and any('Root_Cellar' in x['img'] and x['cast'] for x in k['spells']),
+      f"the gather and cast commit with no put-back: 13 reagents kept, Root Cellar cast ({r.get('error')})")
+
+# The same holds for a familiar's Gather & Cast: the preview counts the put-back with Root Cellar cast.
+s = root_cellar_gather(save(156)); k = P(s, '13InchesOfFun')
+cost = W.spell_cost('Spell_Root_Cellar')
+fam = next(f for f in s['fam_face'] if f and int(W.CD.get(W.jpg(W.key(f)))['collect']) >= 4)
+k['tok'] = cost + ['Horn'] * (10 - len(cost))
+call('load', text=json.dumps(s))
+pv = call('summon_gather_preview', familiar=W.key(fam), casts=['Spell_Root_Cellar'])['result']
+check(pv['over'] == 0 and pv['cap'] == 20, f"familiar gather casting Root Cellar: limit 20, nothing to put back ({pv['over']}, cap {pv['cap']})")
+
 print(f'\n{PASS} passed, {FAIL} failed, {XFAIL} known live regressions')
 sys.exit(1 if FAIL else 0)
