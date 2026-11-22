@@ -167,7 +167,7 @@ def level_of(v, me): return ((v.get('meta') or {}).get('ai_levels') or {}).get(m
 def LV(): return LEVELS.get(_CTX['level'], LEVELS['normal'])
 
 def _guard(view, me):
-    if isinstance(view, PublicView) and getattr(view, 'sealed', False) and view.viewer == me: _CTX['level'] = level_of(view, me)
+    if isinstance(view, PublicView) and getattr(view, 'sealed', False) and view.viewer == me: _CTX['level'] = level_of(view, me); _CTX['me'] = me
     if not isinstance(view, PublicView) or not getattr(view, 'sealed', False):
         raise PermissionError('AI policy may only read a PublicView from public_view(state, me), never the full state')
     if view.viewer != me: raise PermissionError(f'view belongs to {view.viewer}, not {me}')
@@ -428,10 +428,50 @@ def dungeon_ev(v, me, hits=0, got_gold=0, got_items=0, depth=7):
         memo[key] = max(stop, cont); return memo[key]
     entry = 2 if has_cast(p, 'Spell_Treasure') else 0
     return got_gold + iv[min(got_items, 5)] + entry, val(hits, got_gold, got_items, 0, depth) + entry
+def dungeon_win(v, me, need, hits=0, got_gold=0, got_items=0, depth=7):
+    """Best chance that an expedition's loot (Gold + Items VP) reaches `need` VP, drawing until it does (same public
+    odds as dungeon_ev). need <= 0: already enough."""
+    if need <= got_gold + item_vp(v, me, got_items) if got_items else need <= got_gold: return 1.0
+    p = P(v, me); comp = dungeon_composition(v); n = sum(comp.values())
+    if not n: return 0.0
+    limit = 2 + (1 if has_cast(p, 'Spirit_Shield') else 0)
+    blocked = {t for t, k in {'Dungeon Denizen': 'Block_Denizens', 'Giant': 'Block_Giant', 'Goblinoid': 'Block_Goblin', 'Undead': 'Block_Undead'}.items() if has_cast(p, k)}
+    ctrl = has_cast(p, 'Control_Undead')
+    iv = [0.0] + [item_vp(v, me, k) for k in range(1, 6)]
+    out = []
+    for (t, sub), c in comp.items():
+        pr = c / n
+        if t == 'Gold': out.append((pr, 0, sub, 0, 0))
+        elif t == 'Item': out.append((pr, 0, 0, 1, 0))
+        elif t == 'Trap': out.append((pr, 2, 0, 0, 0))
+        elif sub == 'Undead' and ctrl: out.append((pr, 0, 0, 0, 3))
+        elif sub in blocked: out.append((pr, 0, 1, 0, 0))
+        else: out.append((pr, 1, 0, 0, 0))
+    entry = 2 if has_cast(p, 'Spell_Treasure') else 0
+    memo = {}
+    def win(h, g, it, bonus, d):
+        if g + iv[min(it, 5)] + bonus + entry >= need: return 1.0
+        if d == 0: return 0.0
+        k = (h, g, it, bonus, d)
+        if k not in memo:
+            memo[k] = sum(pr * (0.0 if h + dh >= limit else win(h + dh, g + dg, it + di, bonus + dv, d - 1)) for pr, dh, dg, di, dv in out)
+        return memo[k]
+    return win(hits, got_gold, got_items, 0, depth)
+
+def _win_need(v, me, score, mana):
+    """VP I must still gain to finish first against the rivals' final scores (equal VP: more mana wins)."""
+    best = max(_rival_finals(v, me).values(), key=lambda x: (x[0], x[1]))
+    return best[0] - score + (0 if mana > best[1] else 1)
+
 def dungeon_continue(view, me, hits, drawn):
     """During an expedition: draw again? Uses only the public composition and the cards drawn so far (face up)."""
     _guard(view, me); _reset()
     g = sum(c.get('gold', 0) for c in drawn if c.get('subtype') == 'Gold'); it = sum(1 for c in drawn if c.get('subtype') == 'Item')
+    if last_turn(view, me):
+        # Final turn: keep drawing while the loot is not yet enough to win and drawing can still get there.
+        p = P(view, me); need = _win_need(view, me, S.score(p, view), p['mana'])
+        if dungeon_win(view, me, need, hits, g, it, depth=0) >= 1.0: return False
+        return dungeon_win(view, me, need, hits, g, it) > 0.0
     stop, best = dungeon_ev(view, me, hits, g, it)
     return best > stop + 0.25
 def scry_dungeon_ev(v, me):
@@ -742,6 +782,7 @@ def _bid_breakdown(v, me, card, kind='wizards'):
         + DENY_W * deny * pw['deny'] + endv
     fcap = int(math.ceil(FAIR_RATE * fair)) + BID_MARGIN if fair > 0 else 0
     limit = min(limit, fcap)
+    if last_turn(v, me): limit = p['mana'] if (parts['gain'] > 0 or deny > 0) else 0   # mana only breaks ties now
     out = dict(parts, end=round(endv, 2), alt_rate=round(alt, 2), value_cap=vcap, fair=round(fair, 2), fair_cap=fcap, deny=round(deny, 2), scarce=round(scarce, 2), total=round(total, 2), rate=round(rate, 2), critical=critical,
                usable=usable, limit=int(min(limit, p['mana'])), flat3=min(p['mana'], 3 * max(0, parts['gain'])), profile=prof)
     return _put('bid', v, out, me, b(card), kind)
@@ -805,6 +846,7 @@ def opening_bid(view, me, card, kind='wizards'):
         rng = random.Random(f"{view['meta'].get('ai_seed', 0)}-open-{me}-{b(card)}")
         if rng.random() < LV()['skip_bid']:
             return 0
+    if _two_player(view) and last_turn(view, me): return P(view, me)['mana'] if limit >= 1 else 0
     return duel_opening(view, me, card, kind) if _two_player(view) else (1 if limit >= 1 else 0)
 def raise_bid(view, me, card, high, kind='wizards'):
     """(d) Raise by the minimum (+1) while that stays within my limit; otherwise pass (None). Never pass below the limit."""
@@ -1005,7 +1047,10 @@ def _candidates(v, me):
         two_player = _two_player(v)
         my_limit = bid_limit(v, me, wz) if two_player else bd['limit']
         if two_player and my_limit < 1: continue
-        if two_player:
+        if two_player and last_turn(v, me):
+            if _duel_tried(v, me): continue
+            price = p['mana']                       # final_pick opens only a safe duel, bidding everything
+        elif two_player:
             # The opener bids once and the rival may answer with any mana the public ledger shows: open only at a
             # price they cannot top (duel_opening), never on the modeled 'fair' rival limit.
             price = duel_opening(v, me, wz)
@@ -1108,15 +1153,179 @@ def _matched(p):
     W = Cn(S.school(c) for c in p.get('wizards', [])); T = Cn(S.school(c) for c in p.get('towers', []))
     return {s_ for s_ in W if s_ and T[s_]}
 
+# ------------------------------------------------------------------ MASTER last turn (issue #158)
+# The game end is triggered and this is my final turn: only the final score counts. Each option is judged by my score
+# after it (scoring.score, plus any achievement it lets me claim at the end of this turn); reagents, income, economy
+# spells and future pairs count for nothing, and mana only breaks a tie on the final score.
+def last_turn(v, me):
+    """MASTER only, for the AI choosing its own action (choose_action, then its opening bid), never when it models a
+    rival or answers someone else's auction: the game end is triggered, so this turn is my last."""
+    m = v.get('meta') or {}
+    return bool(LV().get('master') and _CTX.get('me') == me and _CTX.get('acting') == me
+                and m.get('game_end_triggered') and not m.get('game_over'))
+
+def _my_turn_log(v, me):
+    log = v['meta'].get('log', [])
+    start = next((i for i in range(len(log) - 1, -1, -1) if log[i].get('act') == 'turn'), None)
+    return log[start + 1:] if start is not None and log[start].get('seat') == me else []
+
+def _duel_key(v, me): return (me, v['meta'].get('round'), v['meta'].get('ai_seed'))
+def _duel_tried(v, me):
+    """At most one duel per final turn: True once I have started an auction this turn. The turn starts at its log
+    marker; without markers (all-AI simulations) at the log position where I chose the duel."""
+    started = lambda es: any(e.get('act') in ('auction', 'auction_nobid') and e.get('starter') == me for e in es)
+    d = _CTX.get('duel')
+    if d and d[0] == _duel_key(v, me) and started(v['meta'].get('log', [])[d[1]:]): return True
+    return started(_my_turn_log(v, me))
+
+def _rivals_to_play(v, me):
+    """Rivals who still get a turn in this final round after mine (turn markers in the log, else seat order)."""
+    m = v['meta']; order = m.get('seat_order') or []; r = m.get('round')
+    seats = [e.get('seat') for e in m.get('log', []) if e.get('act') == 'turn' and e.get('r') == r]
+    if seats: return [n for n in order if n != me and n not in seats]
+    return order[order.index(me) + 1:] if me in order else []
+
+def _final_state(v, me, act):
+    """(my player after the action, expected extra VP that is not yet on the mat, gold change for others)."""
+    import actions as A
+    p = P(v, me); q = copy.deepcopy(p); extra = 0.0; t = act['type']; others_gold = {}
+    def cast(img, cost):
+        for x in q.get('spells', []):
+            if b(x['img']) == b(img) and not x.get('cast'): x['cast'] = True; break
+        else: q.setdefault('spells', []).append({'img': img, 'cast': True})
+        q['tok'] = _minus(q['tok'], cost or [])
+    if t == 'gather':
+        _k, _g, _d, tok, _i, _b = _gather_result(v, me, 'assets/%s.jpg' % act['card'])
+        q['tok'] = tok
+        if act.get('cast'): cast('assets/%s.jpg' % act['cast']['spell'], act['cast']['cost'])
+    elif t == 'convert':
+        r = act['reagent']; val = min(12, v['tracks'][r] + 3) if act.get('energize') else v['tracks'][r]
+        q['tok'] = [x for x in q['tok'] if x != r]; q['mana'] += val * act['n']
+    elif t == 'convert2':
+        for i, (r, n) in enumerate(act['pairs']):
+            val = min(12, v['tracks'][r] + 3) if (i == 0 and act.get('energize')) else v['tracks'][r]
+            q['tok'] = [x for x in q['tok'] if x != r]; q['mana'] += val * n
+    elif t == 'research':
+        q['mana'] -= 5; img = 'assets/%s.jpg' % act['spell']
+        if act.get('cast') and act['spell'] == 'Spell_Invisibility_Potion':
+            q.setdefault('spells', []).append({'img': img, 'cast': True}); q['tok'] = _minus(q['tok'], act['cast'])
+            x = act.get('x', 0); tgt = act.get('target'); take = min(x, P(v, tgt).get('gold', 0)) if tgt else 0
+            q['gold'] = q.get('gold', 0) + take; others_gold[tgt] = -take
+        elif act.get('cast'): q.setdefault('spells', []).append({'img': img, 'cast': False}); cast(img, act['cast'])
+        else: q.setdefault('spells', []).append({'img': img, 'cast': False})
+    elif t == 'build':
+        tf = v.get('tower_face'); q.setdefault('towers', []).append(tf)
+        if act.get('pay') == 'gold': q['gold'] = q.get('gold', 0) - tower_cost(p, tf, 'gold')[0]
+        else:
+            tier, r = tower_cost(p, tf, 'reagent'); q['tok'] = _minus(q['tok'], [r] * tier)
+    elif t == 'summon':
+        f = 'assets/%s' % act['familiar'] if not str(act['familiar']).startswith('assets/') else act['familiar']
+        F = FAMILIAR.get(b(f)); q['mana'] -= fam_cost(p, f); q.setdefault('familiars', []).append(f)
+        if act['use'] == 'score':
+            import spell_effects as SE
+            q['gold'] = q.get('gold', 0) + SE.familiar_score_gold(p, F['school'])
+        elif act['use'] == 'dungeon': extra += dungeon_ev(v, me)[1]
+        elif act['use'] == 'gather':
+            q['tok'] = q['tok'] + [norm(F['reagent'])] * int(F['collect'])
+            for c in act.get('cast', []): cast('assets/%s.jpg' % c['spell'], c['cost'])
+    elif t == 'dungeon': extra += dungeon_ev(v, me)[1]
+    met = [x for x in v.get('ach', []) if x not in q.get('achievements', []) and A.achievement_met(q, x)]
+    q['achievements'] = list(q.get('achievements', [])) + met        # claimed at the end of this turn
+    return q, extra, others_gold
+
+def _rival_finals(v, me, taken=None, scores=None):
+    """{rival: (final VP, mana)}: their score now (or after my action), plus, for a rival still to play this round,
+    the best face-up wizard for them (the one I just took excepted)."""
+    later = _rivals_to_play(v, me); out = {}
+    for n in others(v, me):
+        sc = (scores or {}).get(n, S.score(P(v, n), v))
+        if n in later:
+            sc += max([S.value_table(v, wz, 'wizards')[n] for wz in v.get('wiz_face', []) if wz and b(wz) != b(taken or '') and P(v, n)['mana'] > 0] + [0])
+        out[n] = (sc, P(v, n)['mana'])
+    return out
+
+def _sim_final(v, me, act):
+    """(my final VP, my mana, {rival: VP}) after `act`, played on a determinized copy of my public view with the
+    simulator (spell effects and end-of-turn achievement claims included)."""
+    import ai_sim as SIM
+    saved = dict(_CTX)
+    try:
+        s = determinize(v, me, random.Random(f"{v['meta'].get('ai_seed', 0)}-final-{me}"))
+        _sim_apply(s, me, act); SIM.claim_all(s, me)
+        return S.score(P(s, me), s), P(s, me)['mana'], {n: S.score(P(s, n), s) for n in others(v, me)}
+    finally:
+        _CTX.clear(); _CTX.update(saved)
+
+def _final_pick(v, me, C, claims):
+    """Rank the options by: chance of finishing first, my final score, mana left (the final tiebreak)."""
+    me_p = P(v, me); rivals = others(v, me)
+    def rival_finals(taken=None, gold=None, scores=None):
+        out = _rival_finals(v, me, taken, scores)
+        return {n: (x[0] + (gold or {}).get(n, 0), x[1]) for n, x in out.items()}
+    def chance(fin, mana, rf):
+        best = max(rf.values(), key=lambda x: x[0])
+        if fin > best[0] + 1e-9: return 1.0
+        if abs(fin - best[0]) < 1e-9: return 1.0 if mana > best[1] else (0.5 if mana == best[1] else 0.0)
+        return 0.0
+    scored = []; duels = []
+    for c in C:
+        act = c[3]
+        if act['type'] == 'recruit':
+            duels.append(c); continue
+        dungeon = act['type'] == 'dungeon' or act.get('use') == 'dungeon'
+        try: q, extra, og = _final_state(v, me, act)
+        except Exception: continue
+        fin = S.score(q, v) + extra; mana = q['mana']; rf = rival_finals(gold=og)
+        if not dungeon:
+            try:
+                fin, mana, rs = _sim_final(v, me, act); rf = rival_finals(scores=rs)
+            except Exception: pass
+            ch = chance(fin, mana, rf)
+        else:
+            # The Dungeon never costs VP but may pay nothing: its chance is that of the loot reaching the VP I need.
+            sure = S.score(q, v); need = max(x[0] for x in rf.values()) - sure + (0 if mana > max(rf.values())[1] else 1)
+            ch = dungeon_win(v, me, need)
+        scored.append(((ch, round(fin, 3), mana), c, f"final {fin:.1f} VP, {mana} mana"))
+    scored.sort(key=lambda x: (x[0][0], x[0][1], x[0][2], -C.index(x[1])), reverse=True)
+    alt = scored[0] if scored else None
+    for c in duels:
+        wz = 'assets/%s' % c[3]['wizard'] if not str(c[3]['wizard']).startswith('assets/') else c[3]['wizard']
+        vt = S.value_table(v, wz, 'wizards'); gain = vt[me]
+        if gain <= 0: continue
+        m = me_p['mana']
+        if len(rivals) == 1:
+            rv = rivals[0]; rmana = P(v, rv)['mana']
+            sure = rmana <= m and not duel_ledger_proven_low(v, me)     # the rival must bid MORE than my opening to win
+        else:
+            rmana = max([P(v, n)['mana'] for n in rivals if vt[n] > 0] + [0]); sure = rmana < m
+        q = copy.deepcopy(me_p); q['wizards'] = list(q['wizards']) + [wz]; fin = S.score(q, v); rf = rival_finals(taken=wz)
+        if sure:
+            scored.append(((chance(fin, 0, rf), fin, 0), c, f"duel all {m} mana for +{gain} VP, the rival cannot top it ({rmana} mana)"))
+            continue
+        # The rival can top it: open only if losing still leaves me in contention (they gain their value of the wizard).
+        if alt is None: continue
+        lose = {n: (x[0] + (vt[n] if n in rivals else 0), x[1]) for n, x in rival_finals().items()}
+        if chance(alt[0][1], alt[0][2], lose) >= alt[0][0] and alt[0][0] > 0:
+            scored.append(((alt[0][0], alt[0][1] + 0.001, alt[0][2]), c, f"duel {m} mana: a loss still leaves me in contention"))
+    scored.sort(key=lambda x: (x[0][0], x[0][1], x[0][2], -C.index(x[1])), reverse=True)
+    if not scored: return C[0], 'no option changes the final score'
+    (ch, fin, mana), c, note = scored[0]
+    return c, f"{note}; win chance {ch:.2f}"
+
 SOFTMAX_MARGIN = 1.0; SOFTMAX_TAU = 0.5
 def choose_action(view, me):
     """Return (action dict, one-line reason). Seeded softmax over options within SOFTMAX_MARGIN VP of the best
     (meta.ai_seed + me + round + log length -> reproducible; meta.ai_random=False -> pure argmax)."""
     _guard(view, me); _reset()
-    v = view
+    v = view; _CTX['acting'] = me
     lvl = level_of(v, me); L = LEVELS.get(lvl, LEVELS['normal'])
     C, claims, prof, fadewhy, top, vp0 = _candidates(v, me)
     C.sort(key=lambda c: (-c[0], json.dumps(c[3], sort_keys=True, default=str)))
+    if last_turn(v, me):
+        (wv, val, cat, act, why), note = _final_pick(v, me, C, claims)
+        if act['type'] == 'recruit': _CTX['duel'] = (_duel_key(v, me), len(v['meta'].get('log', [])))
+        act = dict(act, claim=claims, value=wv, category=cat, profile=prof, level=lvl, rng_seed=None, last_turn=True)
+        return act, f"{why} (last turn: {note})" + (f"; claims {', '.join(claims)}" if claims else '')
     seed = f"{v['meta'].get('ai_seed', 0)}-{me}-{v['meta'].get('round')}-{len(v['meta'].get('log', []))}"
     la_note = ''
     if L['lookahead'] and len(C) > 1:

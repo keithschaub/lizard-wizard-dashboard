@@ -205,6 +205,18 @@
         "tests/e2e/eye-toggle.spec.js"
       ],
       "note": "#149 drew the eye inventory's cards with no tap handler (view-only), and the sheet sits on the peek layer above #overlays, so an enlarged card would have opened underneath it. Inventory cards now open expandCard on the peek layer; on both sheets the swipe group is that player's whole mat in display order."
+    },
+    {
+      "issue": 158,
+      "status": "new",
+      "kind": "engine",
+      "description": "Master AI on its final turn played for +0 VP instead of going all in on a wizard it could win",
+      "report": "2026-11-22T17-57-48-139Z-lour9",
+      "fixture": "tests/regression/fixtures/issue-158.json",
+      "tests": [
+        "tests/regression/test_regressions.py"
+      ],
+      "note": "ai_policy last-turn mode (master only, game end triggered, no further turn): options ranked by chance of finishing first, then final score (scoring.score), then mana; duels bid all mana and open only when the rival cannot top the bid or a loss still leaves the AI in contention; one duel per final turn."
     }
   ],
   "fixes_without_a_report": [
