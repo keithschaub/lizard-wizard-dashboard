@@ -1214,8 +1214,11 @@ def _final_pick(v, me, C, claims):
         fin = S.score(q, v) + extra; mana = q['mana']; rf = rival_finals(gold=og)
         ch = chance(fin, mana, rf)
         if act['type'] in ('dungeon',) or act.get('use') == 'dungeon':
-            gap = max(x[0] for x in rf.values()) - S.score(q, v)
-            ch = max(ch, min(1.0, extra / max(1.0, gap)) * 0.5) if gap > 0 else ch     # long shot: the deeper the dungeon EV, the better
+            # The Dungeon never costs VP but may pay nothing: sure only if I already win without it, else a long shot.
+            sure = S.score(q, v)
+            ch = chance(sure, mana, rf)
+            gap = max(x[0] for x in rf.values()) - sure
+            if gap >= 0: ch = max(ch, min(1.0, extra / max(1.0, gap + 1)) * 0.5)
         scored.append(((ch, round(fin, 3), mana), c, f"final {fin:.1f} VP, {mana} mana"))
     scored.sort(key=lambda x: (x[0][0], x[0][1], x[0][2], -C.index(x[1])), reverse=True)
     alt = scored[0] if scored else None
