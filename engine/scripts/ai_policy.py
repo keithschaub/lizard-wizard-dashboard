@@ -1118,12 +1118,11 @@ def _matched(p):
 # after it (scoring.score, plus any achievement it lets me claim at the end of this turn); reagents, income, economy
 # spells and future pairs count for nothing, and mana only breaks a tie on the final score.
 def last_turn(v, me):
-    """MASTER only, for the deciding AI (not when it models a rival): game end triggered and no turn of mine after this one."""
+    """MASTER only, for the AI choosing its own action (choose_action, then its opening bid), never when it models a
+    rival or answers someone else's auction: the game end is triggered, so this turn is my last."""
     m = v.get('meta') or {}
-    if not (LV().get('master') and _CTX.get('me') == me and m.get('game_end_triggered') and not m.get('game_over')): return False
-    if v.get('next') == me: return True
-    r = m.get('round'); seats = [e.get('seat') for e in m.get('log', []) if e.get('act') == 'turn' and e.get('r') == r]
-    return me in seats                                     # my seat has already played in this final round
+    return bool(LV().get('master') and _CTX.get('me') == me and _CTX.get('acting') == me
+                and m.get('game_end_triggered') and not m.get('game_over'))
 
 def _my_turn_log(v, me):
     log = v['meta'].get('log', [])
@@ -1135,10 +1134,11 @@ def _duel_tried(v, me):
     return any(e.get('act') in ('auction', 'auction_nobid') and e.get('starter') == me for e in _my_turn_log(v, me))
 
 def _rivals_to_play(v, me):
-    """Rivals who still get a turn in this final round after mine."""
+    """Rivals who still get a turn in this final round after mine (turn markers in the log, else seat order)."""
     m = v['meta']; order = m.get('seat_order') or []; r = m.get('round')
-    played = {e.get('seat') for e in m.get('log', []) if e.get('act') == 'turn' and e.get('r') == r}
-    return [n for n in order if n != me and n not in played]
+    seats = [e.get('seat') for e in m.get('log', []) if e.get('act') == 'turn' and e.get('r') == r]
+    if seats: return [n for n in order if n != me and n not in seats]
+    return order[order.index(me) + 1:] if me in order else []
 
 def _final_state(v, me, act):
     """(my player after the action, expected extra VP that is not yet on the mat, gold change for others)."""
@@ -1248,7 +1248,7 @@ def choose_action(view, me):
     """Return (action dict, one-line reason). Seeded softmax over options within SOFTMAX_MARGIN VP of the best
     (meta.ai_seed + me + round + log length -> reproducible; meta.ai_random=False -> pure argmax)."""
     _guard(view, me); _reset()
-    v = view
+    v = view; _CTX['acting'] = me
     lvl = level_of(v, me); L = LEVELS.get(lvl, LEVELS['normal'])
     C, claims, prof, fadewhy, top, vp0 = _candidates(v, me)
     C.sort(key=lambda c: (-c[0], json.dumps(c[3], sort_keys=True, default=str)))
