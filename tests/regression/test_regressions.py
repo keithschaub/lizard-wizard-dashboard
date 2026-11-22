@@ -106,5 +106,71 @@ r = call('rise_use', use='score')
 check(r['ok'] and not r['view'].get('pending') and any(e.get('act') == 'rise' for e in W.st()['meta']['log'][-4:]),
       'choosing a use re-activates it and logs the rise')
 
+
+
+def final_turn(s):
+    """Issue #158 save (game over, round 39): reopened at Newt's (master) final turn. 13InchesOfFun's summon emptied
+    the familiar deck and triggered the end; Newt then researched and cast Perfect Reagent (+0 VP) and lost 39 to 35."""
+    m = s['meta']; m['game_over'] = False; m.pop('final', None)
+    m['log'] = [e for e in m['log'] if e.get('act') != 'game_over']
+    while not (m['log'][-1].get('act') == 'turn' and m['log'][-1].get('seat') == 'Newt'): m['log'].pop()
+    s['next'] = 'Newt'
+    return s
+
+def keith_mana(s, by):
+    """Lower 13InchesOfFun's mana by `by`, in the state and in his logged converts (the AI reads the public ledger)."""
+    P(s, '13InchesOfFun')['mana'] -= by
+    for e in reversed(s['meta']['log']):
+        if by and e.get('act') == 'convert' and e.get('who') == '13InchesOfFun':
+            d = min(by, e['gain']); e['gain'] -= d; by -= d
+    return s
+
+def decide(s, who='Newt'):
+    v = AI.public_view(s, who); act, why = AI.choose_action(v, who)
+    return act, why, {base(wz): AI.opening_bid(AI.public_view(s, who), who, wz) for wz in s['wiz_face']}
+
+IGNUS, SERP = 'Wizard_Ignus_Fulgorus.jpg', 'Wizard_Serpentium_Machinus.jpg'
+print('\n=== #158 master last turn: final points only, all-in duel only when losing is safe ===')
+s = final_turn(save(158)); k, n = P(s, '13InchesOfFun'), P(s, 'Newt')
+check(S.score(k, s) == 39 and S.score(n, s) == 35 and (k['mana'], n['mana']) == (94, 41) and s['meta']['game_end_triggered'],
+      'reopened #158: 13InchesOfFun 39 VP and 94 mana, Newt 35 VP and 41 mana, game end triggered')
+vt = S.value_table(s, 'assets/' + IGNUS, 'wizards')
+check(vt == {'13InchesOfFun': 4, 'Newt': 9}, f'Ignus Fulgorus: +9 for Newt (pairs a tower), only +4 for 13InchesOfFun (no matching tower) {vt}')
+act, why, _ = decide(s)
+check(act['type'] != 'recruit' and act.get('last_turn') and 'final 35.0 VP' in why,
+      f"(a) as is: no duel (13InchesOfFun can top any bid and a loss hands him +4); valued on final points: {act['type']} ({why[:90]})")
+check(act['type'] == 'convert', f"(a) every option ends on 35 VP, so the one keeping the most mana wins the tie ({act['type']})")
+s = keith_mana(final_turn(save(158)), 64)
+act, why, opening = decide(s)
+check(act['type'] == 'recruit' and act['wizard'] == IGNUS and opening[IGNUS] == 41,
+      f"(b) 13InchesOfFun at 30 mana: Newt duels Ignus Fulgorus with all 41 mana ({act['type']} {act.get('wizard')}, opening {opening.get(IGNUS)})")
+r = call('load', text=json.dumps(s)); r = call('ai_step'); a = W.auction(W.st()) or {}
+check(r['ok'] and a.get('high') == 41 and a.get('who') == 'Newt', f"(b) the real auction opens at 41 ({a.get('high')} by {a.get('who')})")
+r = call('act_pass')
+fin = (r.get('view') or {}).get('final') or {}
+check(r['ok'] and W.st()['meta'].get('game_over') and fin.get('Newt') == 44 and fin.get('13InchesOfFun') == 39,
+      f"(b) 13InchesOfFun cannot top 41: Newt wins Ignus, 35 -> 44, and the game 44 to 39 ({fin})")
+s = final_turn(save(158)); P(s, '13InchesOfFun')['towers'] = ['assets/Tower_T1_Ivory_Spire.jpg']
+vt = S.value_table(s, 'assets/' + IGNUS, 'wizards')
+act, why, _ = decide(s)
+check(vt['13InchesOfFun'] == 9 and act['type'] != 'recruit',
+      f"(c) Ignus pairs 13InchesOfFun's lone Enchantment tower (+{vt['13InchesOfFun']}) and he can outbid: no duel ({act['type']})")
+s = keith_mana(final_turn(save(158)), 64)
+s['meta']['log'].append({'r': 39, 'act': 'auction', 'starter': 'Newt', 'cards': [IGNUS], 'won': '13InchesOfFun', 'price': 42, 'bids_tail': [['Newt', 41], ['13InchesOfFun', 42]]})
+act, why, _ = decide(s)
+check(act['type'] != 'recruit', f"after one lost duel this turn: the best non-duel action ({act['type']})")
+# (d) Not the last turn, or not master: the same choices as before last-turn mode existed.
+s = final_turn(save(158)); s['meta']['game_end_triggered'] = False
+act, why, opening = decide(s)
+lim = {base(wz): AI.bid_limit(AI.public_view(s, 'Newt'), 'Newt', wz) for wz in s['wiz_face']}
+check(act['type'] == 'build' and act.get('pay') == 'gold' and not act.get('last_turn') and lim == {IGNUS: 33, SERP: 21} and opening == {IGNUS: 0, SERP: 0},
+      f"(d) game end not triggered: master unchanged (build with Gold, limits {lim}, no duel)")
+for lvl in ('normal', 'hard'):
+    s = final_turn(save(158)); s['meta']['ai_levels'] = {'Newt': lvl}
+    act, why, opening = decide(s)
+    lim = {base(wz): AI.bid_limit(AI.public_view(s, 'Newt'), 'Newt', wz) for wz in s['wiz_face']}
+    check(act['type'] == 'research' and act.get('spell') == 'Spell_Spell_Shield_T' and not act.get('last_turn') and lim == {IGNUS: 29, SERP: 20} and opening == {IGNUS: 0, SERP: 0},
+          f"(d) {lvl} level on the final turn: unchanged (research and cast Spell Shield, limits {lim}, no duel)")
+
 print(f'\n{PASS} passed, {FAIL} failed, {XFAIL} known live regressions')
 sys.exit(1 if FAIL else 0)
