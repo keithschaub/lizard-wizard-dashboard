@@ -362,11 +362,12 @@ img { -webkit-user-drag: none; user-select: none; }
 .research-action-frame { width: calc(100% - 8px); max-width: 800px; min-width: 0; box-sizing: border-box; margin-top: -20px; padding: 26px 10px 10px; border: 2px solid rgba(214, 180, 90, .7); border-radius: 16px; background: rgba(7, 9, 17, .72); }
 .research-action-frame .act { border-radius: 18px; }
 .research-action-frame .actions { width: 100%; min-width: 0; }
-.research-action-frame .act { min-width: 0; gap: 6px; min-height: 58px; font-size: 17px; }
+.research-action-frame .act { min-width: 0; gap: 6px; min-height: 58px; font-size: 17px; padding: 10px 10px; }
+.research-action-frame .act > span:first-child { flex: none; white-space: nowrap; }
 .research-action-frame .log-value-chip, .research-action-frame .log-reagent-chip { height: 32px; border-radius: 16px; }
 .research-action-frame .log-value-orb { width: 28px; height: 28px; }
 .research-action-frame .log-reagent-chip img { width: 24px; height: 24px; }
-.research-action-frame .act .sub { min-width: 0; }
+.research-action-frame .act .sub { flex: 1 1 auto; min-width: 0; flex-wrap: nowrap; justify-content: flex-end; }
 /* Familiar New Research: four spells in a 2x2 grid, one Research button aligned to it. At 430x775 the cards are
    177.1 x 266.5 (art 166.5 x 252.3); smaller viewports scale them by width or by the height left above the bar. */
 .overlay.nr-pick { --nr-w: min(177.1px, calc((100vw - 76px) / 2), calc((100vh - var(--safe-t) - var(--clear-b) - 158px) * .33227));
@@ -493,7 +494,9 @@ img { -webkit-user-drag: none; user-select: none; }
 .act.danger { border-color: rgba(255, 107, 107, .6); color: #ffd0d0; background: rgba(60, 12, 16, .9); box-shadow: none; }
 .build-expand [data-testid=expanded-actions] { width: calc(100% - 8px); max-width: 800px; box-sizing: border-box; padding: 12px 10px; border: 2px solid rgba(214, 180, 90, .7); border-radius: 16px; background: rgba(7, 9, 17, .72); margin-bottom: 12px; }
 .build-expand [data-testid=expanded-actions] .actions { width: 100%; }
-.build-expand [data-testid=expanded-actions] .act { min-height: 58px; font-size: 17px; border-radius: 18px; }
+.build-expand [data-testid=expanded-actions] .act { min-height: 58px; font-size: 17px; border-radius: 18px; padding: 10px 10px; }
+.build-expand [data-testid=expanded-actions] .act > span:first-child { flex: none; white-space: nowrap; }
+.build-expand [data-testid=expanded-actions] .act .sub { flex: 1 1 auto; min-width: 0; flex-wrap: nowrap; justify-content: flex-end; }
 .build-expand [data-testid=expanded-actions] .log-value-chip, .build-expand [data-testid=expanded-actions] .log-reagent-chip { height: 32px; border-radius: 16px; }
 .build-expand [data-testid=expanded-actions] .log-value-orb { width: 28px; height: 28px; }
 .build-expand [data-testid=expanded-actions] .log-reagent-chip img { width: 24px; height: 24px; }
@@ -557,8 +560,10 @@ img { -webkit-user-drag: none; user-select: none; }
 .log-value-orb { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none; }
 .log-value-orb.mana { background: radial-gradient(circle at 35% 30%, #9fd0ff, #2b6ee0 60%, #173a8a); }
 .log-value-orb.gold { background: radial-gradient(circle at 35% 30%, #fff1b0, #e0a92e 60%, #8a5a12); }
-.action-chip-row { display: flex; align-items: center; justify-content: flex-end; gap: 4px; width: 100%; }
-.action-chip-row .log-value-chip { margin-left: auto; }
+.action-chip-row { display: flex; align-items: center; gap: 3px; width: 100%; min-width: 0; flex-wrap: nowrap; }
+.action-chip-reagents { display: flex; align-items: center; justify-content: flex-end; gap: 2px; flex: 1 1 auto; min-width: 0; }
+.action-chip-row > .log-value-chip { flex: none; }
+.action-chip-row .log-reagent-chip { padding: 2px 5px 2px 2px; gap: 2px; }
 .x-target-title { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 20px; white-space: nowrap; }
 .x-target-eye { width: 44px; height: 34px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .6)); }
 .x-target-frame { width: min(96vw, 520px); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 14px; margin: auto 0;
