@@ -149,7 +149,9 @@ def gather(s,name,card,keep=None,discard=None,bloom=None,spend=None):
     if over>0:
         for d in discard[:over]: p['tok'].remove(norm(d))
     p['hand'].remove(h[0]);s['reag_discard'].append(h[0])
-    if _hc(p,'Mana_Garden'): p['mana']+=5                         # Mana Garden: "+5 Mana whenever you Gather Reagents"
+    if _hc(p,'Mana_Garden'):
+        p['mana'] += 5                                           # Mana Garden: "+5 Mana whenever you Gather Reagents"
+        log(s, {'r': s['meta'].get('round'), 'who': name, 'act': 'trigger', 'spell': 'Spell_Mana_Garden.jpg', 'gain': 5})
     while len(p['hand'])<(5 if _hc(p,'Crystal_Ball') else 3):     # Crystal Ball: "Max Hand Size = 5"
         if not s['reag_list']: reshuffle_reagents(s)
         if not s['reag_list']: break

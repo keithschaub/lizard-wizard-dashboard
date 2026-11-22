@@ -217,6 +217,18 @@
         "tests/regression/test_regressions.py"
       ],
       "note": "ai_policy last-turn mode (master only, game end triggered, no further turn): options ranked by chance of finishing first, then final score (scoring.score), then mana; duels bid all mana and open only when the rival cannot top the bid or a loss still leaves the AI in contention; one duel per final turn."
+    },
+    {
+      "issue": 162,
+      "status": "new",
+      "kind": "engine",
+      "description": "AI duel opener bid 1 while the human had much more mana (Mana Garden income missing from public ledger)",
+      "report": "2026-11-22T22-51-22-229Z-3k6zw",
+      "fixture": "tests/regression/fixtures/issue-162.json",
+      "tests": [
+        "tests/regression/test_regressions.py"
+      ],
+      "note": "gather logs Mana Garden trigger +5; ai_policy._ledger credits triggers, infers +5 per gather after a logged Mana Garden cast when old saves lack triggers, and floors mana at bids placed in auctions; duel_opening uses the corrected ledger."
     }
   ],
   "fixes_without_a_report": [

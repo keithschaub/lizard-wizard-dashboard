@@ -491,7 +491,17 @@ check(a and a['waiting'] == 'Keith' and a['card'] == 'Wizard_Reptilius_Venenum',
 for _ in range(3):
     r = call('act_bid', n=W.view()['auction']['high'] + 1)
     check(r['ok'] and A.P(W.st(), 'Keith')['mana'] == k0 and r['view']['auction']['high'] > r['view']['auction']['tail'][-2][1] - 1, f"raise to {r['view']['auction']['tail'][-3][1] if len(r['view']['auction']['tail']) > 2 else '?'}: AIs answer, Keith's mana unchanged ({k0})")
-r = call('act_pass')
+_retry_recruit = W.AI.choose_action
+def _lizwiz_recruit_retry(view, me):
+    if me == 'LizWiz':
+        wz = next(w for w in view.get('wiz_face', []) if w)
+        return {'type': 'recruit', 'wizard': wz}, 'test: LizWiz lost- auction retry recruit'
+    return _retry_recruit(view, me)
+W.AI.choose_action = _lizwiz_recruit_retry
+try:
+    r = call('act_pass')
+finally:
+    W.AI.choose_action = _retry_recruit
 # Rulebook: when the AI starter loses, it receives one more action. This
 # action can itself be a recruit and therefore pause for another human bid.
 check(r['ok'] and r['view'].get('auction') and r['view']['auction']['starter'] == 'LizWiz',
