@@ -205,6 +205,18 @@
         "tests/e2e/eye-toggle.spec.js"
       ],
       "note": "#149 drew the eye inventory's cards with no tap handler (view-only), and the sheet sits on the peek layer above #overlays, so an enlarged card would have opened underneath it. Inventory cards now open expandCard on the peek layer; on both sheets the swipe group is that player's whole mat in display order."
+    },
+    {
+      "issue": 156,
+      "status": "new",
+      "kind": "engine",
+      "description": "Gather & Cast Root Cellar still forced a put-back at the old storage limit",
+      "report": "2026-11-22T05-17-20-263Z-f3idd",
+      "fixture": "tests/regression/fixtures/issue-156.json",
+      "tests": [
+        "tests/regression/test_regressions.py"
+      ],
+      "note": "The cast is paid before the storage check (rulebook p.11) and Root Cellar raises the limit by 10, but actions.gather checks with the limit from before the cast. lw_web counts a Root Cellar cast in this gather (gather_preview, act_gather, summon_gather_preview); actions.py is untouched."
     }
   ],
   "fixes_without_a_report": [
