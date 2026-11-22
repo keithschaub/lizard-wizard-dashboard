@@ -104,11 +104,26 @@ class PublicView(dict):
 def _ledger(state, name):
     """Mana/Gold estimate for `name` from PUBLIC log events only (logs that start mid-game make this approximate)."""
     mana, gold = 20, 0
-    for e in state['meta'].get('log', []):
+    mana_garden = False
+    log = state['meta'].get('log', [])
+    for i, e in enumerate(log):
         a = e.get('act'); who = e.get('who')
+        if a == 'cast' and who == name and 'Mana_Garden' in str(e.get('spell', '')):
+            mana_garden = True
         if a in ('convert', 'convert1') and who == name: mana += e.get('gain', 0)
         elif a == 'trigger' and who == name: mana += e.get('gain', 0)
-        elif a == 'auction' and e.get('won') == name: mana -= e.get('price', 0)
+        elif a == 'gather' and who == name and mana_garden:
+            prev = log[i - 1] if i else {}
+            if not (prev.get('act') == 'trigger' and prev.get('who') == name
+                    and 'Mana_Garden' in str(prev.get('spell', '')) and prev.get('r') == e.get('r')):
+                mana += 5
+        elif a == 'auction':
+            # A placed bid proves at least that much mana was available before the auction closed.
+            placed = [v for n, v in (e.get('bids_tail') or []) if n == name and isinstance(v, int)]
+            if placed:
+                mana = max(mana, placed[-1])
+            if e.get('won') == name:
+                mana -= e.get('price', 0)
         elif a == 'research' and who == name: mana -= e.get('paid', e.get('cost', 5))
         elif a == 'summon' and who == name: mana -= e.get('cost', 0); gold += e.get('gold', 0)
         elif a == 'mana_drain':
