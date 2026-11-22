@@ -806,7 +806,7 @@ def opening_bid(view, me, card, kind='wizards'):
         rng = random.Random(f"{view['meta'].get('ai_seed', 0)}-open-{me}-{b(card)}")
         if rng.random() < LV()['skip_bid']:
             return 0
-    if _two_player(view) and last_turn(view, me): return P(view, me)['mana'] if limit >= 1 and _duel_tried(view, me) is False else 0
+    if _two_player(view) and last_turn(view, me): return P(view, me)['mana'] if limit >= 1 else 0
     return duel_opening(view, me, card, kind) if _two_player(view) else (1 if limit >= 1 else 0)
 def raise_bid(view, me, card, high, kind='wizards'):
     """(d) Raise by the minimum (+1) while that stays within my limit; otherwise pass (None). Never pass below the limit."""
@@ -1129,9 +1129,14 @@ def _my_turn_log(v, me):
     start = next((i for i in range(len(log) - 1, -1, -1) if log[i].get('act') == 'turn'), None)
     return log[start + 1:] if start is not None and log[start].get('seat') == me else []
 
+def _duel_key(v, me): return (me, v['meta'].get('round'), v['meta'].get('ai_seed'))
 def _duel_tried(v, me):
-    """At most one duel per final turn: True once I have started an auction this turn."""
-    return any(e.get('act') in ('auction', 'auction_nobid') and e.get('starter') == me for e in _my_turn_log(v, me))
+    """At most one duel per final turn: True once I have started an auction this turn. The turn starts at its log
+    marker; without markers (all-AI simulations) at the log position where I chose the duel."""
+    started = lambda es: any(e.get('act') in ('auction', 'auction_nobid') and e.get('starter') == me for e in es)
+    d = _CTX.get('duel')
+    if d and d[0] == _duel_key(v, me) and started(v['meta'].get('log', [])[d[1]:]): return True
+    return started(_my_turn_log(v, me))
 
 def _rivals_to_play(v, me):
     """Rivals who still get a turn in this final round after mine (turn markers in the log, else seat order)."""
@@ -1257,6 +1262,7 @@ def choose_action(view, me):
     C.sort(key=lambda c: (-c[0], json.dumps(c[3], sort_keys=True, default=str)))
     if last_turn(v, me):
         (wv, val, cat, act, why), note = _final_pick(v, me, C, claims)
+        if act['type'] == 'recruit': _CTX['duel'] = (_duel_key(v, me), len(v['meta'].get('log', [])))
         act = dict(act, claim=claims, value=wv, category=cat, profile=prof, level=lvl, rng_seed=None, last_turn=True)
         return act, f"{why} (last turn: {note})" + (f"; claims {', '.join(claims)}" if claims else '')
     seed = f"{v['meta'].get('ai_seed', 0)}-{me}-{v['meta'].get('round')}-{len(v['meta'].get('log', []))}"
