@@ -136,6 +136,58 @@ test('Bug report submits successfully with mock relay', async ({ page }) => {
   await expect(page.getByTestId('bug-report')).not.toBeVisible({ timeout: 3000 });
 });
 
+test('Bug report attaches rolling recent screens after expanded view (#161)', async ({ page }) => {
+  let capturedPostData = null;
+
+  await page.route('https://lw-bug-relay.test', async (route) => {
+    capturedPostData = route.request().postData();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, issue_url: 'https://github.com/keithschaub/lizard-wizard-dashboard/issues/161', number: 161 }),
+    });
+  });
+
+  await open(page, JSON.stringify(G8_AUTO), RELAY_TEST);
+
+  const spellKey = await page.evaluate(() => {
+    const you = window.lwDebug.view().players.find((p) => p.you);
+    return you.hand[0] || you.wizard || Object.keys(window.lwDebug.cards())[0];
+  });
+  expect(spellKey).toBeTruthy();
+
+  await page.evaluate((k) => {
+    window.ui.expandCard(window.lwDebug._g, k, { actions: [], hideCardInfo: true });
+  }, spellKey);
+
+  await expect(page.getByTestId('expanded')).toBeVisible();
+  await page.waitForTimeout(3000);
+
+  await expect.poll(async () => {
+    const keys = await page.evaluate(async () => {
+      if (window.lwDebug.flushRecentScreenCapture) return window.lwDebug.flushRecentScreenCapture();
+      return window.lwDebug.recentScreenKeys?.() || [];
+    });
+    return keys.some((key) => key.startsWith('expanded:'));
+  }, { timeout: 25_000 }).toBe(true);
+
+  await page.getByTestId('ov-close').click();
+  await expect(page.getByTestId('expanded')).not.toBeVisible();
+
+  await page.getByTestId('btn-menu').click();
+  await page.getByTestId('menu-bug-report').click();
+  await expect(page.getByTestId('bug-report')).toBeVisible({ timeout: 5000 });
+
+  await page.getByTestId('bug-description').fill('Recent screen buffer should include the enlarged spell.');
+  await page.getByTestId('bug-submit').click();
+  await expect(page.getByTestId('bug-toast')).toBeVisible({ timeout: 15_000 });
+
+  expect(capturedPostData).toBeTruthy();
+  expect(capturedPostData).toContain('name="image_recent-1"');
+  expect(capturedPostData).toMatch(/name="image_recent-[123]"/);
+  expect(capturedPostData).toMatch(/filename="recent-expanded-[^"]+\.jpg"/i);
+});
+
 test('Bug report captures game state in background', async ({ page }) => {
   let capturedPostData = null;
   

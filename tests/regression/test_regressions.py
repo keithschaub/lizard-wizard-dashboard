@@ -172,5 +172,79 @@ for lvl in ('normal', 'hard'):
     check(act['type'] == 'research' and act.get('spell') == 'Spell_Spell_Shield_T' and not act.get('last_turn') and lim == {IGNUS: 29, SERP: 20} and opening == {IGNUS: 0, SERP: 0},
           f"(d) {lvl} level on the final turn: unchanged (research and cast Spell Shield, limits {lim}, no duel)")
 
+SERPT = 'assets/Wizard_Serpentium_Machinus.jpg'
+BUF = 'assets/Wizard_Bufonem_Creaturae.jpg'
+KEITH = '13InchesOfFun'
+
+
+def before_wizard_auction(s, i):
+    """#162 save rewound to Newt's turn immediately before the auction logged at index i."""
+    e = s['meta']['log'][i]
+    st = copy.deepcopy(s)
+    st['meta']['log'] = st['meta']['log'][:i]
+    st['meta']['round'] = e['r']
+    st['next'] = 'Newt'
+    if not st['meta']['log'] or st['meta']['log'][-1].get('act') != 'turn':
+        st['meta']['log'].append({'r': e['r'], 'act': 'turn', 'seat': 'Newt'})
+    item = e['item']
+    wz = f'assets/Wizard_{item}.jpg'
+    winner = [p for p in st['players'] if p['name'] == e['won']][0]
+    w = [w for w in winner['wizards'] if item in w][-1]
+    winner['wizards'].remove(w)
+    winner['mana'] += e['price']
+    face = list(st.get('wiz_face') or [None, None])
+    face[0] = wz
+    st['wiz_face'] = face
+    return st, wz
+
+
+print('\n=== #162 Mana Garden ledger and two-player duel openings ===')
+s162 = save(162)
+k = P(s162, KEITH)
+end_ledger = AI._ledger(s162, KEITH)[0]
+check(end_ledger == k['mana'] == 110, f'end of #162 save: Keith ledger {end_ledger} matches actual {k["mana"]} mana')
+# unit: gather with Mana Garden logs +5 and the ledger agrees
+import glob as _glob
+import subprocess as _sp
+import os as _os
+
+_SCR = _os.path.join(REPO, 'engine', 'scripts')
+_unit = '/tmp/lw-162-mg.json'
+for f in _glob.glob(_unit + '*'):
+    _os.remove(f)
+_sp.run([
+    sys.executable, _os.path.join(_SCR, 'new_game.py'), '--state', _unit,
+    '--players', 'Keith,Newt', '--humans', 'Keith', '--seed', '22162', '--ai-seed', '1',
+], check=True, capture_output=True)
+_sp.run([
+    sys.executable, _os.path.join(_SCR, 'turn.py'), 'keith', 'pick',
+    'Mandrake', 'Toadstool', '--state', _unit, '--no-render',
+], check=True, capture_output=True)
+st = json.load(open(_unit))
+A.P(st, 'Keith')['spells'].append({'img': 'assets/Spell_Mana_Garden.jpg', 'cast': True})
+card = _os.path.basename(A.P(st, 'Keith')['hand'][0]).replace('.jpg', '')
+icons = [A.norm(x) for x in A._cards()[0][card]['gather_icons_in_print_order']]
+A.gather(st, 'Keith', card, keep=icons[:3])
+log = st['meta']['log']
+tr = next(e for e in reversed(log) if e.get('act') == 'trigger' and 'Mana_Garden' in str(e.get('spell', '')))
+check(tr.get('gain') == 5 and tr.get('who') == 'Keith',
+      f'Mana Garden gather logs a trigger +5 ({tr})')
+check(AI._ledger(st, 'Keith')[0] == A.P(st, 'Keith')['mana'],
+      f'ledger matches actual mana after Mana Garden gather ({AI._ledger(st, "Keith")[0]})')
+s7, _ = before_wizard_auction(s162, 32)
+pv7 = AI.public_view(s7, 'Newt')
+rival7 = AI.duel_rival_mana(pv7, 'Newt')
+open7 = AI.opening_bid(pv7, 'Newt', SERPT)
+check(rival7 == 5, f'r7 Serpentium: Keith ledger is 5 after Mana Garden gathers (was 0) ({rival7})')
+check(open7 != 1, f'r7 Serpentium: Newt does not open at 1 ({open7})')
+check(open7 == 5, f'r7 Serpentium: Newt opens at the rival ledger ({open7})')
+s11, _ = before_wizard_auction(s162, 55)
+pv11 = AI.public_view(s11, 'Newt')
+rival11 = AI.duel_rival_mana(pv11, 'Newt')
+open11 = AI.opening_bid(pv11, 'Newt', BUF)
+check(19 <= rival11 <= 25, f'r11 Bufonem: Keith ledger ~22 ({rival11})')
+check(open11 == 0, f'r11 Bufonem: Newt cannot afford to open at {rival11} mana, so no auction ({open11}, not 2)')
+
+
 print(f'\n{PASS} passed, {FAIL} failed, {XFAIL} known live regressions')
 sys.exit(1 if FAIL else 0)

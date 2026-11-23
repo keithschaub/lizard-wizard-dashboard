@@ -134,6 +134,10 @@ class Game {
       document.getElementById('loader').classList.add('done');
       document.body.dataset.ready = '1';
       this.ready = true;
+      import('./bug-report.js').then((m) => {
+        const bind = m.installRecentScreenCapture();
+        bind?.();
+      }).catch((e) => console.warn('[bug-report] recent screens:', e));
       this.settle();
     } catch (e) {
       this.loadFailed(e.message || String(e), e.stage);
