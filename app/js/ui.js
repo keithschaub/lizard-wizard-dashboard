@@ -366,6 +366,9 @@ export function expandCard(g, key, {
   
   function navigateTo(newIndex, animate = true) {
     if (newIndex < 0 || newIndex >= cards.length || newIndex === currentIndex) return;
+    if (summonIntroPulse && ov.el.dataset.summonPulse === 'active') {
+      ActionFeedback.cancelSummonIntroPulse(ov.el);
+    }
     g.sfx('tap');
     currentIndex = newIndex;
     updateContent(currentIndex, animate);
@@ -431,7 +434,7 @@ export function expandCard(g, key, {
     pulseTargets.forEach((el) => el.classList.add('summon-pulse-pending'));
     const school = g.cards[cards[currentIndex]]?.school;
     requestAnimationFrame(() => {
-      void ActionFeedback.runSummonIntroPulse(ov.el, school);
+      void ActionFeedback.runSummonIntroPulse(ov.el, school, currentIndex);
     });
   }
 
