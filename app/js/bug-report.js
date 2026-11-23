@@ -35,6 +35,132 @@ const QUEUE_KEY = 'lw.bug-reports.queue';
 const MAX_REPORT_SIZE = 25 * 1024 * 1024; // 25MB total (images + state)
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB per image
 
+const RECENT_SCREEN_MAX = 3;
+const RECENT_CAPTURE_THROTTLE_MS = 600;
+const RECENT_JPEG_MAX_EDGE = 720;
+const RECENT_JPEG_QUALITY = 0.55;
+
+/** @type {{ key: string, name: string, blob: Blob }[]} most recent first */
+const recentScreenBuffer = [];
+let recentCaptureScheduled = false;
+let recentCaptureInFlight = false;
+let recentLastCaptureAt = 0;
+let recentObserver = null;
+
+function currentViewKey() {
+  const overlays = [...document.querySelectorAll('#overlays .overlay:not(.out)')];
+  const top = overlays.at(-1);
+  if (!top) {
+    const loader = document.getElementById('loader');
+    if (loader && !loader.classList.contains('done')) return 'home:loader';
+    return 'board';
+  }
+  const tid = top.dataset.testid || 'overlay';
+  if (tid === 'bug-report') return null;
+  if (tid === 'expanded') {
+    const img = top.querySelector('[data-testid="expanded-img"]');
+    const card = img?.getAttribute('alt') || top.querySelector('[data-testid="expanded-card"]')?.dataset.card || 'card';
+    return `expanded:${card}`;
+  }
+  return tid;
+}
+
+async function captureAppJpeg({ maxEdge, quality } = {}) {
+  const app = document.getElementById('app');
+  if (!app) return null;
+  try {
+    await ensureHtml2canvas();
+  } catch (e) {
+    console.warn('[bug-report] html2canvas unavailable for recent screen:', e);
+    return null;
+  }
+  if (!window.html2canvas) return null;
+  try {
+    const canvas = await window.html2canvas(app, {
+      backgroundColor: '#070a18',
+      scale: Math.min(window.devicePixelRatio || 1, (maxEdge || 1280) / Math.max(app.scrollWidth || 1, app.scrollHeight || 1)),
+      logging: false,
+      useCORS: true,
+    });
+    return await jpegFromCanvas(canvas, maxEdge || 1280, quality ?? 0.7);
+  } catch (err) {
+    console.warn('[bug-report] Recent screen capture failed:', err);
+    return null;
+  }
+}
+
+function pushRecentScreen(key, blob) {
+  const idx = recentScreenBuffer.findIndex((e) => e.key === key);
+  if (idx >= 0) recentScreenBuffer.splice(idx, 1);
+  const safe = key.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'view';
+  recentScreenBuffer.unshift({ key, name: `recent-${safe}.jpg`, blob });
+  if (recentScreenBuffer.length > RECENT_SCREEN_MAX) recentScreenBuffer.length = RECENT_SCREEN_MAX;
+}
+
+function scheduleRecentScreenCapture() {
+  if (recentCaptureScheduled || recentCaptureInFlight) return;
+  const key = currentViewKey();
+  if (!key) return;
+  if (Date.now() - recentLastCaptureAt < RECENT_CAPTURE_THROTTLE_MS) {
+    const wait = RECENT_CAPTURE_THROTTLE_MS - (Date.now() - recentLastCaptureAt) + 40;
+    setTimeout(() => scheduleRecentScreenCapture(), wait);
+    return;
+  }
+  recentCaptureScheduled = true;
+  let ran = false;
+  const run = () => {
+    if (ran) return;
+    ran = true;
+    recentCaptureScheduled = false;
+    void runRecentScreenCapture();
+  };
+  const idle = window.requestIdleCallback || ((cb) => setTimeout(() => cb({ timeRemaining: () => 50 }), 1));
+  idle(run, { timeout: 2500 });
+  setTimeout(run, 2600);
+}
+
+async function runRecentScreenCapture() {
+  if (recentCaptureInFlight) return;
+  const key = currentViewKey();
+  if (!key) return;
+  if (Date.now() - recentLastCaptureAt < RECENT_CAPTURE_THROTTLE_MS) return;
+  recentCaptureInFlight = true;
+  try {
+    const blob = await captureAppJpeg({ maxEdge: RECENT_JPEG_MAX_EDGE, quality: RECENT_JPEG_QUALITY });
+    recentLastCaptureAt = Date.now();
+    if (blob) pushRecentScreen(key, blob);
+  } finally {
+    recentCaptureInFlight = false;
+  }
+}
+
+/** Rolling buffer of recent views for bug reports (no UI). */
+export function installRecentScreenCapture() {
+  if (recentObserver) return;
+  const root = document.getElementById('overlays');
+  if (!root) return;
+  const bump = () => scheduleRecentScreenCapture();
+  recentObserver = new MutationObserver(() => bump());
+  recentObserver.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-testid', 'hidden'] });
+  window.addEventListener('resize', bump, { passive: true });
+  const bindDebug = () => {
+    if (!window.lwDebug) return;
+    window.lwDebug.recentScreenKeys = () => recentScreenBuffer.map((e) => e.key);
+    window.lwDebug.flushRecentScreenCapture = () => runRecentScreenCapture().then(() => recentScreenBuffer.map((e) => e.key));
+  };
+  bindDebug();
+  requestAnimationFrame(bump);
+  return bindDebug;
+}
+
+function recentScreenshotsForReport() {
+  return recentScreenBuffer.map((entry, i) => ({
+    field: `image_recent-${i + 1}`,
+    name: entry.name,
+    blob: entry.blob,
+  }));
+}
+
 // Check Web Speech API support
 const hasSpeechRecognition = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
 
@@ -100,7 +226,7 @@ async function compressUserImage(file) {
 /**
  * Capture screenshot of a specific element
  */
-async function captureElementScreenshot(element, label) {
+async function captureElementScreenshot(element, label, { maxEdge = 1280, quality = 0.7 } = {}) {
   if (!element) return null;
   
   try {
@@ -113,11 +239,11 @@ async function captureElementScreenshot(element, label) {
     if (window.html2canvas) {
       const canvas = await window.html2canvas(element, {
         backgroundColor: '#070a18',
-        scale: Math.min(window.devicePixelRatio || 1, 1280 / Math.max(element.scrollWidth || 1, element.scrollHeight || 1)),
+        scale: Math.min(window.devicePixelRatio || 1, maxEdge / Math.max(element.scrollWidth || 1, element.scrollHeight || 1)),
         logging: false,
         useCORS: true,
       });
-      return await jpegFromCanvas(canvas, 1280, .7);
+      return await jpegFromCanvas(canvas, maxEdge, quality);
     }
     
     // Fallback: no screenshot capability
@@ -220,11 +346,14 @@ async function createReportPackage(game, description, userImages) {
     allImages.splice(keep);
   }
   
+  const recentScreens = recentScreenshotsForReport();
+
   return {
     description,
     metadata,
     gameState,
     images: allImages,
+    recentScreens,
   };
 }
 
@@ -244,6 +373,10 @@ async function submitReport(reportPackage) {
   
   reportPackage.images.forEach((img, i) => {
     formData.append(`image_${i}`, img.blob, img.name);
+  });
+
+  (reportPackage.recentScreens || []).forEach((img) => {
+    formData.append(img.field, img.blob, img.name);
   });
   
   try {
@@ -281,16 +414,26 @@ async function queueReport(reportPackage) {
       data: null,
       type: img.blob.type,
     })),
+    recentScreens: (reportPackage.recentScreens || []).map((img) => ({
+      field: img.field,
+      name: img.name,
+      data: null,
+      type: img.blob.type,
+    })),
   };
-  await Promise.all(reportPackage.images.map((img, i) => new Promise((resolve, reject) => {
+  const readBlob = (img, slot) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      storable.images[i].data = reader.result;
+      slot.data = reader.result;
       resolve();
     };
     reader.onerror = () => reject(reader.error || new Error('FileReader failed'));
     reader.readAsDataURL(img.blob);
-  })));
+  });
+  await Promise.all([
+    ...reportPackage.images.map((img, i) => readBlob(img, storable.images[i])),
+    ...(reportPackage.recentScreens || []).map((img, i) => readBlob(img, storable.recentScreens[i])),
+  ]);
   queue.push({ ...storable, queuedAt: Date.now() });
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
 }
@@ -308,13 +451,18 @@ export async function retryQueuedReports() {
     for (const item of queue) {
       try {
         // Reconstruct blobs from base64
-        const images = await Promise.all(item.images.map(async img => {
+        const images = await Promise.all(item.images.map(async (img) => {
           const response = await fetch(img.data);
           const blob = await response.blob();
           return { name: img.name, blob };
         }));
-        
-        await submitReport({ ...item, images });
+        const recentScreens = await Promise.all((item.recentScreens || []).map(async (img) => {
+          const response = await fetch(img.data);
+          const blob = await response.blob();
+          return { field: img.field, name: img.name, blob };
+        }));
+
+        await submitReport({ ...item, images, recentScreens });
         console.log('[bug-report] Successfully submitted queued report');
       } catch (err) {
         console.warn('[bug-report] Failed to submit queued report, keeping in queue:', err);
