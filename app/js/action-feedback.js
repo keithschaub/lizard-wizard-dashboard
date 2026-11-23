@@ -17,8 +17,8 @@ const SUMMON_PULSE_MS = 600;
 const SCORE_BLINK_MS = 400;
 const SCORE_GOLD_MS = 800;
 
-function humanMatRoots() {
-  return [...document.querySelectorAll('#peek-layer .mat.you, #overlays .mat.you')];
+function humanInventoryMat() {
+  return document.querySelector('#peek-layer .inventory .mat.you');
 }
 
 /** Summon chooser: one school-colored pulse on the enlarged card, then reveal the action tiles. */
@@ -30,9 +30,11 @@ export function runSummonIntroPulse(overlayEl, school) {
   const pending = overlayEl.querySelectorAll('.summon-pulse-pending');
   overlayEl.dataset.summonPulse = 'active';
   frame.classList.add('summon-pulse', `summon-pulse-${slug}`);
+  overlayEl.classList.add('summon-pulse-stage');
   return new Promise((resolve) => {
     const finish = () => {
       frame.classList.remove('summon-pulse', `summon-pulse-${slug}`);
+      overlayEl.classList.remove('summon-pulse-stage');
       pending.forEach((el) => el.classList.remove('summon-pulse-pending'));
       delete overlayEl.dataset.summonPulse;
       resolve();
@@ -46,51 +48,69 @@ export function runSummonIntroPulse(overlayEl, school) {
   });
 }
 
-/** Score with a familiar: blink matching inventory cards (not hand reagents) and float +N gold to the dock. */
-export function runScoreFamiliarFeedback(g, { school, gold }) {
-  if (GA.reducedMotion() || !school || !gold || gold <= 0) return;
-  if (!g.v?.players?.some((p) => p.you)) return;
-
-  const slug = schoolClass(school);
-  const roots = humanMatRoots();
-  const cards = [];
-  roots.forEach((root) => {
-    root.querySelectorAll('.mat-row:not(.mat-hand) .mcard[data-card-school]').forEach((el) => {
-      if (el.dataset.cardSchool === school) cards.push(el);
-    });
-  });
-  cards.forEach((el) => {
-    el.classList.add('score-school-blink', `score-school-${slug}`);
-    setTimeout(() => el.classList.remove('score-school-blink', `score-school-${slug}`), SCORE_BLINK_MS + 40);
-  });
-
-  const goldChip = document.querySelector('#dock [data-testid="my-gold"]');
-  if (!goldChip) return;
-  goldChip.classList.add('score-gold-chip-pulse');
-  setTimeout(() => goldChip.classList.remove('score-gold-chip-pulse'), SCORE_GOLD_MS + 40);
-
-  const start = cards[0]?.getBoundingClientRect() || goldChip.getBoundingClientRect();
-  const end = goldChip.getBoundingClientRect();
+function placeGoldFloat(host, chip, gold, slug) {
+  if (!host || !chip) return null;
   const floatEl = h('div', {
     class: `score-gold-float score-school-${slug}`,
     'data-testid': 'score-gold-float',
     'data-gold-delta': String(gold),
   }, h('span', { class: 'score-gold-float-label' }, `+${gold} gold`));
-  floatEl.style.left = `${start.left + start.width / 2}px`;
-  floatEl.style.top = `${start.top + start.height / 2}px`;
-  floatEl.style.setProperty('--score-gold-dx', `${end.left + end.width / 2 - (start.left + start.width / 2)}px`);
-  floatEl.style.setProperty('--score-gold-dy', `${end.top + end.height / 2 - (start.top + start.height / 2)}px`);
-  document.body.appendChild(floatEl);
-  const remove = () => floatEl.remove();
+  const hostRect = host.getBoundingClientRect();
+  const chipRect = chip.getBoundingClientRect();
+  floatEl.style.left = `${chipRect.left - hostRect.left + chipRect.width / 2}px`;
+  floatEl.style.top = `${chipRect.top - hostRect.top}px`;
+  host.classList.add('score-gold-float-host');
+  host.appendChild(floatEl);
+  const remove = () => {
+    floatEl.remove();
+    host.classList.remove('score-gold-float-host');
+  };
   floatEl.addEventListener('animationend', remove, { once: true });
   setTimeout(remove, SCORE_GOLD_MS + 120);
+  return floatEl;
+}
+
+/** Score with a familiar: blink matching cards in the human inventory mat and float +N gold up from their gold chip. */
+export function runScoreFamiliarFeedback(g, { school, gold, fromHuman = false }) {
+  if (GA.reducedMotion() || !school || !gold || gold <= 0 || !fromHuman) return;
+  if (!g.v?.players?.some((p) => p.you)) return;
+
+  const slug = schoolClass(school);
+  const humanMat = humanInventoryMat();
+  const cards = [];
+  if (humanMat) {
+    humanMat.querySelectorAll('.mat-row:not(.mat-hand) .mcard[data-card-school]').forEach((el) => {
+      if (el.dataset.cardSchool === school) cards.push(el);
+    });
+  }
+  cards.forEach((el) => {
+    el.classList.add('score-school-blink', `score-school-${slug}`);
+    setTimeout(() => el.classList.remove('score-school-blink', `score-school-${slug}`), SCORE_BLINK_MS + 40);
+  });
+
+  let goldChip = null;
+  let floatHost = null;
+  if (humanMat) {
+    goldChip = humanMat.querySelector('[data-testid="inv-my-gold"]');
+    floatHost = humanMat;
+  } else {
+    goldChip = document.querySelector('#dock [data-testid="my-gold"]');
+    floatHost = document.getElementById('dock');
+  }
+  if (!goldChip || !floatHost) return;
+
+  goldChip.classList.add('score-gold-chip-pulse');
+  setTimeout(() => goldChip.classList.remove('score-gold-chip-pulse'), SCORE_GOLD_MS + 40);
+
+  placeGoldFloat(floatHost, goldChip, gold, slug);
 
   if (window.lwDebug) {
-    window.lwDebug.lastScoreFeedback = { school, gold, cards: cards.length };
+    window.lwDebug.lastScoreFeedback = { school, gold, cards: cards.length, humanOnly: true };
   }
 }
 
 export function hookDebug(g) {
   if (!window.lwDebug) return;
-  window.lwDebug.runScoreFamiliarFeedback = (school, gold) => runScoreFamiliarFeedback(g, { school, gold });
+  window.lwDebug.runScoreFamiliarFeedback = (school, gold) => runScoreFamiliarFeedback(g, { school, gold, fromHuman: true });
+  window.lwDebug.tryScoreFamiliarFeedbackAI = (school, gold) => runScoreFamiliarFeedback(g, { school, gold, fromHuman: false });
 }

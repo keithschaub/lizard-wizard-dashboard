@@ -3,34 +3,34 @@ import { boot } from './helpers.js';
 
 test.use({ viewport: { width: 430, height: 775 }, deviceScaleFactor: 3 });
 
-async function seedSummon(page) {
+async function seedSummon(page, next = 'Keith') {
   await boot(page);
-  return page.evaluate(async () => {
+  return page.evaluate(async (nextSeat) => {
     const s = await (await fetch('engine/game/g8_state.json')).json();
     const me = s.players.find((p) => p.name === 'Keith');
     me.mana = 50;
     me.gold = 3;
     me.familiars = [];
-    s.next = 'Keith';
+    s.next = nextSeat;
     s.meta.web_pending = null;
     const r = await window.lwDebug._g.call('load', { text: JSON.stringify(s) });
     if (!r.ok) throw new Error(r.error);
     window.lwDebug._g.setView(r.result);
     window.lwDebug._g.aiStep = async () => false;
     return r.result;
-  });
+  }, next);
 }
 
 test('Summon familiar: school pulse class then action tiles (#summon-pulse)', async ({ page }) => {
   const v = await seedSummon(page);
   const cards = await page.evaluate(() => window.lwDebug.cards());
-  const fk = v.board.fam_face.find((k) => k && cards[k]?.school === 'Sorcery') || v.board.fam_face.find(Boolean);
+  const fk = v.board.fam_face.find((k) => k && /Imp/i.test(cards[k]?.name || k)) || v.board.fam_face.find((k) => cards[k]?.school === 'Sorcery');
   const slot = v.board.fam_face.indexOf(fk);
   const cardSchool = cards[fk]?.school;
+  expect(cardSchool).toBe('Sorcery');
 
   await page.getByTestId(`slot-fam_${slot}`).click();
-  const chooser = page.getByTestId('summon-use');
-  await expect(chooser).toBeVisible();
+  await expect(page.getByTestId('summon-use')).toBeVisible();
 
   const pulse = await page.evaluate(() => ({
     active: document.querySelector('[data-testid="summon-use"]')?.dataset.summonPulse,
@@ -44,7 +44,7 @@ test('Summon familiar: school pulse class then action tiles (#summon-pulse)', as
     const frame = document.querySelector('.big-frame.summon-pulse');
     if (frame) {
       frame.style.animationDuration = '8s';
-      frame.style.animationDelay = '-0.32s';
+      frame.style.animationDelay = '-0.3s';
     }
   });
   await page.screenshot({ path: 'docs/screenshots/summon-pulse-430x775.png', fullPage: true });
@@ -58,48 +58,65 @@ test('Summon familiar: school pulse class then action tiles (#summon-pulse)', as
     return st.pending === 0 && st.pulse === 0 && st.active === '';
   }, { timeout: 4000 }).toBe(true);
   await expect(page.getByTestId('summon-score')).toBeVisible();
-  expect(pulse.slug).toContain(`summon-pulse-${String(cardSchool || '').toLowerCase()}`);
+  expect(pulse.slug).toContain('summon-pulse-sorcery');
 });
 
 test('Score familiar: school blink and +N gold float (#score-feedback)', async ({ page }) => {
   const v = await seedSummon(page);
-  const fk = v.board.fam_face.find(Boolean);
+  const cards = await page.evaluate(() => window.lwDebug.cards());
+  const fk = v.board.fam_face.find((k) => k && /Imp/i.test(cards[k]?.name || k)) || v.board.fam_face.find(Boolean);
   const slot = v.board.fam_face.indexOf(fk);
   const leg = v.legal.summon[fk];
   const expectedGold = (leg?.score_gold || 0) + (leg?.powerful_helper || 0);
-  const school = await page.evaluate((k) => window.lwDebug.cards()[k]?.school, fk);
-
-  await page.getByTestId(`slot-fam_${slot}`).click();
-  await expect.poll(async () => (await page.locator('.summon-pulse-pending').count()) === 0, { timeout: 4000 }).toBe(true);
-  await page.getByTestId('summon-score').click();
-
-  await expect(page.getByTestId('score-gold-float')).toBeVisible({ timeout: 5000 });
-  await expect(page.getByTestId('score-gold-float')).toHaveAttribute('data-gold-delta', String(expectedGold));
+  const school = cards[fk]?.school;
 
   await page.getByTestId('eye-toggle').click();
   await expect(page.getByTestId('inventory')).toBeVisible();
 
-  const blinked = await page.evaluate(({ sc, gold }) => {
-    window.lwDebug.runScoreFamiliarFeedback(sc, gold);
-    return {
-      blink: document.querySelectorAll('.mcard.score-school-blink').length,
-      hand: document.querySelectorAll('.mat-hand .mcard.score-school-blink').length,
-      schoolCards: document.querySelectorAll(`#peek-layer .mat.you .mcard[data-card-school="${sc}"]`).length,
-    };
-  }, { sc: school, gold: expectedGold });
-  expect(blinked.hand).toBe(0);
-  expect(blinked.schoolCards).toBeGreaterThan(0);
-  expect(blinked.blink).toBeGreaterThan(0);
+  await page.evaluate(({ k, famGroup, groupIndex }) => {
+    window.ui.summonFlow(window.lwDebug._g, k, { group: famGroup, groupIndex });
+  }, { k: fk, famGroup: v.board.fam_face.filter(Boolean), groupIndex: slot });
 
-  await page.evaluate(() => {
-    const el = document.querySelector('[data-testid="score-gold-float"]');
-    if (el) { el.style.animationDuration = '8s'; el.style.animationDelay = '-0.4s'; }
-    document.querySelectorAll('.mcard.score-school-blink').forEach((n) => {
-      n.style.animationDuration = '8s';
-      n.style.animationDelay = '-0.2s';
+  await expect.poll(async () => (await page.locator('.summon-pulse-pending').count()) === 0, { timeout: 4000 }).toBe(true);
+  await page.getByTestId('summon-score').click();
+
+  await expect.poll(async () => page.evaluate((sc) => document.querySelectorAll(
+    `#peek-layer .mat.you .mcard.score-school-blink[data-card-school="${sc}"]`,
+  ).length, school), { timeout: 3000 }).toBeGreaterThan(0);
+  await expect(page.getByTestId('score-gold-float')).toBeVisible({ timeout: 5000 });
+  const floats = await page.evaluate(() => ({
+    inHuman: document.querySelectorAll('#peek-layer .mat.you [data-testid="score-gold-float"]').length,
+    inAi: document.querySelectorAll('.mat:not(.you) [data-testid="score-gold-float"]').length,
+    delta: document.querySelector('#peek-layer .mat.you [data-testid="score-gold-float"]')?.dataset.goldDelta,
+  }));
+  expect(floats.inHuman).toBe(1);
+  expect(floats.inAi).toBe(0);
+  expect(floats.delta).toBe(String(expectedGold));
+
+  await page.evaluate(({ sc, slug }) => {
+    document.querySelectorAll(`#peek-layer .mat.you .mcard[data-card-school="${sc}"]`).forEach((el) => {
+      el.classList.add('score-school-blink', `score-school-${slug}`);
+      el.style.animationDuration = '8s';
+      el.style.animationDelay = '-0.2s';
     });
+    const f = document.querySelector('#peek-layer .mat.you [data-testid="score-gold-float"]');
+    if (f) { f.style.animationDuration = '8s'; f.style.animationDelay = '-0.35s'; }
+  }, { sc: school, slug: 'sorcery' });
+  await page.evaluate(() => {
+    const you = document.querySelector('#peek-layer .mat.you');
+    you?.scrollIntoView({ block: 'center' });
   });
   await page.screenshot({ path: 'docs/screenshots/score-feedback-430x775.png', fullPage: true });
+
+  const blink = await page.evaluate((sc) => ({
+    human: document.querySelectorAll(`#peek-layer .mat.you .mcard.score-school-blink[data-card-school="${sc}"]`).length,
+    ai: document.querySelectorAll(`.mat:not(.you) .mcard.score-school-blink`).length,
+    hand: document.querySelectorAll('.mat-hand .mcard.score-school-blink').length,
+    matching: document.querySelectorAll(`#peek-layer .mat.you .mcard[data-card-school="${sc}"]`).length,
+  }), school);
+  expect(blink.ai).toBe(0);
+  expect(blink.hand).toBe(0);
+  expect(blink.matching).toBeGreaterThan(0);
 
   await expect.poll(async () => {
     const left = await page.evaluate(() => ({
@@ -108,4 +125,12 @@ test('Score familiar: school blink and +N gold float (#score-feedback)', async (
     }));
     return left.float === 0 && left.blink === 0;
   }, { timeout: 3000 }).toBe(true);
+});
+
+test('Score feedback does not show +N gold when not from human', async ({ page }) => {
+  await seedSummon(page);
+  await page.getByTestId('eye-toggle').click();
+  await expect(page.getByTestId('inventory')).toBeVisible();
+  await page.evaluate(() => window.lwDebug.tryScoreFamiliarFeedbackAI('Sorcery', 4));
+  expect(await page.getByTestId('score-gold-float').count()).toBe(0);
 });

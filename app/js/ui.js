@@ -598,7 +598,7 @@ function matSheet(g, el, close, { inventory = false } = {}) {
       h('div', { class: 'mat-row' },
         h('span', { class: 'stat mana' }, h('span', { class: 'orb' }), p.mana === null ? '?' : p.mana),
         inventory ? h('span', { class: `shield-state ${shielded ? '' : 'off'}`, 'data-testid': `shield-${p.name}`, html: `${SHIELD_ICON}${shielded ? 'Shielded' : 'No shield'}` }) : null,
-        inventory && !p.you ? null : h('span', { class: 'stat gold' }, h('span', { class: 'orb' }), p.gold === null ? '?' : p.gold),
+        inventory && !p.you ? null : h('span', { class: 'stat gold', 'data-testid': p.you ? 'inv-my-gold' : null }, h('span', { class: 'orb' }), p.gold === null ? '?' : p.gold),
         h('span', { class: `stat store ${p.tok.length >= p.cap ? 'full' : ''}` }, `Reagents ${p.tok.length}/${p.cap}`),
         h('span', { class: 'stat store' }, inventory ? `Gather ${3 + p.bonus.length}` : `Gather 3${p.bonus.length ? ' +' + p.bonus.length : ''}`, ...p.bonus.map((r) => h('img', { src: reagentIcon(r), alt: '', style: { width: '18px' } })))),
       h('div', { class: 'mat-row' }, tok.size ? [...tok].map(([r, n]) => tokenChip(r, n)) : h('span', { class: 'none' }, 'No reagent tokens')),
@@ -1082,6 +1082,7 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
   const L = (g.v.legal.summon || {})[fk];
   if (!L) return;
   const familiarGroup = group && group.length ? group : [fk];
+  const peekInventoryOpen = document.querySelector('#peek-layer .overlay.inventory:not(.out)');
   expandCard(g, fk, {
     group: familiarGroup,
     groupIndex,
@@ -1097,6 +1098,7 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
     },
     testid: 'summon-use',
     closeTestid: 'summon-cancel',
+    root: peekInventoryOpen ? document.getElementById('peek-layer') : undefined,
     actions: (currentFamiliar) => {
       const current = (g.v.legal.summon || {})[currentFamiliar] || {};
       const available = new Set(current.uses || []);
@@ -1115,12 +1117,12 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
           if (r) {
             const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
             if (hit?.feedback) g.toast(hit.feedback);
-            await fly(art(currentFamiliar), from, dockTarget());
-            await g.afterAction();
             if (use === 'score' && goldBefore != null) {
               const gained = Math.max(0, (g.me_()?.gold ?? goldBefore) - goldBefore);
-              ActionFeedback.runScoreFamiliarFeedback(g, { school, gold: gained || scoreGold });
+              ActionFeedback.runScoreFamiliarFeedback(g, { school, gold: gained || scoreGold, fromHuman: true });
             }
+            await fly(art(currentFamiliar), from, dockTarget());
+            await g.afterAction();
           }
           return r;
         },
