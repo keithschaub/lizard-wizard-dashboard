@@ -642,6 +642,12 @@ export function groupReagents(reagents = [], bonus = []) {
   return [...grouped.entries()].map(([reagent, count]) => ({ reagent, count, bonus: bonusSet.has(reagent) }));
 }
 
+function actionChipRow(reagentChips, trailingChip = null) {
+  const kids = [h('span', { class: 'action-chip-reagents' }, ...reagentChips)];
+  if (trailingChip) kids.push(trailingChip);
+  return h('span', { class: 'action-chip-row' }, ...kids);
+}
+
 function logReagentRow(reagents, bonus = []) {
   return h('div', { class: 'log-reagent-row' },
     ...groupReagents(reagents, bonus).map(({ reagent: r, count, bonus: isBonus }) => logReagentChip(r, { bonus: isBonus, count })));
@@ -1170,8 +1176,8 @@ export function researchFlow(g, sk, { group = null, groupIndex = 0 } = {}) {
           if (r) fly(art(k), from, dockTarget());
           return r;
         }) },
-        { label: 'Research & Cast', sub: h('span', { class: 'action-chip-row' },
-          ...groupReagents(cost).map(({ reagent: r, count }) => logReagentChip(r, { count })),
+        { label: 'Research & Cast', sub: actionChipRow(
+          groupReagents(cost).map(({ reagent: r, count }) => logReagentChip(r, { count })),
           logValueChip({ kind: 'mana', value: L.mana })), testid: 'research-cast', disabled: !L.castable, onClick: async (overlay) => {
           let x = null, target = null;
           if (L.x) {
@@ -1210,9 +1216,10 @@ export function buildFlow(g, towerKey = null, { group = null, groupIndex = 0 } =
         return r;
       });
       return [
-        buildLegal.reagent ? { label: 'Build with reagents', sub: h('span', { class: 'action-chip-row' },
-          ...groupReagents(Array.from({ length: buildLegal.reagent.n }, () => buildLegal.reagent.reagent))
-            .map(({ reagent: r, count }) => logReagentChip(r, { count, showCount: true }))), testid: 'build-reagent', onClick: build('reagent') } : null,
+        buildLegal.reagent ? { label: 'Build with reagents', sub: actionChipRow(
+          groupReagents(Array.from({ length: buildLegal.reagent.n }, () => buildLegal.reagent.reagent))
+            .map(({ reagent: r, count }) => logReagentChip(r, { count, showCount: true }))),
+          testid: 'build-reagent', onClick: build('reagent') } : null,
         buildLegal.gold ? { label: 'Build with Gold', sub: logValueChip({ kind: 'gold', value: buildLegal.gold.n }), testid: 'build-gold', onClick: build('gold') } : null,
       ].filter(Boolean);
     },
