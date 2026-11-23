@@ -41,13 +41,43 @@ async function seedSummon(page, next = 'Keith') {
   }, next);
 }
 
-async function pausePulsePeak(page) {
-  await page.evaluate(() => {
-    const frame = document.querySelector('.big-frame.summon-pulse');
-    if (frame) {
-      frame.style.animationDuration = '8s';
-      frame.style.animationDelay = '-0.3s';
+async function waitSummonOverlayReady(page) {
+  await expect.poll(async () => page.evaluate(() => {
+    const ov = document.querySelector('[data-testid="summon-use"]');
+    if (!ov || ov.classList.contains('out')) return false;
+    return parseFloat(getComputedStyle(ov).opacity) >= 0.99;
+  }), { timeout: 3000 }).toBe(true);
+  await page.waitForTimeout(280);
+}
+
+async function assertNoNeighborInTrack(page) {
+  const peek = await page.evaluate(() => {
+    const track = document.querySelector('.card-track');
+    const pulse = document.querySelector('.big-frame.summon-pulse');
+    if (!track || !pulse) return { ok: false, reason: 'missing pulse or track' };
+    const trackRect = track.getBoundingClientRect();
+    const current = pulse.dataset.index;
+    const breaches = [];
+    for (const f of track.querySelectorAll('.big-frame')) {
+      if (f.dataset.index === current) continue;
+      const r = f.getBoundingClientRect();
+      const ix = Math.min(r.right, trackRect.right) - Math.max(r.left, trackRect.left);
+      const iy = Math.min(r.bottom, trackRect.bottom) - Math.max(r.top, trackRect.top);
+      if (ix > 1 && iy > 1) breaches.push({ index: f.dataset.index, ix, iy, vis: getComputedStyle(f).visibility });
     }
+    return { ok: breaches.length === 0, breaches };
+  });
+  expect(peek.ok, JSON.stringify(peek)).toBe(true);
+}
+
+async function pausePulsePeak(page) {
+  await waitSummonOverlayReady(page);
+  await page.addStyleTag({ content: `
+    [data-testid="summon-use"] { opacity: 1 !important; animation: none !important; }
+  ` });
+  await page.evaluate(() => {
+    document.querySelector('.big-frame.summon-pulse')?.classList.add('summon-pulse-freeze');
+    return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   });
 }
 
@@ -77,8 +107,9 @@ test('Summon pulse: school ring on opened card in two-card market (#167)', async
   const trog = await readPulseFrame(page);
   expect(trog.index).toBe('0');
   expect(trog.slug).toContain('summon-pulse-thaumaturgy');
-  expect(trog.color).toContain('251, 158');
+  expect(trog.color).toContain('255, 210');
   expect(trog.color).not.toContain(LEGACY_DEFAULT_BLUE);
+  await assertNoNeighborInTrack(page);
   await pausePulsePeak(page);
   await page.screenshot({ path: 'docs/screenshots/summon-pulse-thaumaturgy-430x775.png', fullPage: true });
   await page.getByTestId('summon-cancel').click();
@@ -90,9 +121,10 @@ test('Summon pulse: school ring on opened card in two-card market (#167)', async
   const nymph = await readPulseFrame(page);
   expect(nymph.index).toBe('1');
   expect(nymph.slug).toContain('summon-pulse-druidry');
-  expect(nymph.color).toContain('66, 122');
+  expect(nymph.color).toContain('95, 211');
   expect(nymph.color).not.toContain(LEGACY_DEFAULT_BLUE);
   expect(nymph.transform).toMatch(/translateX\(0(%|px)?\)|matrix\(1, 0, 0, 1, 0, 0\)/);
+  await assertNoNeighborInTrack(page);
   await pausePulsePeak(page);
   await page.screenshot({ path: 'docs/screenshots/summon-pulse-druidry-430x775.png', fullPage: true });
 });
@@ -120,13 +152,7 @@ test('Summon familiar: school pulse class then action tiles (#summon-pulse)', as
     slug: document.querySelector('.big-frame.summon-pulse')?.className || '',
   }));
 
-  await page.evaluate(() => {
-    const frame = document.querySelector('.big-frame.summon-pulse');
-    if (frame) {
-      frame.style.animationDuration = '8s';
-      frame.style.animationDelay = '-0.3s';
-    }
-  });
+  await pausePulsePeak(page);
   await page.screenshot({ path: 'docs/screenshots/summon-pulse-430x775.png', fullPage: true });
 
   await expect.poll(async () => {

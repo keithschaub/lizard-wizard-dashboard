@@ -1,12 +1,12 @@
-/** Glow / blink colors sampled from each school's familiar (or wizard) card frame art. */
+/** Bright school glow colors readable on the dark summon overlay (sampled from card art, tuned for mobile). */
 export const SCHOOL_GLOW = {
-  Sorcery: { hex: '#71a4e5', pulse: [113, 164, 229], outer: [55, 130, 210] },
-  Alchemy: { hex: '#fed268', pulse: [254, 210, 104], outer: [200, 150, 60] },
-  Conjuring: { hex: '#ff7a3f', pulse: [255, 122, 63], outer: [200, 80, 40] },
-  Druidry: { hex: '#427a2c', pulse: [66, 122, 44], outer: [90, 160, 70] },
-  Enchantment: { hex: '#ebb664', pulse: [235, 182, 100], outer: [190, 130, 70] },
-  Necromancy: { hex: '#3167b2', pulse: [49, 103, 178], outer: [90, 140, 200] },
-  Thaumaturgy: { hex: '#fb9e13', pulse: [251, 158, 19], outer: [220, 120, 30] },
+  Sorcery: { hex: '#5eb0ff', pulse: [94, 176, 255], outer: [94, 176, 255] },
+  Alchemy: { hex: '#ffc04a', pulse: [255, 192, 74], outer: [255, 192, 74] },
+  Conjuring: { hex: '#ff6b4a', pulse: [255, 107, 74], outer: [255, 107, 74] },
+  Druidry: { hex: '#5fd35f', pulse: [95, 211, 95], outer: [95, 211, 95] },
+  Enchantment: { hex: '#ff8fd8', pulse: [255, 143, 216], outer: [255, 143, 216] },
+  Necromancy: { hex: '#8fbcff', pulse: [143, 188, 255], outer: [143, 188, 255] },
+  Thaumaturgy: { hex: '#ffd23f', pulse: [255, 210, 63], outer: [255, 210, 63] },
 };
 
 export function schoolGlowTable() {

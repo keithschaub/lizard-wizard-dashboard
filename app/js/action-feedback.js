@@ -74,7 +74,7 @@ export function runSummonIntroPulse(overlayEl, school, cardIndex) {
     let settled = false;
     const done = () => { if (settled) return; settled = true; finish(); };
     frame.addEventListener('animationend', (e) => {
-      if (e.target === frame && e.animationName === 'summon-pulse-ring') done();
+      if (e.target === frame && e.animationName === 'summon-pulse-glow') done();
     }, { once: true });
     setTimeout(done, SUMMON_PULSE_MS + 80);
   });
