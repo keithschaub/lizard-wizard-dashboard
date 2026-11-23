@@ -55,13 +55,20 @@ export function runSummonIntroPulse(overlayEl, school, cardIndex) {
   if (!overlayEl || !school || GA.reducedMotion()) return Promise.resolve();
   cancelSummonIntroPulse(overlayEl);
   const slug = schoolClass(school);
-  const frame = pulseFrame(overlayEl, cardIndex);
-  if (!frame) return Promise.resolve();
   const pending = overlayEl.querySelectorAll('.summon-pulse-pending');
   overlayEl.dataset.summonPulse = 'active';
-  frame.classList.add('summon-pulse', `summon-pulse-${slug}`);
   overlayEl.classList.add('summon-pulse-stage');
   return new Promise((resolve) => {
+    const frame = pulseFrame(overlayEl, cardIndex);
+    if (!frame) {
+      overlayEl.classList.remove('summon-pulse-stage');
+      delete overlayEl.dataset.summonPulse;
+      resolve();
+      return;
+    }
+    frame.dataset.pulseStart = String(performance.now());
+    frame.classList.add('summon-pulse', `summon-pulse-${slug}`);
+    void frame.offsetWidth;
     const finish = () => {
       frame.classList.remove('summon-pulse', `summon-pulse-${slug}`);
       overlayEl.classList.remove('summon-pulse-stage');

@@ -47,7 +47,6 @@ async function waitSummonOverlayReady(page) {
     if (!ov || ov.classList.contains('out')) return false;
     return parseFloat(getComputedStyle(ov).opacity) >= 0.99;
   }), { timeout: 3000 }).toBe(true);
-  await page.waitForTimeout(280);
 }
 
 async function assertNoNeighborInTrack(page) {
@@ -70,31 +69,37 @@ async function assertNoNeighborInTrack(page) {
   expect(peek.ok, JSON.stringify(peek)).toBe(true);
 }
 
-async function pausePulsePeak(page) {
+async function captureLivePulsePeak(page, { index, rgbRe, shotPath }) {
+  await expect.poll(async () => page.evaluate(({ idx, source }) => {
+    const frame = document.querySelector(`.big-frame.summon-pulse[data-index="${idx}"]`);
+    if (!frame?.dataset.pulseStart) return false;
+    const elapsed = performance.now() - Number(frame.dataset.pulseStart);
+    const bs = getComputedStyle(frame).boxShadow;
+    const re = new RegExp(source);
+    return elapsed >= 200 && elapsed <= 500 && bs !== 'none' && re.test(bs);
+  }, { idx: index, source: rgbRe.source }), { timeout: 4000, intervals: [20] }).toBe(true);
   await waitSummonOverlayReady(page);
-  await page.addStyleTag({ content: `
-    [data-testid="summon-use"] { opacity: 1 !important; animation: none !important; }
-  ` });
-  await page.evaluate(() => {
-    document.querySelector('.big-frame.summon-pulse')?.classList.add('summon-pulse-freeze');
-    return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-  });
-}
-
-async function readPulseFrame(page) {
-  return page.evaluate(() => {
-    const frame = document.querySelector('.big-frame.summon-pulse');
+  const ring = await page.evaluate((idx) => {
+    const frame = document.querySelector(`.big-frame.summon-pulse[data-index="${idx}"]`);
     if (!frame) return null;
-    const color = getComputedStyle(frame).getPropertyValue('--summon-pulse-color').trim();
-    const transform = frame.style.transform || getComputedStyle(frame).transform;
+    const cs = getComputedStyle(frame);
+    const rect = frame.getBoundingClientRect();
     return {
       index: frame.dataset.index,
       slug: frame.className,
-      color,
-      transform,
-      count: document.querySelectorAll('.big-frame.summon-pulse').length,
+      boxShadow: cs.boxShadow,
+      width: rect.width,
+      height: rect.height,
     };
-  });
+  }, index);
+  expect(ring, 'pulse frame missing').not.toBeNull();
+  expect(ring.boxShadow, ring?.boxShadow).not.toBe('none');
+  expect(ring.boxShadow).toMatch(rgbRe);
+  expect(ring.width, 'frame not laid out').toBeGreaterThan(40);
+  expect(ring.height).toBeGreaterThan(40);
+  await assertNoNeighborInTrack(page);
+  await page.screenshot({ path: shotPath, fullPage: true });
+  return ring;
 }
 
 test('Summon pulse: school ring on opened card in two-card market (#167)', async ({ page }) => {
@@ -103,30 +108,25 @@ test('Summon pulse: school ring on opened card in two-card market (#167)', async
 
   await page.getByTestId('slot-fam_0').click();
   await expect(page.getByTestId('summon-use')).toBeVisible();
-  await expect.poll(async () => (await readPulseFrame(page))?.count === 1, { timeout: 3000 }).toBe(true);
-  const trog = await readPulseFrame(page);
-  expect(trog.index).toBe('0');
+  const trog = await captureLivePulsePeak(page, {
+    index: '0',
+    rgbRe: /255,\s*210,\s*63/,
+    shotPath: 'docs/screenshots/summon-pulse-thaumaturgy-430x775.png',
+  });
   expect(trog.slug).toContain('summon-pulse-thaumaturgy');
-  expect(trog.color).toContain('255, 210');
-  expect(trog.color).not.toContain(LEGACY_DEFAULT_BLUE);
-  await assertNoNeighborInTrack(page);
-  await pausePulsePeak(page);
-  await page.screenshot({ path: 'docs/screenshots/summon-pulse-thaumaturgy-430x775.png', fullPage: true });
+  expect(trog.boxShadow).not.toContain(LEGACY_DEFAULT_BLUE);
   await page.getByTestId('summon-cancel').click();
   await expect(page.getByTestId('summon-use')).toHaveCount(0);
 
   await page.getByTestId('slot-fam_1').click();
   await expect(page.getByTestId('summon-use')).toBeVisible();
-  await expect.poll(async () => (await readPulseFrame(page))?.count === 1, { timeout: 3000 }).toBe(true);
-  const nymph = await readPulseFrame(page);
-  expect(nymph.index).toBe('1');
+  const nymph = await captureLivePulsePeak(page, {
+    index: '1',
+    rgbRe: /95,\s*211,\s*95/,
+    shotPath: 'docs/screenshots/summon-pulse-druidry-430x775.png',
+  });
   expect(nymph.slug).toContain('summon-pulse-druidry');
-  expect(nymph.color).toContain('95, 211');
-  expect(nymph.color).not.toContain(LEGACY_DEFAULT_BLUE);
-  expect(nymph.transform).toMatch(/translateX\(0(%|px)?\)|matrix\(1, 0, 0, 1, 0, 0\)/);
-  await assertNoNeighborInTrack(page);
-  await pausePulsePeak(page);
-  await page.screenshot({ path: 'docs/screenshots/summon-pulse-druidry-430x775.png', fullPage: true });
+  expect(nymph.boxShadow).not.toContain(LEGACY_DEFAULT_BLUE);
 });
 
 test('Summon familiar: school pulse class then action tiles (#summon-pulse)', async ({ page }) => {
@@ -152,8 +152,11 @@ test('Summon familiar: school pulse class then action tiles (#summon-pulse)', as
     slug: document.querySelector('.big-frame.summon-pulse')?.className || '',
   }));
 
-  await pausePulsePeak(page);
-  await page.screenshot({ path: 'docs/screenshots/summon-pulse-430x775.png', fullPage: true });
+  await captureLivePulsePeak(page, {
+    index: String(slot),
+    rgbRe: /94,\s*176,\s*255/,
+    shotPath: 'docs/screenshots/summon-pulse-430x775.png',
+  });
 
   await expect.poll(async () => {
     const st = await page.evaluate(() => ({
