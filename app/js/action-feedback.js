@@ -1,5 +1,6 @@
 import { h } from './dom.js';
 import * as GA from './gather-anim.js';
+import { schoolGlowTable } from './school-glow-colors.js';
 
 const SCHOOL_CLASS = {
   Alchemy: 'alchemy',
@@ -21,11 +22,40 @@ function humanInventoryMat() {
   return document.querySelector('#peek-layer .inventory .mat.you');
 }
 
+function pulseFrame(overlayEl, cardIndex) {
+  const idx = Number(cardIndex);
+  if (!Number.isFinite(idx)) return null;
+  return overlayEl.querySelector(`.big-frame[data-testid="expanded-card"][data-index="${idx}"]`)
+    || overlayEl.querySelector(`.big-frame[data-testid="expanded-card"][data-index="${String(idx)}"]`);
+}
+
+let activeSummonPulse = null;
+
+/** Stop an in-flight summon pulse (e.g. carousel swipe mid-animation) and clear all ring classes. */
+export function cancelSummonIntroPulse(overlayEl) {
+  if (!overlayEl) return;
+  if (activeSummonPulse?.overlayEl === overlayEl) {
+    activeSummonPulse.finish();
+    activeSummonPulse = null;
+    return;
+  }
+  overlayEl.querySelectorAll('.big-frame.summon-pulse').forEach((frame) => {
+    frame.classList.forEach((cls) => {
+      if (cls.startsWith('summon-pulse-') && cls !== 'summon-pulse') frame.classList.remove(cls);
+    });
+    frame.classList.remove('summon-pulse');
+  });
+  overlayEl.classList.remove('summon-pulse-stage');
+  overlayEl.querySelectorAll('.summon-pulse-pending').forEach((el) => el.classList.remove('summon-pulse-pending'));
+  delete overlayEl.dataset.summonPulse;
+}
+
 /** Summon chooser: one school-colored pulse on the enlarged card, then reveal the action tiles. */
-export function runSummonIntroPulse(overlayEl, school) {
+export function runSummonIntroPulse(overlayEl, school, cardIndex) {
   if (!overlayEl || !school || GA.reducedMotion()) return Promise.resolve();
+  cancelSummonIntroPulse(overlayEl);
   const slug = schoolClass(school);
-  const frame = overlayEl.querySelector('.big-frame[data-testid="expanded-card"]');
+  const frame = pulseFrame(overlayEl, cardIndex);
   if (!frame) return Promise.resolve();
   const pending = overlayEl.querySelectorAll('.summon-pulse-pending');
   overlayEl.dataset.summonPulse = 'active';
@@ -37,8 +67,10 @@ export function runSummonIntroPulse(overlayEl, school) {
       overlayEl.classList.remove('summon-pulse-stage');
       pending.forEach((el) => el.classList.remove('summon-pulse-pending'));
       delete overlayEl.dataset.summonPulse;
+      if (activeSummonPulse?.finish === finish) activeSummonPulse = null;
       resolve();
     };
+    activeSummonPulse = { overlayEl, finish };
     let settled = false;
     const done = () => { if (settled) return; settled = true; finish(); };
     frame.addEventListener('animationend', (e) => {
@@ -113,4 +145,5 @@ export function hookDebug(g) {
   if (!window.lwDebug) return;
   window.lwDebug.runScoreFamiliarFeedback = (school, gold) => runScoreFamiliarFeedback(g, { school, gold, fromHuman: true });
   window.lwDebug.tryScoreFamiliarFeedbackAI = (school, gold) => runScoreFamiliarFeedback(g, { school, gold, fromHuman: false });
+  window.lwDebug.schoolGlowColors = schoolGlowTable();
 }

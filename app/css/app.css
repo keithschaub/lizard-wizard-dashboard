@@ -807,28 +807,28 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .familiar-action-copy { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
 .familiar-action-note { color: var(--muted); font-size: 10px; line-height: 1.1; margin-top: 2px; white-space: nowrap; }
 .summon-pulse-pending { visibility: hidden; pointer-events: none; }
-.big-frame.summon-pulse { --summon-pulse-color: rgba(120, 170, 255, .75); border-radius: 10px; position: relative; z-index: 1; overflow: visible; animation: summon-pulse-ring .6s ease-out 1 both; }
+.big-frame.summon-pulse { border-radius: 10px; position: relative; z-index: 1; overflow: visible; animation: summon-pulse-ring .6s ease-out 1 both; }
 .expand.summon-pulse-stage .card-track { overflow: visible; }
-.summon-pulse-sorcery { --summon-pulse-color: rgba(40, 130, 255, 1); --summon-pulse-outer: rgba(55, 145, 255, .72); }
-.summon-pulse-alchemy { --summon-pulse-color: rgba(255, 198, 70, .82); }
-.summon-pulse-conjuring { --summon-pulse-color: rgba(200, 140, 255, .8); }
-.summon-pulse-druidry { --summon-pulse-color: rgba(110, 210, 130, .82); }
-.summon-pulse-enchantment { --summon-pulse-color: rgba(255, 140, 210, .8); }
-.summon-pulse-necromancy { --summon-pulse-color: rgba(170, 120, 255, .8); }
-.summon-pulse-thaumaturgy { --summon-pulse-color: rgba(255, 120, 95, .82); }
+.big-frame.summon-pulse.summon-pulse-sorcery { --summon-pulse-color: rgba(113, 164, 229, .95); --summon-pulse-outer: rgba(55, 130, 210, .55); }
+.big-frame.summon-pulse.summon-pulse-alchemy { --summon-pulse-color: rgba(254, 210, 104, .95); --summon-pulse-outer: rgba(200, 150, 60, .5); }
+.big-frame.summon-pulse.summon-pulse-conjuring { --summon-pulse-color: rgba(255, 122, 63, .95); --summon-pulse-outer: rgba(200, 80, 40, .5); }
+.big-frame.summon-pulse.summon-pulse-druidry { --summon-pulse-color: rgba(66, 122, 44, .95); --summon-pulse-outer: rgba(90, 160, 70, .55); }
+.big-frame.summon-pulse.summon-pulse-enchantment { --summon-pulse-color: rgba(235, 182, 100, .95); --summon-pulse-outer: rgba(190, 130, 70, .5); }
+.big-frame.summon-pulse.summon-pulse-necromancy { --summon-pulse-color: rgba(49, 103, 178, .95); --summon-pulse-outer: rgba(90, 140, 200, .55); }
+.big-frame.summon-pulse.summon-pulse-thaumaturgy { --summon-pulse-color: rgba(251, 158, 19, .95); --summon-pulse-outer: rgba(220, 120, 30, .55); }
 @keyframes summon-pulse-ring {
   0% { box-shadow: 0 0 0 0 transparent; filter: none; }
   50% { box-shadow: 0 0 0 16px var(--summon-pulse-color), 0 0 70px 36px var(--summon-pulse-outer, var(--summon-pulse-color)); filter: drop-shadow(0 0 28px var(--summon-pulse-color)); }
   100% { box-shadow: 0 0 0 0 transparent; filter: none; }
 }
 .mcard.score-school-blink { animation: score-school-blink .4s ease-out 1 both; border-radius: 6px; position: relative; z-index: 2; }
-.score-school-sorcery { --score-blink-color: rgba(70, 155, 255, .9); }
-.score-school-alchemy { --score-blink-color: rgba(255, 198, 70, .9); }
-.score-school-conjuring { --score-blink-color: rgba(200, 140, 255, .88); }
-.score-school-druidry { --score-blink-color: rgba(110, 210, 130, .9); }
-.score-school-enchantment { --score-blink-color: rgba(255, 140, 210, .88); }
-.score-school-necromancy { --score-blink-color: rgba(170, 120, 255, .88); }
-.score-school-thaumaturgy { --score-blink-color: rgba(255, 120, 95, .9); }
+.mcard.score-school-blink.score-school-sorcery { --score-blink-color: rgba(113, 164, 229, .92); }
+.mcard.score-school-blink.score-school-alchemy { --score-blink-color: rgba(254, 210, 104, .92); }
+.mcard.score-school-blink.score-school-conjuring { --score-blink-color: rgba(255, 122, 63, .92); }
+.mcard.score-school-blink.score-school-druidry { --score-blink-color: rgba(66, 122, 44, .92); }
+.mcard.score-school-blink.score-school-enchantment { --score-blink-color: rgba(235, 182, 100, .92); }
+.mcard.score-school-blink.score-school-necromancy { --score-blink-color: rgba(49, 103, 178, .92); }
+.mcard.score-school-blink.score-school-thaumaturgy { --score-blink-color: rgba(251, 158, 19, .92); }
 @keyframes score-school-blink {
   0%, 100% { box-shadow: none; outline: none; }
   50% { box-shadow: 0 0 0 5px var(--score-blink-color), 0 0 22px 10px var(--score-blink-color); outline: 2px solid var(--score-blink-color); outline-offset: 2px; }

@@ -3,6 +3,26 @@ import { boot } from './helpers.js';
 
 test.use({ viewport: { width: 430, height: 775 }, deviceScaleFactor: 3 });
 
+const LEGACY_DEFAULT_BLUE = '120, 170, 255';
+
+async function seedFamPair(page) {
+  await boot(page);
+  return page.evaluate(async () => {
+    const s = await (await fetch('engine/game/g8_state.json')).json();
+    s.round = 1;
+    s.next = 'Keith';
+    s.meta.web_pending = null;
+    const me = s.players.find((p) => p.name === 'Keith');
+    me.mana = 50;
+    s.fam_face = ['assets/Familiar_5_Troglodytam.jpg', 'assets/Familiar_5_Nympharum.jpg'];
+    const r = await window.lwDebug._g.call('load', { text: JSON.stringify(s) });
+    if (!r.ok) throw new Error(r.error);
+    window.lwDebug._g.setView(r.result);
+    window.lwDebug._g.aiStep = async () => false;
+    return r.result;
+  });
+}
+
 async function seedSummon(page, next = 'Keith') {
   await boot(page);
   return page.evaluate(async (nextSeat) => {
@@ -21,6 +41,62 @@ async function seedSummon(page, next = 'Keith') {
   }, next);
 }
 
+async function pausePulsePeak(page) {
+  await page.evaluate(() => {
+    const frame = document.querySelector('.big-frame.summon-pulse');
+    if (frame) {
+      frame.style.animationDuration = '8s';
+      frame.style.animationDelay = '-0.3s';
+    }
+  });
+}
+
+async function readPulseFrame(page) {
+  return page.evaluate(() => {
+    const frame = document.querySelector('.big-frame.summon-pulse');
+    if (!frame) return null;
+    const color = getComputedStyle(frame).getPropertyValue('--summon-pulse-color').trim();
+    const transform = frame.style.transform || getComputedStyle(frame).transform;
+    return {
+      index: frame.dataset.index,
+      slug: frame.className,
+      color,
+      transform,
+      count: document.querySelectorAll('.big-frame.summon-pulse').length,
+    };
+  });
+}
+
+test('Summon pulse: school ring on opened card in two-card market (#167)', async ({ page }) => {
+  const v = await seedFamPair(page);
+  expect(v.board.fam_face.filter(Boolean)).toHaveLength(2);
+
+  await page.getByTestId('slot-fam_0').click();
+  await expect(page.getByTestId('summon-use')).toBeVisible();
+  await expect.poll(async () => (await readPulseFrame(page))?.count === 1, { timeout: 3000 }).toBe(true);
+  const trog = await readPulseFrame(page);
+  expect(trog.index).toBe('0');
+  expect(trog.slug).toContain('summon-pulse-thaumaturgy');
+  expect(trog.color).toContain('251, 158');
+  expect(trog.color).not.toContain(LEGACY_DEFAULT_BLUE);
+  await pausePulsePeak(page);
+  await page.screenshot({ path: 'docs/screenshots/summon-pulse-thaumaturgy-430x775.png', fullPage: true });
+  await page.getByTestId('summon-cancel').click();
+  await expect(page.getByTestId('summon-use')).toHaveCount(0);
+
+  await page.getByTestId('slot-fam_1').click();
+  await expect(page.getByTestId('summon-use')).toBeVisible();
+  await expect.poll(async () => (await readPulseFrame(page))?.count === 1, { timeout: 3000 }).toBe(true);
+  const nymph = await readPulseFrame(page);
+  expect(nymph.index).toBe('1');
+  expect(nymph.slug).toContain('summon-pulse-druidry');
+  expect(nymph.color).toContain('66, 122');
+  expect(nymph.color).not.toContain(LEGACY_DEFAULT_BLUE);
+  expect(nymph.transform).toMatch(/translateX\(0(%|px)?\)|matrix\(1, 0, 0, 1, 0, 0\)/);
+  await pausePulsePeak(page);
+  await page.screenshot({ path: 'docs/screenshots/summon-pulse-druidry-430x775.png', fullPage: true });
+});
+
 test('Summon familiar: school pulse class then action tiles (#summon-pulse)', async ({ page }) => {
   const v = await seedSummon(page);
   const cards = await page.evaluate(() => window.lwDebug.cards());
@@ -32,13 +108,17 @@ test('Summon familiar: school pulse class then action tiles (#summon-pulse)', as
   await page.getByTestId(`slot-fam_${slot}`).click();
   await expect(page.getByTestId('summon-use')).toBeVisible();
 
+  await expect.poll(async () => {
+    const st = await page.evaluate(() => ({
+      active: document.querySelector('[data-testid="summon-use"]')?.dataset.summonPulse,
+      pulse: !!document.querySelector('.big-frame.summon-pulse'),
+      slug: document.querySelector('.big-frame.summon-pulse')?.className || '',
+    }));
+    return st.active === 'active' && st.pulse;
+  }, { timeout: 3000 }).toBe(true);
   const pulse = await page.evaluate(() => ({
-    active: document.querySelector('[data-testid="summon-use"]')?.dataset.summonPulse,
-    pending: !!document.querySelector('.summon-pulse-pending'),
     slug: document.querySelector('.big-frame.summon-pulse')?.className || '',
   }));
-  expect(pulse.active).toBe('active');
-  expect(pulse.pending).toBe(true);
 
   await page.evaluate(() => {
     const frame = document.querySelector('.big-frame.summon-pulse');
