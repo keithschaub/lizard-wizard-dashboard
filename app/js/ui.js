@@ -52,7 +52,10 @@ function scrollHint(el, root) {
   window.addEventListener('resize', update);
   requestAnimationFrame(update);
 }
-export function closeAll() { document.querySelectorAll('#overlays .overlay').forEach((o) => o.remove()); }
+export function closeAll() {
+  ActionFeedback.cancelAnySummonIntroPulse();
+  document.querySelectorAll('#overlays .overlay').forEach((o) => o.remove());
+}
 
 /** Remove swipe/enlarge card overlays (not other flows). */
 export function closeExpandOverlays() {
@@ -222,6 +225,11 @@ export function expandCard(g, key, {
   let currentIndex = Math.min(Math.max(0, resolvedIdx < 0 ? 0 : resolvedIdx), cards.length - 1);
   
   const ov = openOverlay('expand', { onScrim: (o) => o.close(), testid, root });
+  const closeOverlay = ov.close.bind(ov);
+  ov.close = () => {
+    if (summonIntroPulse) ActionFeedback.cancelSummonIntroPulse(ov.el);
+    closeOverlay();
+  };
   if (root) ov.el.dataset.peekChild = '';
   if (actionLayout === 'tiles') ov.el.classList.add('tiles');
   
@@ -432,9 +440,8 @@ export function expandCard(g, key, {
   if (summonIntroPulse && actionLayout === 'tiles' && !GA.reducedMotion()) {
     const pulseTargets = [actionsContainer, costContainer, promptEl].filter(Boolean);
     pulseTargets.forEach((el) => el.classList.add('summon-pulse-pending'));
-    const school = g.cards[cards[currentIndex]]?.school;
     requestAnimationFrame(() => {
-      void ActionFeedback.runSummonIntroPulse(ov.el, school, currentIndex);
+      void ActionFeedback.runSummonIntroPulse(ov.el, currentIndex, (key) => g.cards[key]?.school);
     });
   }
 

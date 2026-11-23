@@ -50,11 +50,17 @@ export function cancelSummonIntroPulse(overlayEl) {
   delete overlayEl.dataset.summonPulse;
 }
 
+/** Drop any in-flight pulse (e.g. overlay removed without close handler). */
+export function cancelAnySummonIntroPulse() {
+  if (!activeSummonPulse) return;
+  activeSummonPulse.finish();
+  activeSummonPulse = null;
+}
+
 /** Summon chooser: one school-colored pulse on the enlarged card, then reveal the action tiles. */
-export function runSummonIntroPulse(overlayEl, school, cardIndex) {
-  if (!overlayEl || !school || GA.reducedMotion()) return Promise.resolve();
+export function runSummonIntroPulse(overlayEl, cardIndex, resolveSchool) {
+  if (!overlayEl || GA.reducedMotion()) return Promise.resolve();
   cancelSummonIntroPulse(overlayEl);
-  const slug = schoolClass(school);
   const pending = overlayEl.querySelectorAll('.summon-pulse-pending');
   overlayEl.dataset.summonPulse = 'active';
   overlayEl.classList.add('summon-pulse-stage');
@@ -66,6 +72,19 @@ export function runSummonIntroPulse(overlayEl, school, cardIndex) {
       resolve();
       return;
     }
+    const img = frame.querySelector('img.big');
+    const cardKey = img?.getAttribute('alt');
+    const school = cardKey && typeof resolveSchool === 'function' ? resolveSchool(cardKey) : null;
+    if (!school) {
+      overlayEl.classList.remove('summon-pulse-stage');
+      delete overlayEl.dataset.summonPulse;
+      resolve();
+      return;
+    }
+    const slug = schoolClass(school);
+    frame.classList.forEach((cls) => {
+      if (cls.startsWith('summon-pulse-') && cls !== 'summon-pulse') frame.classList.remove(cls);
+    });
     frame.dataset.pulseStart = String(performance.now());
     frame.classList.add('summon-pulse', `summon-pulse-${slug}`);
     void frame.offsetWidth;
@@ -80,7 +99,6 @@ export function runSummonIntroPulse(overlayEl, school, cardIndex) {
     activeSummonPulse = { overlayEl, finish };
     let settled = false;
     const done = () => { if (settled) return; settled = true; finish(); };
-    const img = frame.querySelector('img.big');
     const onEnd = (e) => {
       if (e.animationName === 'summon-pulse-img') done();
     };
