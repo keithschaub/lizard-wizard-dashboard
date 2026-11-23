@@ -677,7 +677,72 @@ img { -webkit-user-drag: none; user-select: none; }
 .wand-tax-effect .chip .log-value-orb { width: 28px; height: 28px; }
 
 /* dungeon */
-.dungeon { background: radial-gradient(90% 60% at 50% 30%, rgba(90, 30, 20, .55), rgba(3, 3, 8, .96)); padding: calc(14px + var(--safe-t)) 12px 14px; gap: 12px; justify-content: flex-start; }
+.dungeon { position: relative; background: radial-gradient(90% 60% at 50% 30%, rgba(90, 30, 20, .55), rgba(3, 3, 8, .96)); padding: calc(14px + var(--safe-t)) 12px 14px; gap: 12px; justify-content: flex-start; }
+.dungeon-doors { position: absolute; inset: 0; z-index: 30; display: flex; perspective: 900px; pointer-events: auto; }
+.dungeon-doors.opening { pointer-events: none; }
+.dungeon-door-leaf { flex: 1; position: relative; align-self: stretch; min-height: 100%; transform-style: preserve-3d; transition: transform 0.7s ease-in-out; }
+.dungeon-door-left { transform-origin: left center; }
+.dungeon-door-right { transform-origin: right center; }
+.dungeon-doors.opening .dungeon-door-left { transform: rotateY(-92deg); }
+.dungeon-doors.opening .dungeon-door-right { transform: rotateY(92deg); }
+.dungeon-door-face {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, .04) 0 8%, transparent 8% 18%, rgba(255, 255, 255, .03) 18% 26%, transparent 26% 100%),
+    linear-gradient(180deg, #3a3d45 0%, #1e2128 42%, #12151c 100%);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, .55), inset 0 -18px 30px rgba(0, 0, 0, .35);
+  border: 1px solid #0a0b0e;
+}
+.dungeon-door-left .dungeon-door-face { border-right: 2px solid #060708; }
+.dungeon-door-right .dungeon-door-face { border-left: 2px solid #060708; }
+.dungeon-door-band { position: absolute; left: 6%; right: 6%; height: 14px; border-radius: 3px;
+  background: linear-gradient(180deg, #5c5f68, #2a2c32 55%, #1a1b20);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 2px 6px rgba(0, 0, 0, .5); }
+.dungeon-door-band-top { top: 22%; }
+.dungeon-door-band-bot { bottom: 22%; }
+.dungeon-door-band::before, .dungeon-door-band::after {
+  content: ''; position: absolute; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #c4c7cf, #6a6d75); box-shadow: 0 0 0 1px #2a2b30;
+}
+.dungeon-door-band::before { left: 12%; }
+.dungeon-door-band::after { right: 12%; }
+.dungeon-door-ring {
+  position: absolute; top: 50%; width: 28px; height: 28px; margin-top: -14px; border-radius: 50%;
+  border: 3px solid #6e7179; box-shadow: inset 0 0 6px rgba(0, 0, 0, .8), 0 2px 4px rgba(0, 0, 0, .6);
+  background: radial-gradient(circle at 40% 35%, #8a8d95, #3a3c42 70%);
+}
+.dungeon-door-left .dungeon-door-ring { right: 14%; }
+.dungeon-door-right .dungeon-door-ring { left: 14%; }
+.dungeon-door-ring::after {
+  content: ''; position: absolute; inset: 5px; border-radius: 50%; border: 2px solid rgba(0, 0, 0, .35);
+}
+.dc.treasure-sparkle { position: relative; overflow: visible; }
+.dc.treasure-sparkle img { animation: treasureRimPulse 0.8s ease-out both; }
+@keyframes treasureRimPulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(0, 0, 0, .7); }
+  40%, 62% { box-shadow: 0 0 0 2px rgba(255, 222, 150, 0.95), 0 0 16px 5px rgba(255, 198, 80, 0.5), 0 4px 12px rgba(0, 0, 0, .7); }
+}
+.dc.treasure-sparkle .treasure-spark {
+  position: absolute; width: 7px; height: 7px; pointer-events: none; border-radius: 50%;
+  background: radial-gradient(circle, #fffbe6 0%, rgba(255, 214, 90, 0) 72%);
+  box-shadow: 0 0 10px 2px rgba(255, 210, 100, 0.85);
+  animation: treasureSparkBlink 0.8s ease-out both;
+}
+.dc.treasure-sparkle::before,
+.dc.treasure-sparkle::after {
+  content: ''; position: absolute; width: 6px; height: 6px; pointer-events: none; border-radius: 50%;
+  background: radial-gradient(circle, #fffbe6 0%, rgba(255, 214, 90, 0) 72%);
+  box-shadow: 0 0 9px 2px rgba(255, 210, 100, 0.8);
+  animation: treasureSparkBlink 0.8s ease-out both;
+}
+.dc.treasure-sparkle::before { top: 4%; left: 6%; animation-delay: 0.02s; }
+.dc.treasure-sparkle::after { bottom: 6%; right: 5%; animation-delay: 0.12s; }
+.dc.treasure-sparkle .treasure-spark.s1 { top: 6%; right: 4%; animation-delay: 0.05s; }
+.dc.treasure-sparkle .treasure-spark.s2 { bottom: 10%; left: 5%; animation-delay: 0.18s; }
+@keyframes treasureSparkBlink {
+  0%, 100% { opacity: 0; transform: scale(0.4); }
+  35%, 55% { opacity: 1; transform: scale(1); }
+}
 .hits { display: flex; gap: 10px; align-items: center; font-weight: 700; font-size: 16px; }
 .hitpip { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255, 107, 107, .6); display: grid; place-items: center; font-size: 15px; }
 .hitpip.hit { background: radial-gradient(circle at 35% 30%, #ff9b9b, #b3161c); border-color: #ffd0d0; box-shadow: 0 0 14px rgba(255, 60, 60, .8); }

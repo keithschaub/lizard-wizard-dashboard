@@ -51,12 +51,24 @@ const SFX = {
   bid: () => tone(330, 0.09, { type: 'square', gain: 0.04, slide: 300 }),
   pass: () => tone(240, 0.14, { type: 'sine', gain: 0.06, slide: 180 }),
   hit: () => { tone(110, 0.3, { type: 'sawtooth', gain: 0.09, slide: 55 }); noise(0.2, { gain: 0.1, from: 800, to: 200 }); },
+  door: () => {
+    tone(92, 0.58, { type: 'sawtooth', gain: 0.055, slide: 68 });
+    noise(0.42, { gain: 0.06, at: 0.04, from: 240, to: 85, q: 1.1 });
+    tone(52, 0.2, { type: 'sine', gain: 0.11, at: 0.65, slide: 38 });
+  },
+  treasure: () => {
+    [1175, 1568, 1976, 2637].forEach((f, i) => tone(f, 0.24, { type: 'sine', gain: 0.045, at: 0.04 + i * 0.07, slide: f * 1.08 }));
+    tone(2093, 0.32, { type: 'triangle', gain: 0.04, at: 0.28, slide: 2793 });
+  },
   build: () => { tone(196, 0.18, { type: 'triangle', gain: 0.1 }); tone(294, 0.25, { type: 'triangle', gain: 0.08, at: 0.12 }); },
   win: () => [523, 659, 784, 1046, 1318].forEach((f, i) => tone(f, 0.35, { type: 'triangle', gain: 0.07, at: i * 0.09 })),
   error: () => tone(150, 0.2, { type: 'sawtooth', gain: 0.05, slide: 120 }),
   turn: () => { tone(587, 0.16, { gain: 0.06 }); tone(880, 0.3, { gain: 0.06, at: 0.1 }); },
 };
-const BUZZ = { tap: 8, select: 12, gather: [18, 40, 18], coin: 15, cast: [30, 50, 30], hit: [60, 40, 60], win: [40, 60, 40, 60, 80], error: [70], build: 25, turn: 20, bid: 10, flip: 10 };
+const BUZZ = {
+  tap: 8, select: 12, gather: [18, 40, 18], coin: 15, cast: [30, 50, 30], hit: [60, 40, 60], win: [40, 60, 40, 60, 80],
+  error: [70], build: 25, turn: 20, bid: 10, flip: 10, door: [28, 18], treasure: [12, 22, 18],
+};
 
 export function play(name) {
   if (muted) return;
