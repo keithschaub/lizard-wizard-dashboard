@@ -217,6 +217,18 @@
         "tests/regression/test_regressions.py"
       ],
       "note": "ai_policy last-turn mode (master only, game end triggered, no further turn): options ranked by chance of finishing first, then final score (scoring.score), then mana; duels bid all mana and open only when the rival cannot top the bid or a loss still leaves the AI in contention; one duel per final turn."
+    },
+    {
+      "issue": 161,
+      "status": "new",
+      "kind": "e2e",
+      "description": "Arch-Mage (Wild) Research & Cast action row clipped mana / overlapped label and chips at 430px",
+      "report": "2026-11-22T22-28-57-224Z-psz5q",
+      "fixture": "tests/e2e/fixtures/issue-161-arch-mage.json",
+      "tests": [
+        "tests/e2e/regression-issue-161.spec.js"
+      ],
+      "note": "One-line action chip row with flex-shrink reagent pills and opaque action buttons at 430px width."
     }
   ],
   "fixes_without_a_report": [
