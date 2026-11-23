@@ -80,9 +80,12 @@ export function runSummonIntroPulse(overlayEl, school, cardIndex) {
     activeSummonPulse = { overlayEl, finish };
     let settled = false;
     const done = () => { if (settled) return; settled = true; finish(); };
-    frame.addEventListener('animationend', (e) => {
-      if (e.target === frame && e.animationName === 'summon-pulse-glow') done();
-    }, { once: true });
+    const img = frame.querySelector('img.big');
+    const onEnd = (e) => {
+      if (e.animationName === 'summon-pulse-img') done();
+    };
+    if (img) img.addEventListener('animationend', onEnd, { once: true });
+    else frame.addEventListener('animationend', onEnd, { once: true });
     setTimeout(done, SUMMON_PULSE_MS + 80);
   });
 }

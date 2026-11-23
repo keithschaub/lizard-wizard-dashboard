@@ -74,16 +74,18 @@ async function captureLivePulsePeak(page, { index, rgbRe, shotPath }) {
     const frame = document.querySelector(`.big-frame.summon-pulse[data-index="${idx}"]`);
     if (!frame?.dataset.pulseStart) return false;
     const elapsed = performance.now() - Number(frame.dataset.pulseStart);
-    const bs = getComputedStyle(frame).boxShadow;
+    const img = frame.querySelector('img.big');
+    const bs = img ? getComputedStyle(img).boxShadow : 'none';
     const re = new RegExp(source);
     return elapsed >= 200 && elapsed <= 500 && bs !== 'none' && re.test(bs);
   }, { idx: index, source: rgbRe.source }), { timeout: 4000, intervals: [20] }).toBe(true);
   await waitSummonOverlayReady(page);
   const ring = await page.evaluate((idx) => {
     const frame = document.querySelector(`.big-frame.summon-pulse[data-index="${idx}"]`);
-    if (!frame) return null;
-    const cs = getComputedStyle(frame);
-    const rect = frame.getBoundingClientRect();
+    const img = frame?.querySelector('img.big');
+    if (!frame || !img) return null;
+    const cs = getComputedStyle(img);
+    const rect = img.getBoundingClientRect();
     return {
       index: frame.dataset.index,
       slug: frame.className,
