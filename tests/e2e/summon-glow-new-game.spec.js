@@ -1,4 +1,6 @@
 // Issue #167 regression: summon school glow must match the opened card after New game (no reload).
+// Per game: stay on round 1 only — open summon chooser on familiars 0 and 1, assert pulse, cancel
+// (never commit a summon or play through the round). Then Menu → New game with no page reload.
 import { test, expect } from './fixtures.js';
 import { boot } from './helpers.js';
 import { SCHOOL_GLOW } from '../../app/js/school-glow-colors.js';
@@ -95,7 +97,24 @@ async function cancelSummon(page) {
   await expect(page.getByTestId('summon-use')).toHaveCount(0);
 }
 
+async function assertRoundOneNoSummon(page, label) {
+  await expect.poll(async () => page.evaluate(() => {
+    const v = window.lwDebug.view();
+    const me = v.players.find((p) => p.you);
+    const fams = (v.board.fam_face || []).filter(Boolean);
+    const summonLegal = fams.some((k) => (v.legal?.summon || {})[k]);
+    return v.round === 1 && v.next === me?.name && summonLegal;
+  }), { timeout: 5000 }).toBe(true);
+  const snap = await page.evaluate(() => {
+    const v = window.lwDebug.view();
+    return { round: v.round, fams: (v.board.fam_face || []).filter(Boolean).length };
+  });
+  expect(snap.round, `${label}: must stay on round 1`).toBe(1);
+  expect(snap.fams, `${label}: need two market familiars`).toBe(2);
+}
+
 async function assertBothFamiliars(page, passLabel, { shots = [] } = {}) {
+  await assertRoundOneNoSummon(page, passLabel);
   for (const slot of [0, 1]) {
     const { cardKey, groupIndex } = await openSummonSlot(page, slot);
     const school = await schoolFromCarddb(page, cardKey);
@@ -107,6 +126,7 @@ async function assertBothFamiliars(page, passLabel, { shots = [] } = {}) {
       shotPath: shots[slot] ?? null,
     });
     await cancelSummon(page);
+    await assertRoundOneNoSummon(page, `${passLabel} after cancel slot ${slot}`);
   }
 }
 
@@ -125,7 +145,7 @@ async function startNewGameQuick(page, { seeds, picks = ['Eye_of_Newt', 'Horn'] 
   await page.evaluate(() => window.lwDebug.seedNextGame(null));
 }
 
-test('Summon glow matches each card school through three New games (#167)', async ({ page }) => {
+test('Summon glow: round-1 chooser only, then three New games in one session (#167)', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.removeItem('lw.save.v1');
     localStorage.setItem('lw.setup.v1', JSON.stringify({
@@ -134,32 +154,25 @@ test('Summon glow matches each card school through three New games (#167)', asyn
     }));
   });
   await boot(page);
-  await page.evaluate(() => {
-    const g = window.lwDebug._g;
-    const me = g.v.players.find((p) => p.you);
-    if (me) me.mana = 50;
-  });
 
-  await assertBothFamiliars(page, 'game1-g8');
-
-  const seedRuns = [
+  const games = [
+    { seed: 91_100, board_seed: 91_100, ai_seed: 91_101 },
     { seed: 120_001, board_seed: 120_001, ai_seed: 120_002 },
     { seed: 88_442, board_seed: 88_442, ai_seed: 88_443 },
     { seed: 77_019, board_seed: 77_019, ai_seed: 77_020 },
   ];
 
-  for (let i = 0; i < seedRuns.length; i++) {
-    await startNewGameQuick(page, { seeds: seedRuns[i] });
+  for (let i = 0; i < games.length; i++) {
+    await startNewGameQuick(page, { seeds: games[i] });
     await page.evaluate(() => {
-      const g = window.lwDebug._g;
-      const me = g.v.players.find((p) => p.you);
+      const me = window.lwDebug._g.v.players.find((p) => p.you);
       if (me) me.mana = 50;
     });
-    const shots = i === 0 ? [
+    const shots = i === 1 ? [
       'docs/screenshots/summon-glow-newgame2-fam0-430x775.png',
       'docs/screenshots/summon-glow-newgame2-fam1-430x775.png',
     ] : [];
-    await assertBothFamiliars(page, `game${i + 2}-seed${seedRuns[i].board_seed}`, { shots });
+    await assertBothFamiliars(page, `game${i + 1}-seed${games[i].board_seed}`, { shots });
   }
 });
 
