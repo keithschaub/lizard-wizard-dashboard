@@ -806,6 +806,45 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .familiar-action-detail { color: var(--gold-hi); font-size: 16px; line-height: 1.1; white-space: nowrap; }
 .familiar-action-copy { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
 .familiar-action-note { color: var(--muted); font-size: 10px; line-height: 1.1; margin-top: 2px; white-space: nowrap; }
+.summon-pulse-pending { visibility: hidden; pointer-events: none; }
+.big-frame.summon-pulse { --summon-pulse-color: rgba(120, 170, 255, .75); border-radius: 10px; animation: summon-pulse-ring .6s ease-out 1 both; }
+.summon-pulse-sorcery { --summon-pulse-color: rgba(70, 155, 255, .82); }
+.summon-pulse-alchemy { --summon-pulse-color: rgba(255, 198, 70, .82); }
+.summon-pulse-conjuring { --summon-pulse-color: rgba(200, 140, 255, .8); }
+.summon-pulse-druidry { --summon-pulse-color: rgba(110, 210, 130, .82); }
+.summon-pulse-enchantment { --summon-pulse-color: rgba(255, 140, 210, .8); }
+.summon-pulse-necromancy { --summon-pulse-color: rgba(170, 120, 255, .8); }
+.summon-pulse-thaumaturgy { --summon-pulse-color: rgba(255, 120, 95, .82); }
+@keyframes summon-pulse-ring {
+  0% { box-shadow: 0 0 0 0 transparent, 0 0 0 0 var(--summon-pulse-color); }
+  45% { box-shadow: 0 0 0 4px var(--summon-pulse-color), 0 0 22px 10px var(--summon-pulse-color); }
+  100% { box-shadow: 0 0 0 0 transparent, 0 0 0 12px transparent; }
+}
+.mcard.score-school-blink { animation: score-school-blink .4s ease-out 1 both; border-radius: 6px; }
+.score-school-sorcery { --score-blink-color: rgba(70, 155, 255, .9); }
+.score-school-alchemy { --score-blink-color: rgba(255, 198, 70, .9); }
+.score-school-conjuring { --score-blink-color: rgba(200, 140, 255, .88); }
+.score-school-druidry { --score-blink-color: rgba(110, 210, 130, .9); }
+.score-school-enchantment { --score-blink-color: rgba(255, 140, 210, .88); }
+.score-school-necromancy { --score-blink-color: rgba(170, 120, 255, .88); }
+.score-school-thaumaturgy { --score-blink-color: rgba(255, 120, 95, .9); }
+@keyframes score-school-blink {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 0 3px var(--score-blink-color), 0 0 14px 4px var(--score-blink-color); }
+}
+#dock .stat.gold.score-gold-chip-pulse .orb { animation: score-gold-chip-pulse .8s ease-out 1; }
+@keyframes score-gold-chip-pulse {
+  0%, 100% { box-shadow: none; }
+  35% { box-shadow: 0 0 0 4px rgba(255, 214, 120, .55), 0 0 12px rgba(255, 214, 120, .45); }
+}
+.score-gold-float { position: fixed; z-index: 120; transform: translate(-50%, -50%); pointer-events: none;
+  color: #ffe7a3; font-weight: 700; font-size: 15px; text-shadow: 0 1px 3px rgba(0, 0, 0, .75);
+  animation: score-gold-float .8s ease-out 1 both; }
+.score-gold-float-label { white-space: nowrap; }
+@keyframes score-gold-float {
+  0% { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--score-gold-dx), var(--score-gold-dy)) scale(.92); }
+}
 .familiar-summon-cost { width: min(92vw, 440px); min-height: 72px; box-sizing: border-box; display: flex; align-items: center; gap: 12px;
   padding: 8px 16px; border: 3px solid var(--gold-hi); border-radius: 42px; background: rgba(17, 13, 8, .94);
   box-shadow: 0 0 18px rgba(214, 180, 90, .35); }

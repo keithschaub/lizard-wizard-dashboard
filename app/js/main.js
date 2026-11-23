@@ -138,6 +138,7 @@ class Game {
         const bind = m.installRecentScreenCapture();
         bind?.();
       }).catch((e) => console.warn('[bug-report] recent screens:', e));
+      import('./action-feedback.js').then((m) => m.hookDebug(this)).catch(() => {});
       this.settle();
     } catch (e) {
       this.loadFailed(e.message || String(e), e.stage);

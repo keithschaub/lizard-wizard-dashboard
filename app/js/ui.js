@@ -6,6 +6,7 @@ import { REAGENT_ICON_POS } from './reagent-icon-positions.js';
 import * as GA from './gather-anim.js';
 import { deckTile } from './board.js';
 import * as Peek from './peek.js';
+import * as ActionFeedback from './action-feedback.js';
 
 const DIFF_LABELS = { easy: 'Apprentice', normal: 'Adept', hard: 'Archmage', master: 'Grand Sorcerer' };
 
@@ -212,7 +213,7 @@ export function attachSwipe(el, { onBegin = null, onDrag = null, onSwipe, onCanc
 export function expandCard(g, key, {
   actions = [], extra = null, group = null, groupIndex = 0, title = null, titleTestid = null,
   subtitle = null, actionPrompt = null, actionLayout = 'actions', compactTiles = false, costInfo = null,
-  actionFrame = null, hideCardInfo = false,
+  actionFrame = null, hideCardInfo = false, summonIntroPulse = false,
   testid = 'expanded', closeTestid = 'ov-close', root = undefined,
 } = {}) {
   // group: array of card keys for swipeable navigation, groupIndex: current card index in group
@@ -424,7 +425,16 @@ export function expandCard(g, key, {
   updateContent(currentIndex, false);
 
   if (extra) appendNodes(ov.el, extra);
-  
+
+  if (summonIntroPulse && actionLayout === 'tiles' && !GA.reducedMotion()) {
+    const pulseTargets = [actionsContainer, costContainer, promptEl].filter(Boolean);
+    pulseTargets.forEach((el) => el.classList.add('summon-pulse-pending'));
+    const school = g.cards[cards[currentIndex]]?.school;
+    requestAnimationFrame(() => {
+      void ActionFeedback.runSummonIntroPulse(ov.el, school);
+    });
+  }
+
   return ov;
 }
 
@@ -445,7 +455,8 @@ function pairUp(g, wizards, towers) {
 // `peek`: the card sits on the inventory sheet (peek layer), so its enlarged view opens there too, on top of it.
 function mini(g, key, { cls = '', badge = null, testid = null, group = null, groupIndex = 0, handGather = false, peek = false } = {}) {
   if (!key) return h('div', { class: 'mcard back', 'data-testid': testid }, 'LW');
-  return h('div', { class: `mcard ${cls}`, 'data-testid': testid, onclick: (e) => { 
+  const cardSchool = g.cards[key]?.school || '';
+  return h('div', { class: `mcard ${cls}`, 'data-testid': testid, 'data-card-key': key, 'data-card-school': cardSchool, onclick: (e) => { 
     e.stopPropagation(); 
     g.sfx('tap');
     if (peek) { expandCard(g, key, { group, groupIndex, root: document.getElementById('peek-layer') }); return; }
@@ -592,7 +603,7 @@ function matSheet(g, el, close, { inventory = false } = {}) {
         h('span', { class: 'stat store' }, inventory ? `Gather ${3 + p.bonus.length}` : `Gather 3${p.bonus.length ? ' +' + p.bonus.length : ''}`, ...p.bonus.map((r) => h('img', { src: reagentIcon(r), alt: '', style: { width: '18px' } })))),
       h('div', { class: 'mat-row' }, tok.size ? [...tok].map(([r, n]) => tokenChip(r, n)) : h('span', { class: 'none' }, 'No reagent tokens')),
       h('div', { class: 'mat-label' }, p.you ? 'Reagent cards in hand' : `Reagent cards in hand: ${p.hand_count}`),
-      p.you ? h('div', { class: 'mat-row' }, p.hand.map((k) => tap(k, { handGather: !inventory && g.v.next === g.me && !g.v.game_over }))) : null,
+      p.you ? h('div', { class: 'mat-row mat-hand' }, p.hand.map((k) => tap(k, { handGather: !inventory && g.v.next === g.me && !g.v.game_over }))) : null,
       h('div', { class: 'mat-label' }, `Wizards & Towers (${p.wizards.length}/${p.towers.length})`),
       h('div', { class: 'mat-row' }, pairs.length ? pairs.map(([w, t, m]) => h('div', { class: `pair ${m ? 'match' : ''}` },
         h('span', { class: 'pts' }, inventory ? `${m ? 10 : w && t ? 5 : 1} VP` : m ? '+10' : (w && t ? '+5' : '+1')),
@@ -1076,6 +1087,7 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
     groupIndex,
     actionLayout: 'tiles',
     compactTiles: true,
+    summonIntroPulse: g.v.next === g.me,
     actionPrompt: 'THEN PICK ONE',
     costInfo: (currentFamiliar) => {
       const current = (g.v.legal.summon || {})[currentFamiliar];
@@ -1096,12 +1108,19 @@ export function summonFlow(g, fk, { group = null, groupIndex = 0 } = {}) {
           if (!available.has(use)) return null;
           if (use === 'gather') return summonGather(g, currentFamiliar);
           const from = slotRectOf(currentFamiliar);
+          const goldBefore = use === 'score' ? g.me_()?.gold : null;
+          const scoreGold = use === 'score' ? (current.score_gold || 0) + (current.powerful_helper || 0) : 0;
+          const school = g.cards[currentFamiliar]?.school;
           const r = await g.act('act_summon', { familiar: currentFamiliar, use }, { sound: use === 'score' ? 'coin' : 'select' });
           if (r) {
             const hit = (r.entries || []).find((e) => e.act === 'summon' && e.feedback);
             if (hit?.feedback) g.toast(hit.feedback);
             await fly(art(currentFamiliar), from, dockTarget());
             await g.afterAction();
+            if (use === 'score' && goldBefore != null) {
+              const gained = Math.max(0, (g.me_()?.gold ?? goldBefore) - goldBefore);
+              ActionFeedback.runScoreFamiliarFeedback(g, { school, gold: gained || scoreGold });
+            }
           }
           return r;
         },
