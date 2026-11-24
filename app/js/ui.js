@@ -1805,9 +1805,70 @@ export function renderDungeonResult(ov, was) {
   return loot;
 }
 
+function dungeonDoorLeaf(side) {
+  return h('div', { class: `dungeon-door-leaf dungeon-door-${side}` },
+    h('div', { class: 'dungeon-door-face' },
+      h('span', { class: 'dungeon-door-band dungeon-door-band-top', 'aria-hidden': 'true' }),
+      h('span', { class: 'dungeon-door-band dungeon-door-band-bot', 'aria-hidden': 'true' }),
+      h('span', { class: 'dungeon-door-ring', 'aria-hidden': 'true' })));
+}
+
+function playDungeonEntryDoors(overlayEl, onOpen) {
+  if (!overlayEl?.isConnected) return;
+  if (document.querySelector('[data-testid="dungeon-entry-doors"]')) return;
+  const doors = h('div', { class: 'dungeon-doors', 'data-testid': 'dungeon-entry-doors', 'data-door-phase': 'closed' });
+  appendNodes(doors, dungeonDoorLeaf('left'), dungeonDoorLeaf('right'));
+  document.body.appendChild(doors);
+  const mountT = performance.now();
+  doors.dataset.t0 = String(mountT);
+  void doors.offsetWidth;
+  doors.classList.add('animated');
+  let openingMarked = false;
+  const markOpening = () => {
+    if (openingMarked || !doors.isConnected) return;
+    openingMarked = true;
+    doors.dataset.doorPhase = 'opening';
+    doors.setAttribute('data-door-phase', 'opening');
+    doors.dataset.opened = '1';
+    doors.classList.add('opening');
+    doors.style.pointerEvents = 'none';
+    onOpen?.();
+  };
+  doors.querySelectorAll('.dungeon-door-leaf').forEach((leaf) => {
+    leaf.addEventListener('animationstart', (e) => {
+      if (String(e.animationName || '').includes('dungeonDoor')) markOpening();
+    });
+  });
+  const openAt = mountT + 350;
+  const pumpOpen = () => {
+    if (openingMarked || !doors.isConnected) return;
+    if (performance.now() >= openAt) markOpening();
+    else requestAnimationFrame(pumpOpen);
+  };
+  requestAnimationFrame(pumpOpen);
+  setTimeout(markOpening, 352);
+  let ended = 0;
+  let done = false;
+  const cleanup = () => {
+    if (done || !doors.isConnected) return;
+    const paused = [...doors.querySelectorAll('.dungeon-door-leaf')].some((leaf) => leaf.getAnimations().some((a) => a.playState === 'paused'));
+    if (paused) return;
+    if (performance.now() - mountT < 1200) return;
+    done = true;
+    doors.remove();
+  };
+  doors.addEventListener('animationend', (e) => {
+    if (!e.target.classList?.contains('dungeon-door-leaf') || !String(e.animationName || '').includes('dungeonDoor')) return;
+    ended += 1;
+    if (ended >= 2) cleanup();
+  });
+  setTimeout(cleanup, 2000);
+}
+
 export async function dungeonFlow(g) {
   const ov = openOverlay('dungeon', { testid: 'dungeon' });
   let shown = 0;
+  let entryDoorsPlayed = false;
   for (;;) {
     const pd = g.v.pending;
     if (!pd || pd.type !== 'dungeon') break;
@@ -1816,12 +1877,27 @@ export async function dungeonFlow(g) {
     const pips = Array.from({ length: pd.limit }, (_, i) => h('span', { class: `hitpip ${i < pd.hits ? 'hit' : ''}` }, i < pd.hits ? '✸' : ''));
     const deck = h('div', { class: `deck dungeon ddeck ${pd.done ? '' : 'live'}`, 'data-testid': 'dungeon-deck' }, h('div', { class: 'mono' }, 'LW'), h('div', { class: 'dname' }, 'Dungeon'), h('div', { class: 'dcount' }, `${Math.max(0, pd.deck - pd.draws)} cards`));
     if (!pd.done) deck.onclick = () => done('flip');
-    const row = h('div', { class: 'drawn', 'data-testid': 'dungeon-drawn' }, pd.drawn.map((k, i) => h('div', {
-      class: `dc ${i >= shown ? 'new' : ''} ${pd.drawn_cards[i].type !== 'Treasure' ? 'monster' : ''}`, onclick: () => expandCard(g, k) }, h('img', { src: art(k), alt: k }))));
+    const prevShown = shown;
+    const row = h('div', { class: 'drawn', 'data-testid': 'dungeon-drawn' }, pd.drawn.map((k, i) => {
+      const meta = pd.drawn_cards[i];
+      const isMonster = meta.type !== 'Treasure';
+      const treasureSparkle = !GA.reducedMotion() && i === pd.drawn.length - 1 && i >= prevShown && meta.type === 'Treasure';
+      return h('div', {
+        class: `dc ${i >= prevShown ? 'new' : ''} ${isMonster ? 'monster' : ''} ${treasureSparkle ? 'treasure-sparkle' : ''}`,
+        onclick: () => expandCard(g, k),
+      },
+      h('img', { src: art(k), alt: k }),
+      treasureSparkle ? h('span', { class: 'treasure-spark s1', 'aria-hidden': 'true' }) : null,
+      treasureSparkle ? h('span', { class: 'treasure-spark s2', 'aria-hidden': 'true' }) : null);
+    }));
     shown = pd.drawn.length;
     appendNodes(ov.el, h('div', { class: 'ov-title' }, 'The Dungeon'),
       h('div', { class: 'hits', 'data-testid': 'dungeon-hits' }, 'Hits', ...pips, h('span', {}, `${pd.hits} / ${pd.limit}`)),
       deck, row);
+    if (!entryDoorsPlayed && pd.draws === 0 && !GA.reducedMotion()) {
+      entryDoorsPlayed = true;
+      playDungeonEntryDoors(ov.el, () => g.sfx('door'));
+    }
     const acts = h('div', { class: 'actions' });
     if (pd.done) {
       appendNodes(ov.el, h('div', { class: `result ${pd.success ? 'good' : 'bad'}` }, pd.success ? 'The dungeon is exhausted' : 'Defeated! You keep nothing'));
@@ -1838,7 +1914,11 @@ export async function dungeonFlow(g) {
       g.sfx('flip');
       const r = await g.act('dungeon_flip', {});
       const nd = r?.view?.pending;
-      if (nd && nd.hits > pd.hits) setTimeout(() => g.sfx('hit'), 250);
+      if (nd) {
+        const last = nd.drawn_cards[nd.drawn_cards.length - 1];
+        if (nd.hits > pd.hits) setTimeout(() => g.sfx('hit'), 250);
+        else if (last?.type === 'Treasure') setTimeout(() => g.sfx('treasure'), 250);
+      }
     } else if (a === 'leave') {
       await g.act('dungeon_cancel', {});
       break;
