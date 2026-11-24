@@ -79,10 +79,20 @@ test('entry doors cover the screen, swing open, leave the DOM, then the deck is 
     const lf = d.querySelector('.dungeon-door-left .dungeon-door-face')?.getBoundingClientRect();
     const rf = d.querySelector('.dungeon-door-right .dungeon-door-face')?.getBoundingClientRect();
     const gap = lf && rf ? rf.left - lf.right : 0;
+    const vw = window.innerWidth;
+    const cy = window.innerHeight / 2;
+    const cx = vw / 2;
+    const deckVisible = !!document.elementFromPoint(cx, cy)?.closest?.('[data-testid="dungeon-deck"]');
     const left = d.querySelector('.dungeon-door-left');
     const tr = getComputedStyle(left).transform;
-    const open = tr && tr !== 'none' && !/^matrix(1, 0, 0, 1, 0, 0)$/.test(tr);
-    return { ok: gap > 8 || open, gap, transform: tr };
+    let angleDeg = 0;
+    const m = tr?.match(/matrix3d\(([^)]+)\)/);
+    if (m) {
+      const p = m[1].split(',').map((s) => parseFloat(s.trim()));
+      if (p.length >= 9) angleDeg = Math.abs((Math.asin(Math.min(1, Math.abs(p[8]))) * 180) / Math.PI);
+    }
+  const open = angleDeg >= 35;
+    return { ok: gap > 20 && (deckVisible || open), gap, deckVisible, angleDeg, transform: tr };
   });
   expect(midSwing.ok, JSON.stringify(midSwing)).toBe(true);
   await page.screenshot({ path: path.join(ARTIFACTS, 'dungeon-doors-mid-430.png'), scale: 'device' });

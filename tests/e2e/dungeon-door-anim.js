@@ -1,16 +1,25 @@
 /** Pause dungeon door leaf animations at closed (start of swing) or mid (50% of active duration). */
 export async function seekDungeonDoors(page, phase) {
   return page.evaluate((phaseIn) => {
+    const cssMs = (raw, fallback) => {
+      if (raw == null || raw === '') return fallback;
+      const s = String(raw);
+      const n = parseFloat(s);
+      if (Number.isNaN(n)) return fallback;
+      if (s.includes('ms')) return n;
+      return n * 1000;
+    };
     const doors = document.querySelector('[data-testid="dungeon-entry-doors"]');
     if (!doors) return { ok: false, reason: 'no-doors' };
     const leaves = [...doors.querySelectorAll('.dungeon-door-leaf')];
     const anims = leaves.flatMap((l) => l.getAnimations()).filter((a) => /dungeonDoor/i.test(a.animationName || ''));
     if (!anims.length) return { ok: false, reason: 'no-anims' };
+    const ref = getComputedStyle(leaves[0]);
+    const durMs = cssMs(ref.animationDuration, 750);
+    const delayMs = cssMs(ref.animationDelay, 350);
     for (const a of anims) {
       a.pause();
-      const delay = Number(a.effect?.delay) || 0;
-      const dur = Number(a.effect?.duration) || 700;
-      a.currentTime = phaseIn === 'closed' ? delay + 1 : delay + dur * 0.72;
+      a.currentTime = phaseIn === 'closed' ? delayMs + 1 : delayMs + durMs * 0.5;
     }
     doors.dataset.doorPhase = phaseIn === 'closed' ? 'closed' : 'opening';
     doors.classList.toggle('opening', phaseIn !== 'closed');
@@ -33,28 +42,35 @@ export async function metricsAtClosedDoors(page) {
     const unionT = Math.min(lf.top, rf.top);
     const unionB = Math.max(lf.bottom, rf.bottom);
     const coverage = ((unionR - unionL) / vw) * ((unionB - unionT) / vh);
-    const within = (x, y) => dr && x >= dr.left && x <= dr.right && y >= dr.top && y <= dr.bottom;
+    const doorTop = (x, y) => {
+      const top = document.elementFromPoint(x, y);
+      return !!top?.closest?.('[data-testid="dungeon-entry-doors"], .dungeon-door-face, .dungeon-door-leaf, .dungeon-door-bands');
+    };
     const cx = vw / 2;
     const cy = vh / 2;
-    const at = (x, y) => document.elementsFromPoint(x, y).some((el) => el.closest?.('[data-testid="dungeon-entry-doors"], .dungeon-door-face, .dungeon-door-leaf'));
-    const hitCenter = at(cx, cy) || within(cx, cy) || at((lf.left + lf.right) / 2, (lf.top + lf.bottom) / 2);
+    const hitCenter = doorTop(cx, cy);
     const leave = document.querySelector('[data-testid="dungeon-leave"]');
     let hitLeave = false;
     if (leave) {
       const lb = leave.getBoundingClientRect();
-      const lx = lb.left + lb.width / 2;
-      const ly = lb.top + lb.height / 2;
-      hitLeave = at(lx, ly) || within(lx, ly) || at((rf.left + rf.right) / 2, ly);
+      hitLeave = doorTop(lb.left + lb.width / 2, lb.top + lb.height / 2);
+    }
+    const eye = document.querySelector('[data-testid="eye-toggle"]') || document.querySelector('.peek-btn');
+    let hitEye = true;
+    if (eye) {
+      const eb = eye.getBoundingClientRect();
+      hitEye = doorTop(eb.left + eb.width / 2, eb.top + eb.height / 2);
     }
     const seam = rf.left - lf.right;
     const wide = (unionR - unionL) / vw >= 0.95 && seam <= 6;
     return {
-      ok: wide && hitCenter && hitLeave,
+      ok: wide && hitCenter && hitLeave && hitEye,
       widthFrac: (unionR - unionL) / vw,
       heightFrac: (unionB - unionT) / vh,
       coverage,
       hitCenter,
       hitLeave,
+      hitEye,
       seam,
     };
   });
@@ -64,22 +80,34 @@ export async function seekTreasureSparklePeak(page) {
   return page.evaluate(() => {
     const cell = document.querySelector('.dc.treasure-sparkle');
     if (!cell) return { ok: false, reason: 'no-cell' };
-    const targets = [cell, ...cell.querySelectorAll('.treasure-spark')];
     let n = 0;
-    for (const el of targets) {
+    const cssMs = (raw, fallback) => {
+      const s = String(raw ?? '');
+      const n = parseFloat(s);
+      if (Number.isNaN(n)) return fallback;
+      if (s.includes('ms')) return n;
+      return n * 1000;
+    };
+    const pauseAll = (el) => {
+      const ref = getComputedStyle(el);
+      const durMs = cssMs(ref.animationDuration, 800);
+      const delayMs = cssMs(ref.animationDelay, 0);
       for (const a of el.getAnimations()) {
         a.pause();
-        const dur = Number(a.effect?.duration) || 800;
-        a.currentTime = dur * 0.42;
+        a.currentTime = delayMs + durMs * 0.45;
         n += 1;
       }
-    }
+    };
+    pauseAll(cell);
+    cell.querySelectorAll('.treasure-spark').forEach(pauseAll);
     const spark = cell.querySelector('.treasure-spark.s1');
     const cs = spark ? getComputedStyle(spark) : null;
     const cellCs = getComputedStyle(cell);
-    const rimOk = cellCs.boxShadow.includes('255') && cellCs.boxShadow.includes('235');
-    const sparkOk = spark && Number(cs.opacity) >= 0.7;
-    return { ok: n > 0 && rimOk && sparkOk, anims: n, rim: cellCs.boxShadow, opacity: cs?.opacity };
+    const rimRgb = cellCs.borderColor;
+    const rimOk = /245|197|66/.test(rimRgb) && parseFloat(cellCs.borderTopWidth) >= 2.5;
+    const glowOk = /245|197|66/.test(cellCs.boxShadow) && cellCs.boxShadow !== 'none';
+    const sparkOk = spark && Number(cs.opacity) >= 0.85 && spark.getBoundingClientRect().width >= 14;
+    return { ok: n > 0 && rimOk && glowOk && sparkOk, anims: n, rim: rimRgb, shadow: cellCs.boxShadow, opacity: cs?.opacity };
   });
 }
 

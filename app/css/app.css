@@ -678,84 +678,126 @@ img { -webkit-user-drag: none; user-select: none; }
 
 /* dungeon */
 .dungeon { background: radial-gradient(90% 60% at 50% 30%, rgba(90, 30, 20, .55), rgba(3, 3, 8, .96)); padding: calc(14px + var(--safe-t)) 12px 14px; gap: 12px; justify-content: flex-start; }
-.overlay.dungeon .dungeon-doors {
+.dungeon-doors {
   position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; margin: 0; padding: 0;
-  z-index: 10000; display: flex; flex-direction: row; align-items: stretch; justify-content: center;
-  perspective: 1100px; pointer-events: auto; overflow: hidden; box-sizing: border-box;
+  z-index: 10001; display: flex; flex-direction: row; align-items: stretch; justify-content: center;
+  perspective: 900px; pointer-events: auto; overflow: hidden; box-sizing: border-box;
+}
+.dungeon-doors::before {
+  content: ''; position: absolute; inset: 0; z-index: 50; pointer-events: auto; background: transparent;
 }
 .dungeon-doors.opening { pointer-events: none; }
+.dungeon-doors.opening::before { display: none; pointer-events: none; }
 .dungeon-door-leaf {
   flex: none; width: 50vw; max-width: 50vw; min-width: 50vw; height: 100%;
   align-self: stretch; position: relative; transform-style: preserve-3d; backface-visibility: hidden; will-change: transform;
+  z-index: 2;
 }
 .dungeon-door-left { transform-origin: left center; transform: rotateY(0deg); }
 .dungeon-door-right { transform-origin: right center; transform: rotateY(0deg); }
-.dungeon-doors.animated .dungeon-door-left { animation: dungeonDoorLeft 0.7s ease-in-out 0.35s both; }
-.dungeon-doors.animated .dungeon-door-right { animation: dungeonDoorRight 0.7s ease-in-out 0.35s both; }
-@keyframes dungeonDoorLeft { from { transform: rotateY(0deg); } to { transform: rotateY(-82deg); } }
-@keyframes dungeonDoorRight { from { transform: rotateY(0deg); } to { transform: rotateY(82deg); } }
+.dungeon-doors.animated .dungeon-door-left { animation: dungeonDoorLeft 0.75s linear 0.35s both; }
+.dungeon-doors.animated .dungeon-door-right { animation: dungeonDoorRight 0.75s linear 0.35s both; }
+@keyframes dungeonDoorLeft {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(-65deg); }
+  100% { transform: rotateY(-72deg); }
+}
+@keyframes dungeonDoorRight {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(65deg); }
+  100% { transform: rotateY(72deg); }
+}
 .dungeon-door-face {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; transform: translateZ(1px);
+  --stone: #5c5048;
   background:
-    linear-gradient(105deg, rgba(255, 255, 255, .04) 0 8%, transparent 8% 18%, rgba(255, 255, 255, .03) 18% 26%, transparent 26% 100%),
-    linear-gradient(180deg, #3a3d45 0%, #1e2128 42%, #12151c 100%);
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, .55), inset 0 -18px 30px rgba(0, 0, 0, .35);
-  border: 1px solid #0a0b0e;
+    linear-gradient(180deg, rgba(255, 255, 255, .06) 0%, transparent 22%),
+    repeating-linear-gradient(90deg, transparent 0, transparent 47px, rgba(18, 14, 12, .55) 47px, rgba(18, 14, 12, .55) 49px),
+    repeating-linear-gradient(180deg, transparent 0, transparent 36px, rgba(18, 14, 12, .5) 36px, rgba(18, 14, 12, .5) 38px),
+  linear-gradient(165deg, #7a6a5f 0%, #5c5048 28%, #4a4039 52%, #3a322c 78%, #2e2823 100%);
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, .45), inset 0 -22px 32px rgba(0, 0, 0, .35);
+  border: 1px solid #1a1614;
 }
-.dungeon-door-left .dungeon-door-face { border-right: 2px solid #060708; }
-.dungeon-door-right .dungeon-door-face { border-left: 2px solid #060708; }
-.dungeon-door-band { position: absolute; left: 6%; right: 6%; height: 14px; border-radius: 3px;
-  background: linear-gradient(180deg, #5c5f68, #2a2c32 55%, #1a1b20);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 2px 6px rgba(0, 0, 0, .5); }
-.dungeon-door-band-top { top: 22%; }
-.dungeon-door-band-bot { bottom: 22%; }
-.dungeon-door-band::before, .dungeon-door-band::after {
-  content: ''; position: absolute; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #c4c7cf, #6a6d75); box-shadow: 0 0 0 1px #2a2b30;
+.dungeon-door-right .dungeon-door-face {
+  background-position: 0 0, 18px 0, 0 0, 0 0;
 }
-.dungeon-door-band::before { left: 12%; }
-.dungeon-door-band::after { right: 12%; }
+.dungeon-door-left .dungeon-door-face { border-right: 3px solid #12100e; box-shadow: inset -8px 0 16px rgba(0, 0, 0, .35), inset 0 0 50px rgba(0, 0, 0, .45); }
+.dungeon-door-right .dungeon-door-face { border-left: 3px solid #12100e; box-shadow: inset 8px 0 16px rgba(0, 0, 0, .35), inset 0 0 50px rgba(0, 0, 0, .45); }
+.dungeon-door-bands { position: absolute; inset: 0; pointer-events: none; z-index: 8; }
+.dungeon-door-band-cross {
+  position: absolute; left: 0; right: 0; height: 18px;
+  background:
+    radial-gradient(circle at 6% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 14% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 22% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 30% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 38% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 46% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 54% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 62% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 70% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 78% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 86% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 94% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    linear-gradient(180deg, #6a6460 0%, #3d3834 45%, #2a2622 100%);
+  border-top: 1px solid rgba(255, 255, 255, .1); border-bottom: 1px solid rgba(0, 0, 0, .5);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .45);
+}
+.dungeon-door-band-cross.top { top: 28%; }
+.dungeon-door-band-cross.bot { top: 62%; }
 .dungeon-door-ring {
-  position: absolute; top: 50%; width: 28px; height: 28px; margin-top: -14px; border-radius: 50%;
-  border: 3px solid #6e7179; box-shadow: inset 0 0 6px rgba(0, 0, 0, .8), 0 2px 4px rgba(0, 0, 0, .6);
-  background: radial-gradient(circle at 40% 35%, #8a8d95, #3a3c42 70%);
+  position: absolute; top: 50%; width: 32px; height: 32px; margin-top: -16px; border-radius: 50%; z-index: 4;
+  border: 4px solid #5a5652;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, .85), 0 2px 5px rgba(0, 0, 0, .65);
+  background: radial-gradient(circle at 40% 35%, #9a948c, #4a4540 70%);
 }
-.dungeon-door-left .dungeon-door-ring { right: 14%; }
-.dungeon-door-right .dungeon-door-ring { left: 14%; }
+.dungeon-door-left .dungeon-door-ring { right: 10%; }
+.dungeon-door-right .dungeon-door-ring { left: 10%; }
+.dungeon-door-ring::before {
+  content: ''; position: absolute; inset: 5px; border-radius: 50%;
+  border: 3px solid #3a3632; box-shadow: inset 0 0 4px rgba(0, 0, 0, .6);
+}
 .dungeon-door-ring::after {
-  content: ''; position: absolute; inset: 5px; border-radius: 50%; border: 2px solid rgba(0, 0, 0, .35);
+  content: ''; position: absolute; top: 50%; left: 50%; width: 10px; height: 14px; margin: -7px 0 0 -5px;
+  border: 3px solid #6e6a66; border-bottom: none; border-radius: 8px 8px 2px 2px;
+  background: linear-gradient(180deg, #8a8580, #5a5550);
 }
-.drawn .dc.treasure-sparkle { position: relative; overflow: visible; z-index: 2; border-radius: 7px;
+.drawn .dc.treasure-sparkle {
+  position: relative; overflow: visible; z-index: 2; border-radius: 7px;
+  border: 3px solid transparent; box-sizing: border-box;
   animation: treasureRimPulse 0.8s ease-out both;
-  box-shadow: 0 0 0 3px rgba(255, 235, 170, 0.98), 0 0 22px 8px rgba(255, 200, 70, 0.72); }
-.drawn .dc.treasure-sparkle img { border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, .7); }
+}
+.drawn .dc.treasure-sparkle img { border-radius: 4px; box-shadow: 0 4px 12px rgba(0, 0, 0, .7); display: block; width: 100%; height: auto; }
 .drawn .dc.treasure-sparkle .treasure-spark {
-  position: absolute; width: 11px; height: 11px; pointer-events: none; z-index: 3;
-  background: radial-gradient(circle, #fffef0 0%, #ffe07a 38%, rgba(255, 214, 90, 0) 72%);
-  box-shadow: 0 0 14px 3px rgba(255, 220, 100, 0.95);
+  position: absolute; width: 17px; height: 17px; pointer-events: none; z-index: 3;
+  background: radial-gradient(circle, #fffef5 0%, #ffe680 42%, rgba(255, 214, 90, 0) 72%);
+  box-shadow: 0 0 18px 5px rgba(255, 228, 120, 1), 0 0 8px 2px rgba(255, 255, 255, 0.95);
   animation: treasureSparkBlink 0.8s ease-out both;
   clip-path: polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%);
 }
 .drawn .dc.treasure-sparkle::before,
 .drawn .dc.treasure-sparkle::after {
-  content: ''; position: absolute; width: 10px; height: 10px; pointer-events: none; z-index: 3;
-  background: radial-gradient(circle, #fffef0 0%, #ffe07a 42%, rgba(255, 214, 90, 0) 72%);
-  box-shadow: 0 0 12px 3px rgba(255, 220, 100, 0.9);
+  content: ''; position: absolute; width: 16px; height: 16px; pointer-events: none; z-index: 3;
+  background: radial-gradient(circle, #fffef5 0%, #ffe680 45%, rgba(255, 214, 90, 0) 72%);
+  box-shadow: 0 0 16px 4px rgba(255, 228, 120, 0.98);
   animation: treasureSparkBlink 0.8s ease-out both;
   clip-path: polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%);
 }
-.drawn .dc.treasure-sparkle::before { top: -2px; left: -3px; animation-delay: 0.02s; }
-.drawn .dc.treasure-sparkle::after { bottom: -2px; right: -4px; animation-delay: 0.12s; }
-.drawn .dc.treasure-sparkle .treasure-spark.s1 { top: -4px; right: -5px; animation-delay: 0.05s; }
-.drawn .dc.treasure-sparkle .treasure-spark.s2 { bottom: -2px; left: -4px; animation-delay: 0.18s; }
+.drawn .dc.treasure-sparkle::before { top: -3px; left: -4px; animation-delay: 0.02s; }
+.drawn .dc.treasure-sparkle::after { bottom: -3px; right: -5px; animation-delay: 0.12s; }
+.drawn .dc.treasure-sparkle .treasure-spark.s1 { top: -5px; right: -6px; animation-delay: 0.05s; }
+.drawn .dc.treasure-sparkle .treasure-spark.s2 { bottom: -3px; left: -5px; animation-delay: 0.18s; }
 @keyframes treasureSparkBlink {
-  0% { opacity: 0; transform: scale(0.35); }
-  12%, 72% { opacity: 1; transform: scale(1.2); }
-  100% { opacity: 0.15; transform: scale(0.85); }
+  0% { opacity: 0; transform: scale(0.4); }
+  14%, 70% { opacity: 1; transform: scale(1.35); }
+  100% { opacity: 0.2; transform: scale(0.9); }
 }
 @keyframes treasureRimPulse {
-  0%, 100% { box-shadow: 0 0 0 0 transparent; }
-  15%, 75% { box-shadow: 0 0 0 3px rgba(255, 235, 170, 0.98), 0 0 22px 8px rgba(255, 200, 70, 0.72); }
+  0%, 100% { border-color: transparent; box-shadow: none; }
+  12%, 78% {
+    border-color: #f5c542;
+    box-shadow: 0 0 12px 6px rgba(245, 197, 66, 0.88), 0 0 24px 12px rgba(245, 197, 66, 0.42);
+  }
 }
 .hits { display: flex; gap: 10px; align-items: center; font-weight: 700; font-size: 16px; }
 .hitpip { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255, 107, 107, .6); display: grid; place-items: center; font-size: 15px; }
