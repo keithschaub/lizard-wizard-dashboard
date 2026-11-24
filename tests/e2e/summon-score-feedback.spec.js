@@ -1,9 +1,14 @@
+import fs from 'fs';
+import path from 'path';
 import { test, expect } from './fixtures.js';
 import { boot } from './helpers.js';
 
 test.use({ viewport: { width: 430, height: 775 }, deviceScaleFactor: 3 });
 
+const ARTIFACTS = '/opt/cursor/artifacts';
 const LEGACY_DEFAULT_BLUE = '120, 170, 255';
+const PINK_ENCHANTMENT = /255,\s*143,\s*216|rgb\(255,\s*143,\s*216\)|#ff8fd8/i;
+const WHITE_GLOW = /245,\s*245,\s*255|255,\s*255,\s*255/i;
 
 async function seedFamPair(page) {
   await boot(page);
@@ -69,6 +74,41 @@ async function assertNoNeighborInTrack(page) {
   expect(peek.ok, JSON.stringify(peek)).toBe(true);
 }
 
+async function freezeSummonPulseAtPeak(page, index) {
+  return page.evaluate((idx) => {
+    const cssMs = (raw, fallback) => {
+      const s = String(raw ?? '');
+      const n = parseFloat(s);
+      if (Number.isNaN(n)) return fallback;
+      if (s.includes('ms')) return n;
+      return n * 1000;
+    };
+    const frame = document.querySelector(`.big-frame.summon-pulse[data-index="${idx}"]`)
+      || document.querySelector(`.big-frame.summon-pulse[data-index="${String(idx)}"]`);
+    const img = frame?.querySelector('img.big');
+    if (!frame || !img) return { ok: false, reason: 'no-frame' };
+    let n = 0;
+    for (const el of [img, frame]) {
+      const durMs = cssMs(getComputedStyle(el).animationDuration, 600);
+      const delayMs = cssMs(getComputedStyle(el).animationDelay, 0);
+      for (const a of el.getAnimations()) {
+        a.pause();
+        a.currentTime = delayMs + durMs * 0.5;
+        n += 1;
+      }
+    }
+    const frameCs = getComputedStyle(frame);
+    const imgCs = getComputedStyle(img);
+    return {
+      ok: n > 0,
+      anims: n,
+      pulseVar: frameCs.getPropertyValue('--summon-pulse-color').trim(),
+      boxShadow: imgCs.boxShadow,
+      slug: frame.className,
+    };
+  }, index);
+}
+
 async function captureLivePulsePeak(page, { index, rgbRe, shotPath }) {
   await expect.poll(async () => page.evaluate(({ idx, source }) => {
     const frame = document.querySelector(`.big-frame.summon-pulse[data-index="${idx}"]`);
@@ -103,6 +143,89 @@ async function captureLivePulsePeak(page, { index, rgbRe, shotPath }) {
   await page.screenshot({ path: shotPath, fullPage: true });
   return ring;
 }
+
+test('Enchantment familiar summon glow is white, not pink (#172)', async ({ page }) => {
+  fs.mkdirSync(ARTIFACTS, { recursive: true });
+  await boot(page);
+  await page.evaluate(async () => {
+    const s = await (await fetch('engine/game/g8_state.json')).json();
+    const me = s.players.find((p) => p.name === 'Keith');
+    me.mana = 50;
+    me.gold = 3;
+    me.familiars = [];
+    s.next = 'Keith';
+    s.fam_face = ['assets/Familiar_5_Aranea.jpg', 'assets/Familiar_5_Nympharum.jpg'];
+    s.meta.web_pending = null;
+    const r = await window.lwDebug._g.call('load', { text: JSON.stringify(s) });
+    if (!r.ok) throw new Error(r.error);
+    window.lwDebug._g.setView(r.result);
+    window.lwDebug._g.aiStep = async () => false;
+  });
+
+  await page.getByTestId('slot-fam_0').click();
+  await expect(page.getByTestId('summon-use')).toBeVisible();
+  await expect.poll(async () => page.evaluate(() => !!document.querySelector('.big-frame.summon-pulse.summon-pulse-enchantment')), {
+    timeout: 3000,
+  }).toBe(true);
+  await waitSummonOverlayReady(page);
+
+  const peak = await freezeSummonPulseAtPeak(page, '0');
+  expect(peak.ok, JSON.stringify(peak)).toBe(true);
+  expect(peak.slug).toContain('summon-pulse-enchantment');
+  expect(peak.pulseVar).toMatch(WHITE_GLOW);
+  expect(peak.pulseVar).not.toMatch(PINK_ENCHANTMENT);
+  expect(peak.boxShadow).toMatch(WHITE_GLOW);
+  expect(peak.boxShadow).not.toMatch(PINK_ENCHANTMENT);
+
+  await page.getByTestId('summon-use').screenshot({
+    path: path.join(ARTIFACTS, 'summon-pulse-enchantment-aranea-430x775.png'),
+    scale: 'device',
+  });
+
+  await page.getByTestId('summon-cancel').click();
+  await expect(page.getByTestId('summon-use')).toHaveCount(0);
+
+  await page.getByTestId('eye-toggle').click();
+  await expect(page.getByTestId('inventory')).toBeVisible();
+  await page.evaluate(() => {
+    const host = document.querySelector('#peek-layer .mat.you');
+    if (!host) throw new Error('no mat');
+    let el = host.querySelector('.mcard[data-card-school="Enchantment"]') || host.querySelector('.mcard');
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'mcard';
+      host.appendChild(el);
+    }
+    el.dataset.cardSchool = 'Enchantment';
+    el.classList.add('score-school-blink', 'score-school-enchantment');
+    const cssMs = (raw, fallback) => {
+      const s = String(raw ?? '');
+      const n = parseFloat(s);
+      if (Number.isNaN(n)) return fallback;
+      if (s.includes('ms')) return n;
+      return n * 1000;
+    };
+    const durMs = cssMs(getComputedStyle(el).animationDuration, 400);
+    for (const a of el.getAnimations()) {
+      a.pause();
+      a.currentTime = durMs * 0.5;
+    }
+  });
+  const blinkCs = await page.evaluate(() => {
+    const el = document.querySelector('#peek-layer .mcard.score-school-enchantment');
+    const cs = el ? getComputedStyle(el) : null;
+    return {
+      blinkVar: cs?.getPropertyValue('--score-blink-color').trim(),
+      boxShadow: cs?.boxShadow,
+    };
+  });
+  expect(blinkCs.blinkVar).toMatch(WHITE_GLOW);
+  expect(blinkCs.blinkVar).not.toMatch(PINK_ENCHANTMENT);
+  await page.screenshot({
+    path: path.join(ARTIFACTS, 'score-school-blink-enchantment-430x775.png'),
+    scale: 'device',
+  });
+});
 
 test('Summon pulse: school ring on opened card in two-card market (#167)', async ({ page }) => {
   const v = await seedFamPair(page);
