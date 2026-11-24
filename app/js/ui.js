@@ -1808,6 +1808,8 @@ export function renderDungeonResult(ov, was) {
 function dungeonDoorLeaf(side) {
   return h('div', { class: `dungeon-door-leaf dungeon-door-${side}` },
     h('div', { class: 'dungeon-door-face' },
+      h('span', { class: 'dungeon-door-band dungeon-door-band-top', 'aria-hidden': 'true' }),
+      h('span', { class: 'dungeon-door-band dungeon-door-band-bot', 'aria-hidden': 'true' }),
       h('span', { class: 'dungeon-door-ring', 'aria-hidden': 'true' })));
 }
 
@@ -1815,10 +1817,7 @@ function playDungeonEntryDoors(overlayEl, onOpen) {
   if (!overlayEl?.isConnected) return;
   if (document.querySelector('[data-testid="dungeon-entry-doors"]')) return;
   const doors = h('div', { class: 'dungeon-doors', 'data-testid': 'dungeon-entry-doors', 'data-door-phase': 'closed' });
-  const bands = h('div', { class: 'dungeon-door-bands', 'aria-hidden': 'true' },
-    h('div', { class: 'dungeon-door-band-cross top' }),
-    h('div', { class: 'dungeon-door-band-cross bot' }));
-  appendNodes(doors, dungeonDoorLeaf('left'), dungeonDoorLeaf('right'), bands);
+  appendNodes(doors, dungeonDoorLeaf('left'), dungeonDoorLeaf('right'));
   document.body.appendChild(doors);
   const mountT = performance.now();
   doors.dataset.t0 = String(mountT);

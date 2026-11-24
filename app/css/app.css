@@ -723,28 +723,21 @@ img { -webkit-user-drag: none; user-select: none; }
 }
 .dungeon-door-left .dungeon-door-face { border-right: 3px solid #12100e; box-shadow: inset -8px 0 16px rgba(0, 0, 0, .35), inset 0 0 50px rgba(0, 0, 0, .45); }
 .dungeon-door-right .dungeon-door-face { border-left: 3px solid #12100e; box-shadow: inset 8px 0 16px rgba(0, 0, 0, .35), inset 0 0 50px rgba(0, 0, 0, .45); }
-.dungeon-door-bands { position: absolute; inset: 0; pointer-events: none; z-index: 8; }
-.dungeon-door-band-cross {
-  position: absolute; left: 0; right: 0; height: 18px;
+.dungeon-door-band {
+  position: absolute; left: 0; right: 0; width: 100%; height: 18px; z-index: 3;
   background:
-    radial-gradient(circle at 6% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 14% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 22% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 30% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 38% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 46% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 54% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 62% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 70% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 78% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 86% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
-    radial-gradient(circle at 94% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 12% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 28% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 44% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 60% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 76% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
+    radial-gradient(circle at 92% 50%, #d0cac2 3px, #6e6862 4px, transparent 5px),
     linear-gradient(180deg, #6a6460 0%, #3d3834 45%, #2a2622 100%);
   border-top: 1px solid rgba(255, 255, 255, .1); border-bottom: 1px solid rgba(0, 0, 0, .5);
   box-shadow: 0 3px 10px rgba(0, 0, 0, .45);
 }
-.dungeon-door-band-cross.top { top: 28%; }
-.dungeon-door-band-cross.bot { top: 62%; }
+.dungeon-door-band-top { top: 28%; }
+.dungeon-door-band-bot { top: 62%; }
 .dungeon-door-ring {
   position: absolute; top: 50%; width: 32px; height: 32px; margin-top: -16px; border-radius: 50%; z-index: 4;
   border: 4px solid #5a5652;

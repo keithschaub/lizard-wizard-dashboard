@@ -44,7 +44,7 @@ export async function metricsAtClosedDoors(page) {
     const coverage = ((unionR - unionL) / vw) * ((unionB - unionT) / vh);
     const doorTop = (x, y) => {
       const top = document.elementFromPoint(x, y);
-      return !!top?.closest?.('[data-testid="dungeon-entry-doors"], .dungeon-door-face, .dungeon-door-leaf, .dungeon-door-bands');
+      return !!top?.closest?.('[data-testid="dungeon-entry-doors"], .dungeon-door-face, .dungeon-door-leaf, .dungeon-door-band');
     };
     const cx = vw / 2;
     const cy = vh / 2;
@@ -72,6 +72,36 @@ export async function metricsAtClosedDoors(page) {
       hitLeave,
       hitEye,
       seam,
+    };
+  });
+}
+
+/** At 50% swing, deck center and viewport center at band height must not be covered by doors. */
+export async function metricsMidDoorClearance(page) {
+  return page.evaluate(() => {
+    const deck = document.querySelector('[data-testid="dungeon-deck"]');
+    if (!deck) return { ok: false, reason: 'no-deck' };
+    const db = deck.getBoundingClientRect();
+    const dcx = db.left + db.width / 2;
+    const dcy = db.top + db.height / 2;
+    const band = document.querySelector('.dungeon-door-band-top');
+    const br = band?.getBoundingClientRect();
+    const bandY = br ? br.top + br.height / 2 : window.innerHeight * 0.28;
+    const cx = window.innerWidth / 2;
+    const deckAt = (x, y) => !!document.elementFromPoint(x, y)?.closest?.('[data-testid="dungeon-deck"]');
+    const doorAt = (x, y) => !!document.elementFromPoint(x, y)?.closest?.(
+      '[data-testid="dungeon-entry-doors"], .dungeon-door-leaf, .dungeon-door-face, .dungeon-door-band');
+    const hitDeckCenter = deckAt(dcx, dcy);
+    const hitBandRow = deckAt(cx, bandY);
+    const blockedCenter = doorAt(dcx, dcy);
+    const blockedBandRow = doorAt(cx, bandY);
+    return {
+      ok: hitDeckCenter && hitBandRow && !blockedCenter && !blockedBandRow,
+      hitDeckCenter,
+      hitBandRow,
+      blockedCenter,
+      blockedBandRow,
+      bandY,
     };
   });
 }

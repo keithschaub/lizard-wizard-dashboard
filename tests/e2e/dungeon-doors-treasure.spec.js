@@ -6,6 +6,7 @@ import { boot, watchErrors } from './helpers.js';
 import {
   seekDungeonDoors,
   metricsAtClosedDoors,
+  metricsMidDoorClearance,
   seekTreasureSparklePeak,
   removeDungeonDoors,
 } from './dungeon-door-anim.js';
@@ -95,6 +96,8 @@ test('entry doors cover the screen, swing open, leave the DOM, then the deck is 
     return { ok: gap > 20 && (deckVisible || open), gap, deckVisible, angleDeg, transform: tr };
   });
   expect(midSwing.ok, JSON.stringify(midSwing)).toBe(true);
+  const midClear = await metricsMidDoorClearance(page);
+  expect(midClear.ok, JSON.stringify(midClear)).toBe(true);
   await page.screenshot({ path: path.join(ARTIFACTS, 'dungeon-doors-mid-430.png'), scale: 'device' });
   await removeDungeonDoors(page);
   await expect(page.getByTestId('dungeon-entry-doors')).toHaveCount(0);
