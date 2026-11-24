@@ -30,10 +30,11 @@ export async function freezeSummonPulsePeakWhenReady(page, index, { schoolSlug =
       });
       const frameCs = getComputedStyle(frame);
       const pulseColor = frameCs.getPropertyValue('--summon-pulse-color').trim();
+      let peakMs = cssMs(getComputedStyle(img).animationDuration, 600) * 0.5;
       if (anims.length) {
         const durMs = cssMs(getComputedStyle(img).animationDuration, 600);
         const delayMs = cssMs(getComputedStyle(img).animationDelay, 0);
-        const peakMs = delayMs + durMs * 0.5;
+        peakMs = delayMs + durMs * 0.5;
         for (const a of anims) {
           a.pause();
           a.currentTime = peakMs;
