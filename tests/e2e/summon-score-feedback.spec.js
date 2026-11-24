@@ -14,6 +14,13 @@ const ARTIFACTS = '/opt/cursor/artifacts';
 const LEGACY_DEFAULT_BLUE = '120, 170, 255';
 const PINK_ENCHANTMENT = /255,\s*143,\s*216|rgb\(255,\s*143,\s*216\)|#ff8fd8/i;
 const WHITE_GLOW = /245,\s*245,\s*255|255,\s*255,\s*255/i;
+const NECRO_EDGE = /70,\s*70,\s*78/;
+const NECRO_SILVER = /200,\s*200,\s*210/;
+const NECRO_OLD_BLUE = /143,\s*188,\s*255|rgb\(143,\s*188,\s*255\)/;
+const ALCHEMY_GLOW = /170,\s*90,\s*230/;
+const OLD_ALCHEMY_GOLD = /255,\s*192,\s*74/;
+const CONJURING_GLOW = /230,\s*40,\s*40/;
+const OLD_CONJURING_ORANGE = /255,\s*107,\s*74/;
 
 async function seedFamPair(page) {
   await boot(page);
@@ -49,6 +56,52 @@ async function seedSummon(page, next = 'Keith') {
     window.lwDebug._g.aiStep = async () => false;
     return r.result;
   }, next);
+}
+
+async function seedFamiliarOnBoard(page, familiarJpg, fillerJpg = 'assets/Familiar_5_Nympharum.jpg') {
+  await boot(page);
+  await page.evaluate(async ({ fam, filler }) => {
+    const s = await (await fetch('engine/game/g8_state.json')).json();
+    const me = s.players.find((p) => p.name === 'Keith');
+    me.mana = 50;
+    me.gold = 3;
+    s.next = 'Keith';
+    s.fam_face = [fam, filler];
+    s.meta.web_pending = null;
+    const r = await window.lwDebug._g.call('load', { text: JSON.stringify(s) });
+    if (!r.ok) throw new Error(r.error);
+    window.lwDebug._g.setView(r.result);
+    window.lwDebug._g.aiStep = async () => false;
+  }, { fam: familiarJpg, filler: fillerJpg });
+}
+
+async function captureFamiliarSummonPulse(page, { schoolSlug, shotName, glowRe, rejectRe }) {
+  const peakPromise = freezeSummonPulsePeakWhenReady(page, 0, {
+    schoolSlug,
+    timeoutMs: 12000,
+    atMs: 290,
+  });
+  await page.getByTestId('slot-fam_0').click();
+  await expect(page.getByTestId('summon-use')).toBeVisible();
+  await waitSummonOverlayReady(page);
+  const peak = await peakPromise;
+  expect(peak.ok, JSON.stringify(peak)).toBe(true);
+  expect(peak.slug).toContain(`summon-pulse-${schoolSlug}`);
+  expect(peak.boxShadow, peak.boxShadow).not.toBe('none');
+  expect(peak.boxShadow).toMatch(glowRe);
+  if (rejectRe) expect(peak.boxShadow).not.toMatch(rejectRe);
+  await page.screenshot({
+    path: path.join(ARTIFACTS, shotName),
+    scale: 'device',
+    clip: {
+      x: Math.max(0, peak.rect.x - 40),
+      y: Math.max(0, peak.rect.y - 40),
+      width: peak.rect.width + 80,
+      height: peak.rect.height + 80,
+    },
+  });
+  await page.getByTestId('summon-cancel').click();
+  return peak;
 }
 
 async function waitSummonOverlayReady(page) {
@@ -175,6 +228,40 @@ test('Enchantment familiar summon glow is white, not pink (#172)', async ({ page
     },
   });
   await screenshotZoomFromRect(page, blink.rect, path.join(ARTIFACTS, 'score-school-blink-enchantment-zoom.png'));
+});
+
+test('Necromancy familiar summon glow: charcoal edge and smoky outer ring', async ({ page }) => {
+  fs.mkdirSync(ARTIFACTS, { recursive: true });
+  await seedFamiliarOnBoard(page, 'assets/Familiar_5_Corvum.jpg');
+  const peak = await captureFamiliarSummonPulse(page, {
+    schoolSlug: 'necromancy',
+    shotName: 'summon-pulse-necromancy-corvum-430x775.png',
+    glowRe: NECRO_EDGE,
+    rejectRe: new RegExp(`${NECRO_SILVER.source}|${NECRO_OLD_BLUE.source}|${WHITE_GLOW.source}`),
+  });
+  expect(peak.pulseEdge).toMatch(NECRO_EDGE);
+});
+
+test('Alchemy familiar summon glow matches purple badge', async ({ page }) => {
+  fs.mkdirSync(ARTIFACTS, { recursive: true });
+  await seedFamiliarOnBoard(page, 'assets/Familiar_5_Bufonem.jpg');
+  await captureFamiliarSummonPulse(page, {
+    schoolSlug: 'alchemy',
+    shotName: 'summon-pulse-alchemy-bufonem-430x775.png',
+    glowRe: ALCHEMY_GLOW,
+    rejectRe: OLD_ALCHEMY_GOLD,
+  });
+});
+
+test('Conjuring familiar summon glow matches red badge', async ({ page }) => {
+  fs.mkdirSync(ARTIFACTS, { recursive: true });
+  await seedFamiliarOnBoard(page, 'assets/Familiar_5_Vulpes.jpg');
+  await captureFamiliarSummonPulse(page, {
+    schoolSlug: 'conjuring',
+    shotName: 'summon-pulse-conjuring-vulpes-430x775.png',
+    glowRe: CONJURING_GLOW,
+    rejectRe: OLD_CONJURING_ORANGE,
+  });
 });
 
 test('Summon pulse: school ring on opened card in two-card market (#167)', async ({ page }) => {
