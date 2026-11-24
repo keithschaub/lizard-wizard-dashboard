@@ -1851,6 +1851,8 @@ function playDungeonEntryDoors(overlayEl, onOpen) {
   let done = false;
   const cleanup = () => {
     if (done || !doors.isConnected) return;
+    const paused = [...doors.querySelectorAll('.dungeon-door-leaf')].some((leaf) => leaf.getAnimations().some((a) => a.playState === 'paused'));
+    if (paused) return;
     if (performance.now() - mountT < 1200) return;
     done = true;
     doors.remove();

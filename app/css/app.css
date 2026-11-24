@@ -678,15 +678,22 @@ img { -webkit-user-drag: none; user-select: none; }
 
 /* dungeon */
 .dungeon { background: radial-gradient(90% 60% at 50% 30%, rgba(90, 30, 20, .55), rgba(3, 3, 8, .96)); padding: calc(14px + var(--safe-t)) 12px 14px; gap: 12px; justify-content: flex-start; }
-.overlay.dungeon .dungeon-doors { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 100%; z-index: 200; display: flex; flex-direction: row; align-items: stretch; perspective: 1100px; pointer-events: auto; }
+.overlay.dungeon .dungeon-doors {
+  position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; margin: 0; padding: 0;
+  z-index: 10000; display: flex; flex-direction: row; align-items: stretch; justify-content: center;
+  perspective: 1100px; pointer-events: auto; overflow: hidden; box-sizing: border-box;
+}
 .dungeon-doors.opening { pointer-events: none; }
-.dungeon-door-leaf { flex: none; width: 50%; height: 100%; align-self: stretch; position: relative; transform-style: preserve-3d; backface-visibility: hidden; will-change: transform; }
+.dungeon-door-leaf {
+  flex: none; width: 50vw; max-width: 50vw; min-width: 50vw; height: 100%;
+  align-self: stretch; position: relative; transform-style: preserve-3d; backface-visibility: hidden; will-change: transform;
+}
 .dungeon-door-left { transform-origin: left center; transform: rotateY(0deg); }
 .dungeon-door-right { transform-origin: right center; transform: rotateY(0deg); }
 .dungeon-doors.animated .dungeon-door-left { animation: dungeonDoorLeft 0.7s ease-in-out 0.35s both; }
 .dungeon-doors.animated .dungeon-door-right { animation: dungeonDoorRight 0.7s ease-in-out 0.35s both; }
-@keyframes dungeonDoorLeft { from { transform: rotateY(0deg); } to { transform: rotateY(-78deg); } }
-@keyframes dungeonDoorRight { from { transform: rotateY(0deg); } to { transform: rotateY(78deg); } }
+@keyframes dungeonDoorLeft { from { transform: rotateY(0deg); } to { transform: rotateY(-82deg); } }
+@keyframes dungeonDoorRight { from { transform: rotateY(0deg); } to { transform: rotateY(82deg); } }
 .dungeon-door-face {
   position: absolute; inset: 0;
   background:
@@ -719,7 +726,8 @@ img { -webkit-user-drag: none; user-select: none; }
   content: ''; position: absolute; inset: 5px; border-radius: 50%; border: 2px solid rgba(0, 0, 0, .35);
 }
 .drawn .dc.treasure-sparkle { position: relative; overflow: visible; z-index: 2; border-radius: 7px;
-  animation: treasureRimPulse 0.8s ease-out both; }
+  animation: treasureRimPulse 0.8s ease-out both;
+  box-shadow: 0 0 0 3px rgba(255, 235, 170, 0.98), 0 0 22px 8px rgba(255, 200, 70, 0.72); }
 .drawn .dc.treasure-sparkle img { border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, .7); }
 .drawn .dc.treasure-sparkle .treasure-spark {
   position: absolute; width: 11px; height: 11px; pointer-events: none; z-index: 3;
