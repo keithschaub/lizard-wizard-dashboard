@@ -56,6 +56,10 @@ const SFX = {
     noise(0.42, { gain: 0.06, at: 0.04, from: 240, to: 85, q: 1.1 });
     tone(52, 0.2, { type: 'sine', gain: 0.11, at: 0.65, slide: 38 });
   },
+  'door-close': () => {
+    noise(0.04, { gain: 0.14, from: 220, to: 70, q: 0.7 });
+    tone(55, 0.3, { type: 'sine', gain: 0.16, at: 0.01, slide: 48 });
+  },
   treasure: () => {
     [1175, 1568, 1976, 2637].forEach((f, i) => tone(f, 0.24, { type: 'sine', gain: 0.045, at: 0.04 + i * 0.07, slide: f * 1.08 }));
     tone(2093, 0.32, { type: 'triangle', gain: 0.04, at: 0.28, slide: 2793 });
@@ -67,7 +71,7 @@ const SFX = {
 };
 const BUZZ = {
   tap: 8, select: 12, gather: [18, 40, 18], coin: 15, cast: [30, 50, 30], hit: [60, 40, 60], win: [40, 60, 40, 60, 80],
-  error: [70], build: 25, turn: 20, bid: 10, flip: 10, door: [28, 18], treasure: [12, 22, 18],
+  error: [70], build: 25, turn: 20, bid: 10, flip: 10, door: [28, 18], 'door-close': 22, treasure: [12, 22, 18],
 };
 
 export function play(name) {
