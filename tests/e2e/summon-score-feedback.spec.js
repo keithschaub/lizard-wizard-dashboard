@@ -14,6 +14,8 @@ const ARTIFACTS = '/opt/cursor/artifacts';
 const LEGACY_DEFAULT_BLUE = '120, 170, 255';
 const PINK_ENCHANTMENT = /255,\s*143,\s*216|rgb\(255,\s*143,\s*216\)|#ff8fd8/i;
 const WHITE_GLOW = /245,\s*245,\s*255|255,\s*255,\s*255/i;
+const NECRO_EDGE = /200,\s*200,\s*210/;
+const NECRO_OLD_BLUE = /143,\s*188,\s*255|rgb\(143,\s*188,\s*255\)/;
 
 async function seedFamPair(page) {
   await boot(page);
@@ -175,6 +177,53 @@ test('Enchantment familiar summon glow is white, not pink (#172)', async ({ page
     },
   });
   await screenshotZoomFromRect(page, blink.rect, path.join(ARTIFACTS, 'score-school-blink-enchantment-zoom.png'));
+});
+
+test('Necromancy familiar summon glow: pale edge and smoky outer ring', async ({ page }) => {
+  fs.mkdirSync(ARTIFACTS, { recursive: true });
+  await boot(page);
+  await page.evaluate(async () => {
+    const s = await (await fetch('engine/game/g8_state.json')).json();
+    const me = s.players.find((p) => p.name === 'Keith');
+    me.mana = 50;
+    me.gold = 3;
+    s.next = 'Keith';
+    s.fam_face = ['assets/Familiar_5_Corvum.jpg', 'assets/Familiar_5_Nympharum.jpg'];
+    s.meta.web_pending = null;
+    const r = await window.lwDebug._g.call('load', { text: JSON.stringify(s) });
+    if (!r.ok) throw new Error(r.error);
+    window.lwDebug._g.setView(r.result);
+    window.lwDebug._g.aiStep = async () => false;
+  });
+
+  const peakPromise = freezeSummonPulsePeakWhenReady(page, 0, {
+    schoolSlug: 'necromancy',
+    timeoutMs: 12000,
+    atMs: 290,
+  });
+  await page.getByTestId('slot-fam_0').click();
+  await expect(page.getByTestId('summon-use')).toBeVisible();
+  await waitSummonOverlayReady(page);
+  const peak = await peakPromise;
+  expect(peak.ok, JSON.stringify(peak)).toBe(true);
+  expect(peak.slug).toContain('summon-pulse-necromancy');
+  expect(peak.pulseEdge).toMatch(/200,\s*200,\s*210|rgb\(200,\s*200,\s*210\)/);
+  expect(peak.boxShadow, peak.boxShadow).not.toBe('none');
+  expect(peak.boxShadow).toMatch(NECRO_EDGE);
+  expect(peak.boxShadow).not.toMatch(NECRO_OLD_BLUE);
+
+  await page.screenshot({
+    path: path.join(ARTIFACTS, 'summon-pulse-necromancy-corvum-430x775.png'),
+    scale: 'device',
+    clip: {
+      x: Math.max(0, peak.rect.x - 40),
+      y: Math.max(0, peak.rect.y - 40),
+      width: peak.rect.width + 80,
+      height: peak.rect.height + 80,
+    },
+  });
+  await screenshotZoomFromRect(page, peak.rect, path.join(ARTIFACTS, 'summon-pulse-necromancy-zoom.png'), { pad: 40 });
+  await page.getByTestId('summon-cancel').click();
 });
 
 test('Summon pulse: school ring on opened card in two-card market (#167)', async ({ page }) => {

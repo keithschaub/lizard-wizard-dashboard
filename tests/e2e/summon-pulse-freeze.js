@@ -1,8 +1,8 @@
 /** Deterministic summon pulse / score blink freeze for screenshots and assertions. */
 
-export async function freezeSummonPulsePeakWhenReady(page, index, { schoolSlug = null, timeoutMs = 10000 } = {}) {
+export async function freezeSummonPulsePeakWhenReady(page, index, { schoolSlug = null, timeoutMs = 10000, atMs = null } = {}) {
   const idx = String(index);
-  return page.evaluate(async ({ i, slug, timeout }) => {
+  return page.evaluate(async ({ i, slug, timeout, peakAtMs }) => {
     const cssMs = (raw, fallback) => {
       if (raw == null || raw === '') return fallback;
       const s = String(raw);
@@ -30,11 +30,11 @@ export async function freezeSummonPulsePeakWhenReady(page, index, { schoolSlug =
       });
       const frameCs = getComputedStyle(frame);
       const pulseColor = frameCs.getPropertyValue('--summon-pulse-color').trim();
-      let peakMs = cssMs(getComputedStyle(img).animationDuration, 600) * 0.5;
+      const pulseEdge = frameCs.getPropertyValue('--summon-pulse-edge').trim();
+      const durMs = cssMs(getComputedStyle(img).animationDuration, 600);
+      const delayMs = cssMs(getComputedStyle(img).animationDelay, 0);
+      let peakMs = peakAtMs != null ? delayMs + peakAtMs : delayMs + durMs * 0.5;
       if (anims.length) {
-        const durMs = cssMs(getComputedStyle(img).animationDuration, 600);
-        const delayMs = cssMs(getComputedStyle(img).animationDelay, 0);
-        peakMs = delayMs + durMs * 0.5;
         for (const a of anims) {
           a.pause();
           a.currentTime = peakMs;
@@ -43,8 +43,12 @@ export async function freezeSummonPulsePeakWhenReady(page, index, { schoolSlug =
       void img.offsetWidth;
       let imgCs = getComputedStyle(img);
       let boxShadow = imgCs.boxShadow;
-      if (boxShadow === 'none' && pulseColor && pulseColor !== 'none') {
-        img.style.boxShadow = `0 0 0 6px ${pulseColor}, 0 0 22px 8px ${pulseColor}`;
+      if (boxShadow === 'none' && (pulseColor || pulseEdge)) {
+        if (pulseEdge) {
+          img.style.boxShadow = `0 0 0 6px ${pulseEdge}, 0 0 22px 12px ${pulseColor || 'rgba(20, 20, 24, 0.92)'}`;
+        } else if (pulseColor && pulseColor !== 'none') {
+          img.style.boxShadow = `0 0 0 6px ${pulseColor}, 0 0 22px 8px ${pulseColor}`;
+        }
         imgCs = getComputedStyle(img);
         boxShadow = imgCs.boxShadow;
       }
@@ -58,6 +62,7 @@ export async function freezeSummonPulsePeakWhenReady(page, index, { schoolSlug =
         anims: anims.length,
         peakMs,
         pulseVar: frameCs.getPropertyValue('--summon-pulse-color').trim(),
+        pulseEdge: frameCs.getPropertyValue('--summon-pulse-edge').trim(),
         boxShadow,
         slug: frame.className,
         index: frame.dataset.index,
@@ -65,7 +70,7 @@ export async function freezeSummonPulsePeakWhenReady(page, index, { schoolSlug =
       };
     }
     return { ok: false, reason: 'timeout' };
-  }, { i: idx, slug: schoolSlug, timeout: timeoutMs });
+  }, { i: idx, slug: schoolSlug, timeout: timeoutMs, peakAtMs: atMs });
 }
 
 export async function waitForSummonPulseOnIndex(page, index, opts = {}) {
