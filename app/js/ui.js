@@ -1924,11 +1924,12 @@ export async function dungeonFlow(g) {
       break;
     } else {
       const was = pd;
-      const r = await g.act('dungeon_stop', {}, { sound: was.success ? 'coin' : 'hit' });
+      const r = await g.act('dungeon_stop', {}, { sound: 'door-close' });
       if (r && was.success) {
         renderDungeonResult(ov, was);
+        await sleep(350);
         g.sfx('coin');
-        await sleep(1600);
+        await sleep(1250);
       }
       break;
     }

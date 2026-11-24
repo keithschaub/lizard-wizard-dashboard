@@ -182,10 +182,6 @@ class Game {
     let seat = turnOf || this.me;
     for (const e of entries || []) {
       if (e.act === 'turn') { seat = e.who || seat; continue; }
-      if (e.act === 'dungeon' && e.who === this.me) {
-        this.moveQueue.push({ ...e, _turn: turnOf || this.me });
-        continue;
-      }
       if (seat !== this.me && e.who && e.who !== this.me && !shown.has(e.act)) this.moveQueue.push({ ...e, _turn: seat });
     }
   }
@@ -440,7 +436,7 @@ class Game {
     for (const [i, e] of moves.entries()) {
       const slot = this.slotFor(e);
       if (slot && !this.skip) this.board.focus(slot);
-      if (!this.skip) this.sfx(e.cast ? 'cast' : e.act === 'build' ? 'build' : e.act === 'dungeon' ? 'door-close' : e.act === 'gather' ? 'gather' : 'tap');
+      if (!this.skip) this.sfx(e.cast ? 'cast' : e.act === 'build' ? 'build' : e.act === 'dungeon' ? 'flip' : e.act === 'gather' ? 'gather' : 'tap');
       const turnOfMove = (x) => turnOf || x._turn || x.who;
       const who = turnOfMove(e);
       const run = moves.filter((x) => turnOfMove(x) === who);
