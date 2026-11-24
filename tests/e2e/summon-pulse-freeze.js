@@ -45,7 +45,7 @@ export async function freezeSummonPulsePeakWhenReady(page, index, { schoolSlug =
       let boxShadow = imgCs.boxShadow;
       if (boxShadow === 'none' && (pulseColor || pulseEdge)) {
         if (pulseEdge) {
-          img.style.boxShadow = `0 0 0 6px ${pulseEdge}, 0 0 22px 12px ${pulseColor || 'rgba(20, 20, 24, 0.92)'}`;
+          img.style.boxShadow = `0 0 0 6px ${pulseEdge}, 0 0 32px 18px ${pulseColor || 'rgba(8, 8, 10, 0.95)'}`;
         } else if (pulseColor && pulseColor !== 'none') {
           img.style.boxShadow = `0 0 0 6px ${pulseColor}, 0 0 22px 8px ${pulseColor}`;
         }
