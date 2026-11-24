@@ -1,9 +1,19 @@
+import fs from 'fs';
+import path from 'path';
 import { test, expect } from './fixtures.js';
 import { boot } from './helpers.js';
+import {
+  freezeSummonPulsePeakWhenReady,
+  freezeScoreBlinkPeakWhenReady,
+  screenshotZoomFromRect,
+} from './summon-pulse-freeze.js';
 
 test.use({ viewport: { width: 430, height: 775 }, deviceScaleFactor: 3 });
 
+const ARTIFACTS = '/opt/cursor/artifacts';
 const LEGACY_DEFAULT_BLUE = '120, 170, 255';
+const PINK_ENCHANTMENT = /255,\s*143,\s*216|rgb\(255,\s*143,\s*216\)|#ff8fd8/i;
+const WHITE_GLOW = /245,\s*245,\s*255|255,\s*255,\s*255/i;
 
 async function seedFamPair(page) {
   await boot(page);
@@ -69,63 +79,130 @@ async function assertNoNeighborInTrack(page) {
   expect(peek.ok, JSON.stringify(peek)).toBe(true);
 }
 
-async function captureLivePulsePeak(page, { index, rgbRe, shotPath }) {
-  await expect.poll(async () => page.evaluate(({ idx, source }) => {
-    const frame = document.querySelector(`.big-frame.summon-pulse[data-index="${idx}"]`);
-    if (!frame?.dataset.pulseStart) return false;
-    const elapsed = performance.now() - Number(frame.dataset.pulseStart);
-    const img = frame.querySelector('img.big');
-    const bs = img ? getComputedStyle(img).boxShadow : 'none';
-    const re = new RegExp(source);
-    return elapsed >= 200 && elapsed <= 500 && bs !== 'none' && re.test(bs);
-  }, { idx: index, source: rgbRe.source }), { timeout: 4000, intervals: [20] }).toBe(true);
+async function captureLivePulsePeak(page, { index, rgbRe, shotPath, peakPromise = null }) {
+  const peak = peakPromise
+    ? await peakPromise
+    : await freezeSummonPulsePeakWhenReady(page, index, { timeoutMs: 12000 });
   await waitSummonOverlayReady(page);
+  expect(peak.ok, JSON.stringify(peak)).toBe(true);
+  expect(peak.boxShadow, peak.boxShadow).not.toBe('none');
+  expect(peak.boxShadow).toMatch(rgbRe);
   const ring = await page.evaluate((idx) => {
     const frame = document.querySelector(`.big-frame.summon-pulse[data-index="${idx}"]`);
     const img = frame?.querySelector('img.big');
-    if (!frame || !img) return null;
-    const cs = getComputedStyle(img);
-    const rect = img.getBoundingClientRect();
+    const rect = img?.getBoundingClientRect();
     return {
-      index: frame.dataset.index,
-      slug: frame.className,
-      boxShadow: cs.boxShadow,
-      width: rect.width,
-      height: rect.height,
+      slug: frame?.className,
+      width: rect?.width ?? 0,
+      height: rect?.height ?? 0,
     };
   }, index);
-  expect(ring, 'pulse frame missing').not.toBeNull();
-  expect(ring.boxShadow, ring?.boxShadow).not.toBe('none');
-  expect(ring.boxShadow).toMatch(rgbRe);
   expect(ring.width, 'frame not laid out').toBeGreaterThan(40);
   expect(ring.height).toBeGreaterThan(40);
   await assertNoNeighborInTrack(page);
-  await page.screenshot({ path: shotPath, fullPage: true });
-  return ring;
+  if (shotPath) await page.screenshot({ path: shotPath, fullPage: true });
+  return { ...peak, ...ring };
 }
+
+test('Enchantment familiar summon glow is white, not pink (#172)', async ({ page }) => {
+  fs.mkdirSync(ARTIFACTS, { recursive: true });
+  await boot(page);
+  await page.evaluate(async () => {
+    const s = await (await fetch('engine/game/g8_state.json')).json();
+    const me = s.players.find((p) => p.name === 'Keith');
+    me.mana = 50;
+    me.gold = 3;
+    me.familiars = ['assets/Familiar_5_Aranea.jpg'];
+    s.next = 'Keith';
+    s.fam_face = ['assets/Familiar_5_Aranea.jpg', 'assets/Familiar_5_Nympharum.jpg'];
+    s.meta.web_pending = null;
+    const r = await window.lwDebug._g.call('load', { text: JSON.stringify(s) });
+    if (!r.ok) throw new Error(r.error);
+    window.lwDebug._g.setView(r.result);
+    window.lwDebug._g.aiStep = async () => false;
+  });
+
+  const peakPromise = freezeSummonPulsePeakWhenReady(page, 0, { schoolSlug: 'enchantment', timeoutMs: 12000 });
+  await page.getByTestId('slot-fam_0').click();
+  await expect(page.getByTestId('summon-use')).toBeVisible();
+  const peak = await peakPromise;
+  expect(peak.ok, JSON.stringify(peak)).toBe(true);
+  expect(peak.index).toBe('0');
+  expect(peak.slug).toContain('summon-pulse-enchantment');
+  expect(peak.pulseVar).toMatch(WHITE_GLOW);
+  expect(peak.pulseVar).not.toMatch(PINK_ENCHANTMENT);
+  expect(peak.boxShadow, peak.boxShadow).not.toBe('none');
+  expect(peak.boxShadow).toMatch(WHITE_GLOW);
+  expect(peak.boxShadow).not.toMatch(PINK_ENCHANTMENT);
+
+  await page.screenshot({
+    path: path.join(ARTIFACTS, 'summon-pulse-enchantment-aranea-430x775.png'),
+    scale: 'device',
+    clip: {
+      x: Math.max(0, peak.rect.x - 40),
+      y: Math.max(0, peak.rect.y - 40),
+      width: peak.rect.width + 80,
+      height: peak.rect.height + 80,
+    },
+  });
+  await screenshotZoomFromRect(page, peak.rect, path.join(ARTIFACTS, 'summon-pulse-enchantment-zoom.png'));
+
+  await page.getByTestId('summon-cancel').click();
+  await expect(page.getByTestId('summon-use')).toHaveCount(0);
+
+  await page.getByTestId('eye-toggle').click();
+  await expect(page.getByTestId('inventory')).toBeVisible();
+  await page.evaluate(() => {
+    window.lwDebug.runScoreFamiliarFeedback('Enchantment', 4);
+  });
+  await page.waitForTimeout(50);
+  const blinkSel = '#peek-layer .mat.you .mcard.score-school-blink.score-school-enchantment[data-card-school="Enchantment"]';
+  const blink = await freezeScoreBlinkPeakWhenReady(page, blinkSel);
+  expect(blink.ok, JSON.stringify(blink)).toBe(true);
+  expect(blink.blinkVar).toMatch(WHITE_GLOW);
+  expect(blink.blinkVar).not.toMatch(PINK_ENCHANTMENT);
+  expect(blink.boxShadow, blink.boxShadow).not.toBe('none');
+  expect(blink.boxShadow).toMatch(WHITE_GLOW);
+
+  await page.screenshot({
+    path: path.join(ARTIFACTS, 'score-school-blink-enchantment-430x775.png'),
+    scale: 'device',
+    clip: {
+      x: Math.max(0, blink.rect.x - 48),
+      y: Math.max(0, blink.rect.y - 48),
+      width: blink.rect.width + 96,
+      height: blink.rect.height + 96,
+    },
+  });
+  await screenshotZoomFromRect(page, blink.rect, path.join(ARTIFACTS, 'score-school-blink-enchantment-zoom.png'));
+});
 
 test('Summon pulse: school ring on opened card in two-card market (#167)', async ({ page }) => {
   const v = await seedFamPair(page);
   expect(v.board.fam_face.filter(Boolean)).toHaveLength(2);
 
+  const trogPeak = freezeSummonPulsePeakWhenReady(page, '0', { timeoutMs: 12000 });
   await page.getByTestId('slot-fam_0').click();
   await expect(page.getByTestId('summon-use')).toBeVisible();
   const trog = await captureLivePulsePeak(page, {
     index: '0',
     rgbRe: /255,\s*210,\s*63/,
     shotPath: 'docs/screenshots/summon-pulse-thaumaturgy-430x775.png',
+    peakPromise: trogPeak,
   });
   expect(trog.slug).toContain('summon-pulse-thaumaturgy');
   expect(trog.boxShadow).not.toContain(LEGACY_DEFAULT_BLUE);
   await page.getByTestId('summon-cancel').click();
   await expect(page.getByTestId('summon-use')).toHaveCount(0);
 
+  const nymphPeak = freezeSummonPulsePeakWhenReady(page, '1', { timeoutMs: 12000 });
   await page.getByTestId('slot-fam_1').click();
   await expect(page.getByTestId('summon-use')).toBeVisible();
   const nymph = await captureLivePulsePeak(page, {
     index: '1',
     rgbRe: /95,\s*211,\s*95/,
     shotPath: 'docs/screenshots/summon-pulse-druidry-430x775.png',
+    peakPromise: nymphPeak,
   });
   expect(nymph.slug).toContain('summon-pulse-druidry');
   expect(nymph.boxShadow).not.toContain(LEGACY_DEFAULT_BLUE);

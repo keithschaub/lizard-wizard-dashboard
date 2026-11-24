@@ -939,7 +939,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .expand .big-frame.summon-pulse.summon-pulse-alchemy { --summon-pulse-color: rgb(255, 192, 74); }
 .expand .big-frame.summon-pulse.summon-pulse-conjuring { --summon-pulse-color: rgb(255, 107, 74); }
 .expand .big-frame.summon-pulse.summon-pulse-druidry { --summon-pulse-color: rgb(95, 211, 95); }
-.expand .big-frame.summon-pulse.summon-pulse-enchantment { --summon-pulse-color: rgb(255, 143, 216); }
+.expand .big-frame.summon-pulse.summon-pulse-enchantment { --summon-pulse-color: rgb(245, 245, 255); }
 .expand .big-frame.summon-pulse.summon-pulse-necromancy { --summon-pulse-color: rgb(143, 188, 255); }
 .expand .big-frame.summon-pulse.summon-pulse-thaumaturgy { --summon-pulse-color: rgb(255, 210, 63); }
 @keyframes summon-pulse-img {
@@ -951,7 +951,7 @@ input[type=range].slider::-moz-range-thumb { width: 28px; height: 28px; border-r
 .mcard.score-school-blink.score-school-alchemy { --score-blink-color: rgb(255, 192, 74); }
 .mcard.score-school-blink.score-school-conjuring { --score-blink-color: rgb(255, 107, 74); }
 .mcard.score-school-blink.score-school-druidry { --score-blink-color: rgb(95, 211, 95); }
-.mcard.score-school-blink.score-school-enchantment { --score-blink-color: rgb(255, 143, 216); }
+.mcard.score-school-blink.score-school-enchantment { --score-blink-color: rgb(245, 245, 255); }
 .mcard.score-school-blink.score-school-necromancy { --score-blink-color: rgb(143, 188, 255); }
 .mcard.score-school-blink.score-school-thaumaturgy { --score-blink-color: rgb(255, 210, 63); }
 @keyframes score-school-blink {

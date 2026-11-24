@@ -4,7 +4,7 @@ export const SCHOOL_GLOW = {
   Alchemy: { hex: '#ffc04a', pulse: [255, 192, 74], outer: [255, 192, 74] },
   Conjuring: { hex: '#ff6b4a', pulse: [255, 107, 74], outer: [255, 107, 74] },
   Druidry: { hex: '#5fd35f', pulse: [95, 211, 95], outer: [95, 211, 95] },
-  Enchantment: { hex: '#ff8fd8', pulse: [255, 143, 216], outer: [255, 143, 216] },
+  Enchantment: { hex: '#f5f5ff', pulse: [245, 245, 255], outer: [245, 245, 255] },
   Necromancy: { hex: '#8fbcff', pulse: [143, 188, 255], outer: [143, 188, 255] },
   Thaumaturgy: { hex: '#ffd23f', pulse: [255, 210, 63], outer: [255, 210, 63] },
 };

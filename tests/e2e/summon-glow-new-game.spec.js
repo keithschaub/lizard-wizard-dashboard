@@ -4,6 +4,7 @@
 import { test, expect } from './fixtures.js';
 import { boot } from './helpers.js';
 import { SCHOOL_GLOW } from '../../app/js/school-glow-colors.js';
+import { freezeSummonPulsePeakWhenReady } from './summon-pulse-freeze.js';
 import fs from 'fs';
 
 test.use({ viewport: { width: 430, height: 775 }, deviceScaleFactor: 3 });
@@ -43,16 +44,10 @@ async function waitSummonOverlayReady(page) {
 
 async function assertPulseMatchesSchool(page, { groupIndex, school, label, shotPath = null }) {
   const rgbRe = rgbReFromSchoolName(school);
-  await expect.poll(async () => page.evaluate(({ idx, source }) => {
-    const frame = document.querySelector(`.big-frame.summon-pulse[data-index="${idx}"]`)
-      || document.querySelector(`.big-frame.summon-pulse[data-index="${String(idx)}"]`);
-    if (!frame?.dataset.pulseStart) return false;
-    const elapsed = performance.now() - Number(frame.dataset.pulseStart);
-    const img = frame.querySelector('img.big');
-    const bs = img ? getComputedStyle(img).boxShadow : 'none';
-    const re = new RegExp(source);
-    return elapsed >= 200 && elapsed <= 500 && bs !== 'none' && re.test(bs);
-  }, { idx: groupIndex, source: rgbRe.source }), { timeout: 6000, intervals: [20] }).toBe(true);
+  const peak = await freezeSummonPulsePeakWhenReady(page, groupIndex, { timeoutMs: 12000 });
+  expect(peak.ok, `${label}: ${JSON.stringify(peak)}`).toBe(true);
+  expect(peak.boxShadow, `${label}: shadow ${peak.boxShadow}`).not.toBe('none');
+  expect(peak.boxShadow, `${label}: boxShadow ${peak.boxShadow}`).toMatch(rgbRe);
 
   const sample = await page.evaluate((idx) => {
     const frame = document.querySelector(`.big-frame.summon-pulse[data-index="${idx}"]`)
@@ -196,6 +191,7 @@ test('Summon glow on swiped card uses the shown familiar school (#167)', async (
   const fams = await famKeysInOrder(page);
   const school0 = await schoolFromCarddb(page, fams[0]);
   const school1 = await schoolFromCarddb(page, fams[1]);
+  const peakPromise = freezeSummonPulsePeakWhenReady(page, 1, { timeoutMs: 15000 });
   await page.getByTestId('slot-fam_0').click();
   await expect(page.getByTestId('summon-use')).toBeVisible();
   const box = await page.locator('[data-testid="card-track"]').boundingBox();
@@ -205,21 +201,14 @@ test('Summon glow on swiped card uses the shown familiar school (#167)', async (
   await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.15, y, { steps: 4 });
   await page.mouse.up();
-  await page.waitForTimeout(580);
-  const sample = await page.evaluate(() => {
-    const frame = document.querySelector('.big-frame[data-index="1"]');
-    const img = frame?.querySelector('img.big');
-    return {
-      slug: frame?.className ?? '',
-      alt: img?.getAttribute('alt') ?? '',
-      boxShadow: img ? getComputedStyle(img).boxShadow : null,
-    };
-  });
+  const peak = await peakPromise;
+  expect(peak.ok, JSON.stringify(peak)).toBe(true);
   const rgb1 = SCHOOL_GLOW[school1].pulse;
   const rgb0 = SCHOOL_GLOW[school0].pulse;
   const re1 = new RegExp(`${rgb1[0]},\\s*${rgb1[1]},\\s*${rgb1[2]}`);
   const re0 = new RegExp(`${rgb0[0]},\\s*${rgb0[1]},\\s*${rgb0[2]}`);
-  expect(sample.boxShadow, `slug=${sample.slug} shadow=${sample.boxShadow}`).toMatch(re1);
-  expect(re0.test(sample.boxShadow), `stale ${school0} glow on ${sample.alt}`).toBe(false);
+  expect(peak.boxShadow, `slug=${peak.slug} shadow=${peak.boxShadow}`).not.toBe('none');
+  expect(peak.boxShadow, `slug=${peak.slug} shadow=${peak.boxShadow}`).toMatch(re1);
+  expect(re0.test(peak.boxShadow), `stale ${school0} glow`).toBe(false);
   await cancelSummon(page);
 });
